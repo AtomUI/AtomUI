@@ -9,20 +9,78 @@ using Microsoft.Build.Framework;
 
 namespace AtomUI.Build.Tasks;
 
-/// <summary>Freezes final SDK implementation inputs and returns the paths the engine must consume.</summary>
+/// <summary>
+/// Freezes final SDK implementation inputs and returns the paths the engine must consume.
+/// </summary>
 public sealed class PrepareConditionalRegistrationInputsTask : RegistrationBuildTask
 {
+    /// <summary>
+    /// Directory under which the input snapshot is created. Every later task must read the snapshot paths this
+    /// task returns instead of the original input paths.
+    /// </summary>
     [Required] public string OutputRoot { get; set; } = string.Empty;
+    /// <summary>
+    /// Configuration of this build. The snapshot records it together with <see cref="EngineArguments" /> and the
+    /// item metadata of the inputs.
+    /// </summary>
     [Required] public string Configuration { get; set; } = string.Empty;
+    /// <summary>
+    /// The implementation assemblies to freeze, each item spec a managed assembly path. Exactly one
+    /// <c>AtomUI.Core</c> identity must be present. The item metadata is recorded with the snapshot and kept on
+    /// <see cref="PreparedAssemblies" />.
+    /// </summary>
     public ITaskItem[] Assemblies { get; set; } = [];
+    /// <summary>
+    /// Inputs other than assemblies. The <c>Kind</c> metadata names the role, for example <c>tool</c>,
+    /// <c>custom-step</c> or <c>opaque</c>; a missing or blank kind means <c>configuration</c>.
+    /// An <c>opaque</c> item must declare <c>CustomDataKey</c> and <c>Value</c>, with the value being its own path,
+    /// and one key cannot cover two files. An item whose <c>EngineOption</c> is <c>link-attributes</c> must appear
+    /// in <see cref="EngineArguments" /> as <c>--link-attributes</c> arguments exactly once.
+    /// </summary>
     public ITaskItem[] AdditionalInputs { get; set; } = [];
+    /// <summary>
+    /// The linker arguments the SDK produced. Raw arguments that name files (response files, descriptors,
+    /// references, custom steps, custom data or substitutions) are rejected as mutable; such inputs must come in as
+    /// <see cref="Assemblies" /> or <see cref="AdditionalInputs" /> items. The snapshot records the arguments with
+    /// <see cref="Configuration" />.
+    /// </summary>
     public string EngineArguments { get; set; } = string.Empty;
+    /// <summary>
+    /// Path of the input list the engine must read. It is written into a fresh run directory under the snapshot and
+    /// names the frozen assemblies, the frozen additional inputs and the analysis report the engine has to write.
+    /// Empty on failure.
+    /// </summary>
     [Output] public string InputsPath { get; set; } = string.Empty;
+    /// <summary>
+    /// Name of the snapshot directory under <see cref="OutputRoot" /> that holds the frozen inputs. It identifies
+    /// the frozen input set. Empty on failure.
+    /// </summary>
     [Output] public string InputFingerprint { get; set; } = string.Empty;
+    /// <summary>
+    /// <see cref="Assemblies" /> with each item pointing at its frozen copy: item spec and full path are the
+    /// snapshot path, and the <c>AtomUIOriginalPath</c> metadata keeps the original path. Empty on failure.
+    /// </summary>
     [Output] public ITaskItem[] PreparedAssemblies { get; set; } = [];
+    /// <summary>
+    /// <see cref="AdditionalInputs" /> with each item pointing at its frozen copy. The <c>AtomUIOriginalPath</c>
+    /// and <c>AtomUIOriginalItemSpec</c> metadata keep the original location; <c>Kind</c> is set explicitly.
+    /// Empty on failure.
+    /// </summary>
     [Output] public ITaskItem[] PreparedAdditionalInputs { get; set; } = [];
+    /// <summary>
+    /// <see cref="EngineArguments" /> with the <c>link-attributes</c> arguments the SDK produced removed and
+    /// re-created from the frozen link-attributes items, so the linker reads only frozen copies. Empty on failure.
+    /// </summary>
     [Output] public string PreparedEngineArguments { get; set; } = string.Empty;
 
+    /// <summary>
+    /// Freezes the inputs under <see cref="OutputRoot" /> and publishes the paths the engine must consume.
+    /// </summary>
+    /// <returns>
+    /// <see langword="true" /> when the snapshot is in place and the outputs are set. When an input is invalid, or
+    /// changed while it was frozen, the task logs the error as <c>ATOMUIREG006</c>, clears every output, deletes
+    /// the run directory it created and returns <see langword="false" />.
+    /// </returns>
     public override bool Execute()
     {
         string? executionDirectory = null;

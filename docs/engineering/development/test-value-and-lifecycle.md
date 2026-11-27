@@ -106,6 +106,13 @@ Semantic PART 在具体模板中的命中、输入与滚动，以及 Gallery 示
 已识别的视觉基线，以及指定控件和 Gallery 测试路径中新增或改写的用例。标记检查也覆盖普通内核测试目录和
 在现有文件中添加的用例。渲染测试项目也检查分拆的测试片段。未暂存的验收文件可继续用于本地开发。
 
+同一条命令还检查暂存的 `.cs`、`.axaml`、脚本和 MSBuild 文件中的源码注释。规则取自
+[AtomUI 生态注释书写规范](code-comment-guidelines.md)，由 `scripts/verification/comments.py` 执行。
+暂存内容新增违规时拦截提交，例如对外可见的声明没有 XML 注释、块级标签与正文同处一行、自闭合标签 `/>` 前缺空格、
+注释里出现中文、`[SemanticPart]` 上方没有注释、文档注释 XML 不良构、`TODO` 与 `FIXME` 没有写完成或移除条件。既有违规只要求不增加。
+`python3 scripts/verification/comments.py list --path <目录>` 列出待办，`check --path <目录>` 要求目录内违规为零，
+`diff-check --base HEAD --path <目录>` 证明一批改动只含注释。
+
 仓库使用 `git config --local core.hooksPath scripts/hooks` 启用该目录。Agent 在申请提交审查前应运行同一检查，
 保留原有验收和清理记录。遇到拦截应修正暂存内容，提交时禁止跳过 hook 或改写 hook 配置以规避检查。
 内核契约的归属、临时测试是否实际执行等事项在评审时按本文核对。

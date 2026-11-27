@@ -43,16 +43,28 @@ internal class StepsItemSectionPanel : Panel
     internal Orientation EffectiveTitlePlacement =>
         StepsItemLayoutPanel.ResolveTitlePlacement(Type, Orientation, TitlePlacement);
 
-    /// <summary>Header line height within the section, excluding the indicator.</summary>
+    /// <summary>
+    /// Header line height within the section, excluding the indicator.
+    /// Assigned during measure, for horizontal title placement only.
+    /// </summary>
     internal double HeadingHeight { get; private set; }
 
-    /// <summary>Indicator-inclusive heading height supplied by the parent for horizontal arrange.</summary>
+    /// <summary>
+    /// Indicator-inclusive heading height supplied by the parent for horizontal arrange.
+    /// <c>double.NaN</c>, the default, means the parent supplied no value; the heading
+    /// height is then the arranged section height minus the content's desired height.
+    /// </summary>
     internal double ArrangedHeadingHeight { get; set; } = double.NaN;
 
-    /// <summary>Whether the section holds at least one visible body part.</summary>
+    /// <summary>
+    /// Whether the section holds at least one visible body part.
+    /// </summary>
     internal bool HasVisibleBody { get; private set; }
 
-    /// <summary>Right edge of the header line in section coordinates, valid after arrange.</summary>
+    /// <summary>
+    /// Right edge of the header line in section coordinates, valid after arrange
+    /// for horizontal title placement.
+    /// </summary>
     internal double HeadingLineRight { get; private set; }
 
     static StepsItemSectionPanel()

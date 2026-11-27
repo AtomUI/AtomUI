@@ -4,14 +4,18 @@ using Avalonia.Media;
 
 namespace AtomUI.DesignLanguages.Shadcn.TokenEvaluation;
 
-/// <summary>The language seeds and the language tokens of a variant.</summary>
+/// <summary>
+/// The language seeds and the language tokens of a variant.
+/// </summary>
 internal static class LanguageTokenRules
 {
-    /// <summary>The light <c>--primary</c> of the neutral base colour (neutral-900): the default theme.</summary>
+    /// <summary>
+    /// The light <c>--primary</c> of the neutral base color (neutral-900): the default theme.
+    /// </summary>
     public static readonly Color DefaultPrimarySeed = ShadcnTailwindPalette.Stop("neutral", 900);
 
     /// <summary>
-    /// The seeds of every style and appearance: the neutral theme and base colour, and no wave effect (shadcn
+    /// The seeds of every style and appearance: the neutral theme and base color, and no wave effect (shadcn
     /// controls have none).
     /// </summary>
     public static void DefineSeeds(DesignToken seed, ShadcnToken languageSeed)

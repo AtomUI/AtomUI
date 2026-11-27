@@ -7,6 +7,10 @@ using System.Diagnostics;
 
 namespace AtomUI.Desktop.Controls;
 
+/// <summary>
+/// Carries a cell for the notifications that the internal cell collection raises when a cell is added to it
+/// or removed from it.
+/// </summary>
 public class DataGridCellEventArgs : EventArgs
 {
     internal DataGridCellEventArgs(DataGridCell dataGridCell)

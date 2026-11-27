@@ -332,7 +332,8 @@ internal sealed class RegistrationModelBuilder
         {
             HasLanguageModule = Types(_compilation.Assembly.GlobalNamespace).Any(type => type.GetAttributes().Any(attribute =>
                 attribute.AttributeClass?.ToDisplayString() == "AtomUI.Localization.LanguageCatalogAttribute")),
-            // 新生成器引用旧 Core 时保留旧构造入口，不要求旧 Core 含新增工厂 ABI。
+            // A new generator that compiles against an older Core keeps the old constructor entry, so the older Core is
+            // not required to contain the factory ABI that was added later.
             SupportsResourceKeys = _compilation.GetTypeByMetadataName("AtomUI.Registration.ControlThemeResourceRegistration")?
                 .GetMembers("CreateGenerated").OfType<IMethodSymbol>().Any(static method =>
                     method.IsStatic && method.DeclaredAccessibility == Accessibility.Public && method.Parameters.Length == 5) == true
@@ -341,7 +342,8 @@ internal sealed class RegistrationModelBuilder
 
     private ValueArray<RegistrationResourceKey>? CollectCompleteResourceKeys(ThemeAssetInfo input, XElement root)
     {
-        // 手写字典可能在构造/重写中增加任意键；导出主题表并不是完整资源键集合。
+        // A hand-written dictionary may add arbitrary keys in its constructor or in overrides; the exported theme table
+        // is not the complete set of resource keys.
         if (!input.IsResourceDictionary || DirectResourceClass(input) is not null)
         {
             return null;
@@ -370,8 +372,8 @@ internal sealed class RegistrationModelBuilder
                 {
                     if (nested.Name.LocalName is "ResourceInclude" or "MergeResourceInclude")
                     {
-                        // 同名自定义 provider 可以增加任意键，不能把它的 Source 当作完整键证据。
-                        // 非标准 XML 命名空间的 include 保持开放查找。
+                        // A custom provider with the same name may add arbitrary keys, so its Source is no evidence of
+                        // the complete key set. An include in a non-standard XML namespace keeps the lookup open.
                         if (nested.Name.NamespaceName != "https://github.com/avaloniaui")
                         {
                             return false;
@@ -427,7 +429,7 @@ internal sealed class RegistrationModelBuilder
             {
                 keys.Add(new RegistrationResourceKey(null, key));
             }
-            // 不遍历资源值的内部 Resources；它们具有自己的词法作用域。
+            // Does not walk into the inner Resources of resource values; they have their own lexical scope.
         }
         return true;
     }

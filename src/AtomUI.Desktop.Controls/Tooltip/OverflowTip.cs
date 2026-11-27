@@ -11,70 +11,218 @@ namespace AtomUI.Desktop.Controls;
 using AvaloniaTextBlock = Avalonia.Controls.TextBlock;
 using AvaloniaTextBox = Avalonia.Controls.TextBox;
 
+/// <summary>
+/// Shows a tool tip that repeats the full text of an element while that text is wider than the space it has.
+/// </summary>
+/// <remarks>
+/// Set <see cref="IsEnabledProperty" /> on the element to watch. The element is checked when its bounds, font or
+/// text change and when it is attached to the visual tree. While the text overflows, it is written to
+/// <c>ToolTip.Tip</c> of the element, so the element shows it as its tool tip. That tool tip is removed when the
+/// text fits again or when the element is invisible or detached. A tool tip that other code sets on the element
+/// is kept and takes the place of this one.
+/// </remarks>
 public sealed class OverflowTip : AvaloniaObject
 {
     #region 附加属性定义
 
+    /// <summary>
+    /// Identifies the IsEnabled attached property, which switches the overflow tip of an element on or off.
+    /// </summary>
+    /// <remarks>
+    /// Set it on the element whose text may be clipped. The value is not inherited, so it is read from that element
+    /// only. <see langword="true" /> starts the watch described in the class remarks. <see langword="false" />, the
+    /// default, stops the watch and removes a tool tip written here.
+    /// </remarks>
     public static readonly AttachedProperty<bool> IsEnabledProperty =
         AvaloniaProperty.RegisterAttached<OverflowTip, Control, bool>("IsEnabled");
 
+    /// <summary>
+    /// Identifies the Text attached property, which holds the text to measure and to show in the overflow tip.
+    /// </summary>
+    /// <remarks>
+    /// Set it on the watched element. <see langword="null" />, the default, takes the text from the element itself:
+    /// the <c>Text</c> of an <c>Avalonia.Controls.TextBlock</c> or an <c>Avalonia.Controls.TextBox</c>, or the
+    /// <c>Content</c> of an <c>Avalonia.Controls.Presenters.ContentPresenter</c>. Other elements show no tip unless
+    /// this property is set. The value is shown as its <c>ToString()</c> result, and an empty result shows no tip.
+    /// </remarks>
     public static readonly AttachedProperty<object?> TextProperty =
         AvaloniaProperty.RegisterAttached<OverflowTip, Control, object?>("Text");
 
+    /// <summary>
+    /// Identifies the ShowDelay attached property, which sets how long to wait before the overflow tip appears.
+    /// </summary>
+    /// <remarks>
+    /// Set it on the watched element, in milliseconds; the default is 1200. The value is written to
+    /// <c>ToolTip.ShowDelay</c> of the element whenever the tip is applied here, so it replaces a delay set on the
+    /// element through <c>ToolTip</c> directly.
+    /// </remarks>
     public static readonly AttachedProperty<int> ShowDelayProperty =
         AvaloniaProperty.RegisterAttached<OverflowTip, Control, int>("ShowDelay", 1200);
 
+    /// <summary>
+    /// Identifies the Placement attached property, which sets where the overflow tip appears.
+    /// </summary>
+    /// <remarks>
+    /// Set it on the watched element. The default is
+    /// <see cref="Avalonia.Controls.PlacementMode.TopEdgeAlignedLeft" />. The value is written to
+    /// <c>ToolTip.Placement</c> of the element whenever the tip is applied here, so it replaces a placement set on
+    /// the element through <c>ToolTip</c> directly. The horizontal and vertical offsets of the tool tip are written
+    /// at the same time to align the tip with <see cref="PlacementTargetProperty" />.
+    /// </remarks>
     public static readonly AttachedProperty<PlacementMode> PlacementProperty =
         AvaloniaProperty.RegisterAttached<OverflowTip, Control, PlacementMode>("Placement", PlacementMode.TopEdgeAlignedLeft);
 
+    /// <summary>
+    /// Identifies the PlacementTarget attached property, which sets the control the overflow tip is aligned with.
+    /// </summary>
+    /// <remarks>
+    /// Set it on the watched element; the default is <see langword="null" />. While it names another control, the tip
+    /// is shifted so that it aligns with that control instead of the watched element. Use this when the watched
+    /// element is only a part of a larger control. <see langword="null" /> or the watched element itself leaves the
+    /// tip aligned with the watched element. The shift is written to <c>ToolTip.HorizontalOffset</c> and
+    /// <c>ToolTip.VerticalOffset</c> of the element whenever the tip is applied here, so it replaces offsets set on
+    /// the element through <c>ToolTip</c> directly.
+    /// </remarks>
     public static readonly AttachedProperty<Control?> PlacementTargetProperty =
         AvaloniaProperty.RegisterAttached<OverflowTip, Control, Control?>("PlacementTarget");
 
+    /// <summary>
+    /// Reads whether the overflow tip is switched on for an element.
+    /// </summary>
+    /// <param name="element">
+    /// The element that carries the value.
+    /// </param>
+    /// <returns>
+    /// The value on the element, or <see langword="false" /> when the property is not set on it.
+    /// </returns>
     public static bool GetIsEnabled(Control element)
     {
         return element.GetValue(IsEnabledProperty);
     }
 
+    /// <summary>
+    /// Switches the overflow tip for an element on or off.
+    /// </summary>
+    /// <param name="element">
+    /// The element whose text may be clipped.
+    /// </param>
+    /// <param name="value">
+    /// Whether the element is watched for clipped text.
+    /// </param>
     public static void SetIsEnabled(Control element, bool value)
     {
         element.SetValue(IsEnabledProperty, value);
     }
 
+    /// <summary>
+    /// Reads the text that an element shows in its overflow tip.
+    /// </summary>
+    /// <param name="element">
+    /// The element that carries the value.
+    /// </param>
+    /// <returns>
+    /// The value on the element, or <see langword="null" /> when the property is not set on it.
+    /// </returns>
     public static object? GetText(Control element)
     {
         return element.GetValue(TextProperty);
     }
 
+    /// <summary>
+    /// Sets the text that an element shows in its overflow tip.
+    /// </summary>
+    /// <param name="element">
+    /// The element whose text may be clipped.
+    /// </param>
+    /// <param name="value">
+    /// The text to show, or <see langword="null" /> to take the text from the element.
+    /// </param>
     public static void SetText(Control element, object? value)
     {
         element.SetValue(TextProperty, value);
     }
 
+    /// <summary>
+    /// Reads how long an element waits before its overflow tip appears.
+    /// </summary>
+    /// <param name="element">
+    /// The element that carries the value.
+    /// </param>
+    /// <returns>
+    /// The value on the element in milliseconds, or 1200 when the property is not set on it.
+    /// </returns>
     public static int GetShowDelay(Control element)
     {
         return element.GetValue(ShowDelayProperty);
     }
 
+    /// <summary>
+    /// Sets how long an element waits before its overflow tip appears.
+    /// </summary>
+    /// <param name="element">
+    /// The element whose text may be clipped.
+    /// </param>
+    /// <param name="value">
+    /// The wait in milliseconds.
+    /// </param>
     public static void SetShowDelay(Control element, int value)
     {
         element.SetValue(ShowDelayProperty, value);
     }
 
+    /// <summary>
+    /// Reads where the overflow tip of an element appears.
+    /// </summary>
+    /// <param name="element">
+    /// The element that carries the value.
+    /// </param>
+    /// <returns>
+    /// The value on the element, or <see cref="Avalonia.Controls.PlacementMode.TopEdgeAlignedLeft" /> when the
+    /// property is not set on it.
+    /// </returns>
     public static PlacementMode GetPlacement(Control element)
     {
         return element.GetValue(PlacementProperty);
     }
 
+    /// <summary>
+    /// Sets where the overflow tip of an element appears.
+    /// </summary>
+    /// <param name="element">
+    /// The element whose text may be clipped.
+    /// </param>
+    /// <param name="value">
+    /// The placement, relative to the watched element. <see cref="PlacementTargetProperty" /> shifts the tip so
+    /// that it aligns with another control.
+    /// </param>
     public static void SetPlacement(Control element, PlacementMode value)
     {
         element.SetValue(PlacementProperty, value);
     }
 
+    /// <summary>
+    /// Reads the control that the overflow tip of an element is aligned with.
+    /// </summary>
+    /// <param name="element">
+    /// The element that carries the value.
+    /// </param>
+    /// <returns>
+    /// The value on the element, or <see langword="null" /> when the property is not set on it.
+    /// </returns>
     public static Control? GetPlacementTarget(Control element)
     {
         return element.GetValue(PlacementTargetProperty);
     }
 
+    /// <summary>
+    /// Sets the control that the overflow tip of an element is aligned with.
+    /// </summary>
+    /// <param name="element">
+    /// The element whose text may be clipped.
+    /// </param>
+    /// <param name="value">
+    /// The control to align with, or <see langword="null" /> to use the element itself.
+    /// </param>
     public static void SetPlacementTarget(Control element, Control? value)
     {
         element.SetValue(PlacementTargetProperty, value);

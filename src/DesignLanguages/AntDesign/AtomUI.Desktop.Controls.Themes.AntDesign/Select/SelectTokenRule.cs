@@ -4,7 +4,9 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls.Themes.AntDesign;
 
-/// <summary>The AntDesign view of <see cref="SelectToken"/>.</summary>
+/// <summary>
+/// The AntDesign view of <see cref="SelectToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class SelectTokenRule : IControlTokenRule<AntDesignToken, SelectToken>
 {
@@ -13,6 +15,7 @@ internal sealed class SelectTokenRule : IControlTokenRule<AntDesignToken, Select
         var token  = target.Own;
         var global = target.Global;
         SelectInputTokenCalculator.Calculate(in context, global, token);
+        // antd draws the full frame border and a regular indicator color, so the three frame switches stay off.
         token.TransparentOutlineBorder = false;
         token.BottomOutlineBorder      = false;
         token.MutedSelectIndicator     = false;

@@ -1,9 +1,17 @@
 namespace AtomUI.Desktop.Controls;
 
+/// <summary>
+/// An element of a <see cref="NavMenu" /> entry tree. The entry types are <see cref="INavMenuNode" />,
+/// <see cref="NavMenuGroup" /> and <see cref="NavMenuDivider" />; owners accept no other type.
+/// </summary>
 public interface INavMenuEntry
 {
 }
 
+/// <summary>
+/// A divider line placed between the entries of a <see cref="NavMenu" />, of a node or of a
+/// <see cref="NavMenuGroup" />. It carries no state, so the same instance can be placed in several positions.
+/// </summary>
 public sealed class NavMenuDivider : INavMenuEntry
 {
 }

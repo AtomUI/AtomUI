@@ -3,7 +3,9 @@ using AtomUI.Theme.Languages;
 
 namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 
-/// <summary>The PrimeNG view of <see cref="SplitButtonToken"/>.</summary>
+/// <summary>
+/// The PrimeNG view of <see cref="SplitButtonToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class SplitButtonTokenRule : IControlTokenRule<PrimeNGToken, SplitButtonToken>
 {
@@ -11,8 +13,10 @@ internal sealed class SplitButtonTokenRule : IControlTokenRule<PrimeNGToken, Spl
     {
         var token  = target.Own;
         var global = target.Global;
-        // PrimeNG: the control-global overrides, read by the formulas below.
+        // PrimeNG: no control-global overrides; EvaluateGlobal writes nothing.
         PrimeNGSplitButtonTokens.EvaluateGlobal(in context, global);
+        // Ant Design formula kept as is; the PrimeNG stage at the end of the method replaces the two separator
+        // colors (PrimeUIX draws no seam between the filled halves).
         token.InsetSeparator         = false;
         token.GutterToFlyout         = global.UniformlyMarginXXS;
         token.SolidSeparatorColor    = global.ColorPrimaryHover;

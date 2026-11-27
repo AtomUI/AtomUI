@@ -2,6 +2,16 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls;
 
+/// <summary>
+/// The transform of the image shown by an image viewer: translation, scale, rotation and mirroring;
+/// <c>ImageViewer</c> in AtomUI.Desktop.Controls reads and restores the state of an image through it.
+/// </summary>
+/// <remarks>
+/// <c>X</c> and <c>Y</c> are the translation in device-independent pixels, <c>Scale</c> the scale factor,
+/// <c>Rotate</c> the rotation angle in degrees, and <c>FlipX</c> and <c>FlipY</c> mirror the image horizontally
+/// or vertically. <see cref="Initial" /> is the state without any transform: no translation, scale <c>1</c>, no
+/// rotation and no mirroring.
+/// </remarks>
 internal readonly record struct ImagePreviewTransformState(
     double X,
     double Y,

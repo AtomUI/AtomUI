@@ -6,7 +6,15 @@ namespace AtomUI.Controls.Commons;
 /// </summary>
 public interface IMotionActivitySource
 {
+    /// <summary>
+    /// Whether continuous motion may run in the scope of this source. A <see cref="MotionGate" /> lets its owner's
+    /// animation run only while the value is <see langword="true" />.
+    /// </summary>
     bool IsActive { get; }
 
+    /// <summary>
+    /// Occurs after <see cref="IsActive" /> changed, with the new value already stored. The arguments carry no data,
+    /// so a handler reads <see cref="IsActive" />.
+    /// </summary>
     event EventHandler? IsActiveChanged;
 }

@@ -4,7 +4,9 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls.Themes.Shadcn;
 
-/// <summary>The shadcn view of <see cref="ProgressBarToken"/>.</summary>
+/// <summary>
+/// The shadcn view of <see cref="ProgressBarToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class ProgressBarTokenRule : IControlTokenRule<ShadcnToken, ProgressBarToken>
 {
@@ -19,6 +21,7 @@ internal sealed class ProgressBarTokenRule : IControlTokenRule<ShadcnToken, Prog
         token.LineStrokeThicknessSM = 4;
         token.LineProgressPadding = global.UniformlyPaddingXXS / 2;
         token.InnerLabelColor = global.ColorTextLabel;
+        // The label stays visible on an empty bar; PrimeNG hides it with 0.
         token.InnerLabelEmptyOpacity = 1;
         token.ProgressActiveMotionDuration = TimeSpan.FromSeconds(2.4); // antd progressActiveMotionDuration: '2.4s'
         // bg-primary / bg-muted over the whole line family, one bar height per style at every size (the registry has no size

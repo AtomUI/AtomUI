@@ -28,7 +28,7 @@ internal sealed class ControlCodeScope
     public INamedTypeSymbol? ControlDesignTokenAttribute { get; }
 
     /// <summary>
-    /// Returns <see langword="null"/> when the compilation is not a control package: <c>SharedTokenKind</c> must be
+    /// Returns <see langword="null" /> when the compilation is not a control package: <c>SharedTokenKind</c> must be
     /// resolvable and not defined by the compilation itself, and the compilation must either declare a
     /// <c>[ControlDesignToken]</c> type or opt in with the compiler-visible MSBuild property
     /// <c>AtomUIThemeConsumptionAnalysis=true</c>. Plain applications referencing AtomUI.Core match neither.
@@ -85,7 +85,9 @@ internal sealed class ControlCodeScope
         return false;
     }
 
-    /// <summary>True when <paramref name="node"/> sits inside a type carrying <c>[ControlDesignToken]</c>.</summary>
+    /// <summary>
+    /// True when <paramref name="node" /> sits inside a type carrying <c>[ControlDesignToken]</c>.
+    /// </summary>
     public bool IsInsideTokenDefinition(SemanticModel semanticModel, SyntaxNode node, CancellationToken cancellationToken)
     {
         if (ControlDesignTokenAttribute is null)
@@ -118,7 +120,9 @@ internal sealed class ControlCodeScope
         return symbol.ContainingAssembly?.Name.StartsWith("Avalonia", StringComparison.Ordinal) == true;
     }
 
-    /// <summary>Simple name of an invocation target: <c>M(...)</c>, <c>x.M(...)</c> or <c>x?.M(...)</c>.</summary>
+    /// <summary>
+    /// Simple name of an invocation target: <c>M(...)</c>, <c>x.M(...)</c> or <c>x?.M(...)</c>.
+    /// </summary>
     public static string? GetInvokedName(InvocationExpressionSyntax invocation)
     {
         return invocation.Expression switch
@@ -131,7 +135,9 @@ internal sealed class ControlCodeScope
         };
     }
 
-    /// <summary>Rightmost simple name of an assignment target or argument: <c>X</c>, <c>a.X</c>, <c>this.X</c>.</summary>
+    /// <summary>
+    /// Rightmost simple name of an assignment target or argument: <c>X</c>, <c>a.X</c>, <c>this.X</c>.
+    /// </summary>
     public static string? GetRightmostName(ExpressionSyntax expression)
     {
         return expression switch

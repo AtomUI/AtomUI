@@ -109,10 +109,15 @@ internal sealed class SemanticPartManifestWriter
     }
 
     /// <summary>
-    /// 隐式 <c>root</c> 描述块没有自己的声明可以承载版本：它由生成器加入，而 <c>Since</c> 只存在于
-    /// <c>[SemanticPart]</c> 上。因此 root 的版本取该 Control 已声明 Part 中最早的发布版本——root 随这个
-    /// Control 的第一个 Part 一起引入。不得硬编码版本线或具体版本，否则会与 Part 声明不一致。
+    /// The implicit <c>root</c> descriptor has no declaration of its own to carry a version: the generator adds it,
+    /// and <c>Since</c> exists only on <c>[SemanticPart]</c>. The version of the root is therefore the earliest
+    /// release version among the parts that the control has declared, because the root was introduced together with
+    /// the first part of the control. The version must not be hard-coded, or it would disagree with the part
+    /// declarations.
     /// </summary>
+    /// <param name="control">
+    /// The control whose declared parts are searched.
+    /// </param>
     private static string ResolveRootSince(SemanticControlDeclaration control)
     {
         return control.Parts
@@ -124,9 +129,14 @@ internal sealed class SemanticPartManifestWriter
     }
 
     /// <summary>
-    /// 把三段式发布版本折叠成可比较的数值，避免按字符串排序把 <c>6.10.0</c> 排在 <c>6.4.0</c> 之前。
-    /// 声明校验已保证格式合法；无法解析时退回该段的最大值，使其排在有效版本之后而不改变主序。
+    /// Folds a release version of up to three segments into a comparable number, so that ordering the versions as
+    /// strings does not put <c>6.10.0</c> before <c>6.4.0</c>. The declaration checks have already guaranteed a valid
+    /// format; a blank version or one that cannot be parsed yields <c>long.MaxValue</c>, so that it sorts after every
+    /// valid version without changing their order.
     /// </summary>
+    /// <param name="since">
+    /// The release version that a part declares, such as <c>6.4.0</c>.
+    /// </param>
     private static long ParseReleaseVersion(string? since)
     {
         if (string.IsNullOrWhiteSpace(since))

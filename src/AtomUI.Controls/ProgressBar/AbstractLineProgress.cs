@@ -35,6 +35,12 @@ internal readonly struct SizeTypeThresholdValue
     internal double InnerStateValue { get; }
 }
 
+/// <summary>
+/// Base class of the line progress bars and the common root of
+/// <see cref="AbstractGeneralProgressBar" /> and <see cref="AbstractGeneralStepsProgressBar" />. It owns the
+/// orientation, the fill ratio, the size of the progress info area and the subscription to the size presets
+/// that the control theme provides.
+/// </summary>
 [PseudoClasses(ProgressBarPseudoClass.Vertical, ProgressBarPseudoClass.Horizontal)]
 public abstract class AbstractLineProgress : AbstractProgressBar
 {
@@ -46,7 +52,9 @@ public abstract class AbstractLineProgress : AbstractProgressBar
         AvaloniaProperty.Register<AbstractLineProgress, Orientation>(nameof(Orientation));
 
     /// <summary>
-    /// Gets or sets the orientation of the <see cref="ProgressBar" />.
+    /// Gets or sets whether the bar runs horizontally or vertically; horizontal is the default. The value selects
+    /// the <c>vertical</c> or <c>horizontal</c> pseudo class, and the explicit height of a horizontal bar or width
+    /// of a vertical bar determines the size type.
     /// </summary>
     public Orientation Orientation
     {
@@ -76,8 +84,9 @@ public abstract class AbstractLineProgress : AbstractProgressBar
         AvaloniaProperty.Register<AbstractLineProgress, IBrush?>(nameof(PercentageLabelColor));
 
     /// <summary>
-    /// 填充比例（0–1），随 <see cref="AbstractProgressBar.Percentage"/> 写入。只影响绘制与填充部件的排布，
-    /// 不使测量失效，主题可以直接对它设置过渡。
+    /// Fill ratio from 0 to 1, updated whenever <see cref="AbstractProgressBar.Percentage" /> changes. It only
+    /// affects rendering and the arrangement of the fill part and does not invalidate measure, so a control theme
+    /// can transition it directly.
     /// </summary>
     internal static readonly StyledProperty<double> IndicatorRatioProperty =
         AvaloniaProperty.Register<AbstractLineProgress, double>(nameof(IndicatorRatio));
@@ -105,18 +114,33 @@ public abstract class AbstractLineProgress : AbstractProgressBar
         set => SetValue(LineExtraInfoMarginProperty, value);
     }
 
+    /// <summary>
+    /// The side length of the status icon of the bar, in DIPs. The theme of the derived control sets it from its
+    /// Token and projects it to the width of the status icon in the template. The control reserves a square of this
+    /// size for the icon in the progress info area and takes it as the least height of that area.
+    /// </summary>
     internal double LineInfoIconSize
     {
         get => GetValue(LineInfoIconSizeProperty);
         set => SetValue(LineInfoIconSizeProperty, value);
     }
 
+    /// <summary>
+    /// Selects which size presets the control reads from Tokens: the font size presets alone, together with the
+    /// stroke presets, or together with the step presets; <see cref="LineSizeTokenMode.None" /> reads none, so
+    /// every preset keeps its fallback value. The theme of the derived control sets it. The subscription starts
+    /// when the control joins a logical tree and when the value changes there, and ends when it leaves the tree.
+    /// </summary>
     internal LineSizeTokenMode LineSizeTokenResourceMode
     {
         get => GetValue(LineSizeTokenResourceModeProperty);
         set => SetValue(LineSizeTokenResourceModeProperty, value);
     }
 
+    /// <summary>
+    /// The brush of the percentage text. The theme binds the foreground of the text to it. This class does not set
+    /// the value.
+    /// </summary>
     internal IBrush? PercentageLabelColor
     {
         get => GetValue(PercentageLabelColorProperty);
@@ -129,12 +153,22 @@ public abstract class AbstractLineProgress : AbstractProgressBar
         set => SetValue(IndicatorRatioProperty, value);
     }
 
+    /// <summary>
+    /// A minimum width of the control computed from the size of its text at runtime; the derived control sets it.
+    /// The theme projects it to <c>MinWidth</c> with a Setter, so a local <c>MinWidth</c> or an application Style
+    /// takes precedence over this fallback.
+    /// </summary>
     internal double FallbackMinWidth
     {
         get => GetValue(FallbackMinWidthProperty);
         set => SetValue(FallbackMinWidthProperty, value);
     }
 
+    /// <summary>
+    /// A minimum height of the control computed from the size of its text at runtime; the derived control sets it.
+    /// The theme projects it to <c>MinHeight</c> with a Setter, so a local <c>MinHeight</c> or an application Style
+    /// takes precedence over this fallback.
+    /// </summary>
     internal double FallbackMinHeight
     {
         get => GetValue(FallbackMinHeightProperty);
@@ -153,6 +187,14 @@ public abstract class AbstractLineProgress : AbstractProgressBar
     private double? _resourcePadding;
     private double? _resourceMargin;
 
+    /// <summary>
+    /// Creates the Token set that holds the font size presets of the line followed by the own Tokens of the
+    /// derived control. <see cref="UpdateLineSizeTokenSubscription" /> calls it when
+    /// <see cref="LineSizeTokenResourceMode" /> changes to a mode other than <c>None</c>, and the control owns and
+    /// disposes the returned set. The base member returns <see langword="null" />, which makes every preset keep
+    /// its fallback value. An override returns the set built by <see cref="CreateLineSizeTokenSetFromKeys" />,
+    /// whose first <see cref="LineFontPresetCount" /> slots hold the presets.
+    /// </summary>
     private protected virtual OwnerTokenSet? CreateLineSizeTokenSet() => null;
 
     private protected OwnerTokenSet CreateLineSizeTokenSetFromKeys(ReadOnlySpan<object> ownKeys)
@@ -223,6 +265,13 @@ public abstract class AbstractLineProgress : AbstractProgressBar
         }
     }
 
+    /// <summary>
+    /// Called when a value of the line-size Token set changes, after the font size presets were read again.
+    /// <c>fontPresetsChanged</c> is <see langword="true" /> when the pair of preset font sizes changed; the base
+    /// member then calls <c>NotifyLineMetricsChanged</c>, but only while the control is attached to a visual
+    /// tree. An override that reads own Tokens from the set calls the base member with <see langword="true" />
+    /// also when its own change affects the line metrics.
+    /// </summary>
     private protected virtual void OnLineSizeTokensChanged(bool fontPresetsChanged)
     {
         if (fontPresetsChanged && this.IsAttachedToVisualTree())
@@ -237,7 +286,10 @@ public abstract class AbstractLineProgress : AbstractProgressBar
         return preset > 0 ? preset : FontSize;
     }
 
-    /// <summary>线厚度三档查询（Large / Middle / Small）；无主题宿主回退 antd 8/6/4。</summary>
+    /// <summary>
+    /// Returns the built-in Ant Design line thickness of the bar for a size type, which is 8 for large, 6 for middle
+    /// and 4 for small.
+    /// </summary>
     private protected virtual double QueryLineStrokeThickness(SizeType sizeType) => sizeType switch
     {
         SizeType.Large => LARGE_STROKE_THICKNESS,
@@ -251,7 +303,15 @@ public abstract class AbstractLineProgress : AbstractProgressBar
     private protected SizeTypeThresholdValue _middleSizeTypeThresholdValue;
     private protected SizeTypeThresholdValue _smallSizeTypeThresholdValue;
     private protected bool _sizeTypeThresholdValuesInitialized;
+    /// <summary>
+    /// Size of the progress info area of the bar: the measured custom info content, the status icon box, or the
+    /// percentage text. It holds <see cref="Size.Infinity" /> until it is first calculated.
+    /// </summary>
     protected Size _extraInfoSize = Size.Infinity;
+    /// <summary>
+    /// Bounds of the groove (track) of the bar, relative to the top-left corner of the control. It is empty until
+    /// a derived control assigns it, and the derived controls read it to place the indicator.
+    /// </summary>
     protected Rect _grooveRect;
 
     static AbstractLineProgress()
@@ -262,7 +322,15 @@ public abstract class AbstractLineProgress : AbstractProgressBar
             LineInfoIconSizeProperty);
     }
 
-    // 根据当前的状态进行计算
+    /// <summary>
+    /// Calculates the size of the progress info area from the current state: the desired size of the custom info
+    /// content presenter when custom content is set and the template provides the presenter, a square of
+    /// <see cref="LineInfoIconSize" /> when the status is exception or the bar has reached 100 percent,
+    /// and otherwise the size of the percentage text. The result is empty when no progress info is presented.
+    /// </summary>
+    /// <param name="fontSize">
+    /// Font size used to measure the percentage text.
+    /// </param>
     protected virtual Size CalculateExtraInfoSize(double fontSize)
     {
         if (IsProgressInfoPresented)
@@ -274,7 +342,7 @@ public abstract class AbstractLineProgress : AbstractProgressBar
 
             if (Status == ProgressStatus.Exception || MathUtils.AreClose(Percentage, 100))
             {
-                // 只要图标
+                // Only the status icon is shown in this state, not the percentage text.
                 var iconSize = LineInfoIconSize;
                 return new Size(iconSize, iconSize);
             }
@@ -307,6 +375,13 @@ public abstract class AbstractLineProgress : AbstractProgressBar
         PseudoClasses.Set(ProgressBarPseudoClass.Horizontal, Orientation == Orientation.Horizontal);
     }
 
+    /// <summary>
+    /// Extends the property change handling of the base class: mirrors
+    /// <see cref="AbstractProgressBar.Percentage" /> into <see cref="IndicatorRatio" />, rebuilds the size
+    /// Token subscription when <see cref="LineSizeTokenResourceMode" /> changes in a logical tree, and, once
+    /// attached to a visual tree, updates the size type and stroke thickness, the info area size and the
+    /// orientation state in response to the related properties. Derived overrides must call the base member.
+    /// </summary>
     protected override void NotifyPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.NotifyPropertyChanged(change);
@@ -352,9 +427,17 @@ public abstract class AbstractLineProgress : AbstractProgressBar
     }
 
     /// <summary>
-    /// Recomputes the text geometry after a Token-driven metric (icon size, padding, gap, font size) changed, so a theme
-    /// change re-lays the bar out instead of keeping values computed when the template was applied.
+    /// Recalculates the size of the info area and invalidates the measurement and the arrangement, so that a
+    /// change of a Token-driven line metric re-lays the bar out instead of keeping values computed when the
+    /// template was applied.
     /// </summary>
+    /// <remarks>
+    /// The base class calls it only while the control is attached to a visual tree: when the info icon size, the
+    /// bar padding, the info margin or the font size changes, when the status switches to or from
+    /// <see cref="ProgressStatus.Exception" /> while progress info is presented, when a change of the line-size
+    /// Token set changed the preset font sizes, and on attachment to a visual tree whose template supplies the
+    /// progress visuals. Derived overrides must call the base member.
+    /// </remarks>
     private protected virtual void NotifyLineMetricsChanged()
     {
         _extraInfoSize = CalculateExtraInfoSize(FontSize);
@@ -362,6 +445,10 @@ public abstract class AbstractLineProgress : AbstractProgressBar
         InvalidateArrange();
     }
 
+    /// <summary>
+    /// Starts the Token subscription that <see cref="LineSizeTokenResourceMode" /> selects; it exists only while
+    /// the control is in a logical tree. Derived overrides must call the base member.
+    /// </summary>
     protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
     {
         base.OnAttachedToLogicalTree(e);
@@ -397,6 +484,11 @@ public abstract class AbstractLineProgress : AbstractProgressBar
         }
     }
 
+    /// <summary>
+    /// Disposes the size Token subscription and clears the values read from it (font presets, bar padding and the
+    /// gap to the info area) and the cached size type thresholds, so that they are resolved again in the tree the
+    /// control is attached to next. Derived overrides must call the base member.
+    /// </summary>
     protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
     {
         _lineSizeTokens?.Dispose();
@@ -409,6 +501,11 @@ public abstract class AbstractLineProgress : AbstractProgressBar
         base.OnDetachedFromLogicalTree(e);
     }
 
+    /// <summary>
+    /// Recalculates the info area size and invalidates the layout when the template supplies the progress visuals,
+    /// because a reused template may have received new scope resources before the control was attached. Derived
+    /// overrides must call the base member.
+    /// </summary>
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
@@ -419,6 +516,11 @@ public abstract class AbstractLineProgress : AbstractProgressBar
         }
     }
 
+    /// <summary>
+    /// Locates the exception and success icon presenters of the applied template, sets the default completed icons
+    /// when the icon properties are <see langword="null" />, and refreshes the size type, the info area size and
+    /// the orientation state from the current property values. Derived overrides must call the base member.
+    /// </summary>
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
@@ -441,6 +543,10 @@ public abstract class AbstractLineProgress : AbstractProgressBar
         }
     }
 
+    /// <summary>
+    /// Recalculates the info area size and invalidates the layout after custom progress info content is set or
+    /// cleared. Derived overrides must call the base member.
+    /// </summary>
     protected override void NotifyProgressInfoContentChanged()
     {
         base.NotifyProgressInfoContentChanged();
@@ -449,6 +555,10 @@ public abstract class AbstractLineProgress : AbstractProgressBar
         InvalidateArrange();
     }
 
+    /// <summary>
+    /// Measures the control. When custom progress info content is set, the info area size is refreshed first, so
+    /// that the layout uses the current size of that content.
+    /// </summary>
     protected override Size MeasureOverride(Size availableSize)
     {
         // Custom info content can change size after it was set; the info area follows its current desired size.
@@ -460,11 +570,25 @@ public abstract class AbstractLineProgress : AbstractProgressBar
         return base.MeasureOverride(availableSize);
     }
 
+    /// <summary>
+    /// Recalculates the size of the info area, so that the layout follows the current size of custom progress
+    /// info content.
+    /// </summary>
+    /// <remarks>
+    /// The base class calls it from <see cref="MeasureOverride" /> before measuring, but only while
+    /// <see cref="AbstractProgressBar.ProgressInfoContent" /> is set, because custom content can change its
+    /// size after it was set. An override must call the base member.
+    /// </remarks>
     private protected virtual void RefreshProgressInfoContentSize()
     {
         _extraInfoSize = CalculateExtraInfoSize(FontSize);
     }
 
+    /// <summary>
+    /// Updates the <c>vertical</c> and <c>horizontal</c> pseudo classes from <see cref="Orientation" />. It is called
+    /// after a template is applied and when <see cref="Orientation" /> changes while the control is attached to a
+    /// visual tree. Derived overrides must call the base member.
+    /// </summary>
     protected virtual void NotifyOrientationChanged()
     {
         UpdatePseudoClasses();
@@ -472,6 +596,12 @@ public abstract class AbstractLineProgress : AbstractProgressBar
 
     private bool _lastCompletedStatus;
 
+    /// <summary>
+    /// Recalculates the info area size when the bar switches between complete and incomplete, because the complete
+    /// state shows a status icon instead of the percentage text. The base class calls it when the value is updated
+    /// while the percentage label is shown, and when the width or height changes in a visual tree. Derived
+    /// overrides must call the base member.
+    /// </summary>
     protected override void NotifyHandleExtraInfoVisibility()
     {
         base.NotifyHandleExtraInfoVisibility();

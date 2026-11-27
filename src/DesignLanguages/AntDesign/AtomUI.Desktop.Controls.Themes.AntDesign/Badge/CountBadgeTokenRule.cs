@@ -5,7 +5,9 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls.Themes.AntDesign;
 
-/// <summary>The AntDesign view of <see cref="CountBadgeToken"/>.</summary>
+/// <summary>
+/// The AntDesign view of <see cref="CountBadgeToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class CountBadgeTokenRule : IControlTokenRule<AntDesignToken, CountBadgeToken>
 {

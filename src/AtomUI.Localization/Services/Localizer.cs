@@ -1,5 +1,15 @@
 namespace AtomUI.Localization;
 
+/// <summary>
+/// Lookup of translated text behind <see cref="ILocalizer" />: it resolves an enum key in the current language
+/// and formats it in the formatting culture of that language. AtomUI.Core exposes it as the localizer of the
+/// application scope.
+/// </summary>
+/// <remarks>
+/// <c>Format</c> returns the text unchanged when the unit is not declared as a formatted unit. When formatting
+/// fails, for example because an argument does not fit a placeholder, a <see cref="LanguageCatalogException" />
+/// that names the catalog, the unit and the language is thrown instead of the <see cref="FormatException" />.
+/// </remarks>
 internal sealed class Localizer : ILocalizer
 {
     private readonly LanguageContext _context;

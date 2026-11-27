@@ -133,12 +133,12 @@
                         </Panel>
                     </atom:AddOnDecoratedBox>
 
-                    <!--
-                        弹层不声明 IsOpen 模板绑定：Avalonia 只在弹层打开瞬间读取 IsLightDismissEnabled
-                        创建 light-dismiss 遮罩，而模板充气阶段的绑定求值会在控件抑制遮罩之前就打开弹层，
-                        使钉住（IsPopupPinnedOpen）场景留下一个只拦截输入、无法消除的遮罩层挡住整页交互。
-                        开合改由 ComboBox 以代码接管（OnApplyTemplate / IsDropDownOpen 变更），
-                        与共享 AbstractSelect 的既有约定一致。
+                    <!-- The popup declares no IsOpen template binding. Avalonia reads IsLightDismissEnabled only at the
+                    moment the popup opens to create the light-dismiss mask, while a binding evaluated during
+                    template inflation opens the popup before the control suppresses the mask. A pinned popup
+                    (IsPopupPinnedOpen) would then keep a mask that only intercepts input and never goes away,
+                    blocking the whole page. Opening and closing are handled in code by ComboBox (OnApplyTemplate /
+                    IsDropDownOpen changes), as the shared AbstractSelect already does.
                     -->
                     <atom:Popup Name="PART_Popup"
                                 OpenMotion="{TemplateBinding OpenMotion}"

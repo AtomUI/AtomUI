@@ -20,14 +20,17 @@ internal sealed class DialogWindow : Window, IStyleHost
 
     protected override Type StyleKeyOverride { get; } = typeof(Window);
 
-    // TopLevel 默认把样式宿主父级固定为 Application（IStyleHost.StylingParent => _globalStyles），
-    // owner 实例级 Semantic Style 因此永远进不了独立窗口宿主；窗口模板应用时 ContentPresenter
-    // 还会改写 surface 的继承父，模板之后才挂载的内容/按钮同样走不到 owner 样式链。
-    // 按 Avalonia PopupRoot 的既有范式（PopupRoot: IStyleHost.StylingParent => Parent）把样式
-    // 宿主链交还给逻辑父（owner Dialog），Dialog.Styles 里的 owner 作用域样式与一级嵌套样式
-    // 才能级联到窗口宿主子树。判断的是父级是否生根（窗口 Show 后自身即 ILogicalRoot，
-    // 自身的附加状态不可作依据）：owner 未生根（脱离页面树直接构造 presenter 的场景）时
-    // 退回 Application，保证 ControlTheme 仍可达；已挂载时全局样式经 owner 所在主窗口的链继续可达。
+    // TopLevel fixes the style host parent to Application (IStyleHost.StylingParent => _globalStyles) by default,
+    // so the instance level Semantic Styles of the owner never reach the standalone window host. When the window
+    // template is applied, the ContentPresenter also rewrites the inherited parent of the surface, so content and
+    // buttons attached only after the template cannot reach the owner style chain either.
+    // Following the existing Avalonia PopupRoot pattern (PopupRoot: IStyleHost.StylingParent => Parent), the style
+    // host chain is handed back to the logical parent (the owner Dialog). Only then can the owner scoped styles in
+    // Dialog.Styles and the styles nested one level deep cascade into the window host subtree.
+    // The condition tests whether the parent is rooted. After Show the window is itself an ILogicalRoot, so its own
+    // attachment state cannot be the criterion. When the owner is not rooted (a presenter constructed directly,
+    // detached from the page tree), this falls back to Application so that the ControlTheme stays reachable; when
+    // it is attached, the global styles stay reachable through the chain of the main window that holds the owner.
     IStyleHost? IStyleHost.StylingParent
         => Parent is { } parent && ((ILogical)parent).IsAttachedToLogicalTree
             ? parent

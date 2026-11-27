@@ -26,6 +26,12 @@ using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
 
+/// <summary>
+/// A navigation menu that shows a tree of <see cref="INavMenuNode" /> entries, with optional groups and
+/// dividers. <see cref="Mode" /> selects the layout and how submenus open: in place below the parent in
+/// the inline layout, as popups in the horizontal and vertical layouts. The menu is a single keyboard
+/// stop and draws its own keyboard focus outline.
+/// </summary>
 [PseudoClasses(NavMenuPseudoClass.InlineMode,
     NavMenuPseudoClass.InlineCollapsed,
     NavMenuPseudoClass.HorizontalMode,
@@ -39,6 +45,9 @@ public partial class NavMenu : ItemsControl,
                        IMenuChildSelectable
 {
     #region 公共属性定义
+    /// <summary>
+    /// Identifies the <see cref="SelectedItem" /> property.
+    /// </summary>
     public static readonly DirectProperty<NavMenu, INavMenuNode?> SelectedItemProperty =
         AvaloniaProperty.RegisterDirect<NavMenu, INavMenuNode?>(
             nameof(SelectedItem),
@@ -46,74 +55,139 @@ public partial class NavMenu : ItemsControl,
             (o, v) => o.SelectedItem = v,
             defaultBindingMode: BindingMode.TwoWay, enableDataValidation: true);
     
+    /// <summary>
+    /// Identifies the <see cref="DefaultSelectedPath" /> property.
+    /// </summary>
     public static readonly DirectProperty<NavMenu, TreeNodePath?> DefaultSelectedPathProperty =
         AvaloniaProperty.RegisterDirect<NavMenu, TreeNodePath?>(
             nameof(DefaultSelectedPath),
             o => o.DefaultSelectedPath,
             (o, v) => o.DefaultSelectedPath = v);
     
+    /// <summary>
+    /// Identifies the <see cref="IsMotionEnabled" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<NavMenu>();
     
+    /// <summary>
+    /// Identifies the <see cref="IsAccordionMode" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsAccordionModeProperty =
         AvaloniaProperty.Register<NavMenu, bool>(nameof(IsAccordionMode), false);
     
+    /// <summary>
+    /// Identifies the <see cref="Mode" /> property.
+    /// </summary>
     public static readonly StyledProperty<NavMenuMode> ModeProperty =
         AvaloniaProperty.Register<NavMenu, NavMenuMode>(nameof(Mode), NavMenuMode.Inline);
 
+    /// <summary>
+    /// Identifies the <see cref="IsInlineCollapsed" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsInlineCollapsedProperty =
         AvaloniaProperty.Register<NavMenu, bool>(nameof(IsInlineCollapsed));
 
+    /// <summary>
+    /// Identifies the <see cref="InlineCollapsedWidth" /> property.
+    /// </summary>
     public static readonly StyledProperty<double> InlineCollapsedWidthProperty =
         AvaloniaProperty.Register<NavMenu, double>(nameof(InlineCollapsedWidth));
 
+    /// <summary>
+    /// Identifies the <see cref="IsCollapsedTooltipEnabled" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsCollapsedTooltipEnabledProperty =
         AvaloniaProperty.Register<NavMenu, bool>(nameof(IsCollapsedTooltipEnabled), true);
 
+    /// <summary>
+    /// Identifies the <see cref="CollapsedTooltipPlacement" /> property.
+    /// </summary>
     public static readonly StyledProperty<PlacementMode> CollapsedTooltipPlacementProperty =
         AvaloniaProperty.Register<NavMenu, PlacementMode>(
             nameof(CollapsedTooltipPlacement),
             PlacementMode.Right);
 
+    /// <summary>
+    /// Identifies the <see cref="CollapsedTooltipShowDelay" /> property.
+    /// </summary>
     public static readonly StyledProperty<int> CollapsedTooltipShowDelayProperty =
         AvaloniaProperty.Register<NavMenu, int>(nameof(CollapsedTooltipShowDelay), 400);
 
+    /// <summary>
+    /// Identifies the <see cref="CollapsedTooltipBetweenShowDelay" /> property.
+    /// </summary>
     public static readonly StyledProperty<int> CollapsedTooltipBetweenShowDelayProperty =
         AvaloniaProperty.Register<NavMenu, int>(nameof(CollapsedTooltipBetweenShowDelay), 100);
     
+    /// <summary>
+    /// Identifies the <see cref="IsDarkStyle" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsDarkStyleProperty =
         AvaloniaProperty.Register<NavMenu, bool>(nameof(IsDarkStyle), false);
     
+    /// <summary>
+    /// Identifies the <see cref="IsItemBackgroundEnabled" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsItemBackgroundEnabledProperty =
         AvaloniaProperty.Register<NavMenu, bool>(nameof(IsItemBackgroundEnabled), true);
 
+    /// <summary>
+    /// Identifies the <see cref="Header" /> property.
+    /// </summary>
     public static readonly StyledProperty<object?> HeaderProperty =
         AvaloniaProperty.Register<NavMenu, object?>(nameof(Header));
 
+    /// <summary>
+    /// Identifies the <see cref="HeaderTemplate" /> property.
+    /// </summary>
     public static readonly StyledProperty<IDataTemplate?> HeaderTemplateProperty =
         AvaloniaProperty.Register<NavMenu, IDataTemplate?>(nameof(HeaderTemplate));
 
+    /// <summary>
+    /// Identifies the <see cref="Footer" /> property.
+    /// </summary>
     public static readonly StyledProperty<object?> FooterProperty =
         AvaloniaProperty.Register<NavMenu, object?>(nameof(Footer));
 
+    /// <summary>
+    /// Identifies the <see cref="FooterTemplate" /> property.
+    /// </summary>
     public static readonly StyledProperty<IDataTemplate?> FooterTemplateProperty =
         AvaloniaProperty.Register<NavMenu, IDataTemplate?>(nameof(FooterTemplate));
 
+    /// <summary>
+    /// Identifies the <see cref="ItemSpacing" /> property.
+    /// </summary>
     public static readonly StyledProperty<double> ItemSpacingProperty =
         AvaloniaProperty.Register<NavMenu, double>(nameof(ItemSpacing), inherits: true);
 
+    /// <summary>
+    /// Identifies the <see cref="DefaultOpenPaths" /> property.
+    /// </summary>
     public static readonly DirectProperty<NavMenu, IList<TreeNodePath>?> DefaultOpenPathsProperty =
         AvaloniaProperty.RegisterDirect<NavMenu, IList<TreeNodePath>?>(
             nameof(DefaultOpenPaths),
             o => o.DefaultOpenPaths,
             (o, v) => o.DefaultOpenPaths = v);
     
+    /// <summary>
+    /// Identifies the <see cref="ShouldUseOverlayPopup" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> ShouldUseOverlayPopupProperty = 
         AvaloniaProperty.Register<NavMenu, bool>(nameof (ShouldUseOverlayPopup));
     
     private INavMenuNode? _selectedItem;
     private int _selectedItemRevision;
 
+    /// <summary>
+    /// Gets or sets the selected node, or <see langword="null" /> to clear the selection. Setting a node
+    /// selects its item and marks the items on its path once they are built.
+    /// </summary>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// The node is set while <c>Items</c> is not empty and the root of its <c>ParentNode</c> chain is not a
+    /// direct entry of <c>Items</c>.
+    /// </exception>
     public INavMenuNode? SelectedItem
     {
         get => _selectedItem;
@@ -122,6 +196,12 @@ public partial class NavMenu : ItemsControl,
     
     private IList<TreeNodePath>? _defaultOpenPaths;
     
+    /// <summary>
+    /// Gets or sets the paths, matched against the <c>ItemKey</c> of the items, whose submenus are open after
+    /// the menu loads. They are applied once, on the first load; a path whose items are not built yet is
+    /// retried on the following layout passes. An inline menu that is collapsed at that time keeps the paths
+    /// and applies them when it expands.
+    /// </summary>
     public IList<TreeNodePath>? DefaultOpenPaths
     {
         get => _defaultOpenPaths;
@@ -130,108 +210,191 @@ public partial class NavMenu : ItemsControl,
     
     private TreeNodePath? _defaultSelectedPath;
     
+    /// <summary>
+    /// Gets or sets the path of the node that is selected when the menu loads while
+    /// <see cref="SelectedItem" /> is <see langword="null" />. The segments of the path are matched against
+    /// the <c>ItemKey</c> of the items. The path is applied again on every load until a node is selected.
+    /// </summary>
     public TreeNodePath? DefaultSelectedPath
     {
         get => _defaultSelectedPath;
         set => SetAndRaise(DefaultSelectedPathProperty, ref _defaultSelectedPath, value);
     }
     
+    /// <summary>
+    /// Gets or sets whether the menu and its items play their motion, such as the expand and collapse of
+    /// submenus and the width change when an inline menu collapses or expands. The theme supplies the
+    /// <c>EnableMotion</c> token when no value is set. Setting it to <see langword="false" /> ends a running
+    /// width motion.
+    /// </summary>
     public bool IsMotionEnabled
     {
         get => GetValue(IsMotionEnabledProperty);
         set => SetValue(IsMotionEnabledProperty, value);
     }
     
+    /// <summary>
+    /// Gets or sets whether at most one top-level submenu is open: opening one closes the others. It applies
+    /// in the horizontal and vertical layouts, also in a collapsed inline menu, and turning it on closes the
+    /// submenus that are open.
+    /// </summary>
     public bool IsAccordionMode
     {
         get => GetValue(IsAccordionModeProperty);
         set => SetValue(IsAccordionModeProperty, value);
     }
     
+    /// <summary>
+    /// Gets or sets the layout of the menu and the way its submenus open. The default is
+    /// <see cref="NavMenuMode.Inline" />. Changing it closes the open submenus and keeps the selection.
+    /// </summary>
     public NavMenuMode Mode
     {
         get => GetValue(ModeProperty);
         set => SetValue(ModeProperty, value);
     }
 
+    /// <summary>
+    /// Gets or sets whether an inline menu shows only its top-level items. It takes effect only while
+    /// <see cref="Mode" /> is <see cref="NavMenuMode.Inline" />: the menu then behaves as a vertical menu
+    /// whose submenus open as popups, takes <see cref="InlineCollapsedWidth" /> in place of its own width and
+    /// hides the footer. Collapsing closes the open submenus and expanding reopens them; the selection is kept.
+    /// </summary>
     public bool IsInlineCollapsed
     {
         get => GetValue(IsInlineCollapsedProperty);
         set => SetValue(IsInlineCollapsedProperty, value);
     }
 
+    /// <summary>
+    /// Gets or sets the width of the menu while <see cref="IsInlineCollapsed" /> is in effect. It then
+    /// replaces the <c>Width</c> of the menu and caps <c>MinWidth</c>; a negative or non-finite value counts
+    /// as 0. The theme supplies the <c>InlineCollapsedWidth</c> token when no value is set.
+    /// </summary>
     public double InlineCollapsedWidth
     {
         get => GetValue(InlineCollapsedWidthProperty);
         set => SetValue(InlineCollapsedWidthProperty, value);
     }
 
+    /// <summary>
+    /// Gets or sets whether a top-level item without a submenu shows a tooltip while an inline menu is
+    /// collapsed. The tooltip shows the tooltip of the item or else its header; an item that disables its
+    /// own tooltip shows none.
+    /// </summary>
     public bool IsCollapsedTooltipEnabled
     {
         get => GetValue(IsCollapsedTooltipEnabledProperty);
         set => SetValue(IsCollapsedTooltipEnabledProperty, value);
     }
 
+    /// <summary>
+    /// Gets or sets where the tooltip of an item is placed relative to the item while an inline menu is
+    /// collapsed.
+    /// </summary>
     public PlacementMode CollapsedTooltipPlacement
     {
         get => GetValue(CollapsedTooltipPlacementProperty);
         set => SetValue(CollapsedTooltipPlacementProperty, value);
     }
 
+    /// <summary>
+    /// Gets or sets the time, in milliseconds, that the pointer rests on an item of a collapsed inline menu
+    /// before its tooltip appears.
+    /// </summary>
     public int CollapsedTooltipShowDelay
     {
         get => GetValue(CollapsedTooltipShowDelayProperty);
         set => SetValue(CollapsedTooltipShowDelayProperty, value);
     }
 
+    /// <summary>
+    /// Gets or sets the time, in milliseconds, between two tooltips being shown in which the second tooltip
+    /// appears without waiting for <see cref="CollapsedTooltipShowDelay" />. It applies to the tooltips of a
+    /// collapsed inline menu.
+    /// </summary>
     public int CollapsedTooltipBetweenShowDelay
     {
         get => GetValue(CollapsedTooltipBetweenShowDelayProperty);
         set => SetValue(CollapsedTooltipBetweenShowDelayProperty, value);
     }
     
+    /// <summary>
+    /// Gets or sets whether the menu, its items and its submenu popups are painted with the dark
+    /// <c>NavMenuToken</c> colors, such as <c>DarkMenuBg</c>, <c>DarkItemColor</c> and
+    /// <c>DarkMenuPopupBg</c>, instead of the light ones.
+    /// </summary>
     public bool IsDarkStyle
     {
         get => GetValue(IsDarkStyleProperty);
         set => SetValue(IsDarkStyleProperty, value);
     }
     
+    /// <summary>
+    /// Gets or sets whether the child items of an item that expands in place in an inline menu are drawn on
+    /// their own background, <c>SubMenuItemBg</c>. When it is <see langword="false" /> that area is
+    /// transparent.
+    /// </summary>
     public bool IsItemBackgroundEnabled
     {
         get => GetValue(IsItemBackgroundEnabledProperty);
         set => SetValue(IsItemBackgroundEnabledProperty, value);
     }
 
+    /// <summary>
+    /// Gets or sets the content shown above the items, or to their left in the horizontal layout. It is
+    /// hidden while the value is <see langword="null" />.
+    /// </summary>
     public object? Header
     {
         get => GetValue(HeaderProperty);
         set => SetValue(HeaderProperty, value);
     }
 
+    /// <summary>
+    /// Gets or sets the template used to display <see cref="Header" />.
+    /// </summary>
     public IDataTemplate? HeaderTemplate
     {
         get => GetValue(HeaderTemplateProperty);
         set => SetValue(HeaderTemplateProperty, value);
     }
 
+    /// <summary>
+    /// Gets or sets the content shown below the items, or to their right in the horizontal layout. It is
+    /// hidden while the value is <see langword="null" />, and in an inline menu while the menu is collapsed.
+    /// </summary>
     public object? Footer
     {
         get => GetValue(FooterProperty);
         set => SetValue(FooterProperty, value);
     }
 
+    /// <summary>
+    /// Gets or sets the template used to display <see cref="Footer" />.
+    /// </summary>
     public IDataTemplate? FooterTemplate
     {
         get => GetValue(FooterTemplateProperty);
         set => SetValue(FooterTemplateProperty, value);
     }
 
+    /// <summary>
+    /// Gets or sets the gap between the top-level items and between the items inside each submenu and group.
+    /// The inline and vertical layouts take the value from the <c>VerticalItemsPanelSpacing</c> token when no
+    /// value is set; the horizontal layout has no gap unless a value is set.
+    /// </summary>
     public double ItemSpacing
     {
         get => GetValue(ItemSpacingProperty);
         set => SetValue(ItemSpacingProperty, value);
     }
 
+    /// <summary>
+    /// Gets or sets whether the submenus open in the overlay layer of the window instead of as native popup
+    /// windows. When it is <see langword="true" />, a submenu can open only where an overlay layer is
+    /// available. The theme sets it to <see langword="true" />; the default is <see langword="false" />.
+    /// </summary>
     public bool ShouldUseOverlayPopup
     {
         get => GetValue(ShouldUseOverlayPopupProperty);
@@ -241,18 +404,34 @@ public partial class NavMenu : ItemsControl,
     
     #region 公共事件定义
 
+    /// <summary>
+    /// Identifies the <see cref="NavMenuItemClick" /> routed event.
+    /// </summary>
     public static readonly RoutedEvent<NavMenuItemClickEventArgs> NavMenuItemClickEvent =
         RoutedEvent.Register<NavMenu, NavMenuItemClickEventArgs>(nameof(NavMenuItemClick), RoutingStrategies.Bubble);
     
+    /// <summary>
+    /// Identifies the <see cref="NavMenuNodeSelected" /> routed event.
+    /// </summary>
     public static readonly RoutedEvent<NavMenuNodeSelectedEventArgs> NavMenuNodeSelectedEvent =
         RoutedEvent.Register<NavMenu, NavMenuNodeSelectedEventArgs>(nameof(NavMenuNodeSelected), RoutingStrategies.Bubble);
 
+    /// <summary>
+    /// Raised after an activated item was selected, which follows the item's own <c>Click</c> event and
+    /// <see cref="NavMenuNodeSelected" />. Activating an item so that its submenu opens does not raise it.
+    /// </summary>
     public event EventHandler<NavMenuItemClickEventArgs>? NavMenuItemClick
     {
         add => AddHandler(NavMenuItemClickEvent, value);
         remove => RemoveHandler(NavMenuItemClickEvent, value);
     }
     
+    /// <summary>
+    /// Raised after the selection is committed: <see cref="SelectedItem" /> holds the node and the items on
+    /// its path are marked. It is raised for a node that the user activated, that was assigned to
+    /// <see cref="SelectedItem" /> or that was reached through <see cref="DefaultSelectedPath" />, and not
+    /// when <see cref="SelectedItem" /> does not hold the node afterwards.
+    /// </summary>
     public event EventHandler<NavMenuNodeSelectedEventArgs>? NavMenuNodeSelected
     {
         add => AddHandler(NavMenuNodeSelectedEvent, value);
@@ -286,9 +465,7 @@ public partial class NavMenu : ItemsControl,
             inherits: true);
 
     /// <summary>
-    /// Gets or sets a value indicating whether the submenu popup remains open without requiring
-    /// user interaction. Gallery semantic previews pin the popup open this way so the popup
-    /// parts can be inspected and highlighted.
+    /// Identifies the <see cref="IsPopupPinnedOpen" /> property.
     /// </summary>
     public static readonly StyledProperty<bool> IsPopupPinnedOpenProperty =
         Popup.IsPopupPinnedOpenProperty.AddOwner<NavMenu>();
@@ -391,9 +568,9 @@ public partial class NavMenu : ItemsControl,
         UpdatePseudoClasses();
         Items.CollectionChanged += HandleItemsViewCollectionChanged;
 
-        // 阻止弹出式子菜单内的元素把 BringIntoView 冒泡到外层 ScrollViewer，避免
-        // 再次打开选中菜单项时触发页面滚动。Inline 模式下子菜单在视觉树内，
-        // 让 NavMenu 自己的 ScrollViewer 正常响应即可。
+        // Keep elements inside a submenu popup from bubbling BringIntoView to an outer ScrollViewer, which
+        // would scroll the page again when the selected item opens. In Inline mode the submenus are in the
+        // visual tree, so the ScrollViewer of this NavMenu still answers the request.
         AddHandler(RequestBringIntoViewEvent, (_, e) =>
         {
             if (EffectiveMode == NavMenuMode.Inline || e.TargetObject == this)
@@ -405,17 +582,41 @@ public partial class NavMenu : ItemsControl,
         }, handledEventsToo: true);
     }
     
+    /// <summary>
+    /// Called when the <c>Items</c> collection of the menu changes; the constructor subscribes it once. It passes the
+    /// change to the entry ownership coordinator, which validates the affected entries, and, while
+    /// <see cref="IsPopupPinnedOpen" /> is set, queues a reconciliation of the pinned popup, because the change can
+    /// alter the pinnable targets or invalidate the pinned node. Call the base implementation from an override,
+    /// otherwise neither step runs.
+    /// </summary>
+    /// <param name="sender">
+    /// The <c>Items</c> collection that changed.
+    /// </param>
+    /// <param name="e">
+    /// Describes the change.
+    /// </param>
     private protected virtual void HandleItemsViewCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
         _entryOwnershipCoordinator.Synchronize(e);
         if (IsPopupPinnedOpen)
         {
-            // 条目图变化会改变可钉住目标（例如声明式钉住先于条目填充写入）或使当前钉住节点失效。
-            // 此刻容器与节点的映射尚未收敛，交由协调器合并调度，在 ItemsPresenter 收敛后再求值。
+            // A change of the entry graph can change the pinnable targets, for example when a declarative pin is
+            // written before the entries are filled in, or can invalidate the pinned node. The container-to-node
+            // mapping has not converged yet, so the coordinator schedules the evaluation for after the
+            // ItemsPresenter has settled.
             _pinnedOpenCoordinator.QueueReconcile(this);
         }
     }
     
+    /// <summary>
+    /// Calls the base method, then keeps the derived state in step with the changed property: it mirrors
+    /// <see cref="ItemSpacing" /> to the items, refreshes the pseudo-classes after <see cref="Mode" />,
+    /// <see cref="IsInlineCollapsed" /> or <see cref="IsDarkStyle" /> changes, selects the item of a set
+    /// <see cref="SelectedItem" /> and clears the selection for <see langword="null" />, closes every
+    /// top-level submenu when <see cref="IsAccordionMode" /> turns on, applies or releases the pinning
+    /// after <see cref="IsPopupPinnedOpen" /> changes, and ends the width motion of a collapse or expand
+    /// when <see cref="IsMotionEnabled" /> turns off. A derived override must call this method.
+    /// </summary>
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
@@ -478,8 +679,8 @@ public partial class NavMenu : ItemsControl,
             }
             else
             {
-                // 取消钉住只解除关闭拦截：已打开的子菜单保持打开，只有该属性重新为 true 时
-                // 才在容器 prepare / attach 时把请求补回来。
+                // Unpinning only lifts the close interception: submenus that are open stay open. The requests
+                // are added back at container prepare or attach only once this property is true again.
                 _pinnedOpenCoordinator.Release();
             }
         }
@@ -514,8 +715,8 @@ public partial class NavMenu : ItemsControl,
             ExpandInlineMode();
         }
 
-        // inline collapsed 会把 EffectiveMode 在 Inline 与 Vertical 之间切换，钉住请求必须
-        // 跟随该有效模式收敛：折叠时补上钉住，展开回 Inline 时释放。
+        // Collapsing switches EffectiveMode between Inline and Vertical, so the pin requests must follow
+        // the effective mode: they are applied again when collapsed and released on expanding to Inline.
         _pinnedOpenCoordinator.Reconcile(this);
     }
 
@@ -528,6 +729,12 @@ public partial class NavMenu : ItemsControl,
         UpdatePseudoClasses();
     }
 
+    /// <summary>
+    /// Calls the base method, then marks the menu as attached, applies the width constraints of a collapsed
+    /// inline menu, mounts the interaction handler of the effective mode and reconciles the pinned-open
+    /// submenus.
+    /// A derived override must call this method.
+    /// </summary>
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
@@ -537,6 +744,12 @@ public partial class NavMenu : ItemsControl,
         _pinnedOpenCoordinator.Reconcile(this);
     }
 
+    /// <summary>
+    /// Releases a pinned-open popup, calls the base method, then drops the state that needs the menu to be in
+    /// a visual tree: the interaction handler, the root focus outline and the width motion of a collapsing or
+    /// expanding inline menu.
+    /// A derived override must call this method.
+    /// </summary>
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         if (IsPopupPinnedOpen)
@@ -554,6 +767,12 @@ public partial class NavMenu : ItemsControl,
         InteractionHandler = null;
     }
 
+    /// <summary>
+    /// Calls the base method, then keeps the menu the single keyboard stop: when Tab or directional
+    /// navigation gives focus to one of its items, focus is taken back to the menu root. For Tab and
+    /// directional navigation the keyboard focus becomes visible. The root focus outline is refreshed.
+    /// A derived override must call this method.
+    /// </summary>
     protected override void OnGotFocus(FocusChangedEventArgs e)
     {
         base.OnGotFocus(e);
@@ -575,6 +794,11 @@ public partial class NavMenu : ItemsControl,
         UpdateRootFocusOutline();
     }
 
+    /// <summary>
+    /// Calls the base method, then hides the keyboard focus indication when focus moves to an element outside
+    /// the menu and its submenu popups, and refreshes the root focus outline.
+    /// A derived override must call this method.
+    /// </summary>
     protected override void OnLostFocus(FocusChangedEventArgs e)
     {
         base.OnLostFocus(e);
@@ -615,22 +839,40 @@ public partial class NavMenu : ItemsControl,
         return element is ILogical logical && (ReferenceEquals(logical, this) || this.IsLogicalAncestorOf(logical));
     }
 
+    /// <summary>
+    /// Returns <see langword="true" /> for every entry and sets <paramref name="recycleKey" /> to the key of
+    /// its kind, so that containers are recycled only within their kind. An entry of another type throws
+    /// <see cref="InvalidOperationException" />.
+    /// </summary>
     protected override bool NeedsContainerOverride(object? item, int index, out object? recycleKey)
     {
         return NavMenuEntryContainerCoordinator.NeedsContainer(this, item, index, out recycleKey);
     }
     
+    /// <summary>
+    /// Creates the container for an entry from its recycle key: a <see cref="NavMenuItem" /> for a node, a
+    /// <see cref="NavMenuGroupItem" /> for a group and a <see cref="NavMenuDividerItem" /> for a divider.
+    /// </summary>
     protected override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey)
     {
         return NavMenuEntryContainerCoordinator.CreateContainer(item, index, recycleKey);
     }
     
+    /// <summary>
+    /// Calls the base method, then gives a generated container its entry context and binds it to its entry,
+    /// such as the node, the header and the header template of an item.
+    /// </summary>
     protected override void PrepareContainerForItemOverride(Control container, object? item, int index)
     {
         base.PrepareContainerForItemOverride(container, item, index);
         NavMenuEntryContainerCoordinator.PrepareContainer(this, container, item, index);
     }
 
+    /// <summary>
+    /// Removes the state that a generated container borrowed from its entry before the base method recycles
+    /// it: the node bindings and the entry context, and for an item also its selection and pinning
+    /// bookkeeping and its keyboard and pointer states.
+    /// </summary>
     protected override void ClearContainerForItemOverride(Control container)
     {
         NavMenuEntryContainerCoordinator.ClearContainer(this, container);
@@ -647,10 +889,11 @@ public partial class NavMenu : ItemsControl,
     }
 
     /// <summary>
-    /// 容器 prepare 阶段的钉住不变量。钉住请求以节点为键保存在
-    /// <see cref="NavMenuPinnedOpenCoordinator"/> 中，因此声明式写法（AXAML 在容器生成前写入
-    /// <c>IsPopupPinnedOpen="True"</c>）以及 Mode 切换后的容器重建，都会在容器实现时按请求补齐，
-    /// 与选择状态走同一容器时序契约。
+    /// Applies the pinning invariant of the container prepare stage. Pin requests are stored by node in
+    /// <see cref="NavMenuPinnedOpenCoordinator" />, so a pin that AXAML sets before any container exists
+    /// (<c>IsPopupPinnedOpen="True"</c>) and the container rebuild after a <see cref="Mode" /> change are
+    /// both completed from those requests when the container is realized, under the same container timing
+    /// contract as the selection state.
     /// </summary>
     internal void ApplyPinnedOpenStateToPreparedContainer(NavMenuItem menuItem)
     {
@@ -664,7 +907,7 @@ public partial class NavMenu : ItemsControl,
         InteractionHandler?.Forget(menuItem);
         if (IsPopupPinnedOpen)
         {
-            // 容器移除后钉住路径可能整体失效，条目图收敛后再求值一次。
+            // Removing a container can invalidate the whole pinned path. Evaluate again once the entries converge.
             _pinnedOpenCoordinator.QueueReconcile(this);
         }
     }
@@ -789,6 +1032,12 @@ public partial class NavMenu : ItemsControl,
         PseudoClasses.Set(NavMenuPseudoClass.LightStyle, !IsDarkStyle);
     }
     
+    /// <summary>
+    /// Called when a <see cref="NavMenuItem" /> in this menu reports that its submenu opened. It extends a
+    /// pinned-open popup to the opened item and, outside the inline layout, closes the other top-level
+    /// submenus while <see cref="IsAccordionMode" /> is set.
+    /// A derived override must call this method to keep both behaviors.
+    /// </summary>
     protected virtual void NotifySubmenuOpened(RoutedEventArgs e)
     {
         if (IsPopupPinnedOpen &&
@@ -818,6 +1067,12 @@ public partial class NavMenu : ItemsControl,
         }
     }
     
+    /// <summary>
+    /// Calls the base method, then applies <see cref="DefaultOpenPaths" /> the first time the menu loads.
+    /// On every load it selects the node of <see cref="SelectedItem" />, or of
+    /// <see cref="DefaultSelectedPath" /> while no node is selected.
+    /// A derived override must call this method.
+    /// </summary>
     protected override void OnLoaded(RoutedEventArgs e)
     {
         base.OnLoaded(e);
@@ -1156,7 +1411,7 @@ public partial class NavMenu : ItemsControl,
     
     private void ConfigureDefaultSelectedPath()
     {
-        // 直接设置 SelectedItem 优先级高于 DefaultSelectedPath
+        // A SelectedItem that was set directly takes priority over DefaultSelectedPath.
         if (SelectedItem != null)
         {
             SelectTargetMenuNode(SelectedItem, _selectedItemRevision);
@@ -1331,6 +1586,10 @@ public partial class NavMenu : ItemsControl,
         return null;
     }
 
+    /// <summary>
+    /// Closes every submenu of the menu and clears the selection. The call does nothing while
+    /// <see cref="IsPopupPinnedOpen" /> is <see langword="true" />.
+    /// </summary>
     public void Close()
     {
         if (IsPopupPinnedOpen)
@@ -1536,7 +1795,7 @@ public partial class NavMenu : ItemsControl,
             }
         
             Debug.Assert(pathNodes.Count > 0);
-            // 检查是否是野数据
+            // Reject wild data: a node whose root is not among Items, or that is not the last node of its path.
             var rootNode  = pathNodes[0];
             var foundRoot = NavMenuEntryGraph.ContainsDirectNode(Items, rootNode);
             if (!foundRoot || node != pathNodes[^1])

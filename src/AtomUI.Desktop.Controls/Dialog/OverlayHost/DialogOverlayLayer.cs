@@ -40,9 +40,10 @@ internal sealed class DialogOverlayLayer : Canvas
 
     private static (Panel HostLayer, TopLevel? TopLevel) ResolveHostLayer(Visual anchor, Control? overlayScope)
     {
-        // OverlayScope：显式请求把宿主限定在某个作用域内（对齐上游 antd Modal 的 stage/setContainer 语义）。
-        // 作用域优先于默认 TopLevel 宿主；作用域 Dialog 与无 TopLevel 的 fallback 都进入作用域宿主的
-        // T5 ContentPresentationLayer（视口固定，位于同宿主 FloatButton 之上）。
+        // OverlayScope is an explicit request to confine the host to a scope, following the stage/setContainer
+        // semantics of the upstream antd Modal. The scope takes precedence over the default TopLevel host. A
+        // scoped dialog and the fallback used when no TopLevel exists both go to the T5 ContentPresentationLayer
+        // of the scope host, which is pinned to the viewport and sits above the FloatButton of the same host.
         if (overlayScope is not null &&
             ContentPresentationLayer.GetViewportLayer(overlayScope) is { } scopedLayer)
         {

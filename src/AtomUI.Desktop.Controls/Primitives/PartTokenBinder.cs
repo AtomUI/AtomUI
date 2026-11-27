@@ -9,7 +9,9 @@ using Avalonia.LogicalTree;
 
 namespace AtomUI.Desktop.Controls.Primitives;
 
-/// <summary>One inheritable theme input and the owner Token name it is mapped from.</summary>
+/// <summary>
+/// One inheritable theme input and the owner Token name it is mapped from.
+/// </summary>
 internal readonly record struct PartTokenMapping(AvaloniaProperty Property, string Token);
 
 /// <summary>
@@ -21,20 +23,33 @@ internal readonly record struct PartTokenMapping(AvaloniaProperty Property, stri
 /// global keys at Style priority — the priority the owner's
 /// ControlTheme setters reach through inheritance — so the value resolves through the part's own resource chain like an
 /// AXAML TokenResource, follows publishes and variants, and a local value on the part still wins. The binding set is
-/// rebuilt only when the owner identity changes, new bindings first. When the part inherits its owner from an attached
-/// ancestor (it sits in the owner's styled tree) or its runtime host is attached, the owner's setters are authoritative
-/// and nothing is mapped.
+/// rebuilt only when the owner identity changes, new bindings first. When the part inherits an owner that is
+/// <c>fallbackOwnerType</c> or <c>alternateOwnerType</c> (it sits in the owner's styled tree), any owner while
+/// <c>fallbackOwnerType</c> is null, or its runtime host is attached, the owner's setters are authoritative and
+/// nothing is mapped. An owner inherited from an ancestor of another type is replaced with the fallback identity.
 /// </summary>
 internal static class PartTokenBinder
 {
-    /// <param name="part">The hosted or standalone part whose inputs are mapped.</param>
+    /// <summary>
+    /// Starts the input mapping described on this class for <paramref name="part" /> and returns a handle. Disposing
+    /// the handle removes the bindings, the tree and owner subscriptions and any fallback owner the mapping set.
+    /// </summary>
+    /// <param name="part">
+    /// The hosted or standalone part whose inputs are mapped.
+    /// </param>
     /// <param name="host">
     /// The owner element when the part has one at runtime (the dialog of a surface); while it is attached to a logical
     /// tree its own ControlTheme setters reach the part through the presenter's inheritance parent.
     /// </param>
-    /// <param name="fallbackOwnerType">The design owner of a part created alone, or null.</param>
-    /// <param name="inputs">The inheritable inputs and the owner Token names they are mapped from.</param>
-    /// <param name="alternateOwnerType">Another registered control whose theme provides these inputs.</param>
+    /// <param name="fallbackOwnerType">
+    /// The design owner of a part created alone, or null.
+    /// </param>
+    /// <param name="inputs">
+    /// The inheritable inputs and the owner Token names they are mapped from.
+    /// </param>
+    /// <param name="alternateOwnerType">
+    /// Another registered control whose theme provides these inputs.
+    /// </param>
     internal static IDisposable Bind(
         Control part,
         Control? host,
@@ -49,8 +64,8 @@ internal static class PartTokenBinder
 
     /// <summary>
     /// Binds a part's own (non-inherited) properties to the Own Tokens of the owner it sits under. Unlike
-    /// <see cref="Bind"/>, the owner's ControlTheme provides nothing: the part resolves the values itself, so they
-    /// reach only the part instead of inheriting through the owner's whole tree. <paramref name="inputsByOwner"/> lists,
+    /// <see cref="Bind" />, the owner's ControlTheme provides nothing: the part resolves the values itself, so they
+    /// reach only the part instead of inheriting through the owner's whole tree. <paramref name="inputsByOwner" /> lists,
     /// per owner control type, the properties and the owner's Token keys (its generated <c>TokenKind</c> values, which
     /// keeps the reads visible to the Token consumption analysis). Values are bound only while the part is attached and
     /// its <c>ThemeScope.TokenOwner</c> is a registered control assignable to one of those types; otherwise the

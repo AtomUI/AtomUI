@@ -3,7 +3,9 @@ using AtomUI.Theme.Languages;
 
 namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 
-/// <summary>The PrimeNG view of <see cref="ListTransferToken"/>.</summary>
+/// <summary>
+/// The PrimeNG view of <see cref="ListTransferToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class ListTransferTokenRule : IControlTokenRule<PrimeNGToken, ListTransferToken>
 {
@@ -12,6 +14,8 @@ internal sealed class ListTransferTokenRule : IControlTokenRule<PrimeNGToken, Li
         var token  = target.Own;
         var global = target.Global;
         TransferTokenCalculator.Calculate(in context, global, token);
+        // Ant Design formula kept as is: no PrimeNG stage writes the transfer layout token (the preset's transfer
+        // stages cover its list and tree views), so ListWidthLG is the Ant Design value.
         token.ListWidthLG = 250;
     }
 }

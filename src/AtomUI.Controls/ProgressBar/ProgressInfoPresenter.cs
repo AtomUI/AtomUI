@@ -4,7 +4,7 @@ using Avalonia.Controls.Presenters;
 namespace AtomUI.Controls.Commons;
 
 /// <summary>
-/// Presenter for <see cref="AbstractProgressBar.ProgressInfoContent"/>. It sits in a Canvas whose desired size never
+/// Presenter for <see cref="AbstractProgressBar.ProgressInfoContent" />. It sits in a Canvas whose desired size never
 /// changes, so a content size change (a resized control, longer templated text, a new template) would not reach the
 /// progress bar's own layout. The presenter reports it to the owning progress bar instead.
 /// </summary>

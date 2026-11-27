@@ -6,7 +6,9 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls.Themes.Shadcn;
 
-/// <summary>The shadcn view of <see cref="ScrollViewerToken"/>.</summary>
+/// <summary>
+/// The shadcn view of <see cref="ScrollViewerToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class ScrollViewerTokenRule : IControlTokenRule<ShadcnToken, ScrollViewerToken>
 {
@@ -31,6 +33,7 @@ internal sealed class ScrollViewerTokenRule : IControlTokenRule<ShadcnToken, Scr
 
             token.ThumbActiveBg = token.ThumbHoverBg.Darken();
         }
+        // Ant Design formula kept as is: no registry value is merged into the scroll viewer tokens.
         token.ThumbCornerRadius        = new CornerRadius(token.NormalModeThumbThickness / 2);
         token.IndicatorThumbCornerRadius = new CornerRadius(token.LiteModeThumbThickness / 2);
         token.ScrollBarContentHPadding = new Thickness(global.UniformlyPaddingXXS, 0d);

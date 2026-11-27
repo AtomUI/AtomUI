@@ -12,6 +12,16 @@ using Avalonia.VisualTree;
 
 namespace AtomUI.Controls.Primitives;
 
+/// <summary>
+/// A control without a template that plays the click wave effect over the area of its parent control;
+/// <c>Button</c> and <c>StepsItemIndicator</c> in AtomUI.Desktop.Controls host it.
+/// </summary>
+/// <remarks>
+/// The parent places it in its template under the name <c>WaveSpiritPart</c> and sets the wave type, range, brush,
+/// corner radius and motion settings on it. The decorator creates the matching <c>AbstractWavePainter</c> for the
+/// wave type, cancels a running wave when any of these settings changes, and stops the wave when
+/// <c>IsMotionEnabled</c> or <c>IsWaveSpiritEnabled</c> becomes <see langword="false" />.
+/// </remarks>
 internal class WaveSpiritDecorator : Control
 {
     public const string WaveSpiritPart = "PART_WaveSpirit";
@@ -146,18 +156,34 @@ internal class WaveSpiritDecorator : Control
     internal static readonly StyledProperty<bool> UseOwnerWaveTokenResourcesProperty =
         AvaloniaProperty.Register<WaveSpiritDecorator, bool>(nameof(UseOwnerWaveTokenResources));
 
+    /// <summary>
+    /// While <see langword="true" /> and the decorator is attached, the wave range, the start opacity and the motion
+    /// durations come from the shared <c>WaveAnimationRange</c>, <c>WaveStartOpacity</c> and
+    /// <c>MotionDurationSlow</c> tokens; a value set explicitly on the decorator takes precedence. The theme sets it
+    /// to <see langword="true" />.
+    /// </summary>
     internal bool UseOwnerWaveTokenResources
     {
         get => GetValue(UseOwnerWaveTokenResourcesProperty);
         set => SetValue(UseOwnerWaveTokenResourcesProperty, value);
     }
 
+    /// <summary>
+    /// Motion switch of the wave: <see cref="Play" /> does nothing while it is <see langword="false" />, and a
+    /// running wave is canceled when it becomes <see langword="false" />. The parent passes its own value through a
+    /// template binding.
+    /// </summary>
     internal bool IsMotionEnabled
     {
         get => GetValue(IsMotionEnabledProperty);
         set => SetValue(IsMotionEnabledProperty, value);
     }
 
+    /// <summary>
+    /// Switch of the wave spirit: <see cref="Play" /> does nothing while it is <see langword="false" />, and a
+    /// running wave is canceled when it becomes <see langword="false" />. The parent passes its own value through a
+    /// template binding.
+    /// </summary>
     internal bool IsWaveSpiritEnabled
     {
         get => GetValue(IsWaveSpiritEnabledProperty);

@@ -3,7 +3,9 @@ using AtomUI.Theme.Languages;
 
 namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 
-/// <summary>The PrimeNG view of <see cref="ColorPickerToken"/>.</summary>
+/// <summary>
+/// The PrimeNG view of <see cref="ColorPickerToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class ColorPickerTokenRule : IControlTokenRule<PrimeNGToken, ColorPickerToken>
 {

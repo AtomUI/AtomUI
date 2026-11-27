@@ -5,9 +5,15 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls.Themes.AntDesign;
 
-/// <summary>The AntDesign values of the shared <see cref="AbstractCalendarToken"/> layer.</summary>
+/// <summary>
+/// The AntDesign values of the shared <see cref="AbstractCalendarToken" /> layer.
+/// </summary>
 public static class CalendarTokenCalculator
 {
+    /// <summary>
+    /// Assigns the Ant Design values of the shared <see cref="AbstractCalendarToken" /> layer to
+    /// <paramref name="token" />. The Token rules of Calendar and LunarCalendar call it.
+    /// </summary>
     public static void Calculate(in TokenEvaluationContext<AntDesignToken> context, DesignToken global, AbstractCalendarToken token)
     {
 

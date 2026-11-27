@@ -3,14 +3,16 @@ using Avalonia;
 
 namespace AtomUI.Theme.Resources;
 
-/// <summary>Receives the new inherited <see cref="ThemeScope.TokenOwnerProperty"/> value of the element it registered for.</summary>
+/// <summary>
+/// Receives the new inherited <see cref="ThemeScope.TokenOwnerProperty" /> value of the element it registered for.
+/// </summary>
 internal interface ITokenOwnerListener
 {
     void OnTokenOwnerChanged(ControlTokenIdentity? owner);
 }
 
 /// <summary>
-/// Routes <see cref="ThemeScope.TokenOwnerProperty"/> changes to the per-target bindings of an element through one
+/// Routes <see cref="ThemeScope.TokenOwnerProperty" /> changes to the per-target bindings of an element through one
 /// static property observer instead of one <c>PropertyChanged</c> handler per binding: an element with N owner
 /// bindings used to run N handlers for every property change (Bounds, IsPointerOver, …); now no per-element
 /// handler exists and only an owner change costs one attached-property read on the element.
@@ -48,7 +50,9 @@ internal static class TokenOwnerListeners
         }
     }
 
-    /// <summary>The number of registered listeners; contract tests pin that bindings release theirs.</summary>
+    /// <summary>
+    /// The number of registered listeners; contract tests pin that bindings release theirs.
+    /// </summary>
     internal static int Count(StyledElement element) => element.GetValue(ListenersProperty)?.Count ?? 0;
 
     private sealed class Listeners

@@ -4,7 +4,9 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls.Themes.AntDesign;
 
-/// <summary>The AntDesign view of <see cref="MenuItemGroupToken"/>.</summary>
+/// <summary>
+/// The AntDesign view of <see cref="MenuItemGroupToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class MenuItemGroupTokenRule : IControlTokenRule<AntDesignToken, MenuItemGroupToken>
 {

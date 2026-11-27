@@ -3,7 +3,9 @@ using AtomUI.Theme.Languages;
 
 namespace AtomUI.Desktop.Controls.Themes.Shadcn;
 
-/// <summary>The shadcn view of <see cref="ContextMenuToken"/>.</summary>
+/// <summary>
+/// The shadcn view of <see cref="ContextMenuToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class ContextMenuTokenRule : IControlTokenRule<ShadcnToken, ContextMenuToken>
 {
@@ -16,6 +18,7 @@ internal sealed class ContextMenuTokenRule : IControlTokenRule<ShadcnToken, Cont
         token.ItemHoverColor = token.ItemColor;
         token.ContextMenuOffsetX = global.SpacingXXS;
         token.ContextMenuOffsetY = global.SpacingXXS;
+        // registry context-menu: the outline ring ahead of the menu shadow of the style.
         token.MenuPopupShadows = context.Language.GetMenuOverlayRecipe(global).ShadowsWithOutline;
     }
 }

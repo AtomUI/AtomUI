@@ -3,7 +3,9 @@ using AtomUI.Theme.Languages;
 
 namespace AtomUI.Desktop.Controls.Themes.Shadcn;
 
-/// <summary>The shadcn view of <see cref="StatisticCountUpToken"/>.</summary>
+/// <summary>
+/// The shadcn view of <see cref="StatisticCountUpToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class StatisticCountUpTokenRule : IControlTokenRule<ShadcnToken, StatisticCountUpToken>
 {

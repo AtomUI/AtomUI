@@ -6,75 +6,79 @@ namespace AtomUI.Theme.DesignTokens;
 public partial class DesignToken
 {
     /// <summary>
-    /// 线宽
-    /// 描边类组件的默认线宽，如 Button、Input、Select 等输入类控件。
+    /// A line width one step thicker than <see cref="LineWidth" />, for emphasized lines such as the active bar
+    /// of a navigation menu, the ink bar of line tabs and the tail of a timeline item.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Map)]
     public partial double LineWidthBold { get; set; } = 1;
 
     /// <summary>
-    /// 边框的宽细
+    /// The border width of controls: <see cref="LineWidth" /> on all four sides.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Map)]
     public partial Thickness BorderThickness { get; set; }
 
     /// <summary>
-    /// XS号圆角
-    /// XS号圆角，用于组件中的一些小圆角，如 Segmented 、Arrow 等一些内部圆角的组件样式中。
+    /// The extra small corner radius, for small inner corners in component styles such as Segmented and Arrow.
+    /// It is derived from the top-left corner of the seed <see cref="BorderRadius" />.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Map)]
     public partial CornerRadius BorderRadiusXS { get; set; } = new CornerRadius(2);
 
     /// <summary>
-    /// SM号圆角
-    /// SM号圆角，用于组件小尺寸下的圆角，如 Button、Input、Select 等输入类控件在 small size 下的圆角
+    /// The small corner radius, used by controls at the small size such as Button, Input and Select.
+    /// It is derived from the top-left corner of the seed <see cref="BorderRadius" />.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Map)]
     public partial CornerRadius BorderRadiusSM { get; set; } = new CornerRadius(4);
 
     /// <summary>
-    /// MD号圆角
-    /// MD号圆角，组件默认尺寸下的圆角，与种子 <see cref="BorderRadius"/> 同值；控件读这一项而不是种子，语言可以为某个控件覆盖它。
-    /// Medium corner radius: the radius of a control at its default size, equal to the seed BorderRadius. Controls read
-    /// this Map token, not the seed, so a language can override it for one control.
+    /// Medium corner radius: the radius of a control at its default size, equal to the seed
+    /// <see cref="BorderRadius" />. Controls read this Map token rather than the seed, so a design language
+    /// can override it for one control.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Map)]
     public partial CornerRadius BorderRadiusMD { get; set; } = new CornerRadius(6);
 
     /// <summary>
-    /// LG号圆角
-    /// LG号圆角，用于组件中的一些大圆角，如 Card、Modal 等一些组件样式。
+    /// The large corner radius, for components with a large radius such as Card and Modal.
+    /// It is derived from the top-left corner of the seed <see cref="BorderRadius" />.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Map)]
     public partial CornerRadius BorderRadiusLG { get; set; } = new CornerRadius(8);
 
     /// <summary>
-    /// 外部圆角
+    /// The corner radius of the outer tier, derived from the top-left corner of the seed
+    /// <see cref="BorderRadius" />. It is the base radius of the arrow of popups such as tooltips.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Map)]
     public partial CornerRadius BorderRadiusOuter { get; set; } = new CornerRadius(4);
 
     // Motion
     /// <summary>
-    /// 动效播放速度，快速。用于小型元素动画交互
+    /// The fast motion duration, for animations of small elements. It equals <see cref="MotionBase" />
+    /// plus <see cref="MotionUnit" />.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Map)]
     public partial TimeSpan MotionDurationFast { get; set; }
 
     /// <summary>
-    /// 动效播放速度，中速。用于中型元素动画交互
+    /// The medium motion duration, for animations of medium-sized elements. It equals <see cref="MotionBase" />
+    /// plus 2 times <see cref="MotionUnit" />.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Map)]
     public partial TimeSpan MotionDurationMid { get; set; }
 
     /// <summary>
-    /// 动效播放速度，慢速。用于大型元素如面板动画交互
+    /// The slow motion duration, for animations of large elements such as panels. It equals
+    /// <see cref="MotionBase" /> plus 3 times <see cref="MotionUnit" />.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Map)]
     public partial TimeSpan MotionDurationSlow { get; set; }
 
     /// <summary>
-    /// 动效播放速度，最慢速。用于大型元素如面板动画交互
+    /// The slowest motion duration, for animations of large elements such as panels. It equals
+    /// <see cref="MotionBase" /> plus 8 times <see cref="MotionUnit" />.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Map)]
     public partial TimeSpan MotionDurationVerySlow { get; set; }

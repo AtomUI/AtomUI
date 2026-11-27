@@ -7,9 +7,8 @@ using static AtomUI.Generator.Tests.DesignLanguages.DesignLanguageTestHost;
 namespace AtomUI.Generator.Tests.DesignLanguages;
 
 /// <summary>
-/// The build-time checks of spec 14 and 3.3: completeness and read-before-write of a rule, coverage of a value
-/// package, package dependency direction, and the token schema digests a control package publishes and a value package
-/// records.
+/// The build-time checks: completeness and read-before-write of a rule, coverage of a value package, package
+/// dependency direction, and the token schema digests a control package publishes and a value package records.
 /// </summary>
 public class ControlTokenRuleAnalysisTests
 {

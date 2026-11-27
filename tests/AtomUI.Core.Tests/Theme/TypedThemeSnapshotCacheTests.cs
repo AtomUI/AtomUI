@@ -109,7 +109,7 @@ public class TypedThemeSnapshotCacheTests
 
     /// <summary>
     /// A registry with the generated global tokens, the controls and (by default) Ant Design with the test rules
-    /// of <see cref="TestControlTokenRules"/>.
+    /// of <see cref="TestControlTokenRules" />.
     /// </summary>
     internal static ThemeSchemaRegistry CreateRegistry(
         IReadOnlyList<ControlTokenDescriptor>? controls = null,
@@ -126,8 +126,9 @@ public class TypedThemeSnapshotCacheTests
     }
 
     /// <summary>
-    /// The input of a scope that shows the language default of the registry's first language, with the given values on
-    /// top; <paramref name="axes"/> writes the scope's axes.
+    /// Builds the input of a scope that shows the language default of the registry's first language with the given
+    /// values on top. The axes of the scope follow the language default, except for
+    /// <paramref name="appearance" /> and <paramref name="density" /> when they are given.
     /// </summary>
     internal static ThemeCompileInput CreateInput(
         ThemeSchemaRegistry registry,

@@ -4,9 +4,15 @@ using AtomUI.Theme.Languages;
 
 namespace AtomUI.Desktop.Controls.Themes.AntDesign;
 
-/// <summary>The AntDesign values of the shared <see cref="AbstractPaginationToken"/> layer.</summary>
+/// <summary>
+/// The AntDesign values of the shared <see cref="AbstractPaginationToken" /> layer.
+/// </summary>
 public static class PaginationTokenCalculator
 {
+    /// <summary>
+    /// Assigns the Ant Design values of the shared <see cref="AbstractPaginationToken" /> layer to
+    /// <paramref name="token" />. The Token rules of Pagination and SimplePagination call it.
+    /// </summary>
     public static void Calculate(in TokenEvaluationContext<AntDesignToken> context, DesignToken global, AbstractPaginationToken token)
     {
         token.ItemSize                  = global.ControlHeight;

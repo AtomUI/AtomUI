@@ -6,7 +6,9 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 
-/// <summary>The PrimeNG view of <see cref="NavMenuToken"/>.</summary>
+/// <summary>
+/// The PrimeNG view of <see cref="NavMenuToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class NavMenuTokenRule : IControlTokenRule<PrimeNGToken, NavMenuToken>
 {
@@ -14,10 +16,13 @@ internal sealed class NavMenuTokenRule : IControlTokenRule<PrimeNGToken, NavMenu
     {
         var token  = target.Own;
         var global = target.Global;
-        // PrimeNG: the control-global overrides, read by the formulas below.
+        // PrimeNG: the control-global overrides (MotionDurationMid), read by the NavMenu theme
+        // (OpenCloseMotionDuration) and not by the formulas below.
         PrimeNGNavMenuTokens.EvaluateGlobal(in context, global);
 
         var colorTextLightSolid = global.ColorTextLightSolid;
+        // Ant Design formula kept as is: the PrimeNGNavMenuTokens stage at the end of the method replaces the item
+        // padding, height and colors, ActiveBarHeight (0), the popup values and the dark rows.
         token.ActiveBarScaleX = 1.0d;
         token.ActiveBarHeight = global.LineWidthBold;
         token.ItemContentMargin = new Thickness(

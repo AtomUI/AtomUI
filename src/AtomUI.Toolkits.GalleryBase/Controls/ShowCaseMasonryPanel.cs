@@ -3,17 +3,35 @@ using Avalonia.Controls;
 
 namespace AtomUI.Toolkits.GalleryBase.Controls;
 
+/// <summary>
+/// A panel that lays its children out in up to <see cref="MaxColumns" /> columns of equal width, placing each
+/// item at the bottom of the shortest column. A <see cref="ShowCaseItem" /> whose <c>Span</c> is
+/// <c>ShowCaseItemSpan.Full</c> or whose <c>IsOccupyEntireRow</c> is <see langword="true" /> takes the full
+/// width. Items keep their column from one layout pass to the next as long as the column count is unchanged.
+/// </summary>
 public class ShowCaseMasonryPanel : Panel
 {
+    /// <summary>
+    /// Identifies the <see cref="MinItemWidth" /> property.
+    /// </summary>
     public static readonly StyledProperty<double> MinItemWidthProperty =
         AvaloniaProperty.Register<ShowCaseMasonryPanel, double>(nameof(MinItemWidth), 320);
 
+    /// <summary>
+    /// Identifies the <see cref="MaxColumns" /> property.
+    /// </summary>
     public static readonly StyledProperty<int> MaxColumnsProperty =
         AvaloniaProperty.Register<ShowCaseMasonryPanel, int>(nameof(MaxColumns), 2);
 
+    /// <summary>
+    /// Identifies the <see cref="ColumnGap" /> property.
+    /// </summary>
     public static readonly StyledProperty<double> ColumnGapProperty =
         AvaloniaProperty.Register<ShowCaseMasonryPanel, double>(nameof(ColumnGap), 16);
 
+    /// <summary>
+    /// Identifies the <see cref="RowGap" /> property.
+    /// </summary>
     public static readonly StyledProperty<double> RowGapProperty =
         AvaloniaProperty.Register<ShowCaseMasonryPanel, double>(nameof(RowGap), 16);
 
@@ -28,24 +46,43 @@ public class ShowCaseMasonryPanel : Panel
     private int _stableColumnCount;
     private bool _hasStableAssignments;
 
+    /// <summary>
+    /// The minimum width of a column in DIPs. The column count is the largest number up to
+    /// <see cref="MaxColumns" /> for which that many columns of this width, with <see cref="ColumnGap" />
+    /// between them, fit into the available width; the columns then share the available width equally.
+    /// A value below 1 is treated as 1. When the available width is unbounded, the panel is as wide as
+    /// <see cref="MaxColumns" /> such columns plus the gaps between them.
+    /// </summary>
     public double MinItemWidth
     {
         get => GetValue(MinItemWidthProperty);
         set => SetValue(MinItemWidthProperty, value);
     }
 
+    /// <summary>
+    /// The largest number of columns the layout uses, however wide the available area is. A value below 1 is
+    /// treated as 1. When the available width is unbounded, the panel takes the width of this many columns of
+    /// <see cref="MinItemWidth" /> plus the gaps between them.
+    /// </summary>
     public int MaxColumns
     {
         get => GetValue(MaxColumnsProperty);
         set => SetValue(MaxColumnsProperty, value);
     }
 
+    /// <summary>
+    /// The horizontal space between adjacent columns in DIPs. A negative value is treated as 0.
+    /// </summary>
     public double ColumnGap
     {
         get => GetValue(ColumnGapProperty);
         set => SetValue(ColumnGapProperty, value);
     }
 
+    /// <summary>
+    /// The vertical space in DIPs between an item and the item above it in the same column, and between a
+    /// full-width item and the items above and below it. A negative value is treated as 0.
+    /// </summary>
     public double RowGap
     {
         get => GetValue(RowGapProperty);
@@ -61,6 +98,12 @@ public class ShowCaseMasonryPanel : Panel
             RowGapProperty);
     }
 
+    /// <summary>
+    /// Measures the visible children at the width of their column and returns the width and height of the
+    /// masonry layout for the available width; the height is the tallest column, whatever the available height is.
+    /// Column assignments from the last arrange pass are reused, and the layout is kept for
+    /// <see cref="ArrangeOverride" /> to reuse when the final width and the child count are unchanged.
+    /// </summary>
     protected override Size MeasureOverride(Size availableSize)
     {
         if (_previousAvailableWidth != availableSize.Width)
@@ -81,6 +124,12 @@ public class ShowCaseMasonryPanel : Panel
         return new Size(layout.Width, layout.Height);
     }
 
+    /// <summary>
+    /// Arranges the children at the rects of the masonry layout for <paramref name="finalSize" />, and returns
+    /// <paramref name="finalSize" />. The layout of the preceding measure is reused when the child count and
+    /// the width are unchanged; otherwise the children are measured again at the final width. Records the
+    /// column of each item for the next layout pass.
+    /// </summary>
     protected override Size ArrangeOverride(Size finalSize)
     {
         var effectiveWidth = ResolveAvailableWidth(finalSize.Width);
@@ -108,6 +157,10 @@ public class ShowCaseMasonryPanel : Panel
         return finalSize;
     }
 
+    /// <summary>
+    /// Called when this panel is detached. Before the base call it discards the cached layout, the remembered
+    /// widths and the column assignments, so that the next attach lays the children out afresh.
+    /// </summary>
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         _hasMeasuredLayout = false;

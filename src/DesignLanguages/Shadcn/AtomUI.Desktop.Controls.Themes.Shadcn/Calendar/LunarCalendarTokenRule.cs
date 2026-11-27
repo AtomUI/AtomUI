@@ -5,7 +5,9 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls.Themes.Shadcn;
 
-/// <summary>The shadcn view of <see cref="LunarCalendarToken"/>.</summary>
+/// <summary>
+/// The shadcn view of <see cref="LunarCalendarToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class LunarCalendarTokenRule : IControlTokenRule<ShadcnToken, LunarCalendarToken>
 {
@@ -17,6 +19,8 @@ internal sealed class LunarCalendarTokenRule : IControlTokenRule<ShadcnToken, Lu
 
         if ((context.Variant.Appearance == ThemeAppearance.Dark))
         {
+            // In dark appearance the fullscreen month view fills a selected date with ItemActiveBg, so the two
+            // text lines take the body text color instead of the primary color.
             token.ItemActiveColor = global.ColorText;
         }
         token.MiniDateCellSize = global.ControlHeightLG;
@@ -56,6 +60,7 @@ internal sealed class LunarCalendarTokenRule : IControlTokenRule<ShadcnToken, Lu
                             global.UniformlyMarginXXS;
         if (context.Variant.IsDark)
         {
+            // Dark shadcn resolves the two source surfaces to the same shade.
             token.ItemActiveBg = ShadcnRecipes.CompositeOver(global.ColorText, 0.14, token.ItemActiveBg);
         }
     }

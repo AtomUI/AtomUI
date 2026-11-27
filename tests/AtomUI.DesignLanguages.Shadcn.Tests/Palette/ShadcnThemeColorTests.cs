@@ -6,7 +6,7 @@ using Xunit;
 namespace AtomUI.DesignLanguages.Shadcn.Tests.Palette;
 
 /// <summary>
-/// <see cref="ShadcnThemeColor"/> resolves the seed into the official theme primaries (appendix B), the neutral
+/// <see cref="ShadcnThemeColor" /> resolves the seed into the official theme primaries (appendix B), the neutral
 /// follow-the-base-color case, and readable derived primaries for custom seeds.
 /// </summary>
 public class ShadcnThemeColorTests

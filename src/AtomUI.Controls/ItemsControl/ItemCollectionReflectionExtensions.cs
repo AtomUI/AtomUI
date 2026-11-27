@@ -13,7 +13,7 @@ internal static class ItemCollectionReflectionExtensions
             typeof(ItemCollection).GetEvent("SourceChanged", BindingFlags.Instance | BindingFlags.NonPublic),
             typeof(ItemCollection),
             "SourceChanged");
-        // 获取 add 方法（true 表示允许获取非公共方法）
+        // SourceChanged is not public, so its add accessor is only returned when non-public access is requested.
         var addMethod = eventInfo.GetAddMethod(true);
         if (addMethod == null)
         {

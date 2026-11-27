@@ -5,6 +5,14 @@ using AtomUI.Theme.Schema;
 
 namespace AtomUI.Registration;
 
+/// <summary>
+/// Collects the contributions of one control package while its collect callback runs: control descriptors,
+/// theme assets with their resource registrations, and registration fragments.
+/// </summary>
+/// <remarks>
+/// After a mutator throws, or once the collection has been built into the package registration, every
+/// further mutator throws an <see cref="InvalidOperationException" />.
+/// </remarks>
 [EditorBrowsable(EditorBrowsableState.Never)]
 public sealed class ControlPackageRegistrationBuilder
 {
@@ -42,8 +50,9 @@ public sealed class ControlPackageRegistrationBuilder
     }
 
     /// <summary>
-    /// 生成注册 Collect 写入的包级 schema 指纹常量（编译期预计算）。手工收集留空，
-    /// 启动 registry 的 Revision 随之回退到全量遍历算法。
+    /// The package-level schema fingerprint precomputed by the source generator and written by the generated
+    /// collect callback. Leave it <see langword="null" /> when the collection is written by hand; the Revision
+    /// of the startup registry then falls back to the full traversal algorithm.
     /// </summary>
     public ulong? PackageSchemaFingerprint
     {
@@ -51,18 +60,34 @@ public sealed class ControlPackageRegistrationBuilder
         set => Mutate(value, static (builder, fingerprint) => builder._packageSchemaFingerprint = fingerprint);
     }
 
+    /// <summary>
+    /// Adds the descriptor of a control's design tokens to the package.
+    /// </summary>
     public void AddControl(ControlTokenDescriptor descriptor) => Mutate(descriptor, static (builder, descriptor) =>
     {
         ArgumentNullException.ThrowIfNull(descriptor);
         builder._controls.Add(descriptor);
     });
 
+    /// <summary>
+    /// Adds the descriptor of a control's semantic parts to the package.
+    /// </summary>
     public void AddSemanticControl(ControlSemanticDescriptor descriptor) => Mutate(descriptor, static (builder, descriptor) =>
     {
         ArgumentNullException.ThrowIfNull(descriptor);
         builder._semantics.Add(descriptor);
     });
 
+    /// <summary>
+    /// Registers a theme asset in the package, keyed by <see cref="ControlThemeAssetDescriptor.AssetId" />.
+    /// Registering the same asset again with equal metadata is ignored; different metadata throws an
+    /// <see cref="InvalidOperationException" />.
+    /// </summary>
+    /// <remarks>
+    /// Every asset needs a resource registration with the same AssetId, added with <see cref="AddResource" />
+    /// or with <see cref="AddThemeAsset(ControlThemeAssetDescriptor, ControlThemeResourceRegistration)" />;
+    /// otherwise the package registration cannot be built.
+    /// </remarks>
     public void AddThemeAsset(ControlThemeAssetDescriptor descriptor) => Mutate(descriptor, static (builder, descriptor) => builder.AddThemeAssetCore(descriptor));
 
     private void AddThemeAssetCore(ControlThemeAssetDescriptor descriptor)
@@ -79,6 +104,12 @@ public sealed class ControlPackageRegistrationBuilder
         _assets.Add(descriptor.AssetId, descriptor);
     }
 
+    /// <summary>
+    /// Registers the resource provider factory of a theme asset, keyed by
+    /// <see cref="ControlThemeResourceRegistration.AssetId" />. Registering the same AssetId again with equal
+    /// metadata and an equal factory is ignored; any difference throws an
+    /// <see cref="InvalidOperationException" />.
+    /// </summary>
     public void AddResource(ControlThemeResourceRegistration registration) => Mutate(registration, static (builder, registration) => builder.AddResourceCore(registration));
 
     private void AddResourceCore(ControlThemeResourceRegistration registration)
@@ -95,6 +126,14 @@ public sealed class ControlPackageRegistrationBuilder
         _resources.Add(registration.AssetId, registration);
     }
 
+    /// <summary>
+    /// Registers a theme asset together with the resource provider factory of the asset.
+    /// </summary>
+    /// <remarks>
+    /// Both arguments must carry the same AssetId, otherwise an <see cref="ArgumentException" /> is thrown.
+    /// The effect is the same as calling <see cref="AddThemeAsset(ControlThemeAssetDescriptor)" /> and
+    /// <see cref="AddResource(ControlThemeResourceRegistration)" /> in a row.
+    /// </remarks>
     public void AddThemeAsset(ControlThemeAssetDescriptor descriptor, ControlThemeResourceRegistration registration) => Mutate((descriptor, registration), static (builder, state) =>
     {
         var (descriptor, registration) = state;
@@ -108,6 +147,17 @@ public sealed class ControlPackageRegistrationBuilder
         builder.AddResourceCore(registration);
     });
 
+    /// <summary>
+    /// Adds a registration fragment to the package and runs
+    /// <see cref="ControlRegistrationFragmentAttribute.Add(ControlPackageRegistrationBuilder)" /> on this builder.
+    /// </summary>
+    /// <remarks>
+    /// The <see cref="ControlRegistrationFragmentAttribute.FragmentId" /> must not be null, empty or white space.
+    /// The first fragment registered under an id wins: a later fragment with the same id is ignored when it
+    /// has the same proxy type, and throws an <see cref="InvalidOperationException" /> when it has another one.
+    /// A builder that defers fragments only records the fragment here; its Add runs when the registration is
+    /// completed.
+    /// </remarks>
     public void AddFragment(ControlRegistrationFragmentAttribute fragment) => Mutate(fragment, static (builder, fragment) =>
     {
         ArgumentNullException.ThrowIfNull(fragment);

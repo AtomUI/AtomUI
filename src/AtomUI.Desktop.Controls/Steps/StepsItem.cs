@@ -13,6 +13,12 @@ using Avalonia.Threading;
 
 namespace AtomUI.Desktop.Controls;
 
+/// <summary>
+/// One step of a <see cref="Steps" /> control: the container that the control creates for each of its items.
+/// It adds the layout state that the owner assigns to the header, sub-header, icon and status of
+/// <see cref="AbstractStepsItem" />, and forwards a click or an Enter or Space key press on an invocable step
+/// to the owner as a request to make the step current.
+/// </summary>
 // A Token-owner transparent part: a StepsItem is an item of Steps only and has no Own Tokens, so its theme reads the Steps
 // TokenResource and its Token-declared transitions (and those of its indicator) resolve to the Steps through the
 // inherited owner. Controls[Steps] therefore reaches the item titles, tails, icons and motion.
@@ -25,36 +31,78 @@ public class StepsItem : AbstractStepsItem
 {
     #region 公共属性定义
 
+    /// <summary>
+    /// Identifies the <see cref="SubHeader" /> property.
+    /// </summary>
     public new static readonly StyledProperty<object?> SubHeaderProperty =
         AbstractStepsItem.SubHeaderProperty.AddOwner<StepsItem>();
 
+    /// <summary>
+    /// Identifies the <see cref="SubHeaderTemplate" /> property.
+    /// </summary>
     public new static readonly StyledProperty<IDataTemplate?> SubHeaderTemplateProperty =
         AbstractStepsItem.SubHeaderTemplateProperty.AddOwner<StepsItem>();
 
+    /// <summary>
+    /// Identifies the <see cref="Icon" /> property.
+    /// </summary>
     public new static readonly StyledProperty<PathIcon?> IconProperty =
         AbstractStepsItem.IconProperty.AddOwner<StepsItem>();
 
+    /// <summary>
+    /// Identifies the <see cref="Status" /> property.
+    /// </summary>
     public new static readonly StyledProperty<StepsStatus?> StatusProperty =
         AbstractStepsItem.StatusProperty.AddOwner<StepsItem>();
 
+    /// <summary>
+    /// Secondary text of the step, shown in addition to the title only while this value is not
+    /// <see langword="null" />, the default. A string is shown as a wrapping text block; any other object is
+    /// presented with <see cref="SubHeaderTemplate" />.
+    /// This is the same property as <see cref="AbstractStepsItem.SubHeader" />: both declarations read and write
+    /// one value.
+    /// </summary>
     public new object? SubHeader
     {
         get => GetValue(SubHeaderProperty);
         set => SetValue(SubHeaderProperty, value);
     }
 
+    /// <summary>
+    /// Template that presents <see cref="SubHeader" /> when it is not a string; a string is shown as a text block
+    /// without it. When this is <see langword="null" />, the default, the presenter uses the data template it finds
+    /// for the value.
+    /// This is the same property as <see cref="AbstractStepsItem.SubHeaderTemplate" />: both declarations read and
+    /// write one value.
+    /// </summary>
     public new IDataTemplate? SubHeaderTemplate
     {
         get => GetValue(SubHeaderTemplateProperty);
         set => SetValue(SubHeaderTemplateProperty, value);
     }
 
+    /// <summary>
+    /// Custom icon shown in the step indicator in place of the step number, the finish mark and the error mark.
+    /// The default is <see langword="null" />, which keeps those built-in marks. While an icon is set, the
+    /// current step in progress shows no circular progress. A step of the <see cref="StepsType.Panel" /> form
+    /// shows no indicator and therefore no icon.
+    /// This is the same property as <see cref="AbstractStepsItem.Icon" />: both declarations read and write one
+    /// value.
+    /// </summary>
     public new PathIcon? Icon
     {
         get => GetValue(IconProperty);
         set => SetValue(IconProperty, value);
     }
 
+    /// <summary>
+    /// Status displayed by this step when it must differ from the status that follows from its position. When it
+    /// is <see langword="null" />, the default, the owning steps control derives the status: the current step shows
+    /// the status of the control, the steps before it are finished and the steps after it are waiting. A change
+    /// makes the owner apply the state of this step and of the step before it again.
+    /// This is the same property as <see cref="AbstractStepsItem.Status" />: both declarations read and write one
+    /// value.
+    /// </summary>
     public new StepsStatus? Status
     {
         get => GetValue(StatusProperty);
@@ -252,6 +300,11 @@ public class StepsItem : AbstractStepsItem
         UpdateProgressState();
     }
 
+    /// <summary>
+    /// Resets the state that depends on the owner: the connector status becomes
+    /// <see cref="StepsStatus.Wait" />, the step is no longer invocable, the circular progress of the
+    /// indicator is not visible and its frame is not reserved. The base method is empty.
+    /// </summary>
     private protected override void OnOwnerDetached()
     {
         ConnectorStatus = StepsStatus.Wait;
@@ -260,6 +313,11 @@ public class StepsItem : AbstractStepsItem
         IsProgressFrameReserved = false;
     }
 
+    /// <summary>
+    /// Calls the base member and then looks up the indicator of the new template; the indicator of the previous
+    /// template is dropped first. While no template with an indicator is applied, the step shows no hover state
+    /// on the indicator and plays no activation wave.
+    /// </summary>
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         _indicator = null;
@@ -267,6 +325,13 @@ public class StepsItem : AbstractStepsItem
         _indicator = e.NameScope.Find<StepsItemIndicator>("PART_Indicator");
     }
 
+    /// <summary>
+    /// Calls the base member, which notifies the owner of a change of <see cref="Status" />, and then updates the
+    /// state that depends on the changed property: whether the step can be invoked, the circular progress state
+    /// of the indicator, the hover state of a step that becomes current, and the pseudo-classes of the item
+    /// brush overrides.
+    /// An override must call the base member; otherwise the owner is not notified.
+    /// </summary>
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
@@ -312,6 +377,10 @@ public class StepsItem : AbstractStepsItem
         }
     }
 
+    /// <summary>
+    /// Calls the base member, then shows the hover state on the indicator when the step can be invoked and is not
+    /// the current step.
+    /// </summary>
     protected override void OnPointerEntered(PointerEventArgs e)
     {
         base.OnPointerEntered(e);
@@ -321,6 +390,11 @@ public class StepsItem : AbstractStepsItem
         }
     }
 
+    /// <summary>
+    /// Calls the base member, then captures the pointer, stops gesture recognition and marks the press handled
+    /// when the step can be invoked and the left button is pressed, so that the matching release reaches
+    /// <see cref="OnPointerReleased" />.
+    /// </summary>
     protected override void OnPointerPressed(PointerPressedEventArgs e)
     {
         base.OnPointerPressed(e);
@@ -333,6 +407,12 @@ public class StepsItem : AbstractStepsItem
         }
     }
 
+    /// <summary>
+    /// Calls the base member, then ends a press that captured the pointer: it releases the capture and marks the
+    /// release handled. When the press started with the left button, the pointer is still inside the step and
+    /// the step can still be invoked, it asks the owner to make this step current. A release of a pointer that
+    /// the step did not capture is ignored.
+    /// </summary>
     protected override void OnPointerReleased(PointerReleasedEventArgs e)
     {
         base.OnPointerReleased(e);
@@ -353,6 +433,9 @@ public class StepsItem : AbstractStepsItem
         }
     }
 
+    /// <summary>
+    /// Clears the hover state of the indicator before the base member is called.
+    /// </summary>
     protected override void OnPointerCaptureLost(PointerCaptureLostEventArgs e)
     {
         if (_indicator is not null)
@@ -363,6 +446,10 @@ public class StepsItem : AbstractStepsItem
         base.OnPointerCaptureLost(e);
     }
 
+    /// <summary>
+    /// Marks Enter and Space as handled before the base member is called when the step can be invoked. The request
+    /// to change the current step is made in <see cref="OnKeyUp" />, not here.
+    /// </summary>
     protected override void OnKeyDown(KeyEventArgs e)
     {
         if (CanInvoke && e.Key is Key.Enter or Key.Space)
@@ -373,6 +460,10 @@ public class StepsItem : AbstractStepsItem
         base.OnKeyDown(e);
     }
 
+    /// <summary>
+    /// Asks the owner to make this step current when Enter or Space is released and the step can be invoked, and
+    /// marks the key as handled before the base member is called.
+    /// </summary>
     protected override void OnKeyUp(KeyEventArgs e)
     {
         if (CanInvoke && e.Key is Key.Enter or Key.Space)
@@ -384,6 +475,9 @@ public class StepsItem : AbstractStepsItem
         base.OnKeyUp(e);
     }
 
+    /// <summary>
+    /// Calls the base member, then clears the hover state of the indicator.
+    /// </summary>
     protected override void OnPointerExited(PointerEventArgs e)
     {
         base.OnPointerExited(e);

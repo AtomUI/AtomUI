@@ -4,8 +4,10 @@ using AtomUI.Theme.Schema;
 namespace AtomUI.Theme.Definitions;
 
 /// <summary>
-/// Binds a v2 theme document to the registry and runs the semantic checks of spec 7.10. Every diagnostic carries the
-/// source, line, column and element path of the offending element.
+/// Binds a v2 theme document to the registry and checks that what it names and writes is valid: the language is
+/// enabled, every axis value, Token, language Token and control is declared, and every value converts to its Token
+/// type. Every diagnostic carries the source, line, column and element path of the offending element; any error
+/// leaves the bound definition <see langword="null" />.
 /// </summary>
 internal static class ThemeDefinitionBinder
 {
@@ -316,7 +318,7 @@ internal static class ThemeDefinitionBinder
         return controls;
     }
 
-    // Spec 7.4: a theme that leaves an adjustable seed unlocked but writes a token derived from it gets a warning; the
+    // A theme that leaves an adjustable seed unlocked but writes a token derived from it gets a warning; the
     // value stays fixed when the user changes the seed. The derivation sets are declared by the language.
     private static void ReportStaleDerivedTokens(ThemeDocument document, DesignLanguageDescriptor language,
         IReadOnlySet<string> lockedSeeds, List<ThemeDefinitionDiagnostic> diagnostics)

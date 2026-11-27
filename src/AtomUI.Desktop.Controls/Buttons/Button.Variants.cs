@@ -10,18 +10,15 @@ using Avalonia.Media.Immutable;
 
 namespace AtomUI.Desktop.Controls;
 
-/// <summary>
-/// Variant theme variables: the text, background, border and shadow values a Button shows per state, chosen from
-/// the effective color and variant of the button.
-/// </summary>
-/// <remarks>
-/// Token-backed variables are read from the same resource keys the ControlTheme's <c>ButtonTokenResource</c> setters use
-/// (boxed <see cref="ButtonTokenKind"/> for Own Tokens, the owner's Effective Global key for global Tokens). Application,
-/// scoped and <c>ThemeConfigProvider</c> resources therefore reach the variant colours exactly as they reach every other
-/// Button Token. One set observes the active resource slots and refreshes only the values that change. Global keys use the registered
-/// identity of the instance (DropdownButton has its own), Own Tokens use that same terminal identity. Preset colours are not Tokens: they
-/// come from the captured snapshot's palettes and are recomputed when the theme publishes.
-/// </remarks>
+// Variant theme variables: the text, background, border and shadow values a Button shows per state, chosen from the
+// effective color and variant of the button.
+//
+// Token-backed variables are read from the same resource keys the ControlTheme's ButtonTokenResource setters use (boxed
+// ButtonTokenKind for Own Tokens, the owner's Effective Global key for global Tokens). Application, scoped and
+// ThemeConfigProvider resources therefore reach the variant colors exactly as they reach every other Button Token. One
+// set observes the active resource slots and refreshes only the values that change. Global keys use the registered
+// identity of the instance (DropdownButton has its own), Own Tokens use that same terminal identity. Preset colors are
+// not Tokens: they come from the captured snapshot's palettes and are recomputed when the theme publishes.
 public partial class Button
 {
     private const int VariantSlotCount = 10;
@@ -41,7 +38,7 @@ public partial class Button
     private OwnerTokenSet? _variantTokens;
     private int _configuringVariantSlot = -1;
 
-    // The behaviour Tokens only change with the theme snapshot, so ConfigureThemeAppearance resolves them and every
+    // The behavior Tokens only change with the theme snapshot, so ConfigureThemeAppearance resolves them and every
     // variant pass reads the cached value.
     private ButtonBehavior _behavior = ButtonBehavior.Default;
 
@@ -114,7 +111,7 @@ public partial class Button
 
     /// <summary>
     /// Success and Warning follow the semantic variant layout with Global status Tokens. Their solid shadow is derived
-    /// from the light status colour, so it is a snapshot value recomputed when the theme publishes.
+    /// from the light status color, so it is a snapshot value recomputed when the theme publishes.
     /// </summary>
     private void ConfigureStatusVariantThemeVariables(
         VariantTokens tokens,
@@ -567,7 +564,7 @@ public partial class Button
 
     private bool TryCaptureSnapshotTokens(out ControlTokenAccessor accessor)
     {
-        // Off-tree buttons (no themed root yet) get their preset colours once the theme subscription attaches a context.
+        // Off-tree buttons (no themed root yet) get their preset colors once the theme subscription attaches a context.
         if (ThemeScope.ResolveContext(this) is null)
         {
             accessor = default;
@@ -598,7 +595,9 @@ public partial class Button
         });
     }
 
-    /// <summary>A variant value: a Token resource key to bind, or a fixed value.</summary>
+    /// <summary>
+    /// A variant value: a Token resource key to bind, or a fixed value.
+    /// </summary>
     private readonly record struct VariantValue(object Source, bool IsResource)
     {
         internal static VariantValue Of(Color color) => new(ToBrush(color), false);
@@ -606,7 +605,9 @@ public partial class Button
         internal static VariantValue Of(BoxShadows shadows) => new(shadows, false);
     }
 
-    /// <summary>Resource keys of the Tokens a variant reads, matching the ControlTheme's ButtonTokenResource keys.</summary>
+    /// <summary>
+    /// Resource keys of the Tokens a variant reads, matching the ControlTheme's ButtonTokenResource keys.
+    /// </summary>
     private readonly struct VariantTokens
     {
         private readonly ControlTokenIdentity _identity;

@@ -4,7 +4,9 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls.Themes.Shadcn;
 
-/// <summary>The shadcn view of <see cref="ButtonToken"/>.</summary>
+/// <summary>
+/// The shadcn view of <see cref="ButtonToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class ButtonTokenRule : IControlTokenRule<ShadcnToken, ButtonToken>
 {
@@ -20,6 +22,8 @@ internal sealed class ButtonTokenRule : IControlTokenRule<ShadcnToken, ButtonTok
             global.ColorErrorActive      = ShadcnRecipes.CompositeOver(global.ColorError, 0.90, global.ColorBgContainer);
         }
         StandardButtonTokenCalculator.Calculate(in context, global, token);
+        // Ant Design formula kept as is: the registry `button` values are merged by ButtonTokenCalculator, before
+        // and after this geometry.
         token.GroupBorderColor = global.ColorPrimaryHover;
         token.ContentFontSize = global.FontSize;
         token.ContentLineHeight = ButtonGeometryTokenCalculator.CalculateContentLineHeight(token.ContentFontSize);

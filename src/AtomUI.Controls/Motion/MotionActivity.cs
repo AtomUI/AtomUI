@@ -3,7 +3,9 @@ using Avalonia.Controls.ApplicationLifetimes;
 
 namespace AtomUI.Controls.Commons;
 
-/// <summary>Where <see cref="MotionGate"/> reads activity from: the nearest injected source, else the application.</summary>
+/// <summary>
+/// Where <see cref="MotionGate" /> reads activity from: the nearest injected source, else the application.
+/// </summary>
 public static class MotionActivity
 {
     /// <summary>
@@ -15,11 +17,23 @@ public static class MotionActivity
 
     private static ApplicationActivitySource? s_application;
 
-    /// <summary>Activity of the whole application, from <see cref="IActivatableLifetime"/>; always active without one.</summary>
+    /// <summary>
+    /// Activity of the whole application, from <see cref="IActivatableLifetime" />; always active without one.
+    /// </summary>
     public static IMotionActivitySource Application => s_application ??= new ApplicationActivitySource();
 
+    /// <summary>
+    /// Reads the activity source in effect for <paramref name="visual" />.
+    /// </summary>
+    /// <returns>
+    /// The source set on <paramref name="visual" /> or inherited from an ancestor, or <see langword="null" /> when
+    /// there is none; a <see cref="MotionGate" /> then falls back to <see cref="Application" />.
+    /// </returns>
     public static IMotionActivitySource? GetSource(Visual visual) => visual.GetValue(SourceProperty);
 
+    /// <summary>
+    /// Sets the activity source on <paramref name="visual" />; every visual below it inherits the value.
+    /// </summary>
     public static void SetSource(Visual visual, IMotionActivitySource? source) => visual.SetValue(SourceProperty, source);
 
     private sealed class ApplicationActivitySource : IMotionActivitySource

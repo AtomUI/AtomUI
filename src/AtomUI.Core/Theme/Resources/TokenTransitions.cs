@@ -8,9 +8,9 @@ using Avalonia.Metadata;
 namespace AtomUI.Theme.Resources;
 
 /// <summary>
-/// Supplies a <see cref="Transitions"/> value whose transition durations are read from the Design Tokens of the
+/// Supplies a <see cref="Transitions" /> value whose transition durations are read from the Design Tokens of the
 /// control that receives it, so they follow theme switches, <c>EnableMotion</c>, per-control overrides and local
-/// <see cref="ThemeConfigProvider"/> scopes like every other Token read.
+/// <see cref="ThemeConfigProvider" /> scopes like every other Token read.
 /// </summary>
 /// <remarks>
 /// <para>
@@ -24,16 +24,16 @@ namespace AtomUI.Theme.Resources;
 ///     &lt;/atom:TokenTransitions&gt;
 /// &lt;/Setter&gt;
 /// </code>
-/// A transition that carries <see cref="DurationProperty"/> gets its <see cref="TransitionBase.Duration"/> from that
+/// A transition that carries <see cref="DurationProperty" /> gets its <see cref="TransitionBase.Duration" /> from that
 /// global Token; other transitions keep the duration written in the markup.
 /// </para>
 /// <para>
 /// A plain <c>&lt;Transitions&gt;</c> Setter value is one instance shared by every target of the style, and
-/// <see cref="TransitionBase.Duration"/> is read from the transition object when the transition starts, so a shared
+/// <see cref="TransitionBase.Duration" /> is read from the transition object when the transition starts, so a shared
 /// instance cannot carry per-control durations. The content is therefore deferred, like a template, and the extension
 /// returns a binding that is instantiated per target: it resolves the target's Effective Global value of each declared
-/// Token (through the inherited Token owner, exactly like <see cref="OwnerTokenResourceExtension"/>) and publishes a
-/// <see cref="Transitions"/> built for those durations. Targets that resolve the same durations share one built
+/// Token (through the inherited Token owner, exactly like <see cref="OwnerTokenResourceExtension" />) and publishes a
+/// <see cref="Transitions" /> built for those durations. Targets that resolve the same durations share one built
 /// instance, so the default theme allocates the transitions once per Setter rather than once per control.
 /// </para>
 /// </remarks>
@@ -48,7 +48,7 @@ public sealed class TokenTransitions : MarkupExtension
     private TokenTransitionsFactory? _factory;
 
     /// <summary>
-    /// Gets the global Design Token that supplies the duration of <paramref name="transition"/>.
+    /// Gets the global Design Token that supplies the duration of <paramref name="transition" />.
     /// </summary>
     public static SharedTokenKind? GetDuration(TransitionBase transition)
     {
@@ -57,7 +57,7 @@ public sealed class TokenTransitions : MarkupExtension
     }
 
     /// <summary>
-    /// Sets the global Design Token that supplies the duration of <paramref name="transition"/>.
+    /// Sets the global Design Token that supplies the duration of <paramref name="transition" />.
     /// </summary>
     public static void SetDuration(TransitionBase transition, SharedTokenKind? kind)
     {
@@ -66,7 +66,7 @@ public sealed class TokenTransitions : MarkupExtension
     }
 
     /// <summary>
-    /// The deferred <see cref="Transitions"/> content, built once for each distinct set of resolved durations.
+    /// The deferred <see cref="Transitions" /> content, built once for each distinct set of resolved durations.
     /// </summary>
     [Content]
     [TemplateContent(TemplateResultType = typeof(Transitions))]

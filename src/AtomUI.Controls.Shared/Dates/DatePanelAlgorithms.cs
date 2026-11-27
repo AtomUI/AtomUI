@@ -4,7 +4,9 @@ using AtomUI.Desktop.Controls.Internal.DateViewer;
 
 namespace AtomUI.Controls;
 
-/// <summary>Gregorian topology and unit comparisons without control or host dependencies.</summary>
+/// <summary>
+/// Gregorian topology and unit comparisons without control or host dependencies.
+/// </summary>
 internal static class DatePanelAlgorithms
 {
     internal static DateMonthLayout GetMonthLayout(DateOnly anchor, DayOfWeek firstDayOfWeek)
@@ -177,7 +179,9 @@ internal static class DatePanelAlgorithms
             : BuildPeriodPanel(input, anchor, firstDay, IsDateEnabled, IsPeriodEnabled);
     }
 
-    /// <summary>Project interaction state onto cached topology and availability.</summary>
+    /// <summary>
+    /// Project interaction state onto cached topology and availability.
+    /// </summary>
     internal static DatePanelModel ProjectState(DatePanelInput input, DatePanelModel topology)
     {
         var firstDay = input.FirstDayOfWeek ?? GetWeekFirstDay(input.Culture);

@@ -13,15 +13,19 @@ using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
 
-// 剪贴板：选中内容的复制格式化与写入
+// Clipboard: formatting the selected content for copying and writing it to the clipboard.
 public partial class DataGrid
 {
     /// <summary>
     /// This method formats a row (specified by a DataGridRowClipboardEventArgs) into
     /// the clipboard text builder when the DataGrid is copying its contents.
     /// </summary>
-    /// <param name="text">The destination clipboard text builder.</param>
-    /// <param name="e">DataGridRowClipboardEventArgs.</param>
+    /// <param name="text">
+    /// The destination clipboard text builder.
+    /// </param>
+    /// <param name="e">
+    /// DataGridRowClipboardEventArgs.
+    /// </param>
     private static void AppendClipboardContent(StringBuilder text, DataGridRowClipboardEventArgs e)
     {
         var clipboardRowContent = e.ClipboardRowContent;
@@ -73,7 +77,9 @@ public partial class DataGrid
     /// the control key, and the necessary prerequisites are met, the DataGrid will copy its contents
     /// to the Clipboard as text.
     /// </summary>
-    /// <returns>Whether or not the DataGrid handled the key press.</returns>
+    /// <returns>
+    /// Whether or not the DataGrid handled the key press.
+    /// </returns>
     private bool ProcessCopyKey(KeyModifiers modifiers)
     {
         KeyboardHelper.GetMetaKeyState(this, modifiers, out bool ctrl, out bool shift, out bool alt);

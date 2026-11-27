@@ -35,10 +35,14 @@
                                                  SemanticOwnerType="{x:Type atom:Drawer}"
                                                  PreviewStageMinHeight="434">
                         <gallery:SemanticPartPreview.PreviewContent>
-                            <!-- 对齐 antd getContainer={false} 的内联容器：ScrollContentPresenter 是
-                                 ScopeAwareAdornerLayer 的最近层宿主，层注入只包裹舞台自身，
-                                 不会逃逸到页面级滚动容器重挂整页内容；舞台限高裁剪，抽屉常开
-                                 渲染于舞台局部 layer。舞台用 MinHeight + 拉伸：空间充裕时自然长高，宿主钳制时随画布收缩，不与视口相抵被裁。 -->
+                            <!-- Mirrors the inline container of antd getContainer={false}: ScrollContentPresenter is
+                            the nearest layer host of ScopeAwareAdornerLayer, so the layer injection wraps only the
+                            stage itself and never escapes into the page-level scroll container to re-attach the
+                            whole page. The stage clips to its height limit, and the always-open drawer renders in
+                            the stage-local layer. The stage uses MinHeight plus stretching: it grows naturally
+                            when there is room and shrinks with the canvas when the host clamps it, so it is not
+                            clipped by fighting the viewport.
+                            -->
                             <ScrollContentPresenter>
                                 <Border x:Name="DrawerSemanticStage"
                                         MinHeight="320"
@@ -48,7 +52,9 @@
                                         BorderThickness="1"
                                         CornerRadius="{atom:SharedTokenResource BorderRadiusLG}"
                                         ClipToBounds="True">
-                                    <!-- Grid 让 owner 拉伸铺满舞台：root 部件高亮 = 整个内联容器（对齐 antd root 语义）。 -->
+                                    <!-- The Grid stretches the owner over the whole stage: highlighting the root part
+                                    covers the entire inline container (the antd root semantic).
+                                    -->
                                     <Grid>
                                         <atom:TextBlock Margin="24,16,24,0"
                                                         VerticalAlignment="Top"

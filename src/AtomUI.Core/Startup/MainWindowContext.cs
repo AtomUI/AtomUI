@@ -1,6 +1,8 @@
 namespace AtomUI;
 
-/// <summary><see cref="StartupBuilderExtensions.UseMainWindow"/> 工厂的上下文。</summary>
+/// <summary>
+/// Context passed to the factory registered with <see cref="StartupBuilderExtensions.UseMainWindow" />.
+/// </summary>
 public sealed class MainWindowContext
 {
     internal MainWindowContext(IProgress<StartupProgress> progress, CancellationToken cancellationToken)
@@ -9,9 +11,13 @@ public sealed class MainWindowContext
         CancellationToken = cancellationToken;
     }
 
-    /// <summary>汇报进度；Splash 在 UI 线程空闲时显示。</summary>
+    /// <summary>
+    /// Reports startup progress. The splash shows a report when the UI thread is idle.
+    /// </summary>
     public IProgress<StartupProgress> Progress { get; }
 
-    /// <summary>用户在交接前关闭 Splash 时取消。</summary>
+    /// <summary>
+    /// Becomes canceled when the user closes the splash before the handoff to the main window.
+    /// </summary>
     public CancellationToken CancellationToken { get; }
 }

@@ -20,24 +20,43 @@ using AtomUI.Theme;
 namespace AtomUI.Desktop.Controls;
 
 // Visual container follows the DataGrid owner, including TokenTransitions in its template.
+/// <summary>
+/// The header row that a data grid shows for a group of rows. It shows the name of the grouped property and
+/// the number of items in the group, and its expander button collapses or expands the group.
+/// </summary>
 [TokenOwnerTransparent]
 [PseudoClasses(StdPseudoClass.Pressed, StdPseudoClass.Current, StdPseudoClass.Expanded)]
 public class DataGridRowGroupHeader : TemplatedControl
 {
     #region 公共属性定义
 
+    /// <summary>
+    /// Identifies the <see cref="IsItemCountVisible" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsItemCountVisibleProperty =
         AvaloniaProperty.Register<DataGridRowGroupHeader, bool>(nameof(IsItemCountVisible));
     
+    /// <summary>
+    /// Identifies the <see cref="ItemCountFormat" /> property.
+    /// </summary>
     public static readonly StyledProperty<string> ItemCountFormatProperty =
         AvaloniaProperty.Register<DataGridRowGroupHeader, string>(nameof(ItemCountFormat));
     
+    /// <summary>
+    /// Identifies the <see cref="PropertyName" /> property.
+    /// </summary>
     public static readonly StyledProperty<string?> PropertyNameProperty =
         AvaloniaProperty.Register<DataGridRowGroupHeader, string?>(nameof(PropertyName));
     
+    /// <summary>
+    /// Identifies the <see cref="IsPropertyNameVisible" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsPropertyNameVisibleProperty =
         AvaloniaProperty.Register<DataGridRowGroupHeader, bool>(nameof(IsPropertyNameVisible));
     
+    /// <summary>
+    /// Identifies the <see cref="SublevelIndent" /> property.
+    /// </summary>
     public static readonly StyledProperty<double> SublevelIndentProperty =
         AvaloniaProperty.Register<DataGridRowGroupHeader, double>(
             nameof(SublevelIndent),
@@ -54,7 +73,8 @@ public class DataGridRowGroupHeader : TemplatedControl
     }
     
     /// <summary>
-    /// Gets or sets a value that indicates number format of items count
+    /// Composite format string for the item count text, where <c>{0}</c> is the number of items in the group.
+    /// When it is null or empty, the text is "(1 Item)" for one item and "({0} Items)" for any other count.
     /// </summary>
     public string ItemCountFormat
     {
@@ -81,8 +101,8 @@ public class DataGridRowGroupHeader : TemplatedControl
     }
     
     /// <summary>
-    /// Gets or sets a value that indicates the amount that the
-    /// children of the <see cref="T:AtomUI.Desktop.Controls.RowGroupHeader" /> are indented.
+    /// Gets or sets the amount by which the children of the <see cref="DataGridRowGroupHeader" /> are indented.
+    /// The value must be a finite number that is not negative.
     /// </summary>
     public double SublevelIndent
     {
@@ -192,6 +212,12 @@ public class DataGridRowGroupHeader : TemplatedControl
         }
     }
     
+    /// <summary>
+    /// Resolves the root panel, the expander button, the row header, the indent spacer and the two title text
+    /// blocks of the new template, and brings them in line with the current state: expander state, header
+    /// visibility, indent and title texts. Clips and transforms left on the children of the previous template
+    /// are cleared first.
+    /// </summary>
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         ClearChildClipGeometries();
@@ -244,6 +270,22 @@ public class DataGridRowGroupHeader : TemplatedControl
             !(OwningGrid?.GroupExpansion.CollapsedGroups.Contains(group.Key) ?? false));
     }
 
+    /// <summary>
+    /// Arranges the content, then keeps the frozen children of the root panel in place while the grid scrolls
+    /// horizontally.
+    /// </summary>
+    /// <param name="finalSize">
+    /// The final area within the parent that the header should use to arrange itself and its children.
+    /// </param>
+    /// <returns>
+    /// The size used by the arrangement of the base class.
+    /// </returns>
+    /// <remarks>
+    /// Each visible frozen child is shifted by the rounded horizontal scroll offset so that it stays in place,
+    /// and the other children are clipped where they would overlap a frozen one. When
+    /// <c>IsRowGroupHeadersFrozen</c> of the owning grid is <see langword="true" />, these shifts and clips are
+    /// removed instead.
+    /// </remarks>
     protected override Size ArrangeOverride(Size finalSize)
     {
         if (OwningGrid == null)
@@ -333,7 +375,9 @@ public class DataGridRowGroupHeader : TemplatedControl
         _childTranslateTransforms?.Clear();
     }
 
-    //TODO TabStop
+    // TODO TabStop: verify that the focus handling of this handler follows the tab stop rules of the grid.
+    // The left button path focuses the grid only while OwningGrid.IsTabStop is true; the right button path does
+    // not check it. Complete the handling where it is missing and remove this TODO when that is done.
     private void HandlePointerPressed(PointerPressedEventArgs e)
     {
         if (OwningGrid == null)
@@ -465,6 +509,10 @@ public class DataGridRowGroupHeader : TemplatedControl
         _headerElement?.EnsureGridLines();
     }
 
+    /// <summary>
+    /// Records that the pointer is over the header and refreshes the current and expanded pseudo-classes, while
+    /// the header is enabled. Calls the base member afterwards.
+    /// </summary>
     protected override void OnPointerEntered(PointerEventArgs e)
     {
         if (IsEnabled)
@@ -476,6 +524,10 @@ public class DataGridRowGroupHeader : TemplatedControl
         base.OnPointerEntered(e);
     }
 
+    /// <summary>
+    /// Records that the pointer left the header and refreshes the current and expanded pseudo-classes, while
+    /// the header is enabled. Calls the base member afterwards.
+    /// </summary>
     protected override void OnPointerExited(PointerEventArgs e)
     {
         if (IsEnabled)
@@ -574,7 +626,12 @@ public class DataGridRowGroupHeader : TemplatedControl
     private bool IsExpanded => SourceGroup is not null &&
                                !(OwningGrid?.GroupExpansion.CollapsedGroups.Contains(SourceGroup.Key) ?? false);
 
-    // 回收的组头会从 RowsPresenter 移除再加回而不重新应用模板，订阅须随可视树挂接成对建立与释放
+    // A recycled group header is removed from the rows presenter and added back without its template being
+    // applied again, so the subscription to the expander button is created on attach and released on detach.
+    /// <summary>
+    /// Subscribes to the checked state of the expander button whenever the header is attached to a visual tree.
+    /// Calls the base member first.
+    /// </summary>
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
@@ -589,6 +646,10 @@ public class DataGridRowGroupHeader : TemplatedControl
                                                      .Subscribe(HandleExpanderButtonIsCheckedChanged);
     }
 
+    /// <summary>
+    /// Releases the subscription to the expander button and removes the shifts and clips of the frozen children
+    /// when the header is detached from a visual tree. Calls the base member first.
+    /// </summary>
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnDetachedFromVisualTree(e);

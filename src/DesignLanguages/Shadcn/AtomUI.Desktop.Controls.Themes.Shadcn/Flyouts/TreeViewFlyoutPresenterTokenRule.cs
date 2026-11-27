@@ -4,7 +4,9 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls.Themes.Shadcn;
 
-/// <summary>The shadcn view of <see cref="TreeViewFlyoutPresenterToken"/>.</summary>
+/// <summary>
+/// The shadcn view of <see cref="TreeViewFlyoutPresenterToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class TreeViewFlyoutPresenterTokenRule : IControlTokenRule<ShadcnToken, TreeViewFlyoutPresenterToken>
 {

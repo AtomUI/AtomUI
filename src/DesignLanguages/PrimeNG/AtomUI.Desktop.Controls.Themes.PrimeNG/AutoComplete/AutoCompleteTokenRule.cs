@@ -3,7 +3,9 @@ using AtomUI.Theme.Languages;
 
 namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 
-/// <summary>The PrimeNG view of <see cref="AutoCompleteToken"/>.</summary>
+/// <summary>
+/// The PrimeNG view of <see cref="AutoCompleteToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class AutoCompleteTokenRule : IControlTokenRule<PrimeNGToken, AutoCompleteToken>
 {
@@ -11,7 +13,8 @@ internal sealed class AutoCompleteTokenRule : IControlTokenRule<PrimeNGToken, Au
     {
         var token  = target.Own;
         var global = target.Global;
-        // PrimeNG: the control-global overrides, read by the formulas below.
+        // PrimeNG: the control-global overrides of PrimeNGInputStage.Apply (form-field values); the formulas below
+        // read none, the theme ColorTextDisabled, BorderRadiusSM and BorderRadiusLG (CornerRadius, Foreground).
         PrimeNGAutoCompleteTokens.EvaluateGlobal(in context, global);
         AutoCompleteTokenCalculator.Calculate(in context, global, token);
         // PrimeNG: the preset's control values, over the formulas.

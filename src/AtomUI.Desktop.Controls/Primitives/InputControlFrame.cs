@@ -127,13 +127,15 @@ internal class InputControlFrame : ContentControl,
 
     /// <summary>
     /// Border brush set on the root of the hosting input control, template-bound by the host. When set, the theme
-    /// projects it onto <see cref="TemplatedControl.BorderBrush"/> after every state brush (antd <c>styles.root</c>);
+    /// projects it onto <see cref="TemplatedControl.BorderBrush" /> after every state brush (antd <c>styles.root</c>);
     /// unset hands the border back to the state machine.
     /// </summary>
     internal static readonly StyledProperty<IBrush?> HostBorderBrushProperty =
         AvaloniaProperty.Register<InputControlFrame, IBrush?>(nameof(HostBorderBrush));
 
-    /// <summary>Background set on the root of the hosting input control; projected like <see cref="HostBorderBrush"/>.</summary>
+    /// <summary>
+    /// Background set on the root of the hosting input control; projected like <see cref="HostBorderBrush" />.
+    /// </summary>
     internal static readonly StyledProperty<IBrush?> HostBackgroundProperty =
         AvaloniaProperty.Register<InputControlFrame, IBrush?>(nameof(HostBackground));
 
@@ -551,13 +553,10 @@ internal class InputControlFrame : ContentControl,
     ];
 
     /// <summary>
-    /// Points the theme variables at the Tokens of the current StyleVariant and EffectiveStatus; variables the variant's
-    /// interaction styles do not read have no Token. An unchanged variable is not resolved again.
-    /// </summary>
-    /// <summary>
-    /// The Tokens behind the theme variables, created and pointed at the current StyleVariant and EffectiveStatus on the
-    /// first read, so a style that reads a variable always finds it configured. It only listens to this frame, so it
-    /// lives and dies with it; entries resolve when a style first reads them.
+    /// The Tokens behind the theme variables, created and pointed at the current StyleVariant and EffectiveStatus on
+    /// the first read, so a style that reads a variable always finds it configured. It only listens to this frame, so
+    /// it lives and dies with it; entries resolve when a style first reads them. Variables the variant's interaction
+    /// styles do not read have no Token, and an unchanged variable is not resolved again.
     /// </summary>
     private OwnerTokenSet FrameTokens
     {

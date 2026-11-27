@@ -8,6 +8,10 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
 
+/// <summary>
+/// The panel that lays out the header row of a <see cref="DataGrid" /> with grouped columns: the header of
+/// each group above the header cells of the columns and groups it contains.
+/// </summary>
 public class DataGridGroupColumnHeadersPresenter : Panel, IChildIndexProvider
 {
     private EventHandler<ChildIndexChangedEventArgs>? _childIndexChanged;
@@ -134,6 +138,10 @@ public class DataGridGroupColumnHeadersPresenter : Panel, IChildIndexProvider
         return -1;
     }
 
+    /// <summary>
+    /// Calls the base implementation, then invalidates the cached child indexes so that the headers are
+    /// reported again through <see cref="IChildIndexProvider" />.
+    /// </summary>
     protected override void ChildrenChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
         base.ChildrenChanged(sender, e);
@@ -148,6 +156,17 @@ public class DataGridGroupColumnHeadersPresenter : Panel, IChildIndexProvider
 
     private double _columnHeight;
 
+    /// <summary>
+    /// Measures the group headers and the header cells of the displayed columns. When the data source is
+    /// empty, the star columns are resolved against the available width first.
+    /// </summary>
+    /// <param name="availableSize">
+    /// The size that the parent can give to this panel.
+    /// </param>
+    /// <returns>
+    /// The width of the visible columns and the total height of the headers, or <see langword="default" />
+    /// when the column headers are hidden.
+    /// </returns>
     protected override Size MeasureOverride(Size availableSize)
     {
         if (OwningGrid == null)
@@ -295,7 +314,7 @@ public class DataGridGroupColumnHeadersPresenter : Panel, IChildIndexProvider
         columns.EnsureVisibleEdgedColumnsWidth();
         
         double totalHeight = 0.0;
-        // 递归求高度
+        // Compute the height recursively for the column groups.
         var columnGroups = OwningGrid.ColumnGroups;
         for (var i = 0; i < columnGroups.Count; i++)
         {
@@ -406,7 +425,8 @@ public class DataGridGroupColumnHeadersPresenter : Panel, IChildIndexProvider
         return headerViewItem.Bounds.Size;
     }
 
-    // 该右冻结列左边缘到右边界的距离：按显示顺序累加它及其后所有可见右冻结列的宽度
+    // The distance from the left edge of this right-frozen column to the right boundary: the width of this
+    // column plus the widths of every visible right-frozen column that follows it in display order.
     private double RightFrozenWidth(DataGridColumn dataGridColumn)
     {
         var width = 0.0;
@@ -458,6 +478,16 @@ public class DataGridGroupColumnHeadersPresenter : Panel, IChildIndexProvider
     private double _frozenRightEdge;
     private double _scrollingLeftEdge;
     
+    /// <summary>
+    /// Arranges the group headers and the header cells of the displayed columns in the header row. While
+    /// columns are still being auto-sized, it only completes the auto-sizing and skips the arrangement.
+    /// </summary>
+    /// <param name="finalSize">
+    /// The size that the parent gives to this panel.
+    /// </param>
+    /// <returns>
+    /// The <paramref name="finalSize" /> that was given to this panel.
+    /// </returns>
     protected override Size ArrangeOverride(Size finalSize)
     {
         if (OwningGrid == null)
@@ -624,7 +654,8 @@ public class DataGridGroupColumnHeadersPresenter : Panel, IChildIndexProvider
             {
                 if (hasChildren)
                 {
-                    // 分组表头的位置由子项实际占据的范围决定（子项在下方先行排列）
+                    // A group header is positioned over the range that its children actually occupy; the children are
+                    // arranged first, further down.
                     selfHeight = groupItem.GroupHeaderViewItem.DesiredSize.Height;
                 }
                 else
@@ -673,8 +704,10 @@ public class DataGridGroupColumnHeadersPresenter : Panel, IChildIndexProvider
         }
     }
 
-    // 冻结列的子项会被钉在左/右边缘，分组表头按自身自然位置排列会与子项错位；
-    // 改为横跨子项实际排列后的范围，滚动分组时与原先“自然位置减去横向偏移”的结果一致。
+    // The children of frozen columns are pinned to the left or right edge, so a group header arranged at its
+    // own natural position would be misaligned with them. It spans the range that the children occupy after
+    // they are arranged instead, which gives the same result as the former natural position minus the
+    // horizontal offset while a group is scrolled.
     private void ArrangeGroupHeaderOverChildren(IDataGridColumnGroupItemInternal groupItem,
                                                 DataGridHeaderViewItem groupHeaderViewItem,
                                                 double y,
@@ -708,7 +741,8 @@ public class DataGridGroupColumnHeadersPresenter : Panel, IChildIndexProvider
         }
     }
 
-    // 右冻结区的起点：滚动内容在其右侧的部分被右冻结列遮挡
+    // The start of the right-frozen area. The part of the scrolling content to the right of it is covered by
+    // the right-frozen columns.
     private double RightFrozenStart =>
         _frozenRightEdge - (OwningGrid?.ColumnsInternal.GetVisibleRightFrozenEdgedColumnsWidth() ?? 0);
 
@@ -733,10 +767,18 @@ public class DataGridGroupColumnHeadersPresenter : Panel, IChildIndexProvider
     /// <summary>
     /// Clips the DragIndicator and DropLocationIndicator controls according to current ColumnHeaderPresenter constraints.
     /// </summary>
-    /// <param name="control">The DragIndicator or DropLocationIndicator</param>
-    /// <param name="height">The available height</param>
-    /// <param name="frozenColumnsWidth">The width of the frozen column region</param>
-    /// <param name="controlLeftEdge">The left edge of the control to clip</param>
+    /// <param name="control">
+    /// The DragIndicator or DropLocationIndicator
+    /// </param>
+    /// <param name="height">
+    /// The available height
+    /// </param>
+    /// <param name="frozenColumnsWidth">
+    /// The width of the frozen column region
+    /// </param>
+    /// <param name="controlLeftEdge">
+    /// The left edge of the control to clip
+    /// </param>
     private void EnsureColumnReorderingClip(Control control, double height, double frozenColumnsWidth,
                                             double controlLeftEdge)
     {

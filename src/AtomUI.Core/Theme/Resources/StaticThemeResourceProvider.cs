@@ -4,7 +4,8 @@ using Avalonia.Styling;
 namespace AtomUI.Theme.Resources;
 
 /// <summary>
-/// 静态资源固定层：Prepare 处理新资源的 owner，Commit 只交换查询表，通知由主题 Publish 统一发出。
+/// Fixed layer that holds the static theme resources. Prepare attaches the owner to every new resource,
+/// Commit only swaps the lookup table, and the change notifications are issued once by the theme Publish step.
 /// </summary>
 internal sealed class StaticThemeResourceProvider : IResourceProvider
 {
@@ -61,7 +62,8 @@ internal sealed class StaticThemeResourceProvider : IResourceProvider
             {
                 foreach (var resource in table.Resources)
                 {
-                    // AddOwner 可以先赋 Owner 再在回调中抛错；尝试挂载者也必须参加回滚。
+                    // Add the resource to _attached before AddOwner runs: AddOwner may assign its Owner and then throw
+                    // from a callback, so a resource whose attachment failed halfway must be rolled back too.
                     if (_attached.Add(resource))
                     {
                         resource.AddOwner(_ownerBridge);
@@ -210,7 +212,8 @@ internal sealed class StaticThemeResourceProvider : IResourceProvider
             {
                 var known = candidates is not null && knownIndex < candidates.Count ? candidates[knownIndex] : -1;
                 var unknown = unknownIndex < _unknown.Count ? _unknown[unknownIndex] : -1;
-                // 已知候选和开放资产按同一个全局倒序归并，不能越过未知高优先级覆盖。
+                // Known candidates and resources with unknown keys are merged in one descending index
+                // order, so the lookup does not skip a higher-priority resource that may override the key.
                 var index = known > unknown ? candidates![knownIndex++] : _unknown[unknownIndex++];
                 var resource = Resources[index];
                 bool found;

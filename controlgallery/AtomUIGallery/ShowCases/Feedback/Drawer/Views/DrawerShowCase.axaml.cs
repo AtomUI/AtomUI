@@ -38,6 +38,7 @@ public partial class DrawerShowCase : GalleryReactiveUserControl<DrawerViewModel
         InitializeComponent();
     }
 
+    /// <inheritdoc />
     protected override void OnDataContextChanged(EventArgs e)
     {
         base.OnDataContextChanged(e);

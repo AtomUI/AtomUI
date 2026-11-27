@@ -4,7 +4,9 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls.Themes.Shadcn;
 
-/// <summary>The shadcn view of <see cref="BreadcrumbToken"/>.</summary>
+/// <summary>
+/// The shadcn view of <see cref="BreadcrumbToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class BreadcrumbTokenRule : IControlTokenRule<ShadcnToken, BreadcrumbToken>
 {

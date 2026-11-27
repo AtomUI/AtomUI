@@ -5,16 +5,21 @@ using Avalonia.Controls;
 namespace AtomUI.Native.Linux;
 
 /// <summary>
-/// X11 窗口型 Popup 的阴影穿透：用 SHAPE 扩展的 <c>ShapeInput</c> 把输入区域收缩到内容形状，
-/// 可见区域不变，阴影仍与内容同一 surface 同帧绘制。
+/// Shadow pass-through for a windowed Popup on X11: <c>ShapeInput</c> of the SHAPE extension shrinks the input
+/// region to the content shape. The visible area stays unchanged, so the shadow is still drawn in the same
+/// frame and on the same surface as the content.
 /// <para>
-/// 与 Windows 的两层方案不同，X 服务器按输入形状选择接收窗口，穿透对同进程与跨进程窗口一致生效，
-/// 无需轮询光标。输入形状是预先提交的区域而非逐点查询，因此在布局变化与动效状态变化时重新计算，
-/// 内容未变时不重复下发请求。
+/// Unlike the two-layer approach on Windows, the X server selects the receiving window by its input shape, so
+/// the pass-through works alike for windows of the same process and of other processes and needs no cursor
+/// polling. The input shape is a region submitted ahead of time rather than a per-point query, so it is
+/// recomputed when the layout or the motion state changes, and no request is sent again while the content is
+/// unchanged.
 /// </para>
 /// <para>
-/// GPU 渲染时 Avalonia 在 Popup 窗口下创建同尺寸的渲染子窗口。X 服务器查找指针所在窗口时，
-/// 父窗口输入形状外的点不会再进入其子窗口，因此只需设置顶层 XID（与 <c>X11WindowChromeManager</c> 一致）。
+/// With GPU rendering, Avalonia creates a rendering child window of the same size under the Popup window. When
+/// the X server looks up the window under the pointer, a point outside the parent's input shape does not reach
+/// its child windows either, so only the top-level XID needs to be set (the same as
+/// <c>X11WindowChromeManager</c> does).
 /// </para>
 /// </summary>
 [SupportedOSPlatform("linux")]
@@ -24,7 +29,7 @@ internal sealed class X11PopupShadowInputRegion : IPopupShadowHitTest
     private readonly IntPtr _handle;
     private readonly Func<bool> _isInputSuspended;
     private readonly Func<PopupContentShape?> _getContentShape;
-    // null 表示当前为默认输入形状（整个窗口）
+    // null means the default input shape is current (the whole window).
     private PixelRect[]? _appliedRegion;
     private bool _isDisposed;
 
@@ -60,7 +65,7 @@ internal sealed class X11PopupShadowInputRegion : IPopupShadowHitTest
 
     private static IntPtr? TryGetX11Handle(TopLevel popupRoot)
     {
-        // Wayland 等非 X11 后端的句柄描述不是 XID
+        // On backends other than X11, such as Wayland, the handle descriptor is not an XID.
         if (popupRoot.TryGetPlatformHandle() is not { HandleDescriptor: "XID", Handle: var handle } ||
             handle == IntPtr.Zero ||
             !XcbConnectionHolder.IsShapeSupported)
@@ -86,7 +91,8 @@ internal sealed class X11PopupShadowInputRegion : IPopupShadowHitTest
             return;
         }
 
-        // 动效期间空区域，整窗穿透；动效结束后由 Popup 通知恢复为内容形状
+        // Empty region during a motion: the whole window passes input through. The Popup reports the end of the
+        // motion, and the content shape is then restored.
         List<PixelRect>? region = null;
         if (_isInputSuspended())
         {
@@ -126,8 +132,9 @@ internal sealed class X11PopupShadowInputRegion : IPopupShadowHitTest
 
         _isDisposed = true;
         _popupRoot.LayoutUpdated -= HandleLayoutUpdated;
-        // Popup 关闭时 Avalonia 先销毁原生窗口并置空 PlatformImpl，再触发 Popup.Closed；
-        // 窗口仍存活时才恢复默认输入形状，避免对已销毁的 XID 发请求
+        // When a Popup closes, Avalonia destroys the native window and clears PlatformImpl before it raises
+        // Popup.Closed. Restore the default input shape only while the window is still alive, to avoid sending
+        // requests to a destroyed XID.
         if (_appliedRegion is not null && _popupRoot.PlatformImpl is not null)
         {
             WindowUtilsLinux.ClearInputShape(_handle);

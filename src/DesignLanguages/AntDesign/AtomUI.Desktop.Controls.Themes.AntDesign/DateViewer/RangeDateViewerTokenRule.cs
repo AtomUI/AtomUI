@@ -3,7 +3,9 @@ using AtomUI.Theme.Languages;
 
 namespace AtomUI.Desktop.Controls.Themes.AntDesign;
 
-/// <summary>The AntDesign view of <see cref="RangeDateViewerToken"/>.</summary>
+/// <summary>
+/// The AntDesign view of <see cref="RangeDateViewerToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class RangeDateViewerTokenRule : IControlTokenRule<AntDesignToken, RangeDateViewerToken>
 {

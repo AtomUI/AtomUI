@@ -4,7 +4,9 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls.Themes.Shadcn;
 
-/// <summary>The shadcn view of <see cref="ResultToken"/>.</summary>
+/// <summary>
+/// The shadcn view of <see cref="ResultToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class ResultTokenRule : IControlTokenRule<ShadcnToken, ResultToken>
 {
@@ -12,6 +14,7 @@ internal sealed class ResultTokenRule : IControlTokenRule<ShadcnToken, ResultTok
     {
         var token  = target.Own;
         var global = target.Global;
+        // Ant Design formula kept as is: shadcn has no result, so the language has no values of its own.
         token.HeaderFontSize    = global.FontSizeHeading3;
         token.SubHeaderFontSize = global.FontSize;
         token.StatusIconSize    = global.FontSizeHeading3 * 3;

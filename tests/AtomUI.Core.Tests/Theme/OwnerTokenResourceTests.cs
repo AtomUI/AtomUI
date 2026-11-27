@@ -320,7 +320,7 @@ public class OwnerTokenResourceTests
             published.Count.ShouldBe(1, "the accessor publishes its initial value once");
             published[0].ShouldBeAssignableTo<ISolidColorBrush>()!.Color.ShouldBe(Color.Parse("#FF0000"));
 
-            // A theme publish that changes another owner token but leaves the border colour alone, and explicit
+            // A theme publish that changes another owner token but leaves the border color alone, and explicit
             // refreshes, republish nothing.
             fixture.Apply(new ThemeConfigBuilder()
                           .WithControl(s_lineEditIdentity, new ControlThemeConfigBuilder()
@@ -516,7 +516,9 @@ public class OwnerTokenResourceTests
         public double Height { get; set; }
     }
 
-    /// <summary>The LineEdit's rule fails; the compiler reports it when the control is first queried.</summary>
+    /// <summary>
+    /// The LineEdit's rule fails; the compiler reports it when the control is first queried.
+    /// </summary>
     internal sealed class ThrowingLineEditTokenRule : IControlTokenRule<AntDesignToken, ThrowingLineEditToken>
     {
         public void Apply(in TokenEvaluationContext<AntDesignToken> context, ControlTokenTarget<ThrowingLineEditToken> target) =>
@@ -535,7 +537,7 @@ public class OwnerTokenResourceTests
 
     /// <summary>
     /// Counts the target's PropertyChanged, ResourcesChanged and ActualThemeVariantChanged handlers that
-    /// belong to an <see cref="OwnerTokenBinding"/>; one live binding owns exactly one of each.
+    /// belong to an <see cref="OwnerTokenBinding" />; one live binding owns exactly one of each.
     /// </summary>
     private static int OwnerBindingHandlerCount(StyledElement target)
     {
@@ -574,7 +576,9 @@ public class OwnerTokenResourceTests
         return allocated;
     }
 
-    /// <summary>Shared with <see cref="TokenResourceBinderPublishTests"/>, which binds through the same manager/window setup.</summary>
+    /// <summary>
+    /// Shared with <see cref="TokenResourceBinderPublishTests" />, which binds through the same manager/window setup.
+    /// </summary>
     internal sealed class Fixture : IDisposable
     {
         private readonly Window _window;
@@ -626,7 +630,7 @@ public class OwnerTokenResourceTests
 
         internal FrameTestPrimitive CreatePrimitive() => new()
         {
-            // AXAML 等价写法：<Setter Property="BorderBrush" Value="{atom:OwnerTokenResource ColorBorder}" />
+            // AXAML equivalent: <Setter Property="BorderBrush" Value="{atom:OwnerTokenResource ColorBorder}" />
             Theme = new ControlTheme(typeof(FrameTestPrimitive))
             {
                 Setters =
@@ -718,7 +722,7 @@ public class OwnerTokenResourceTests
     }
 
     /// <summary>
-    /// Allows only the control-template context query that <see cref="DynamicResourceExtension"/> also
+    /// Allows only the control-template context query that <see cref="DynamicResourceExtension" /> also
     /// performs; resolving an owner or a resource while loading markup would request anything else.
     /// </summary>
     private sealed class ThrowingServiceProvider(IAvaloniaXamlIlControlTemplateProvider? templateProvider = null)

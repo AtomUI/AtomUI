@@ -4,7 +4,9 @@ using AtomUI.Theme.Languages;
 
 namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 
-/// <summary>The PrimeNG view of <see cref="TourToken"/>.</summary>
+/// <summary>
+/// The PrimeNG view of <see cref="TourToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class TourTokenRule : IControlTokenRule<PrimeNGToken, TourToken>
 {
@@ -12,8 +14,10 @@ internal sealed class TourTokenRule : IControlTokenRule<PrimeNGToken, TourToken>
     {
         var token  = target.Own;
         var global = target.Global;
-        // PrimeNG: the control-global overrides, read by the formulas below.
+        // PrimeNG: no control-global overrides; EvaluateGlobal writes nothing.
         PrimeNGTourTokens.EvaluateGlobal(in context, global);
+        // Ant Design formula kept as is: the PrimeNG tour stage at the end of the method replaces only
+        // TourBorderRadius; the sizes and colors are the Ant formula over the PrimeNG global tokens.
         token.CloseBtnSize          = global.FontSize * global.RelativeLineHeight;
         token.PrimaryPrevBtnBg      = global.ColorTextLightSolid.SetAlphaF(0.15);
         token.PrimaryNextBtnHoverBg = ColorUtils.OnBackground(global.ColorBgTextHover, global.ColorWhite);

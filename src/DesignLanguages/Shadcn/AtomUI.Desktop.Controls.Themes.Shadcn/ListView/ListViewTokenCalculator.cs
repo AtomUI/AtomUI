@@ -5,9 +5,16 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls.Themes.Shadcn;
 
-/// <summary>The shadcn values of the shared <see cref="AbstractListViewToken"/> layer.</summary>
+/// <summary>
+/// The shadcn values of the shared <see cref="AbstractListViewToken" /> layer.
+/// </summary>
 public static class ListViewTokenCalculator
 {
+    /// <summary>
+    /// Assigns the shadcn values to <paramref name="token" />, the shared
+    /// <see cref="AbstractListViewToken" /> layer. The hover and selected item colors and backgrounds come from
+    /// the list item recipe of the language in <paramref name="context" />.
+    /// </summary>
     public static void Calculate(in TokenEvaluationContext<ShadcnToken> context, DesignToken global, AbstractListViewToken token)
     {
         var colorTextDisabled  = global.ColorTextDisabled;
@@ -24,6 +31,7 @@ public static class ListViewTokenCalculator
 
         token.ItemDisabledColor = colorTextDisabled;
 
+        // The item padding and the values after it keep the Ant formula.
         token.ItemPaddingLG = new Thickness(global.UniformlyPadding, 0);
         token.ItemPaddingSM = new Thickness(global.UniformlyPaddingXS, 0);
         token.ItemPadding   = new Thickness(global.UniformlyPaddingSM, 0);

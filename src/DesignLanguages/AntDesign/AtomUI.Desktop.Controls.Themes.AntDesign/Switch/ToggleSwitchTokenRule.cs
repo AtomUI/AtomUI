@@ -6,7 +6,9 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls.Themes.AntDesign;
 
-/// <summary>The AntDesign view of <see cref="ToggleSwitchToken"/>.</summary>
+/// <summary>
+/// The AntDesign view of <see cref="ToggleSwitchToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class ToggleSwitchTokenRule : IControlTokenRule<AntDesignToken, ToggleSwitchToken>
 {
@@ -67,7 +69,7 @@ internal sealed class ToggleSwitchTokenRule : IControlTokenRule<AntDesignToken, 
 
         token.ContentIconSize            = token.TrackHeightSM;
         token.ContentIconSizeSM          = token.TrackHeightSM - global.UniformlyPaddingXXS;
-        token.LoadingAnimationDuration   = TimeSpan.FromMilliseconds(1200); // 毫秒
+        token.LoadingAnimationDuration   = TimeSpan.FromMilliseconds(1200);
         token.OffStateLoadIndicatorColor = ColorUtils.FromRgbF(0.4,0.0, 0.0, 0.0);
     }
 }

@@ -5,7 +5,9 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls.Themes.AntDesign;
 
-/// <summary>The AntDesign view of <see cref="LunarCalendarToken"/>.</summary>
+/// <summary>
+/// The AntDesign view of <see cref="LunarCalendarToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class LunarCalendarTokenRule : IControlTokenRule<AntDesignToken, LunarCalendarToken>
 {
@@ -17,6 +19,8 @@ internal sealed class LunarCalendarTokenRule : IControlTokenRule<AntDesignToken,
 
         if ((context.Variant.Appearance == ThemeAppearance.Dark))
         {
+            // In dark appearance the fullscreen month view fills a selected date with ItemActiveBg, so the two
+            // text lines take the body text color instead of the primary color.
             token.ItemActiveColor = global.ColorText;
         }
         token.MiniDateCellSize = global.ControlHeightLG;

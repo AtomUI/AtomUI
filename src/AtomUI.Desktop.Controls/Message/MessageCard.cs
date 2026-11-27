@@ -11,6 +11,10 @@ using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
 
+/// <summary>
+/// One message of a <see cref="WindowMessageManager" />: a status icon and a text that enter, stack and close
+/// with a motion.
+/// </summary>
 [PseudoClasses(MessageCardPseudoClass.Error, 
     MessageCardPseudoClass.Information,
     MessageCardPseudoClass.Success, 
@@ -33,7 +37,7 @@ public partial class MessageCard : TemplatedControl, IMotionAwareControl, IFeedb
         AvaloniaProperty.Register<MessageCard, bool>(nameof(IsClosed));
 
     /// <summary>
-    /// Defines the <see cref="NotificationType" /> property
+    /// Identifies the <see cref="MessageType" /> property.
     /// </summary>
     public static readonly StyledProperty<MessageType> MessageTypeProperty =
         AvaloniaProperty.Register<MessageCard, MessageType>(nameof(MessageType));
@@ -44,12 +48,21 @@ public partial class MessageCard : TemplatedControl, IMotionAwareControl, IFeedb
     public static readonly RoutedEvent<RoutedEventArgs> MessageClosedEvent =
         RoutedEvent.Register<MessageCard, RoutedEventArgs>(nameof(MessageClosed), RoutingStrategies.Bubble);
 
+    /// <summary>
+    /// Identifies the <see cref="Icon" /> property.
+    /// </summary>
     public static readonly StyledProperty<PathIcon?> IconProperty = 
         AvaloniaProperty.Register<MessageCard, PathIcon?>(nameof(Icon));
 
+    /// <summary>
+    /// Identifies the <see cref="Message" /> property.
+    /// </summary>
     public static readonly StyledProperty<string> MessageProperty =
         AvaloniaProperty.Register<MessageCard, string>(nameof(Message));
 
+    /// <summary>
+    /// Identifies the <see cref="IsMotionEnabled" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<MessageCard>();
 
@@ -61,7 +74,8 @@ public partial class MessageCard : TemplatedControl, IMotionAwareControl, IFeedb
         Border.BoxShadowProperty.AddOwner<MessageCard>();
 
     /// <summary>
-    /// Determines if the notification is already closing.
+    /// Tells that the card is closing. <see cref="Close" /> sets it and nothing resets it: it turns
+    /// <see langword="true" /> when the close starts and stays so after the card is closed.
     /// </summary>
     public bool IsClosing
     {
@@ -70,7 +84,9 @@ public partial class MessageCard : TemplatedControl, IMotionAwareControl, IFeedb
     }
 
     /// <summary>
-    /// Determines if the notification is closed.
+    /// Tells that the card is closed and hidden. The card sets it when its close motion has finished, or at once
+    /// when <see cref="IsMotionEnabled" /> is <see langword="false" />. When it becomes <see langword="true" />,
+    /// <see cref="MessageClosed" /> is raised.
     /// </summary>
     public bool IsClosed
     {
@@ -79,7 +95,8 @@ public partial class MessageCard : TemplatedControl, IMotionAwareControl, IFeedb
     }
 
     /// <summary>
-    /// Gets or sets the type of the notification
+    /// The kind of message. It selects the status icon that the card shows while <see cref="Icon" /> is
+    /// <see langword="null" />, and the colors of the card.
     /// </summary>
     public MessageType MessageType
     {
@@ -88,7 +105,9 @@ public partial class MessageCard : TemplatedControl, IMotionAwareControl, IFeedb
     }
 
     /// <summary>
-    /// Raised when the <see cref="MessageCard" /> has closed.
+    /// Raised after <see cref="IsClosed" /> became <see langword="true" />, that is, when the close has completed.
+    /// <see cref="WindowMessageManager" /> handles it by removing the card and then running the close callback of
+    /// the message. The event bubbles up.
     /// </summary>
     public event EventHandler<RoutedEventArgs>? MessageClosed
     {
@@ -96,18 +115,33 @@ public partial class MessageCard : TemplatedControl, IMotionAwareControl, IFeedb
         remove => RemoveHandler(MessageClosedEvent, value);
     }
 
+    /// <summary>
+    /// The icon shown at the left of the message text. While the value is <see langword="null" />, the card shows
+    /// the status icon that <see cref="MessageType" /> selects. That icon is written at
+    /// <see cref="BindingPriority.Template" />, so a value set on the card wins, and setting the property to
+    /// <see langword="null" /> returns to the built-in icon.
+    /// </summary>
     public PathIcon? Icon
     {
         get => GetValue(IconProperty);
         set => SetValue(IconProperty, value);
     }
 
+    /// <summary>
+    /// The text shown in the body of the card.
+    /// </summary>
     public string Message
     {
         get => GetValue(MessageProperty);
         set => SetValue(MessageProperty, value);
     }
 
+    /// <summary>
+    /// Controls whether the card plays an entry motion when it appears and a close motion when it closes; both use
+    /// <see cref="Position" /> and <see cref="OpenCloseMotionDuration" />. With <see langword="false" /> the card is
+    /// shown and closed at once. The theme takes the value from the <c>EnableMotion</c> design Token, and
+    /// <see cref="WindowMessageManager" /> relays its own value to every card it shows.
+    /// </summary>
     public bool IsMotionEnabled
     {
         get => GetValue(IsMotionEnabledProperty);
@@ -127,7 +161,10 @@ public partial class MessageCard : TemplatedControl, IMotionAwareControl, IFeedb
 
     #region 内部属性定义
 
-    /// <summary>回调：消息卡片关闭时触发，由 WindowMessageManager 设置以避免 lambda 闭包。</summary>
+    /// <summary>
+    /// Callback that runs once the card has closed. <see cref="WindowMessageManager" /> sets it to avoid a lambda
+    /// closure.
+    /// </summary>
     internal Action? OnClose { get; set; }
 
     internal Action<IFeedbackStackItem, bool>? HoverChanged { get; set; }
@@ -171,6 +208,11 @@ public partial class MessageCard : TemplatedControl, IMotionAwareControl, IFeedb
         _motionCoordinator = new FeedbackCardMotionCoordinator(CompleteCloseMotion);
     }
     
+    /// <summary>
+    /// Starts closing the card. With <see cref="IsMotionEnabled" /> the close motion plays, otherwise the card is
+    /// closed at once; either way <see cref="MessageClosed" /> is raised once the close has completed. The call
+    /// returns before that, and further calls have no effect.
+    /// </summary>
     public void Close()
     {
         if (IsClosing)
@@ -205,18 +247,32 @@ public partial class MessageCard : TemplatedControl, IMotionAwareControl, IFeedb
         OnClose = null;
     }
 
+    /// <summary>
+    /// Reports through <see cref="HoverChanged" /> that the pointer is over the card, which lets the owner pause the
+    /// expiry of the card. Calls the base method first.
+    /// </summary>
     protected override void OnPointerEntered(Avalonia.Input.PointerEventArgs e)
     {
         base.OnPointerEntered(e);
         HoverChanged?.Invoke(this, true);
     }
 
+    /// <summary>
+    /// Reports through <see cref="HoverChanged" /> that the pointer left the card. Calls the base method first.
+    /// </summary>
     protected override void OnPointerExited(Avalonia.Input.PointerEventArgs e)
     {
         base.OnPointerExited(e);
         HoverChanged?.Invoke(this, false);
     }
 
+    /// <summary>
+    /// Reacts to property changes after the base method: updates the pseudo-classes for <see cref="MessageType" />,
+    /// restores the built-in icon for a <see langword="null" /> <see cref="Icon" />, starts or completes the close
+    /// and raises <see cref="MessageClosed" /> for <see cref="IsClosing" /> and <see cref="IsClosed" />, and hands
+    /// <see cref="IsMotionEnabled" />, <see cref="Position" /> and <see cref="OpenCloseMotionDuration" /> to the
+    /// motion coordinator.
+    /// </summary>
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
@@ -283,6 +339,10 @@ public partial class MessageCard : TemplatedControl, IMotionAwareControl, IFeedb
         }
     }
 
+    /// <summary>
+    /// Takes the template's <c>PART_Frame</c> as the target of the card motion, then applies the pseudo-classes and
+    /// the built-in status icon. Calls the base method first.
+    /// </summary>
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
@@ -292,6 +352,10 @@ public partial class MessageCard : TemplatedControl, IMotionAwareControl, IFeedb
         SetupDefaultMessageIcon();
     }
 
+    /// <summary>
+    /// Hands the motion target back to the motion coordinator, because detaching released it. Calls the base
+    /// method first.
+    /// </summary>
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
@@ -309,6 +373,9 @@ public partial class MessageCard : TemplatedControl, IMotionAwareControl, IFeedb
             OpenCloseMotionDuration);
     }
 
+    /// <summary>
+    /// Releases the motion target before the base method is called. A card that is closing is closed at once here.
+    /// </summary>
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         _motionCoordinator.DetachTarget(IsClosing, IsClosed);

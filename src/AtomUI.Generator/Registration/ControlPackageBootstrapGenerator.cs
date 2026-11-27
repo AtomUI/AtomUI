@@ -4,9 +4,19 @@ using Microsoft.CodeAnalysis;
 
 namespace AtomUI.Generator;
 
+/// <summary>
+/// For a compilation that references <c>ControlPackageMarkerAttribute</c>: finds every control package marked
+/// with <c>[ControlPackageMarker]</c> in the referenced assemblies, transitively, and emits
+/// <c>GeneratedControlPackageBootstrap.g.cs</c>, one <c>TypeMapAssemblyTarget</c> assembly attribute per package,
+/// when the TypeMap backend is selected. Malformed markers and package identity conflicts are reported in any case.
+/// </summary>
 [Generator]
 public sealed class ControlPackageBootstrapGenerator : IIncrementalGenerator
 {
+    /// <summary>
+    /// Registers the source output that builds the package bootstrap once per compilation from the compilation and
+    /// the global analyzer options.
+    /// </summary>
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
         var output = context.CompilationProvider.Combine(context.AnalyzerConfigOptionsProvider)

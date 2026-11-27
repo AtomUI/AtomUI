@@ -164,7 +164,7 @@
             </Setter>
         </Style>
 
-        <!-- 公用样式开始 -->
+        <!-- Shared styles start -->
 
         <Style Selector="^[IsMotionEnabled=True]">
             <Setter Property="Transitions">
@@ -326,9 +326,9 @@
         <Style Selector="^:disabled[DisablesWithOpacity=True]">
             <Setter Property="Opacity" Value="{CompiledBinding $self.ThemeDisabledOpacity}" />
         </Style>
-        <!-- 公用样式结束 -->
+        <!-- Shared styles end -->
 
-        <!-- Color / Variant 视觉变量开始 -->
+        <!-- Color / Variant visual variables start -->
         <Style Selector="^:not(:disabled), ^[DisablesWithOpacity=True]">
             <Setter Property="Foreground"
                     Value="{Binding VariantAppearance.Text, RelativeSource={RelativeSource Self}}" />
@@ -400,6 +400,6 @@
             <Setter Property="BoxShadow"
                     Value="{Binding VariantAppearance.Shadow, RelativeSource={RelativeSource TemplatedParent}}" />
         </Style>
-        <!-- Color / Variant 视觉变量结束 -->
+        <!-- Color / Variant visual variables end -->
     </Style>
 </ControlTheme>

@@ -4,7 +4,9 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 
-/// <summary>The PrimeNG view of <see cref="PaginationToken"/>.</summary>
+/// <summary>
+/// The PrimeNG view of <see cref="PaginationToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class PaginationTokenRule : IControlTokenRule<PrimeNGToken, PaginationToken>
 {
@@ -12,9 +14,12 @@ internal sealed class PaginationTokenRule : IControlTokenRule<PrimeNGToken, Pagi
     {
         var token  = target.Own;
         var global = target.Global;
-        // PrimeNG: the control-global overrides, read by the formulas below.
+        // PrimeNG: the control-global overrides (UniformlyMarginXS), read by the formulas below
+        // (PaginationTokenCalculator) and by the Pagination theme (ItemSpacing).
         PrimeNGPaginationTokens.EvaluateGlobal(in context, global);
         PaginationTokenCalculator.Calculate(in context, global, token);
+        // Ant Design formula kept as is: the PrimeNG paginator stage at the end of the method replaces the item
+        // size, radius and colors (ItemColor, ItemHover*, ItemActive*).
         token.PaginationItemPaddingInline = new Thickness(global.UniformlyMarginXXS * 1.5, 0);
         token.ItemBg                    = global.ColorBgContainer;
         token.ItemActiveBg              = global.ColorBgContainer;

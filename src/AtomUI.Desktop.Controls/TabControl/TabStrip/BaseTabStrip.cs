@@ -17,11 +17,22 @@ using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
 
+/// <summary>
+/// Desktop tab strip and base class of <c>TabStrip</c> and <c>CardTabStrip</c>. On top of
+/// <see cref="AbstractTabStrip" /> it adds tabs that can be closed and dragged to another
+/// position, extra content before and after the tabs, a preset tab size, and an overflow list for
+/// the tabs that do not fit in the viewport.
+/// </summary>
 public abstract class BaseTabStrip : AbstractTabStrip,
                                      ISizeTypeAware,
                                      IMotionAwareControl,
                                      ITabOverflowOwner
 {
+    /// <summary>
+    /// Always <see langword="true" />: the base class binds no selection indicator when the template is
+    /// applied. A strip that shows an indicator binds its own template parts itself through
+    /// <c>SetCustomIndicatorParts</c>.
+    /// </summary>
     private protected override bool UsesCustomIndicatorTransition => true;
 
     private static readonly FuncTemplate<Panel?> DefaultPanel =
@@ -29,101 +40,205 @@ public abstract class BaseTabStrip : AbstractTabStrip,
 
     #region 公共属性定义
 
+    /// <summary>
+    /// Identifies the <see cref="SizeType" /> property.
+    /// </summary>
     public static readonly StyledProperty<SizeType> SizeTypeProperty =
         SizeTypeControlProperty.SizeTypeProperty.AddOwner<BaseTabStrip>();
 
+    /// <summary>
+    /// Identifies the <see cref="TabStripPlacement" /> property.
+    /// </summary>
     public new static readonly StyledProperty<Dock> TabStripPlacementProperty =
         AbstractTabStrip.TabStripPlacementProperty.AddOwner<BaseTabStrip>();
 
+    /// <summary>
+    /// Identifies the <see cref="TabAlignmentCenter" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> TabAlignmentCenterProperty =
         AvaloniaProperty.Register<BaseTabStrip, bool>(nameof(TabAlignmentCenter));
 
+    /// <summary>
+    /// Identifies the <see cref="IsTabReorderEnabled" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsTabReorderEnabledProperty =
         AvaloniaProperty.Register<BaseTabStrip, bool>(nameof(IsTabReorderEnabled));
 
+    /// <summary>
+    /// Identifies the <see cref="TabActivationTrigger" /> property.
+    /// </summary>
     public static readonly StyledProperty<TabActivationTrigger> TabActivationTriggerProperty =
         AvaloniaProperty.Register<BaseTabStrip, TabActivationTrigger>(
             nameof(TabActivationTrigger),
             TabActivationTrigger.PointerReleased);
 
+    /// <summary>
+    /// Identifies the <see cref="IsMotionEnabled" /> property.
+    /// </summary>
     public new static readonly StyledProperty<bool> IsMotionEnabledProperty =
         AbstractTabStrip.IsMotionEnabledProperty.AddOwner<BaseTabStrip>();
     
+    /// <summary>
+    /// Identifies the <see cref="HeaderStartEdgePadding" /> property.
+    /// </summary>
     public static readonly StyledProperty<double> HeaderStartEdgePaddingProperty = 
         AvaloniaProperty.Register<BaseTabStrip, double>(nameof (HeaderStartEdgePadding));
     
+    /// <summary>
+    /// Identifies the <see cref="HeaderEndEdgePadding" /> property.
+    /// </summary>
     public static readonly StyledProperty<double> HeaderEndEdgePaddingProperty = 
         AvaloniaProperty.Register<BaseTabStrip, double>(nameof (HeaderEndEdgePadding));
     
+    /// <summary>
+    /// Identifies the <see cref="HeaderStartExtraContent" /> property.
+    /// </summary>
     public new static readonly StyledProperty<object?> HeaderStartExtraContentProperty =
         AbstractTabStrip.HeaderStartExtraContentProperty.AddOwner<BaseTabStrip>();
     
+    /// <summary>
+    /// Identifies the <see cref="HeaderStartExtraContentTemplate" /> property.
+    /// </summary>
     public new static readonly StyledProperty<IDataTemplate?> HeaderStartExtraContentTemplateProperty =
         AbstractTabStrip.HeaderStartExtraContentTemplateProperty.AddOwner<BaseTabStrip>();
     
+    /// <summary>
+    /// Identifies the <see cref="HeaderEndExtraContent" /> property.
+    /// </summary>
     public new static readonly StyledProperty<object?> HeaderEndExtraContentProperty =
         AbstractTabStrip.HeaderEndExtraContentProperty.AddOwner<BaseTabStrip>();
     
+    /// <summary>
+    /// Identifies the <see cref="HeaderEndExtraContentTemplate" /> property.
+    /// </summary>
     public new static readonly StyledProperty<IDataTemplate?> HeaderEndExtraContentTemplateProperty =
         AbstractTabStrip.HeaderEndExtraContentTemplateProperty.AddOwner<BaseTabStrip>();
 
+    /// <summary>
+    /// Identifies the <see cref="OverflowPopupTemplate" /> property.
+    /// </summary>
     public static readonly StyledProperty<IDataTemplate?> OverflowPopupTemplateProperty =
         BaseTabControl.OverflowPopupTemplateProperty.AddOwner<BaseTabStrip>();
     
+    /// <summary>
+    /// Identifies the <see cref="IsTabClosable" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsTabClosableProperty =
         AvaloniaProperty.Register<BaseTabStrip, bool>(nameof(IsTabClosable));
     
+    /// <summary>
+    /// Identifies the <see cref="IsTabAutoHideCloseButton" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsTabAutoHideCloseButtonProperty =
         AvaloniaProperty.Register<BaseTabStrip, bool>(nameof(IsTabAutoHideCloseButton));
     
+    /// <summary>
+    /// Preset size of the tabs. The strip binds the size of every tab to this value, and the tab theme
+    /// selects the padding, font size and icon size of the tab by it. Set it on the strip, not on a tab.
+    /// </summary>
     public SizeType SizeType
     {
         get => GetValue(SizeTypeProperty);
         set => SetValue(SizeTypeProperty, value);
     }
 
+    /// <summary>
+    /// Placement of the strip; <see cref="AbstractTabStrip.TabStripPlacement" /> describes how the
+    /// selection indicator follows it. The desktop strip also copies the value onto every tab, which
+    /// picks horizontal or vertical margins and padding from it, updates the placement pseudo-classes
+    /// of the strip, draws its baseline along the edge that faces the content, and maps
+    /// <see cref="HeaderStartEdgePadding" /> and <see cref="HeaderEndEdgePadding" /> to the left and
+    /// right edges or to the top and bottom edges.
+    /// </summary>
     public new Dock TabStripPlacement
     {
         get => GetValue(TabStripPlacementProperty);
         set => SetValue(TabStripPlacementProperty, value);
     }
 
+    /// <summary>
+    /// When <see langword="true" />, the theme centers the tabs along the strip direction:
+    /// horizontally for a strip placed at the top or bottom, vertically for one placed at the left or
+    /// right. The <c>TabStrip</c> theme centers its whole header layout, extra content included; the
+    /// <c>CardTabStrip</c> theme centers the tab list only. The default is <see langword="false" />.
+    /// </summary>
     public bool TabAlignmentCenter
     {
         get => GetValue(TabAlignmentCenterProperty);
         set => SetValue(TabAlignmentCenterProperty, value);
     }
 
+    /// <summary>
+    /// When <see langword="true" />, the user can drag a tab with the left mouse button to another
+    /// position of the strip. A drag starts only while the strip and the pressed tab are enabled, the
+    /// strip has at least two items and the press is not on a button inside the tab. While dragging,
+    /// the other tabs preview the new position and the viewport scrolls when the pointer reaches one
+    /// of its edges. On release the item is moved in the items list, which must be one the strip can
+    /// modify: <see cref="TabReordering" /> is raised before the move and <see cref="TabReordered" />
+    /// after it. The default is <see langword="false" />.
+    /// </summary>
     public bool IsTabReorderEnabled
     {
         get => GetValue(IsTabReorderEnabledProperty);
         set => SetValue(IsTabReorderEnabledProperty, value);
     }
 
+    /// <summary>
+    /// Pointer event that selects a tab. The default is <c>PointerReleased</c>: a tab is selected when
+    /// the left mouse button is released over the same tab on which it was pressed, while strip and
+    /// tab are enabled. <c>PointerPressed</c> selects a tab when the button is pressed on it. With
+    /// <c>PointerReleased</c>, the pending selection is dropped when the press comes from a button
+    /// inside the tab, such as its close button, or when the tab is dragged to reorder it.
+    /// </summary>
     public TabActivationTrigger TabActivationTrigger
     {
         get => GetValue(TabActivationTriggerProperty);
         set => SetValue(TabActivationTriggerProperty, value);
     }
     
+    /// <summary>
+    /// Motion switch of the strip and of its tabs. The strip binds the value onto every tab and onto
+    /// the tabs container of its template; <see cref="AbstractTabStrip.IsMotionEnabled" /> describes
+    /// how the value controls the selection indicator and the centering scroll.
+    /// </summary>
+    /// <remarks>
+    /// The strip theme binds the value to the <c>EnableMotion</c> token; clearing a local value falls
+    /// back to that binding.
+    /// </remarks>
     public new bool IsMotionEnabled
     {
         get => GetValue(IsMotionEnabledProperty);
         set => SetValue(IsMotionEnabledProperty, value);
     }
 
+    /// <summary>
+    /// Space between the start edge of the strip and its header layout, which holds the extra content
+    /// and the tabs, in device-independent pixels. The start edge is the left edge for a strip placed
+    /// at the top or bottom and the top edge for one placed at the left or right. The default is
+    /// <c>0</c>.
+    /// </summary>
     public double HeaderStartEdgePadding
     {
         get => GetValue(HeaderStartEdgePaddingProperty);
         set => SetValue(HeaderStartEdgePaddingProperty, value);
     }
     
+    /// <summary>
+    /// Space between the end edge of the strip and its header layout, which holds the extra content
+    /// and the tabs, in device-independent pixels. The end edge is the right edge for a strip placed
+    /// at the top or bottom and the bottom edge for one placed at the left or right. The default is
+    /// <c>0</c>.
+    /// </summary>
     public double HeaderEndEdgePadding
     {
         get => GetValue(HeaderEndEdgePaddingProperty);
         set => SetValue(HeaderEndEdgePaddingProperty, value);
     }
     
+    /// <summary>
+    /// Extra content shown at the start of the strip, in front of the tabs and inside the header edge
+    /// paddings. The default is <see langword="null" />, which shows nothing.
+    /// </summary>
     [DependsOn(nameof(HeaderStartExtraContentTemplate))]
     public new object? HeaderStartExtraContent
     {
@@ -131,12 +246,20 @@ public abstract class BaseTabStrip : AbstractTabStrip,
         set => SetValue(HeaderStartExtraContentProperty, value);
     }
     
+    /// <summary>
+    /// Template used to build <see cref="HeaderStartExtraContent" />. The default is
+    /// <see langword="null" />, which leaves the choice of a template to the content presenter.
+    /// </summary>
     public new IDataTemplate? HeaderStartExtraContentTemplate
     {
         get => GetValue(HeaderStartExtraContentTemplateProperty);
         set => SetValue(HeaderStartExtraContentTemplateProperty, value);
     }
     
+    /// <summary>
+    /// Extra content shown at the end of the strip, after the tabs and inside the header edge
+    /// paddings. The default is <see langword="null" />, which shows nothing.
+    /// </summary>
     [DependsOn(nameof(HeaderEndExtraContentTemplate))]
     public new object? HeaderEndExtraContent
     {
@@ -144,6 +267,10 @@ public abstract class BaseTabStrip : AbstractTabStrip,
         set => SetValue(HeaderEndExtraContentProperty, value);
     }
     
+    /// <summary>
+    /// Template used to build <see cref="HeaderEndExtraContent" />. The default is
+    /// <see langword="null" />, which leaves the choice of a template to the content presenter.
+    /// </summary>
     public new IDataTemplate? HeaderEndExtraContentTemplate
     {
         get => GetValue(HeaderEndExtraContentTemplateProperty);
@@ -151,8 +278,8 @@ public abstract class BaseTabStrip : AbstractTabStrip,
     }
 
     /// <summary>
-    /// Gets or sets the template used to present tabs that are not fully visible in the tab viewport.
-    /// The template data item is a <see cref="TabOverflowPopupContext"/>.
+    /// Template used to present tabs that are not fully visible in the tab viewport. The template data item is a
+    /// <see cref="TabOverflowPopupContext" />.
     /// </summary>
     public IDataTemplate? OverflowPopupTemplate
     {
@@ -160,12 +287,23 @@ public abstract class BaseTabStrip : AbstractTabStrip,
         set => SetValue(OverflowPopupTemplateProperty, value);
     }
     
+    /// <summary>
+    /// When <see langword="true" />, every tab of the strip is closable and shows its close button;
+    /// clicking the button calls <see cref="CloseTab" />. The strip writes the value onto each tab at
+    /// template priority, so a value set on the tab itself wins. The default is <see langword="false" />.
+    /// </summary>
     public bool IsTabClosable
     {
         get => GetValue(IsTabClosableProperty);
         set => SetValue(IsTabClosableProperty, value);
     }
     
+    /// <summary>
+    /// When <see langword="true" />, the close button of a closable tab stays transparent until the
+    /// pointer is over the tab, while still taking its place and receiving clicks. It changes nothing
+    /// on a tab that is not closable. The strip writes the value onto each tab at template priority,
+    /// so a value set on the tab itself wins. The default is <see langword="false" />.
+    /// </summary>
     public bool IsTabAutoHideCloseButton
     {
         get => GetValue(IsTabAutoHideCloseButtonProperty);
@@ -176,9 +314,15 @@ public abstract class BaseTabStrip : AbstractTabStrip,
     
     #region 公共事件定义
     
+    /// <summary>
+    /// Identifies the <see cref="Closing" /> routed event.
+    /// </summary>
     public static readonly RoutedEvent<TabStripClosingEventArgs> ClosingEvent =
         RoutedEvent.Register<BaseTabStrip, TabStripClosingEventArgs>(nameof(Closing), RoutingStrategies.Bubble);
 
+    /// <summary>
+    /// Identifies the <see cref="Closed" /> routed event.
+    /// </summary>
     public static readonly RoutedEvent<TabStripClosedEventArgs> ClosedEvent =
         RoutedEvent.Register<BaseTabStrip, TabStripClosedEventArgs>(nameof(Closed), RoutingStrategies.Bubble);
 
@@ -188,24 +332,43 @@ public abstract class BaseTabStrip : AbstractTabStrip,
     internal static readonly RoutedEvent<TabReorderedEventArgs> TabReorderedEvent =
         RoutedEvent.Register<BaseTabStrip, TabReorderedEventArgs>(nameof(TabReordered), RoutingStrategies.Bubble);
 
+    /// <summary>
+    /// Raised by <see cref="CloseTab" /> before a tab is closed, while its item is still in the strip.
+    /// This happens when the user clicks the close button of the tab or closes the tab from the
+    /// overflow list. A handler sets <see cref="TabStripClosingEventArgs.Cancel" /> to keep the tab
+    /// open; the item then stays in the strip and <see cref="Closed" /> is not raised.
+    /// </summary>
     public event EventHandler<TabStripClosingEventArgs>? Closing
     {
         add => AddHandler(ClosingEvent, value);
         remove => RemoveHandler(ClosingEvent, value);
     }
 
+    /// <summary>
+    /// Raised after a tab was closed by <see cref="CloseTab" /> and its item was removed from the items
+    /// of the strip. The event cannot be canceled.
+    /// </summary>
     public event EventHandler<TabStripClosedEventArgs>? Closed
     {
         add => AddHandler(ClosedEvent, value);
         remove => RemoveHandler(ClosedEvent, value);
     }
 
+    /// <summary>
+    /// Raised before a tab that was dragged to another position is moved in the items list, while the
+    /// old order is still in place. Cancelling the event keeps the original order: the item then stays
+    /// where it was and <see cref="TabReordered" /> is not raised.
+    /// </summary>
     public event EventHandler<TabReorderingEventArgs>? TabReordering
     {
         add => AddHandler(TabReorderingEvent, value);
         remove => RemoveHandler(TabReorderingEvent, value);
     }
 
+    /// <summary>
+    /// Raised after a tab was moved to another position in the items list by dragging, with the
+    /// selection restored to the item that was selected before the drag.
+    /// </summary>
     public event EventHandler<TabReorderedEventArgs>? TabReordered
     {
         add => AddHandler(TabReorderedEvent, value);
@@ -283,6 +446,23 @@ public abstract class BaseTabStrip : AbstractTabStrip,
         AddHandler(PointerCaptureLostEvent, HandleTabReorderPointerCaptureLost, RoutingStrategies.Tunnel | RoutingStrategies.Bubble, handledEventsToo: true);
     }
     
+    /// <summary>
+    /// Closes a tab: raises <see cref="Closing" />, moves the selection off the tab when it is
+    /// selected, removes its item from the items of the strip and raises <see cref="Closed" />.
+    /// </summary>
+    /// <param name="tabStripItem">
+    /// The tab to close. It must be a closable container of this strip.
+    /// </param>
+    /// <returns>
+    /// <see langword="true" /> when the item was removed. <see langword="false" /> when the tab is not
+    /// closable, is not a container of this strip, the items of the strip are not in a list the strip
+    /// can modify, or a handler of <see cref="Closing" /> set
+    /// <see cref="TabStripClosingEventArgs.Cancel" />. The item then stays in the strip.
+    /// </returns>
+    /// <remarks>
+    /// When the closed tab is selected, the selection moves to the previous tab, or to the next tab
+    /// when the closed tab is the first one, and is cleared when the tab was the only item.
+    /// </remarks>
     public bool CloseTab(TabStripItem tabStripItem)
     {
         if (!tabStripItem.IsClosable)
@@ -467,6 +647,20 @@ public abstract class BaseTabStrip : AbstractTabStrip,
     }
     
 
+    /// <summary>
+    /// Prepares a tab container: copies the placement of the strip onto it, fills it from a data item,
+    /// binds it to the item template, size and motion flag of the strip, and applies
+    /// <see cref="IsTabClosable" /> and <see cref="IsTabAutoHideCloseButton" /> to it.
+    /// </summary>
+    /// <remarks>
+    /// The container must be a <see cref="TabStripItem" />; any other type causes an
+    /// <c>ArgumentOutOfRangeException</c>. A data item that is not a visual becomes the content of the
+    /// tab. An item that implements <see cref="ITabItemData" /> also provides the header, icon, close
+    /// icon, enabled state, closable state and close button auto-hide setting of the tab; a property
+    /// that already has a value on the tab is left alone. The base member is called first and
+    /// <see cref="PrepareTabStripItem" /> is called last. A derived override calls the base member,
+    /// otherwise the tab is neither filled nor bound to the strip.
+    /// </remarks>
     protected override void PrepareContainerForItemOverride(Control container, object? item, int index)
     {
         base.PrepareContainerForItemOverride(container, item, index);
@@ -527,6 +721,14 @@ public abstract class BaseTabStrip : AbstractTabStrip,
         }
     }
 
+    /// <summary>
+    /// Releases what the strip set on a tab container: its icon slot reservation and the bindings to
+    /// the item template, size and motion flag of the strip. The base member is called first.
+    /// </summary>
+    /// <remarks>
+    /// Releasing the bindings lets a removed tab be collected. A derived override calls the base
+    /// member, otherwise every removed tab stays alive for the lifetime of the strip.
+    /// </remarks>
     protected override void ClearContainerForItemOverride(Control element)
     {
         base.ClearContainerForItemOverride(element);
@@ -550,6 +752,11 @@ public abstract class BaseTabStrip : AbstractTabStrip,
         BindingOperations.GetBindingExpressionBase(tabStripItem, TabItem.ContentTemplateProperty)?.Dispose();
     }
 
+    /// <summary>
+    /// Refreshes the icon slot reservation of all tabs once a tab container has been prepared. The
+    /// base member is called first; a derived override calls it to keep the reservation in step with
+    /// the tabs.
+    /// </summary>
     protected override void ContainerForItemPreparedOverride(Control container, object? item, int index)
     {
         base.ContainerForItemPreparedOverride(container, item, index);
@@ -559,10 +766,27 @@ public abstract class BaseTabStrip : AbstractTabStrip,
         }
     }
 
+    /// <summary>
+    /// Lets a derived strip prepare a tab further. It is called from
+    /// <see cref="PrepareContainerForItemOverride" /> after the tab was filled from its item and bound
+    /// to the strip, and before <see cref="IsTabClosable" /> and <see cref="IsTabAutoHideCloseButton" />
+    /// are applied to it. The default does nothing.
+    /// </summary>
     protected virtual void PrepareTabStripItem(TabStripItem tabStripItem, object? item, int index)
     {
     }
 
+    /// <summary>
+    /// Keeps the tabs, the header padding and the overflow list in step with property changes of the
+    /// strip. The base member is called first.
+    /// </summary>
+    /// <remarks>
+    /// A change of <see cref="TabStripPlacement" /> updates the placement pseudo-classes, the placement
+    /// of every tab, the header padding and the icon slot reservation. A change of
+    /// <see cref="HeaderStartEdgePadding" /> or <see cref="HeaderEndEdgePadding" /> updates the header
+    /// padding. A change of <see cref="IsTabClosable" /> or <see cref="IsTabAutoHideCloseButton" />
+    /// writes the new value onto every tab. A change of the selected index notifies the overflow list.
+    /// </remarks>
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
@@ -613,6 +837,13 @@ public abstract class BaseTabStrip : AbstractTabStrip,
         PseudoClasses.Set(TabPseudoClass.Left, TabStripPlacement == Dock.Left);
     }
 
+    /// <summary>
+    /// Draws the baseline of the strip along the edge that faces the content: the bottom edge for a
+    /// strip placed at the top, the top edge for one placed at the bottom, the right edge for one placed
+    /// at the left and the left edge for one placed at the right. The line uses <c>BorderBrush</c> and
+    /// the left value of <c>BorderThickness</c>, made render-scale aware, and is drawn only while the
+    /// strip has items. A derived override calls the base member to keep the line.
+    /// </summary>
     public override void Render(DrawingContext context)
     {
         if (Items.Count > 0)
@@ -684,6 +915,15 @@ public abstract class BaseTabStrip : AbstractTabStrip,
         }
     }
 
+    /// <summary>
+    /// Drops a pending tab activation and a running tab reorder, detaches the strip from the tabs
+    /// container of the old template and attaches it to the tabs container of the new template as its
+    /// overflow owner, then refreshes the header padding and the icon slot reservation.
+    /// </summary>
+    /// <remarks>
+    /// The base member is called between the detach and the attach step. A derived override calls it
+    /// to keep both.
+    /// </remarks>
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         ClearPendingTabActivation();
@@ -696,12 +936,20 @@ public abstract class BaseTabStrip : AbstractTabStrip,
         UpdateIconSlotReservation();
     }
 
+    /// <summary>
+    /// Attaches the strip as the overflow owner of its tabs container, so that the overflow list follows
+    /// the strip again after it was detached from a visual tree. The base member is called first.
+    /// </summary>
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
         _tabReorderScrollViewer?.AttachOverflowOwner(this);
     }
 
+    /// <summary>
+    /// Detaches the strip from its tabs container, so that the overflow list no longer follows it, and
+    /// drops a pending tab activation and a running tab reorder. The base member is called last.
+    /// </summary>
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         _tabReorderScrollViewer?.DetachOverflowOwner(this);
@@ -719,6 +967,13 @@ public abstract class BaseTabStrip : AbstractTabStrip,
         _tabReorderScrollViewer = null;
     }
 
+    /// <summary>
+    /// Decides whether a pointer event on a tab selects the tab. It follows
+    /// <see cref="TabActivationTrigger" />: with <c>PointerReleased</c>, a tab is selected by the release of
+    /// the left mouse button over the same tab on which it was pressed, while strip and tab are enabled; with
+    /// <c>PointerPressed</c>, the press of the left mouse button selects the tab as the base member decides.
+    /// A derived override calls the base member to keep this decision.
+    /// </summary>
     protected override bool ShouldTriggerSelection(Visual selectable, PointerEventArgs eventArgs)
     {
         if (eventArgs.Properties.PointerUpdateKind == PointerUpdateKind.LeftButtonReleased)
@@ -1399,25 +1654,48 @@ public abstract class BaseTabStrip : AbstractTabStrip,
     }
 }
 
+/// <summary>
+/// Carries the data of the <see cref="BaseTabStrip.Closing" /> event.
+/// </summary>
 public class TabStripClosingEventArgs : RoutedEventArgs
 {
+    /// <summary>
+    /// Creates the arguments of a <see cref="BaseTabStrip.Closing" /> event for the tab that is about
+    /// to be closed.
+    /// </summary>
     public TabStripClosingEventArgs(RoutedEvent routedEvent, TabStripItem tabStripItem)
         : base(routedEvent)
     {
         TabStripItem = tabStripItem;
     }
     
+    /// <summary>
+    /// The tab that is about to be closed.
+    /// </summary>
     public TabStripItem TabStripItem { get; }
+    /// <summary>
+    /// Set to <see langword="true" /> to keep the tab open: the strip then leaves its item in place and
+    /// does not raise <see cref="BaseTabStrip.Closed" />.
+    /// </summary>
     public bool Cancel { get; set; }
 }
 
+/// <summary>
+/// Carries the data of the <see cref="BaseTabStrip.Closed" /> event.
+/// </summary>
 public class TabStripClosedEventArgs : RoutedEventArgs
 {
+    /// <summary>
+    /// Creates the arguments of a <see cref="BaseTabStrip.Closed" /> event for the tab that was closed.
+    /// </summary>
     public TabStripClosedEventArgs(RoutedEvent routedEvent, TabStripItem tabStripItem)
         : base(routedEvent)
     {
         TabStripItem = tabStripItem;
     }
     
+    /// <summary>
+    /// The tab that was closed.
+    /// </summary>
     public TabStripItem TabStripItem { get; }
 }

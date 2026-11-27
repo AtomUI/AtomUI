@@ -51,22 +51,34 @@ internal sealed class WaylandPresentationTiming
         _presentation = bind(new PresentationListener(this));
     }
 
-    /// <summary>Frames reported as presented.</summary>
+    /// <summary>
+    /// Frames reported as presented.
+    /// </summary>
     internal long PresentedFrames => Interlocked.Read(ref _presentedFrames);
 
-    /// <summary>Presented frames that carried a prediction.</summary>
+    /// <summary>
+    /// Presented frames that carried a prediction.
+    /// </summary>
     internal long PredictedFrames => Interlocked.Read(ref _predictedFrames);
 
-    /// <summary>Predicted frames whose prediction landed within a quarter refresh of the actual presentation.</summary>
+    /// <summary>
+    /// Predicted frames whose prediction landed within a quarter refresh of the actual presentation.
+    /// </summary>
     internal long PredictionHits => Interlocked.Read(ref _predictionHits);
 
-    /// <summary>Frames whose draw has started; content committed before a later start is in that frame.</summary>
+    /// <summary>
+    /// Frames whose draw has started; content committed before a later start is in that frame.
+    /// </summary>
     internal long FramesStarted => Interlocked.Read(ref _framesStarted);
 
-    /// <summary>Frames drawn or held for a callback and not yet submitted.</summary>
+    /// <summary>
+    /// Frames drawn or held for a callback and not yet submitted.
+    /// </summary>
     internal int FramesInFlight => Volatile.Read(ref _framesInFlight);
 
-    /// <summary>The current refresh interval in Stopwatch ticks, or zero when unknown or variable.</summary>
+    /// <summary>
+    /// The current refresh interval in Stopwatch ticks, or zero when unknown or variable.
+    /// </summary>
     internal long RefreshInterval => Interlocked.Read(ref _refresh);
 
     internal long? OnFrameStarted(long now)
@@ -84,7 +96,7 @@ internal sealed class WaylandPresentationTiming
     }
 
     /// <summary>
-    /// The Stopwatch timestamp at which content sampled at <paramref name="now"/> is expected to be shown,
+    /// The Stopwatch timestamp at which content sampled at <paramref name="now" /> is expected to be shown,
     /// or null while no fixed-refresh feedback is available.
     /// </summary>
     /// <remarks>
@@ -137,7 +149,9 @@ internal sealed class WaylandPresentationTiming
         return nextVblank + (Volatile.Read(ref _latencyFrames) + Volatile.Read(ref _correctionFrames)) * refresh;
     }
 
-    /// <summary>Requests feedback for the commit that follows; called on the Wayland worker before committing.</summary>
+    /// <summary>
+    /// Requests feedback for the commit that follows; called on the Wayland worker before committing.
+    /// </summary>
     internal void RequestFeedback(WlSurface surface, long? predicted)
     {
         _presentation.Feedback(surface, new FeedbackListener(this, Stopwatch.GetTimestamp(), predicted));

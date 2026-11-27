@@ -6,71 +6,66 @@ namespace AtomUI.Theme.DesignTokens;
 public partial class DesignToken
 {
     /// <summary>
-    /// 警戒色的浅色背景颜色
-    /// 1 号色
+    /// Light background tint of the warning palette, used as the background of warning-styled elements.
+    /// The Ant Design language derives it from the palette generated for <see cref="ColorWarning" />.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Map)]
     public partial Color ColorWarningBg { get; set; }
 
     /// <summary>
-    /// 警戒色的浅色背景色悬浮态
-    /// 2 号色
+    /// Hover state of the warning light background tint, read while a warning-styled element is hovered.
+    /// The Ant Design language derives it from the palette generated for <see cref="ColorWarning" />.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Map)]
     public partial Color ColorWarningBgHover { get; set; }
 
     /// <summary>
-    /// 警戒色的描边色
-    /// 3 号色
+    /// Border color of the warning palette, used for the border of warning-styled elements.
+    /// The Ant Design language derives it from the palette generated for <see cref="ColorWarning" />.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Map)]
     public partial Color ColorWarningBorder { get; set; }
 
     /// <summary>
-    /// 警戒色的描边色悬浮态
-    /// 4 号色
+    /// Hover state of the warning border color, read while a control with a warning border is hovered.
+    /// The Ant Design language derives it from the palette generated for <see cref="ColorWarning" />.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Map)]
     public partial Color ColorWarningBorderHover { get; set; }
 
     /// <summary>
-    /// 警戒色的深色悬浮态
-    /// 5 号色
+    /// Dark hover shade of the warning palette, read while a warning-colored element is hovered.
+    /// The Ant Design language derives it from the palette generated for <see cref="ColorWarning" />.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Map)]
     public partial Color ColorWarningHover { get; set; }
 
-    /// <summary>
-    /// 警戒色
-    /// 最常用的警戒色，例如 Notification、 Alert等警告类组件或 Input 输入类等组件会使用该颜色
-    /// 6 号色
-    /// 在 Seed 文件中定义
-    /// </summary>
+    // The base warning color ColorWarning itself is not part of this map. It is declared in DesignToken.Seed.cs.
 
     /// <summary>
-    /// 警戒色的深色激活态
-    /// 7 号色
+    /// Dark active shade of the warning palette, read while a warning-colored element is pressed.
+    /// The Ant Design language derives it from the palette generated for <see cref="ColorWarning" />.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Map)]
     public partial Color ColorWarningActive { get; set; }
 
     /// <summary>
-    /// 警戒色的文本悬浮态
-    /// 8 号色
+    /// Warning text color for the hover state, read while warning-colored text is hovered.
+    /// The Ant Design language derives it from the palette generated for <see cref="ColorWarning" />.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Map)]
     public partial Color ColorWarningTextHover { get; set; }
 
     /// <summary>
-    /// 警戒色的文本默认态
-    /// 9 号色
+    /// Warning text color in the default state, read for warning-colored text.
+    /// The Ant Design language derives it from the palette generated for <see cref="ColorWarning" />.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Map)]
     public partial Color ColorWarningText { get; set; }
 
     /// <summary>
-    /// 警戒色的文本激活态
-    /// 10 号色
+    /// Warning text color for the active state, read while warning-colored text is pressed.
+    /// The Ant Design language derives it from the palette generated for <see cref="ColorWarning" />.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Map)]
     public partial Color ColorWarningTextActive { get; set; }

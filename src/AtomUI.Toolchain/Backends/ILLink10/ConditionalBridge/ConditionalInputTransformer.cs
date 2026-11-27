@@ -7,10 +7,24 @@ using Mono.Cecil.Cil;
 
 namespace AtomUI.TypeMap.Linker.ConditionalBridge;
 
-/// <summary>Produces isolated official-TypeMap input copies for either .NET10 ILLink or ILC.</summary>
+/// <summary>
+/// Produces isolated official-TypeMap input copies for either .NET10 ILLink or ILC.
+/// </summary>
 public static class ConditionalInputTransformer
 {
-    /// <returns>The transformation manifest path. Downstream compilation still owns selection and final verification.</returns>
+    /// <summary>
+    /// Rewrites the snapshot assemblies that carry conditional registration records and the entry assembly, and
+    /// puts the results in <paramref name="outputDirectory" /> next to the manifest. Assemblies that stay
+    /// unchanged are not copied; the manifest gives the path of every input assembly.
+    /// </summary>
+    /// <returns>
+    /// The transformation manifest path. Downstream compilation still owns selection and final verification.
+    /// </returns>
+    /// <exception cref="System.IO.InvalidDataException">
+    /// The output directory exists or is not fully qualified, an implementation's identity or hash differs from
+    /// the snapshot, the application has no entry point, or the runtime pack is not an admitted .NET 10 or later
+    /// pack.
+    /// </exception>
     public static string Transform(string snapshotPath, string runtimePackDirectory, string applicationIdentity, string outputDirectory)
     {
         var input = ConditionalInputSnapshot.Read(snapshotPath);

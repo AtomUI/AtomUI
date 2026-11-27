@@ -4,13 +4,13 @@ using Avalonia.Controls;
 namespace AtomUI.Theme.Resources;
 
 /// <summary>
-/// Resource observable behind <c>TokenResourceBinder</c> bindings whose host is a <see cref="StyledElement"/>.
+/// Resource observable behind <c>TokenResourceBinder</c> bindings whose host is a <see cref="StyledElement" />.
 /// </summary>
 /// <remarks>
 /// Resolves the key exactly like Avalonia's <c>ResourceObservable</c> (the host's resource chain, the host's actual
-/// theme variant, the optional converter) and republishes on <see cref="StyledElement.ResourcesChanged"/> and
-/// <see cref="StyledElement.ActualThemeVariantChanged"/>. The one difference: a <c>ResourcesChanged</c> raised by a
-/// theme publish is checked against the publish's <see cref="ThemePublishDelta"/> and skipped when the key's value
+/// theme variant, the optional converter) and republishes on <see cref="StyledElement.ResourcesChanged" /> and
+/// <see cref="StyledElement.ActualThemeVariantChanged" />. The one difference: a <c>ResourcesChanged</c> raised by a
+/// theme publish is checked against the publish's <see cref="ThemePublishDelta" /> and skipped when the key's value
 /// did not change; every other notification resolves fully. Avalonia keeps its observable base internal, so this
 /// type carries its own observer list.
 /// </remarks>
@@ -29,7 +29,9 @@ internal sealed class TokenResourceObservable : IObservable<object?>
         _converter = converter;
     }
 
-    /// <summary>How often the observable resolved its resource; contract tests pin the publish early-exit with it.</summary>
+    /// <summary>
+    /// How often the observable resolved its resource; contract tests pin the publish early-exit with it.
+    /// </summary>
     internal int ResolveCount { get; private set; }
 
     public IDisposable Subscribe(IObserver<object?> observer)

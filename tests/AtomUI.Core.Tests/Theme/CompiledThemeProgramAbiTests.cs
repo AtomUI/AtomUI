@@ -9,7 +9,9 @@ using Xunit;
 
 namespace AtomUI.Core.Tests.Theme;
 
-/// <summary>The compiled theme program ABI 4 (spec 7.12): language, fixed axes, locked seeds and accent color.</summary>
+/// <summary>
+/// The compiled theme program ABI 4: language, fixed axes, locked seeds and accent color.
+/// </summary>
 public class CompiledThemeProgramAbiTests
 {
     [Fact]

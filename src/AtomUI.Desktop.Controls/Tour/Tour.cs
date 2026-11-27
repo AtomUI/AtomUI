@@ -20,65 +20,133 @@ namespace AtomUI.Desktop.Controls;
 
 using ItemCollection = AtomUI.Collections.ItemCollection;
 
+/// <summary>
+/// The visual style of a <see cref="Tour" />. Set it for the whole tour with <see cref="Tour.StyleType" /> or
+/// for one step with <see cref="ITourStepOption.StyleType" />.
+/// </summary>
 public enum TourStyleType
 {
+    /// <summary>
+    /// The standard look: the step card uses the elevated background color of the theme.
+    /// </summary>
     Default,
+    /// <summary>
+    /// The emphasized look: the step card uses the primary color as its background and light text, and the
+    /// indicator and the buttons of the card follow that color.
+    /// </summary>
     Primary,
 }
 
+/// <summary>
+/// A guided tour that leads through a list of steps. Each step points at a target control: a mask dims the
+/// surrounding area, leaves the target uncovered and shows a card next to it. The steps are the content of
+/// the control or come from <see cref="StepsSource" />, and <see cref="IsOpen" /> controls whether the tour
+/// is shown.
+/// </summary>
 public partial class Tour : TemplatedControl, IMotionAwareControl, ISemanticPartCrossRootProvider
 {
     #region 公共属性定义
+    /// <summary>
+    /// Identifies the <see cref="StepsSource" /> property.
+    /// </summary>
     public static readonly StyledProperty<IEnumerable<ITourStepOption>?> StepsSourceProperty =
         AvaloniaProperty.Register<Tour, IEnumerable<ITourStepOption>?>(nameof(StepsSource));
     
+    /// <summary>
+    /// Identifies the <see cref="ItemTemplate" /> property.
+    /// </summary>
     public static readonly StyledProperty<IDataTemplate?> ItemTemplateProperty =
         AvaloniaProperty.Register<Tour, IDataTemplate?>(nameof(ItemTemplate));
 
+    /// <summary>
+    /// Identifies the <see cref="IsMotionEnabled" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<Tour>();
     
+    /// <summary>
+    /// Identifies the <see cref="IsArrowVisible" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsArrowVisibleProperty =
         AvaloniaProperty.Register<Tour, bool>(nameof(IsArrowVisible), true);
     
+    /// <summary>
+    /// Identifies the <see cref="IsPointAtCenter" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsPointAtCenterProperty =
         AvaloniaProperty.Register<Tour, bool>(nameof(IsPointAtCenter), false);
     
+    /// <summary>
+    /// Identifies the <see cref="CloseIcon" /> property.
+    /// </summary>
     public static readonly StyledProperty<IIconTemplate?> CloseIconProperty =
         AvaloniaProperty.Register<Tour, IIconTemplate?>(nameof(CloseIcon));
     
+    /// <summary>
+    /// Identifies the <see cref="IsDisabledInteraction" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsDisabledInteractionProperty =
         AvaloniaProperty.Register<Tour, bool>(nameof(IsDisabledInteraction));
     
+    /// <summary>
+    /// Identifies the <see cref="GapOffsetX" /> property.
+    /// </summary>
     public static readonly StyledProperty<double> GapOffsetXProperty =
         AvaloniaProperty.Register<Tour, double>(nameof(GapOffsetX), 6);
     
+    /// <summary>
+    /// Identifies the <see cref="GapOffsetY" /> property.
+    /// </summary>
     public static readonly StyledProperty<double> GapOffsetYProperty =
         AvaloniaProperty.Register<Tour, double>(nameof(GapOffsetY), 6);
     
+    /// <summary>
+    /// Identifies the <see cref="GapRadius" /> property.
+    /// </summary>
     public static readonly StyledProperty<double> GapRadiusProperty =
         AvaloniaProperty.Register<Tour, double>(nameof(GapRadius), 2);
     
+    /// <summary>
+    /// Identifies the <see cref="Placement" /> property.
+    /// </summary>
     public static readonly StyledProperty<TourPlacementMode> PlacementProperty =
         AvaloniaProperty.Register<Tour, TourPlacementMode>(nameof(Placement));
     
+    /// <summary>
+    /// Identifies the <see cref="IsShowMask" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsShowMaskProperty =
         AvaloniaProperty.Register<Tour, bool>(nameof(IsShowMask), true);
     
+    /// <summary>
+    /// Identifies the <see cref="MaskColor" /> property.
+    /// </summary>
     public static readonly StyledProperty<IBrush?> MaskColorProperty =
         AvaloniaProperty.Register<Tour, IBrush?>(nameof(MaskColor));
     
+    /// <summary>
+    /// Identifies the <see cref="StyleType" /> property.
+    /// </summary>
     public static readonly StyledProperty<TourStyleType> StyleTypeProperty =
         AvaloniaProperty.Register<Tour, TourStyleType>(nameof(StyleType));
     
+    /// <summary>
+    /// Identifies the <see cref="IsScrollIntoView" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsScrollIntoViewProperty =
         AvaloniaProperty.Register<Tour, bool>(nameof(IsScrollIntoView), true);
     
+    /// <summary>
+    /// Identifies the <see cref="IsOpen" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsOpenProperty =
         AvaloniaProperty.Register<Tour, bool>(
             nameof(IsOpen),
             defaultBindingMode: BindingMode.TwoWay);
     
+    /// <summary>
+    /// Identifies the <see cref="CurrentIndex" /> property.
+    /// </summary>
     public static readonly DirectProperty<Tour, int> CurrentIndexProperty =
         AvaloniaProperty.RegisterDirect<Tour, int>(
             nameof(CurrentIndex),
@@ -87,18 +155,33 @@ public partial class Tour : TemplatedControl, IMotionAwareControl, ISemanticPart
             unsetValue: -1,
             defaultBindingMode: BindingMode.TwoWay);
     
+    /// <summary>
+    /// Identifies the <see cref="StepCount" /> property.
+    /// </summary>
     public static readonly DirectProperty<Tour, int> StepCountProperty =
         AvaloniaProperty.RegisterDirect<Tour, int>(nameof(StepCount), o => o.StepCount);
     
+    /// <summary>
+    /// Identifies the <see cref="Indicator" /> property.
+    /// </summary>
     public static readonly StyledProperty<TourIndicator?> IndicatorProperty =
         AvaloniaProperty.Register<Tour, TourIndicator?>(nameof(Indicator));
     
+    /// <summary>
+    /// The steps of the tour as data. Assigning it closes the tour, replaces the content of <see cref="Steps" />
+    /// with the items of the source and returns to the first step; <see langword="null" /> leaves no steps. Items
+    /// that are plain data objects are presented with <see cref="ItemTemplate" />.
+    /// </summary>
     public IEnumerable<ITourStepOption>? StepsSource
     {
         get => GetValue(StepsSourceProperty);
         set => SetValue(StepsSourceProperty, value);
     }
     
+    /// <summary>
+    /// Template that builds the content of the step card for a step item that is a plain data object. The data
+    /// context is the step item. A <c>TourStep</c> carries its own content and does not use the template.
+    /// </summary>
     [InheritDataTypeFromItems(nameof(StepsSource))]
     public IDataTemplate? ItemTemplate
     {
@@ -106,84 +189,143 @@ public partial class Tour : TemplatedControl, IMotionAwareControl, ISemanticPart
         set => SetValue(ItemTemplateProperty, value);
     }
     
+    /// <summary>
+    /// Whether changes are animated, such as the mask cutout moving to the target of the next step. The value is
+    /// passed on to the step cards and the indicator. The theme sets it from the <c>EnableMotion</c> token.
+    /// </summary>
     public bool IsMotionEnabled
     {
         get => GetValue(IsMotionEnabledProperty);
         set => SetValue(IsMotionEnabledProperty, value);
     }
     
+    /// <summary>
+    /// Whether the popup shows an arrow that points at the target of the current step. A step overrides it with
+    /// <see cref="ITourStepOption.IsArrowVisible" />; a step that has no target shows no arrow.
+    /// </summary>
     public bool IsArrowVisible
     {
         get => GetValue(IsArrowVisibleProperty);
         set => SetValue(IsArrowVisibleProperty, value);
     }
 
+    /// <summary>
+    /// Default for the <see cref="ITourStepOption.IsPointAtCenter" /> of steps that do not set their own value.
+    /// The tour passes the value on to the step cards; nothing in the tour evaluates it.
+    /// </summary>
     public bool IsPointAtCenter
     {
         get => GetValue(IsPointAtCenterProperty);
         set => SetValue(IsPointAtCenterProperty, value);
     }
     
+    /// <summary>
+    /// The icon of the close button in the step card. The theme sets the <c>CloseOutlined</c> icon.
+    /// </summary>
     public IIconTemplate? CloseIcon
     {
         get => GetValue(CloseIconProperty);
         set => SetValue(CloseIconProperty, value);
     }
     
+    /// <summary>
+    /// Not evaluated. Neither the tour nor its themes read this value, so setting it changes no behavior.
+    /// </summary>
     public bool IsDisabledInteraction
     {
         get => GetValue(IsDisabledInteractionProperty);
         set => SetValue(IsDisabledInteractionProperty, value);
     }
     
+    /// <summary>
+    /// The horizontal distance between the target of the current step and the edge of the mask cutout around it,
+    /// in device-independent units. For a step placed to the left or right of its target it also sets the gap
+    /// between the popup and the target.
+    /// </summary>
     public double GapOffsetX
     {
         get => GetValue(GapOffsetXProperty);
         set => SetValue(GapOffsetXProperty, value);
     }
     
+    /// <summary>
+    /// The vertical distance between the target of the current step and the edge of the mask cutout around it, in
+    /// device-independent units. For a step placed above or below its target it also sets the gap between the
+    /// popup and the target.
+    /// </summary>
     public double GapOffsetY
     {
         get => GetValue(GapOffsetYProperty);
         set => SetValue(GapOffsetYProperty, value);
     }
     
+    /// <summary>
+    /// The corner radius of the mask cutout around the target of the current step, in device-independent units.
+    /// </summary>
     public double GapRadius
     {
         get => GetValue(GapRadiusProperty);
         set => SetValue(GapRadiusProperty, value);
     }
     
+    /// <summary>
+    /// Where the popup is placed relative to the target of a step. It is the default for every step; a step
+    /// overrides it with <see cref="ITourStepOption.Placement" />. A step that has no target is placed with
+    /// <see cref="TourPlacementMode.Center" />. The theme sets <see cref="TourPlacementMode.Bottom" />.
+    /// </summary>
     public TourPlacementMode Placement
     {
         get => GetValue(PlacementProperty);
         set => SetValue(PlacementProperty, value);
     }
     
+    /// <summary>
+    /// Whether the mask covers the area around the target of the current step. A step overrides it with
+    /// <see cref="ITourStepOption.IsShowMask" />. Without the mask the popup is still shown.
+    /// </summary>
     public bool IsShowMask
     {
         get => GetValue(IsShowMaskProperty);
         set => SetValue(IsShowMaskProperty, value);
     }
     
+    /// <summary>
+    /// The brush that paints the mask. A step overrides it with <see cref="ITourStepOption.MaskColor" />. The
+    /// theme sets the <c>ColorBgMask</c> token; a <see langword="null" /> value leaves the mask layer without a
+    /// brush.
+    /// </summary>
     public IBrush? MaskColor
     {
         get => GetValue(MaskColorProperty);
         set => SetValue(MaskColorProperty, value);
     }
     
+    /// <summary>
+    /// The visual style of the tour. A step overrides it with <see cref="ITourStepOption.StyleType" />.
+    /// </summary>
     public TourStyleType StyleType
     {
         get => GetValue(StyleTypeProperty);
         set => SetValue(StyleTypeProperty, value);
     }
     
+    /// <summary>
+    /// Default for the <see cref="ITourStepOption.IsScrollIntoView" /> of steps that do not set their own value.
+    /// The tour passes the value on to the step cards; nothing in the tour evaluates it.
+    /// </summary>
     public bool IsScrollIntoView
     {
         get => GetValue(IsScrollIntoViewProperty);
         set => SetValue(IsScrollIntoViewProperty, value);
     }
     
+    /// <summary>
+    /// Whether the tour is shown. <see langword="true" /> opens it at <see cref="CurrentIndex" /> and
+    /// <see langword="false" /> closes it and returns to the first step. The property is two-way by default, so
+    /// a binding is updated when the tour closes itself. Nothing is shown while <see cref="Steps" /> is empty,
+    /// and <see langword="false" /> is reverted while <see cref="IsPopupPinnedOpen" /> is
+    /// <see langword="true" />.
+    /// </summary>
     public bool IsOpen
     {
         get => GetValue(IsOpenProperty);
@@ -191,6 +333,12 @@ public partial class Tour : TemplatedControl, IMotionAwareControl, ISemanticPart
     }
     
     private int _currentIndex;
+    /// <summary>
+    /// The index of the current step in <see cref="Steps" />, or -1 when there are no steps. While the tour is
+    /// open, setting it shows that step, and the navigation of the step card changes it. The tour returns to the
+    /// first step when it closes. Any other value outside the steps throws
+    /// <see cref="ArgumentOutOfRangeException" /> while the tour is open.
+    /// </summary>
     public int CurrentIndex
     {
         get => _currentIndex;
@@ -198,20 +346,39 @@ public partial class Tour : TemplatedControl, IMotionAwareControl, ISemanticPart
     }
     
     private int _stepCount;
+    /// <summary>
+    /// The number of steps in <see cref="Steps" />. It is read-only and is passed on to the
+    /// <see cref="Indicator" />.
+    /// </summary>
     public int StepCount
     {
         get => _stepCount;
         private set => SetAndRaise(StepCountProperty, ref _stepCount, value);
     }
     
+    /// <summary>
+    /// The control that shows the position of the current step. When no indicator is set when the control is
+    /// initialized, a <c>DefaultTourIndicator</c> is created. The tour keeps the step count, the active index,
+    /// the style and the motion switch of the indicator in sync with its own state.
+    /// </summary>
     public TourIndicator? Indicator
     {
         get => GetValue(IndicatorProperty);
         set => SetValue(IndicatorProperty, value);
     }
     
+    /// <summary>
+    /// The steps of the tour, set as the content of the control or in code. Put <c>TourStep</c> instances here
+    /// or any object that implements <see cref="ITourStepOption" />. Assigning <see cref="StepsSource" />
+    /// replaces the content of this collection.
+    /// </summary>
     [Content]
     public ItemCollection Steps { get; } = new();
+    /// <summary>
+    /// Controls that the step card shows in its footer in front of the built-in navigation buttons. Each item
+    /// must be a <see cref="Control" />. An item that implements <see cref="ITourAction" /> receives this tour
+    /// through its <c>NotifyAttached</c> method before it is shown.
+    /// </summary>
     public ItemCollection CustomActions { get; } = new();
     
     #endregion
@@ -256,9 +423,7 @@ public partial class Tour : TemplatedControl, IMotionAwareControl, ISemanticPart
             (o, v) => o.CurrentMaskColor = v);
 
     /// <summary>
-    /// Gets or sets a value indicating whether the tour popup remains open without requiring
-    /// user interaction. Gallery semantic previews pin the popup open this way so the popup
-    /// parts can be inspected and highlighted.
+    /// Identifies the <see cref="IsPopupPinnedOpen" /> property.
     /// </summary>
     public static readonly StyledProperty<bool> IsPopupPinnedOpenProperty =
         Popup.IsPopupPinnedOpenProperty.AddOwner<Tour>();
@@ -323,6 +488,13 @@ public partial class Tour : TemplatedControl, IMotionAwareControl, ISemanticPart
         private set => SetAndRaise(CurrentMaskColorProperty, ref _currentMaskColor, value);
     }
 
+    /// <summary>
+    /// Keeps the tour open so that its popup can be inspected, as Gallery semantic previews do. While it is
+    /// <see langword="true" />, the tour opens when the control is loaded or when the property becomes
+    /// <see langword="true" />, and neither setting <see cref="IsOpen" /> to <see langword="false" />,
+    /// <see cref="HideTour" /> nor the close button closes it. Detaching the control from the visual tree still
+    /// closes the tour.
+    /// </summary>
     public bool IsPopupPinnedOpen
     {
         get => GetValue(IsPopupPinnedOpenProperty);
@@ -334,9 +506,10 @@ public partial class Tour : TemplatedControl, IMotionAwareControl, ISemanticPart
     #region ISemanticPartCrossRootProvider 实现
 
     /// <summary>
-    /// 遮罩承载在 TopLevel VisualLayerManager 的共享 TourLayer 中，属 owner 视觉树之外的
-    /// 跨根宿主；Tour 打开时把该层逻辑挂载到自身（语义样式经逻辑树级联命中），语义预览
-    /// 经此契约在打开/关闭时跟随刷新。
+    /// Returns the mask layer while it is visible, or an empty list otherwise. The layer is the shared tour layer
+    /// of the visual layer manager of the top level, which lies outside the visual tree of this control; an open
+    /// tour attaches it as its logical child so that semantic styles reach it. The semantic preview follows this
+    /// list to refresh when the tour opens or closes.
     /// </summary>
     public IReadOnlyList<Visual> GetCrossRoots()
     {
@@ -375,6 +548,10 @@ public partial class Tour : TemplatedControl, IMotionAwareControl, ISemanticPart
         CustomActions.CollectionChanged += HandleCustomActionsChanged;
     }
 
+    /// <summary>
+    /// Creates a <c>DefaultTourIndicator</c> when no <see cref="Indicator" /> is set, and copies the tour level
+    /// step options into every step that leaves its own value unset. An override must call the base member first.
+    /// </summary>
     protected override void OnInitialized()
     {
         base.OnInitialized();
@@ -437,6 +614,12 @@ public partial class Tour : TemplatedControl, IMotionAwareControl, ISemanticPart
         }
     }
 
+    /// <summary>
+    /// Reacts to property changes while the control is attached to the visual tree: <see cref="IsOpen" /> shows
+    /// or hides the tour, the gap properties recalculate the mask cutout, <see cref="CurrentIndex" /> shows that
+    /// step while the tour is open, and a new <see cref="Indicator" /> is bound to the state of the tour.
+    /// An override must call the base member first.
+    /// </summary>
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
@@ -561,12 +744,22 @@ public partial class Tour : TemplatedControl, IMotionAwareControl, ISemanticPart
         Steps.SetItemsSource(change.GetNewValue<IEnumerable<ITourStepOption>?>());
     }
     
+    /// <summary>
+    /// Closes the tour and returns to the first step: sets <see cref="IsOpen" /> to <see langword="false" /> and
+    /// <see cref="CurrentIndex" /> to 0, or to -1 when <see cref="Steps" /> is empty. It is called when
+    /// <see cref="StepsSource" /> changes.
+    /// </summary>
     public void ResetState()
     {
         SetCurrentValue(IsOpenProperty, false);
         SetCurrentValue(CurrentIndexProperty, Steps.Count > 0 ? 0 : -1);
     }
 
+    /// <summary>
+    /// Locates the popup and the steps view of the template, relays the pinned open state and the flipped state
+    /// of the popup, and subscribes to the close and navigation requests of the steps view. An override must call
+    /// the base member first.
+    /// </summary>
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
@@ -587,14 +780,6 @@ public partial class Tour : TemplatedControl, IMotionAwareControl, ISemanticPart
             this[!IsPopupHorizontalFlippedProperty] = _popup[!Popup.IsHorizontalFlippedProperty];
             this[!IsPopupVerticalFlippedProperty] = _popup[!Popup.IsVerticalFlippedProperty];
             _popup.PositionFlipped += HandlePositionFlipped;
-            // _popup.CustomPlacementCallback = parameters =>
-            // {
-            //     var topLevel = TopLevel.GetTopLevel(this);
-            //     if (topLevel != null)
-            //     {
-            //         parameters.AnchorRectangle = new Rect(topLevel.DesiredSize);
-            //     }
-            // };
         }
         if (_stepsView != null)
         {
@@ -620,6 +805,12 @@ public partial class Tour : TemplatedControl, IMotionAwareControl, ISemanticPart
         SetCurrentValue(CurrentIndexProperty, args.Index);
     }
 
+    /// <summary>
+    /// Opens the tour at <see cref="CurrentIndex" />: it shows the mask layer, sets <see cref="IsOpen" /> to
+    /// <see langword="true" /> and opens the popup. It does nothing when the tour is already open, when
+    /// <see cref="Steps" /> is empty or when the template has not been applied. An index outside the steps is
+    /// reset to 0.
+    /// </summary>
     public void ShowTour()
     {
         if (_isReallyOpened || _popup == null || Steps.Count == 0)
@@ -667,9 +858,10 @@ public partial class Tour : TemplatedControl, IMotionAwareControl, ISemanticPart
             return;
         }
 
-        // VisualLayerManager.AddLayer 内部把共享层逻辑挂到自身；非 null → 非 null 的
-        // 逻辑父切换会抛异常，必须先解除再挂到当前 Tour，owner 作用域的语义样式
-        //（">>" Descendant 选择器沿逻辑树匹配）才能跨视觉根命中遮罩。
+        // VisualLayerManager.AddLayer attaches the shared layer to itself as a logical child. A change from one
+        // non-null logical parent to another throws, so the current parent is detached before the layer is attached
+        // to this Tour. As a logical child of the Tour, the mask is matched across visual roots by the semantic
+        // styles of the owner scope (">>" descendant selectors follow the logical tree).
         if (layer.Parent != null)
         {
             ((ISetLogicalParent)layer).SetParent(null);
@@ -686,12 +878,17 @@ public partial class Tour : TemplatedControl, IMotionAwareControl, ISemanticPart
             return;
         }
 
-        // 共享层"谁打开谁拥有，关闭即释放"：脱离当前 Tour 的逻辑父，
-        // 下一个打开的 Tour 可以重新挂载归属。
+        // The shared layer belongs to the tour that opened it and is released when that tour closes: it is detached
+        // from the current Tour so that the next tour that opens can attach it.
         ((ISetLogicalParent)layer).SetParent(null);
         RaiseCrossRootsChanged();
     }
     
+    /// <summary>
+    /// Closes the tour: it hides the mask layer, closes the popup, sets <see cref="IsOpen" /> to
+    /// <see langword="false" /> and returns to the first step. It does nothing while
+    /// <see cref="IsPopupPinnedOpen" /> is <see langword="true" /> or when the tour is not open.
+    /// </summary>
     public void HideTour()
     {
         if (IsPopupPinnedOpen)
@@ -719,6 +916,11 @@ public partial class Tour : TemplatedControl, IMotionAwareControl, ISemanticPart
         }
     }
 
+    /// <summary>
+    /// Opens the tour when <see cref="IsPopupPinnedOpen" /> or <see cref="IsOpen" /> is
+    /// <see langword="true" /> and hides it otherwise; it then returns to the first step when the tour has
+    /// steps. An override must call the base member first.
+    /// </summary>
     protected override void OnLoaded(RoutedEventArgs e)
     {
         base.OnLoaded(e);
@@ -838,11 +1040,13 @@ public partial class Tour : TemplatedControl, IMotionAwareControl, ISemanticPart
             TargetClipBounds = default;
             return;
         }
-        // TourLayer 绘制在自身坐标系中，且遮罩挖孔（TargetRegion）与其遮罩几何必须同坐标
-        // 空间。层可能宿主在 TopLevel 模板的共享 VisualLayerManager（整窗遮罩），也可能
-        // 宿主在舞台内嵌的 VisualLayerManager（对齐上游 getPopupContainer=false 的就地遮罩，
-        // 只覆盖舞台区域）。因此挖孔统一优先相对层本身换算；层尚未接入视觉树时退回
-        // TopLevel 坐标（层接入后会随 TargetRegion 绑定重新计算）。
+        // TourLayer draws in its own coordinate system, so the mask cutout (TargetRegion) and the mask geometry
+        // must be in the same coordinate space. The layer may be hosted in the shared VisualLayerManager of the
+        // TopLevel template (a mask over the whole window) or in a VisualLayerManager embedded in a stage (an
+        // in-place mask that matches the upstream behavior with getPopupContainer set to false and covers only the
+        // stage area). The cutout is therefore converted relative to the layer itself first. While the layer is not
+        // attached to the visual tree, TopLevel coordinates are used instead; the cutout is recalculated with the
+        // TargetRegion binding once the layer is attached.
         if (_layer is { } layer &&
             target.TranslatePoint(new Point(0, 0), layer) is { } layerOffset)
         {
@@ -932,6 +1136,10 @@ public partial class Tour : TemplatedControl, IMotionAwareControl, ISemanticPart
         _popup.SetCurrentValue(Popup.MarginToAnchorProperty, value + PopupMarginToAnchor);
     }
     
+     /// <summary>
+     /// Closes the tour even while it is pinned open, then unsubscribes the handlers of the collections and of
+     /// the steps view and disposes the bindings of the indicator. An override must call the base member.
+     /// </summary>
      protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
      {
          CloseTourForLifecycle();

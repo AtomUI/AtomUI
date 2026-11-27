@@ -14,6 +14,10 @@ namespace AtomUI.Desktop.Controls;
 
 using AvaloniaListBoxItem = Avalonia.Controls.ListBoxItem;
 
+/// <summary>
+/// Container of one entry row in a <see cref="ListBox" />, generated from the item source or supplied by the
+/// application.
+/// </summary>
 // Token-owner transparent item container: the item theme reads the hosting list's Tokens (ListBox, or the host of a derived
 // list such as the Cascader filter list), so Controls[ListBox] also reaches the items and their transitions.
 [TokenOwnerTransparent]
@@ -21,11 +25,20 @@ public class ListBoxItem : AvaloniaListBoxItem, IListItemVirtualizingContextAwar
 {
     #region 公共事件定义
 
+    /// <summary>
+    /// Identifies the <see cref="Clicked" /> routed event.
+    /// </summary>
     public static readonly RoutedEvent<RoutedEventArgs> ClickedEvent =
         RoutedEvent.Register<ListBoxItem, RoutedEventArgs>(
             nameof(Clicked),
             RoutingStrategies.Bubble);
     
+    /// <summary>
+    /// Raised when the item is pressed with the left button, on press rather than on release. The event bubbles.
+    /// It is raised only when the press reached the item unhandled and the item is hosted by a <see cref="ListBox" />.
+    /// The selection of a mouse press is already updated at that moment; the selection of a touch or pen press follows
+    /// on release.
+    /// </summary>
     public event EventHandler<RoutedEventArgs>? Clicked
     {
         add => AddHandler(ClickedEvent, value);
@@ -127,6 +140,11 @@ public class ListBoxItem : AvaloniaListBoxItem, IListItemVirtualizingContextAwar
             o => o.IsSplitLineEffectiveVisible,
             (o, v) => o.IsSplitLineEffectiveVisible = v);
 
+    /// <summary>
+    /// Size step of the item. The item shares the <c>SizeType</c> styled property of the other size-type aware
+    /// controls and does not change the value itself. The theme takes the minimum height and the padding of the item
+    /// from the tokens of the step; <see cref="CustomizableSizeType.Custom" /> uses the values of the middle step.
+    /// </summary>
     internal CustomizableSizeType SizeType
     {
         get => GetValue(SizeTypeProperty);
@@ -193,6 +211,17 @@ public class ListBoxItem : AvaloniaListBoxItem, IListItemVirtualizingContextAwar
     
     private TextBlockHighlightStrategy _filterHighlightStrategy = TextBlockHighlightStrategy.All;
     
+    /// <summary>
+    /// How the filter words are rendered in the text of the item while the list filters, as a combination of the
+    /// <see cref="TextBlockHighlightStrategy" /> values. <see cref="TextBlockHighlightStrategy.HighlightedMatch" />
+    /// colors the matches with <see cref="FilterHighlightForeground" /> and makes them bold when
+    /// <see cref="TextBlockHighlightStrategy.BoldedMatch" /> is also set;
+    /// <see cref="TextBlockHighlightStrategy.HighlightedWhole" /> colors the whole text instead when
+    /// <see cref="TextBlockHighlightStrategy.HighlightedMatch" /> is not set, and
+    /// <see cref="TextBlockHighlightStrategy.HideUnMatched" /> does not change the item text. The default is
+    /// <see cref="TextBlockHighlightStrategy.All" />. <see cref="ListBox" /> binds this property on its items to its
+    /// own <see cref="ListBox.FilterHighlightStrategy" />, so set the value on the list.
+    /// </summary>
     public TextBlockHighlightStrategy FilterHighlightStrategy
     {
         get => _filterHighlightStrategy;
@@ -213,6 +242,13 @@ public class ListBoxItem : AvaloniaListBoxItem, IListItemVirtualizingContextAwar
         set => SetAndRaise(ContentTextProperty, ref _contentText, value);
     }
     
+    /// <summary>
+    /// Foreground of the filter matches that <see cref="FilterHighlightStrategy" /> highlights in the text of the item
+    /// while the list filters. The default is <see langword="null" />, which leaves them in the foreground of the item,
+    /// so they then stand out only through the bold weight. <see cref="ListBox" /> binds this property on its items to
+    /// its own <see cref="ListBox.FilterHighlightForeground" />, whose theme value is
+    /// <see cref="ListBoxToken.FilterHighlightColor" />; set the value on the list or through that Token.
+    /// </summary>
     public IBrush? FilterHighlightForeground
     {
         get => GetValue(FilterHighlightForegroundProperty);
@@ -254,30 +290,56 @@ public class ListBoxItem : AvaloniaListBoxItem, IListItemVirtualizingContextAwar
         _transitionInitialization = new TransitionInitializationSession(this);
     }
 
+    /// <summary>
+    /// Completes the transition initialization session once the base method has applied the template. An override that
+    /// does not call the base method must still complete the initialization.
+    /// </summary>
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
         _transitionInitialization.CompleteInitialization();
     }
 
+    /// <summary>
+    /// Resets the transition initialization session, then lets the base method run. An override that does not call
+    /// the base method must still reset the session, so that it is completed again for the new template by
+    /// <see cref="OnApplyTemplate" /> or <see cref="OnLoaded" />.
+    /// </summary>
     protected override void OnTemplateChanged(AvaloniaPropertyChangedEventArgs e)
     {
         _transitionInitialization?.Reset();
         base.OnTemplateChanged(e);
     }
 
+    /// <summary>
+    /// Resets the transition initialization session, then calls the base method. An override that does not call
+    /// the base method must still reset the session, so that it is completed again by <see cref="OnLoaded" />,
+    /// when the item is attached once more.
+    /// </summary>
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         _transitionInitialization.Reset();
         base.OnDetachedFromVisualTree(e);
     }
 
+    /// <summary>
+    /// Completes the transition initialization session when the item is loaded. An override that does not call the base
+    /// method must still complete the initialization.
+    /// </summary>
     protected override void OnLoaded(RoutedEventArgs e)
     {
         base.OnLoaded(e);
         _transitionInitialization.CompleteInitialization();
     }
 
+    /// <summary>
+    /// Keeps the derived item states in step with their sources: the visibility of the selection indicator follows
+    /// <c>IsSelected</c> and <see cref="IsShowSelectedIndicator" />, <see cref="ContentText" /> follows
+    /// <c>Content</c> when it is a string or an <see cref="IListItemData" />, <see cref="FilterHighlightWords" />
+    /// follows <see cref="FilterValue" />, and <see cref="EffectiveBorderThickness" /> with
+    /// <see cref="IsSplitLineEffectiveVisible" /> follow <c>BorderThickness</c>, <see cref="SplitLineWidth" /> and
+    /// <see cref="IsSplitLineVisible" />. An override that does not call the base method must still update them.
+    /// </summary>
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
@@ -309,6 +371,10 @@ public class ListBoxItem : AvaloniaListBoxItem, IListItemVirtualizingContextAwar
         }
     }
 
+    /// <summary>
+    /// Applies the initial visibility of the selection indicator and the initial effective border thickness from the
+    /// current property values. An override that does not call the base method must still apply them.
+    /// </summary>
     protected override void OnInitialized()
     {
         base.OnInitialized();
@@ -321,6 +387,13 @@ public class ListBoxItem : AvaloniaListBoxItem, IListItemVirtualizingContextAwar
 
 
 
+    /// <summary>
+    /// Lets the owning <see cref="ListBox" /> update its selection, then raises <see cref="Clicked" /> for a left button
+    /// press. A mouse press, or the right button of a pen, selects at once; a touch, or the left button of a pen, only
+    /// records the press point and selects on release, so that it does not interfere with scrolling gestures. Nothing
+    /// happens when the press is already handled or the item is not hosted by a <see cref="ListBox" />. The base method
+    /// is not called.
+    /// </summary>
     protected override void OnPointerPressed(PointerPressedEventArgs e)
     {
         _pointerDownPoint = s_invalidPoint;
@@ -349,9 +422,8 @@ public class ListBoxItem : AvaloniaListBoxItem, IListItemVirtualizingContextAwar
                     // interfere with gestures.
                     _pointerDownPoint = p.Position;
 
-                    // Ideally we'd set handled here, but that would prevent the scroll gesture
-                    // recognizer from working.
-                    // e.Handled = true;
+                    // Ideally the press would be marked handled here, but that would prevent the scroll gesture
+                    // recognizer from working, so it is left unhandled.
                 }
             }
 
@@ -362,6 +434,13 @@ public class ListBoxItem : AvaloniaListBoxItem, IListItemVirtualizingContextAwar
         }
     }
 
+    /// <summary>
+    /// Requests the context menu when the right button is released on the item itself, and completes the selection of a
+    /// touch or left pen press recorded by <see cref="OnPointerPressed" /> when the pointer is released unhandled within
+    /// the tap tolerance inside the item. The list then updates its selection and the release is marked handled; for
+    /// touch and pen the release is also raised on the list, which lets the list commit the selection. The base method
+    /// is not called.
+    /// </summary>
     protected override void OnPointerReleased(PointerReleasedEventArgs e)
     {
         if (e.Source == this && !e.Handled && e.InitialPressMouseButton == MouseButton.Right)

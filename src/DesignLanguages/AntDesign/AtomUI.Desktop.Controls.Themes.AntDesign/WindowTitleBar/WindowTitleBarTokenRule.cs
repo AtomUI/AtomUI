@@ -6,7 +6,9 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls.Themes.AntDesign;
 
-/// <summary>The AntDesign view of <see cref="WindowTitleBarToken"/>.</summary>
+/// <summary>
+/// The AntDesign view of <see cref="WindowTitleBarToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class WindowTitleBarTokenRule : IControlTokenRule<AntDesignToken, WindowTitleBarToken>
 {
@@ -21,19 +23,19 @@ internal sealed class WindowTitleBarTokenRule : IControlTokenRule<AntDesignToken
         token.TitleBarPadding             = new Thickness(token.LogoAndTitleSpacing * 1.8, 0);
         token.CaptionButtonIconSize       = global.IconSize;
 
+        // Aligned with the glyph size of Avalonia's native-style window decorations.
         token.WindowsCaptionIconSize      = 11;
         token.LogoSize                    = global.SizeUnit * 4;
         token.CaptionButtonPadding = new Thickness(global.SizeUnit * 2);
 
         token.CaptionGroupSpacing  = global.SizeUnit * 2;
 
-        // managed caption button 按自身实测尺寸取 max(w, h) / 2 得到正圆圆角；
-        // 内容尺寸固定为 icon + padding，这里用同一公式把该几何暴露给主题，
-        // 使 macOS AddOn 按钮与相邻 caption 按钮共用同一圆角来源。
+        // The caption button rules round their corners via TitleBarActionTokenCalculator.CalculateCaptionCornerRadius.
 
 
-        // 窗口装饰语义不走密度算法：紧凑模式下 ControlHeightLG / SizeLG / SpacingXS 都会被拉小，
-        // 标题栏 / DockPanel 间距不应跟着缩，因此使用跨平台稳定值。
+        // Window decoration does not follow the density algorithm. In compact mode ControlHeightLG, SizeLG and
+        // SpacingXS shrink, but the title bar height and the DockPanel spacing must not shrink with them, so the
+        // values below are cross-platform constants.
         token.Height                  = 40;
         token.HeaderHorizontalSpacing = 8;
         token.WindowsCloseButtonHoverBgColor   = Color.FromRgb(244, 67, 54);

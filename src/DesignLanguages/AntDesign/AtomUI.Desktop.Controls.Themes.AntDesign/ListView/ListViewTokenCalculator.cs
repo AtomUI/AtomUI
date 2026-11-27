@@ -5,9 +5,16 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls.Themes.AntDesign;
 
-/// <summary>The AntDesign values of the shared <see cref="AbstractListViewToken"/> layer.</summary>
+/// <summary>
+/// The AntDesign values of the shared <see cref="AbstractListViewToken" /> layer.
+/// </summary>
 public static class ListViewTokenCalculator
 {
+    /// <summary>
+    /// Assigns the Ant Design values of the shared <see cref="AbstractListViewToken" /> layer to
+    /// <paramref name="token" />: the item colors for every state, the item paddings by size, and the content
+    /// padding, item margin and group header color.
+    /// </summary>
     public static void Calculate(in TokenEvaluationContext<AntDesignToken> context, DesignToken global, AbstractListViewToken token)
     {
         var colorTextDisabled  = global.ColorTextDisabled;

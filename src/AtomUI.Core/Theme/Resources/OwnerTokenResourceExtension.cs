@@ -16,13 +16,13 @@ namespace AtomUI.Theme.Resources;
 /// <c>ThemeConfig.Controls[identity].Tokens["ColorBorder"]</c> reaches every primitive in that control's
 /// template, including popup content whose logical parent chain leads back to the owner. Without an owner
 /// (or with an owner the active schema does not register) the plain global value is used, exactly like
-/// <see cref="SharedTokenResourceExtension"/>.
+/// <see cref="SharedTokenResourceExtension" />.
 /// </para>
 /// <para>
 /// The returned binding is instantiated per target element; the owner and the resource are resolved at
 /// that point, never while the markup is being loaded. The service provider is only asked whether the
 /// markup sits in a control template, as <c>DynamicResourceExtension</c> does, so direct use on a template
-/// element gets Template priority. Only targets that are <see cref="Avalonia.StyledElement"/> instances can
+/// element gets Template priority. Only targets that are <see cref="Avalonia.StyledElement" /> instances can
 /// resolve a value.
 /// </para>
 /// </remarks>
@@ -34,7 +34,7 @@ public sealed class OwnerTokenResourceExtension : MarkupExtension
     public SharedTokenKind? Kind { get; set; }
 
     /// <summary>
-    /// Creates an extension whose <see cref="Kind"/> is assigned later.
+    /// Creates an extension whose <see cref="Kind" /> is assigned later.
     /// </summary>
     public OwnerTokenResourceExtension()
     {

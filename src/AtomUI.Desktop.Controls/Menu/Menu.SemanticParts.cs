@@ -5,19 +5,24 @@ using Avalonia.Controls.Presenters;
 
 namespace AtomUI.Desktop.Controls;
 
-// Plain Menu 的 Semantic Part 声明。上游 antd 6.6.3 的 Menu 公开键路径共 12 个：一级 root、item、itemIcon、
-// itemContent、itemTitle、list，子菜单 subMenu.item、subMenu.itemIcon、subMenu.itemContent、subMenu.itemTitle、
-// subMenu.list，以及 popup.root；Part 名称逐字沿用这些键路径。
+// Semantic Parts of the plain Menu. The Menu of upstream antd 6.6.3 has 12 public key paths in total: root, item,
+// itemIcon, itemContent, itemTitle and list at the first level; subMenu.item, subMenu.itemIcon, subMenu.itemContent,
+// subMenu.itemTitle and subMenu.list; and popup.root. The Part names are these key paths verbatim.
 //
-// Menu、MenuItem、MenuItemGroup 都是 public 类型，但菜单项容器由 Menu / MenuItem / MenuItemGroup 在运行时
-// 生成，因此全部 Part 声明在 Menu 上，与 NavMenu 保持同一 owner 模型。
+// Menu, MenuItem and MenuItemGroup are public types, but the menu item containers are created at runtime by
+// Menu / MenuItem / MenuItemGroup, so every Part is declared on Menu. This is the same owner model as NavMenu.
 //
-// 层级 marker 由 MenuSemanticLevelScope 在容器 prepare 时按语义层级注入：顶层容器只带 .semantic-item /
-// .semantic-scope-group，子菜单容器只带 .semantic-sub-menu-item / .semantic-sub-menu-group。Menu 子树之外的
-// 复用方（ContextMenu、MenuFlyout、DropdownButton 弹层）不下发语义层级，保持既有 .semantic-item 行为不变。
+// MenuSemanticLevelScope injects the level markers when a container is prepared. A top-level container carries only
+// .semantic-item / .semantic-scope-group, and a submenu container only .semantic-sub-menu-item /
+// .semantic-sub-menu-group. Reusers outside the Menu subtree (the popups of ContextMenu, MenuFlyout and
+// DropdownButton) pass no level and keep the existing .semantic-item behavior.
 //
-// 菜单项模板同时静态声明两个层级的 icon / content marker（同 NavMenu 做法），由 route 的容器 anchor 决定
-// 命中哪一层；分组模板的标题与列表同理。因此 route 以 >> 开头，弹层内部件再加 CrossVisualRoot。
+// The menu item template declares the icon / content markers of both levels statically, as NavMenu does, and the
+// container anchor of the route decides which level is hit. The title and list of the group template work the
+// same way. That is why every route starts with >>, and the parts inside a popup add CrossVisualRoot.
+//
+// One entry of the first level of the menu bar. There is one container per top-level item, created at runtime.
+// MenuItemStyle applies to each of these item containers.
 [SemanticPart(
     "item",
     SelectorClass = "semantic-item",
@@ -27,6 +32,8 @@ namespace AtomUI.Desktop.Controls;
     CrossNestedOwners = true,
     RuntimeCreated = true,
     Since = "6.2.0")]
+// The icon of an entry in the first level of the menu bar. It is visible only while the item has an icon.
+// MenuItemIconStyle applies to the icon of each such entry.
 [SemanticPart(
     "itemIcon",
     SelectorClass = "semantic-item-icon",
@@ -36,6 +43,8 @@ namespace AtomUI.Desktop.Controls;
     CrossNestedOwners = true,
     RuntimeCreated = true,
     Since = "6.2.0")]
+// The text of an entry in the first level of the menu bar. It presents the Header of the item.
+// MenuItemContentStyle applies to the text area of each such entry.
 [SemanticPart(
     "itemContent",
     SelectorClass = "semantic-item-content",
@@ -45,6 +54,8 @@ namespace AtomUI.Desktop.Controls;
     CrossNestedOwners = true,
     RuntimeCreated = true,
     Since = "6.2.0")]
+// The title of a group of entries in the first level of the menu bar. One per group container.
+// MenuItemTitleStyle applies to the title of each group.
 [SemanticPart(
     "itemTitle",
     SelectorClass = "semantic-item-title",
@@ -54,6 +65,8 @@ namespace AtomUI.Desktop.Controls;
     CrossNestedOwners = true,
     RuntimeCreated = true,
     Since = "6.2.0")]
+// The list of the entries inside a group of the first menu bar level. One per group container.
+// MenuListStyle applies to each list.
 [SemanticPart(
     "list",
     SelectorClass = "semantic-list",
@@ -63,6 +76,8 @@ namespace AtomUI.Desktop.Controls;
     CrossNestedOwners = true,
     RuntimeCreated = true,
     Since = "6.2.0")]
+// One entry inside a submenu, at any nesting depth. There is one container per submenu item, created at runtime
+// in the separate visual root of the popup. MenuSubMenuItemStyle applies to each submenu entry.
 [SemanticPart(
     "subMenu.item",
     SelectorClass = "semantic-sub-menu-item",
@@ -73,6 +88,8 @@ namespace AtomUI.Desktop.Controls;
     RuntimeCreated = true,
     CrossVisualRoot = true,
     Since = "6.2.0")]
+// The icon of a submenu entry. It is visible only while the item has an icon.
+// MenuSubMenuItemIconStyle applies to the icon of each submenu entry.
 [SemanticPart(
     "subMenu.itemIcon",
     SelectorClass = "semantic-sub-menu-item-icon",
@@ -83,6 +100,8 @@ namespace AtomUI.Desktop.Controls;
     RuntimeCreated = true,
     CrossVisualRoot = true,
     Since = "6.2.0")]
+// The text of a submenu entry. It presents the Header of the item.
+// MenuSubMenuItemContentStyle applies to the text area of each submenu entry.
 [SemanticPart(
     "subMenu.itemContent",
     SelectorClass = "semantic-sub-menu-item-content",
@@ -93,6 +112,8 @@ namespace AtomUI.Desktop.Controls;
     RuntimeCreated = true,
     CrossVisualRoot = true,
     Since = "6.2.0")]
+// The title of a group inside a submenu. One per group container.
+// MenuSubMenuItemTitleStyle applies to the title of each group.
 [SemanticPart(
     "subMenu.itemTitle",
     SelectorClass = "semantic-sub-menu-item-title",
@@ -103,6 +124,8 @@ namespace AtomUI.Desktop.Controls;
     RuntimeCreated = true,
     CrossVisualRoot = true,
     Since = "6.2.0")]
+// The list of the entries inside a group of a submenu. One per group container.
+// MenuSubMenuListStyle applies to each list.
 [SemanticPart(
     "subMenu.list",
     SelectorClass = "semantic-sub-menu-list",
@@ -113,6 +136,8 @@ namespace AtomUI.Desktop.Controls;
     RuntimeCreated = true,
     CrossVisualRoot = true,
     Since = "6.2.0")]
+// The root frame of a submenu popup. One per submenu popup, in the separate visual root that exists only while
+// the submenu is open. MenuPopupRootStyle applies to each popup root.
 [SemanticPart(
     "popup.root",
     SelectorClass = "semantic-popup-root",

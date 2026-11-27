@@ -35,7 +35,7 @@ internal class SelectMaxTagAwarePanel : StackPanel
         var effectiveWidth = 0d;
         if (Children.Count > 0)
         {
-            // 计算需要隐藏几个
+            // Count how many tags must be hidden.
             var i            = 0;
             var tagInfoWidth = _infoTag?.DesiredSize.Width ?? 0d;
             var offsetX      = tagInfoWidth;

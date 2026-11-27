@@ -3,7 +3,9 @@ using AtomUI.Theme.Languages;
 
 namespace AtomUI.Desktop.Controls.Themes.Shadcn;
 
-/// <summary>The shadcn view of <see cref="RangeDateViewerToken"/>.</summary>
+/// <summary>
+/// The shadcn view of <see cref="RangeDateViewerToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class RangeDateViewerTokenRule : IControlTokenRule<ShadcnToken, RangeDateViewerToken>
 {

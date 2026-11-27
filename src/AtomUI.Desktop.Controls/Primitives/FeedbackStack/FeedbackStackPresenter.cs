@@ -13,7 +13,7 @@ internal sealed class FeedbackStackHoverChangedEventArgs(bool isPointerOver, boo
 
 /// <summary>
 /// Stable feedback items host that owns whole-stack hover state while delegating hot-path geometry to
-/// <see cref="FeedbackStackPanel"/>.
+/// <see cref="FeedbackStackPanel" />.
 /// </summary>
 internal sealed class FeedbackStackPresenter : ItemsControl
 {

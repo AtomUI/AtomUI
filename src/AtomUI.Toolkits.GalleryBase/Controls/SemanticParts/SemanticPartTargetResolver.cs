@@ -60,11 +60,13 @@ internal static class SemanticPartTargetResolver
         {
             AddMatch(owner);
 
-            // 弹层承载型控件（如 Tour）的 owner 布局尺寸为零，root 没有可定位的宿主表面。
-            // 对齐上游语义（Tour 的 root 即可见的弹层容器）：owner 不可定位时回退到
-            // 其 "popup.root" 部件的标记节点（模板弹层根）。回退目标是 popup.root 契约
-            // 的实例，不能复用 AddMatch——那会按 root 部件的契约（owner 类型）把它拒绝；
-            // 资格校验由回退逻辑按 popup.root 部件执行，此处直接入列。
+            // The owner of a popup-hosted control (such as Tour) has a zero layout size, so its root has no host
+            // surface that can be located. To match the upstream semantics (the root of Tour is the visible popup
+            // container), the root falls back to the marker node of the "popup.root" part (the popup root of the
+            // template) when the owner is not locatable. That node is an instance of the popup.root contract, so
+            // AddMatch cannot be reused: it would reject the node under the contract of the root part (the owner
+            // type). The fallback logic has already checked eligibility against the popup.root part, so the node
+            // is added directly.
             if (targets.Count == 0 &&
                 TryResolvePopupRootFallback(owner, registry, additionalRoots) is { } popupRoot)
             {
@@ -75,11 +77,13 @@ internal static class SemanticPartTargetResolver
             return new SemanticPartTargetResolution(targets, totalMatchCount);
         }
 
-        // 模板节点被嵌套控件的内容属性收养时（decorated box 的左右 addon 等），
-        // Avalonia 会清空其 TemplatedParent，因此不能按 TemplatedParent 过滤；
-        // 同时 scope-aware overlay 会重挂子树（如 ListView 的滚动区域），逐层
-        // GetVisualChildren 无法抵达，因此统一用 GetVisualDescendants 全子树枚举，
-        // 并以"候选到 owner 的祖先链不跨其他已注册语义 owner"作为隔离边界。
+        // When a template node is adopted by the content property of a nested control (such as the left and
+        // right addons of a decorated box), Avalonia clears its TemplatedParent, so candidates cannot be
+        // filtered by TemplatedParent. A scope-aware overlay also re-parents subtrees (such as the scrolling
+        // area of ListView), which a level-by-level walk over GetVisualChildren cannot reach, so the whole
+        // subtree is enumerated with GetVisualDescendants instead. Isolation is then guaranteed by requiring
+        // that the ancestor chain from a candidate up to the owner does not cross another registered semantic
+        // owner.
         if (part.RuntimeCreated && HasMarker(owner, part) && MatchesRouteAnchors(owner, owner, part))
         {
             AddMatch(owner);
@@ -127,8 +131,10 @@ internal static class SemanticPartTargetResolver
     }
 
     /// <summary>
-    /// 弹层承载型控件（owner 布局尺寸为零，如 Tour）的 root 回退解析：定位 owner 模板
-    /// 弹层中的 "popup.root" 标记节点（该节点的可视范围即上游语义中的控件根容器）。
+    /// Resolves the root fallback of a popup-hosted control, whose owner has a zero layout size (such as
+    /// Tour): locates the marker node of the "popup.root" part in the popups of the owner's template and
+    /// then in the additional roots. The visual bounds of that node are the root container of the control
+    /// in the upstream semantics.
     /// </summary>
     private static Visual? TryResolvePopupRootFallback(
         Control owner,
@@ -165,8 +171,9 @@ internal static class SemanticPartTargetResolver
             return root.GetVisualDescendants().FirstOrDefault(IsLocatablePopupRootMarker);
         }
 
-        // 回退节点是 "popup.root" 契约的实例，资格校验（含契约类型）按 popup.root
-        // 部件执行，而不是发起回退的 root 部件（其契约为 owner 类型）。
+        // The fallback node is an instance of the "popup.root" contract, so the eligibility check (including
+        // the contract type) runs against the popup.root part, not against the root part that started the
+        // fallback (its contract is the owner type).
         bool IsLocatablePopupRootMarker(Visual candidate)
         {
             return HasMarker(candidate, popupRootPart) && IsEligible(candidate, popupRootPart);
@@ -208,9 +215,9 @@ internal static class SemanticPartTargetResolver
         bool crossNestedOwners,
         SemanticPartRegistry registry)
     {
-        // 声明 CrossNestedOwners 的部件（如 Transfer 的条目限定部件）允许穿过
-        // 嵌套语义 owner 的视觉子树（scope-aware overlay 重挂后逐层下钻也不可达，
-        // 必须全子树枚举）。
+        // A part that declares CrossNestedOwners (such as the item-scoped parts of Transfer) is allowed to
+        // cross the visual subtree of a nested semantic owner (after a scope-aware overlay has re-parented the
+        // subtree, a level-by-level descent cannot reach it either, so the whole subtree must be enumerated).
         if (crossNestedOwners)
         {
             return false;
@@ -223,7 +230,7 @@ internal static class SemanticPartTargetResolver
                 return false;
             }
 
-            // 候选自身即已注册 owner 时不算边界（正是匹配目标）。
+            // A candidate that is itself a registered owner is not a boundary: it is the match target.
             if (ReferenceEquals(ancestor, candidate))
             {
                 continue;
@@ -241,9 +248,10 @@ internal static class SemanticPartTargetResolver
     }
 
     /// <summary>
-    /// 判断节点是否处于 owner 的模板组合内（TemplatedParent 链可回溯到 owner）。
-    /// owner 自身模板内的已注册控件（如 ListView 模板中的 Spin）属于 owner 的
-    /// 组合结构，不构成语义隔离边界；独立的内容型嵌套组件才构成边界。
+    /// Determines whether a node lies inside the template composition of the owner (its TemplatedParent
+    /// chain leads back to the owner). A registered control inside the owner's own template (such as Spin
+    /// in the ListView template) belongs to the composition of the owner and forms no semantic isolation
+    /// boundary; only a standalone nested component that comes from content forms one.
     /// </summary>
     private static bool InOwnerTemplate(Visual control, Control owner)
     {
@@ -262,9 +270,10 @@ internal static class SemanticPartTargetResolver
 
 
     /// <summary>
-    /// 限定部件（如 source.header）与未限定部件共享终端 marker 时，
-    /// 依据 SelectorRoute 中的锚点类区分实例：非终端 .class 锚点要求出现在
-    /// 候选节点到 owner 的祖先链上，首段自锚点要求 owner 自身携带。
+    /// Tells instances apart by the anchor classes of SelectorRoute when a qualified part (such as
+    /// source.header) shares its terminal marker with an unqualified part: a non-terminal .class anchor
+    /// must occur on the ancestor chain from the candidate node up to the owner, and a leading self anchor
+    /// must be carried by the owner itself.
     /// </summary>
     private static bool MatchesRouteAnchors(Visual candidate, Control owner, SemanticPartDescriptor part)
     {
@@ -300,7 +309,8 @@ internal static class SemanticPartTargetResolver
 
         if (hasSelfAnchor && !ReferenceEquals(candidate, owner))
         {
-            // 自锚点场景下 owner 类只约束 owner 自身；候选为 owner 模板内节点时同样成立。
+            // With a self anchor, the owner class constrains the owner itself only; the same holds when the
+            // candidate is a node inside the template of the owner.
             return candidate.Classes.Contains(tokens[0].Substring(1)) ||
                    HasAncestorAnchor(candidate, owner, tokens[0].Substring(1));
         }
@@ -357,8 +367,9 @@ internal static class SemanticPartTargetResolver
             return false;
         }
 
-        // RestHidden 部件的静止态透明是设计语义（如 ImagePreviewer cover 悬停遮罩），
-        // 语义预览必须在不可见状态下仍能定位描边。
+        // A RestHidden part is transparent at rest by design (such as the hover mask over the cover of
+        // ImagePreviewer), so the semantic preview must still be able to locate the part for its outline while
+        // the part is invisible.
         if (part.RestHidden)
         {
             return true;

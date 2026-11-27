@@ -62,7 +62,8 @@ internal class RoundRectWavePainter : AbstractWavePainter
 
     private Geometry? BuildRoundedGeometry(Rect rect, CornerRadius cornerRadius)
     {
-        // 根据四个角是否一样看是使用简单的还是复杂的矢量图形生成算法
+        // A uniform corner radius is drawn with the simple rounded rectangle geometry; unequal corner radii need the
+        // keypoint algorithm.
         if (cornerRadius.IsUniform)
         {
             return new RectangleGeometry(rect, cornerRadius.TopLeft, cornerRadius.TopLeft);

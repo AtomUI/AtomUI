@@ -5,7 +5,9 @@ using AtomUI.Theme.Languages;
 
 namespace AtomUI.Registration;
 
-/// <summary>Build-linked immutable startup metadata and static value package entries.</summary>
+/// <summary>
+/// Build-linked immutable startup metadata and static value package entries.
+/// </summary>
 [EditorBrowsable(EditorBrowsableState.Never)]
 public sealed class StartupImage
 {
@@ -14,6 +16,17 @@ public sealed class StartupImage
     // "s:" owners keyed by the bare resource name, so string key misses check ownership without concatenation.
     private readonly Dictionary<string, string> _stringResourceOwners = new(StringComparer.Ordinal);
 
+    /// <summary>
+    /// Creates the startup image from build-time data. Every sequence is copied, so later changes to the
+    /// arguments do not affect the image.
+    /// </summary>
+    /// <exception cref="NotSupportedException">
+    /// <paramref name="formatId" /> is not the current startup image format.
+    /// </exception>
+    /// <exception cref="InvalidDataException">
+    /// A package proof does not follow the current manifest format or the direct text encoding, or its payload
+    /// is null, empty, too long or has another length than the one it declares.
+    /// </exception>
     public StartupImage(uint formatId, ulong stamp, IReadOnlyList<StartupPackageProof> packages,
         IReadOnlyList<string> controlOrder, IEnumerable<KeyValuePair<string, string>>? resourceOwners = null,
         IEnumerable<string>? verifiedLanguages = null, IEnumerable<KeyValuePair<string, string>>? languageModules = null,
@@ -76,7 +89,9 @@ public sealed class StartupImage
     }
 }
 
-/// <summary>Exact build-time package evidence for the generated startup image.</summary>
+/// <summary>
+/// Exact build-time package evidence for the generated startup image.
+/// </summary>
 [EditorBrowsable(EditorBrowsableState.Never)]
 public readonly record struct StartupPackageProof(
     string PackageId, uint ManifestFormatId, uint OriginalAsciiLength, byte Encoding, string Payload)
@@ -84,8 +99,16 @@ public readonly record struct StartupPackageProof(
     internal const byte DirectText = 0;
 }
 
+/// <summary>
+/// Implemented by the application class to provide the startup image that the source generator linked
+/// into it. The generator adds the interface to the generated part of a partial application class, and
+/// startup asks it for the image when the theme manager builder carries no image of its own.
+/// </summary>
 [EditorBrowsable(EditorBrowsableState.Never)]
 public interface IGeneratedStartupImageHost
 {
+    /// <summary>
+    /// Returns the startup image of the application.
+    /// </summary>
     StartupImage GetStartupImage();
 }

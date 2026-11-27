@@ -4,7 +4,9 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 
-/// <summary>The PrimeNG view of <see cref="TimelineToken"/>.</summary>
+/// <summary>
+/// The PrimeNG view of <see cref="TimelineToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class TimelineTokenRule : IControlTokenRule<PrimeNGToken, TimelineToken>
 {
@@ -12,9 +14,11 @@ internal sealed class TimelineTokenRule : IControlTokenRule<PrimeNGToken, Timeli
     {
         var token  = target.Own;
         var global = target.Global;
-        // PrimeNG: the control-global overrides, read by the formulas below.
+        // PrimeNG: no control-global overrides; EvaluateGlobal writes nothing.
         PrimeNGTimelineTokens.EvaluateGlobal(in context, global);
 
+        // Ant Design formula kept as is: the PrimeNG timeline stage at the end of the method replaces only the tail
+        // color and width (IndicatorTailColor, IndicatorTailWidth).
         token.IndicatorTailColor = global.ColorSplit;
         token.IndicatorTailWidth = global.LineWidthBold;
 

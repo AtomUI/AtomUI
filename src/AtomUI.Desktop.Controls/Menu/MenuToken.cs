@@ -4,6 +4,11 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
 
+/// <summary>
+/// Design tokens of the <see cref="Menu" /> menu bar: its first-level entries (colors, corner radius, padding,
+/// font size and line height, each in a small, a default and a large variant) and the distance from such an entry
+/// to its popup. The popup itself uses the values of <see cref="AbstractMenuPopupToken" />.
+/// </summary>
 [ControlDesignToken]
 public sealed partial class MenuToken : AbstractMenuPopupToken
 {
@@ -28,69 +33,95 @@ public sealed partial class MenuToken : AbstractMenuPopupToken
 
 
     /// <summary>
-    /// Foreground of the label and icon of a menu bar item at rest. Pairs with <see cref="TopLevelItemBg"/>.
+    /// Foreground of the label and icon of a menu bar item at rest. Pairs with <see cref="TopLevelItemBg" />.
     /// </summary>
     public partial Color TopLevelItemColor { get; set; }
 
     /// <summary>
     /// Foreground of the label and icon of a menu bar item while its submenu is open. Pairs with
-    /// <see cref="TopLevelItemSelectedBg"/>.
+    /// <see cref="TopLevelItemSelectedBg" />.
     /// </summary>
     public partial Color TopLevelItemSelectedColor { get; set; }
 
     /// <summary>
     /// Foreground of the label and icon of a menu bar item under the pointer. Pairs with
-    /// <see cref="TopLevelItemHoverBg"/>.
+    /// <see cref="TopLevelItemHoverBg" />.
     /// </summary>
     public partial Color TopLevelItemHoverColor { get; set; }
 
-    /// <summary>Fill of a menu bar item at rest. Pairs with <see cref="TopLevelItemColor"/>.</summary>
+    /// <summary>
+    /// Fill of a menu bar item at rest. Pairs with <see cref="TopLevelItemColor" />.
+    /// </summary>
     public partial Color TopLevelItemBg { get; set; }
 
     /// <summary>
-    /// Fill of a menu bar item while its submenu is open. Pairs with <see cref="TopLevelItemSelectedColor"/>.
+    /// Fill of a menu bar item while its submenu is open. Pairs with <see cref="TopLevelItemSelectedColor" />.
     /// </summary>
     public partial Color TopLevelItemSelectedBg { get; set; }
 
     /// <summary>
-    /// Fill of a menu bar item under the pointer. Pairs with <see cref="TopLevelItemHoverColor"/>.
+    /// Fill of a menu bar item under the pointer. Pairs with <see cref="TopLevelItemHoverColor" />.
     /// </summary>
     public partial Color TopLevelItemHoverBg { get; set; }
 
-    /// <summary>Corner radius of a small menu bar item's frame.</summary>
+    /// <summary>
+    /// Corner radius of a small menu bar item's frame.
+    /// </summary>
     public partial CornerRadius TopLevelItemBorderRadiusSM { get; set; }
 
-    /// <summary>Corner radius of a standard or custom-sized menu bar item's frame.</summary>
+    /// <summary>
+    /// Corner radius of a standard or custom-sized menu bar item's frame.
+    /// </summary>
     public partial CornerRadius TopLevelItemBorderRadius { get; set; }
 
-    /// <summary>Corner radius of a large menu bar item's frame.</summary>
+    /// <summary>
+    /// Corner radius of a large menu bar item's frame.
+    /// </summary>
     public partial CornerRadius TopLevelItemBorderRadiusLG { get; set; }
 
-    /// <summary>Padding inside a small menu bar item's frame.</summary>
+    /// <summary>
+    /// Padding inside a small menu bar item's frame.
+    /// </summary>
     public partial Thickness TopLevelItemPaddingSM { get; set; }
 
-    /// <summary>Padding inside a standard or custom-sized menu bar item's frame.</summary>
+    /// <summary>
+    /// Padding inside a standard or custom-sized menu bar item's frame.
+    /// </summary>
     public partial Thickness TopLevelItemPadding { get; set; }
 
-    /// <summary>Padding inside a large menu bar item's frame.</summary>
+    /// <summary>
+    /// Padding inside a large menu bar item's frame.
+    /// </summary>
     public partial Thickness TopLevelItemPaddingLG { get; set; }
 
-    /// <summary>Font size of the label in a small menu bar item.</summary>
+    /// <summary>
+    /// Font size of the label in a small menu bar item.
+    /// </summary>
     public partial double TopLevelItemFontSizeSM { get; set; }
 
-    /// <summary>Font size of the label in a standard or custom-sized menu bar item.</summary>
+    /// <summary>
+    /// Font size of the label in a standard or custom-sized menu bar item.
+    /// </summary>
     public partial double TopLevelItemFontSize { get; set; }
 
-    /// <summary>Font size of the label in a large menu bar item.</summary>
+    /// <summary>
+    /// Font size of the label in a large menu bar item.
+    /// </summary>
     public partial double TopLevelItemFontSizeLG { get; set; }
 
-    /// <summary>Line height of the label in a standard or custom-sized menu bar item.</summary>
+    /// <summary>
+    /// Line height of the label in a standard or custom-sized menu bar item.
+    /// </summary>
     public partial double TopLevelItemLineHeight { get; set; }
 
-    /// <summary>Line height of the label in a large menu bar item.</summary>
+    /// <summary>
+    /// Line height of the label in a large menu bar item.
+    /// </summary>
     public partial double TopLevelItemLineHeightLG { get; set; }
 
-    /// <summary>Line height of the label in a small menu bar item.</summary>
+    /// <summary>
+    /// Line height of the label in a small menu bar item.
+    /// </summary>
     public partial double TopLevelItemLineHeightSM { get; set; }
 
     /// <summary>

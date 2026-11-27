@@ -210,7 +210,7 @@ internal sealed class ShadcnDefaultCalculator : ShadcnVariantCalculator
 
     private void SetupColorPalettes(DesignToken designToken)
     {
-        // 生成所有预置颜色的色系
+        // Generate the palette of every preset color.
         foreach (var presetColor in PresetPrimaryColor.AllColorTypes())
         {
             var colors   = PaletteGenerator.GeneratePalette(designToken.GetPresetPrimaryColor(presetColor.Type).Color());
@@ -319,7 +319,7 @@ internal sealed class ShadcnDarkCalculator : ShadcnVariantCalculator
 
     private void SetupColorPalettes(DesignToken designToken)
     {
-        // 生成所有预置颜色的色系
+        // Generate the palette of every preset color.
         foreach (var presetColor in PresetPrimaryColor.AllColorTypes())
         {
             var colors = PaletteGenerator.GeneratePalette(designToken.GetPresetPrimaryColor(presetColor.Type).Color(),

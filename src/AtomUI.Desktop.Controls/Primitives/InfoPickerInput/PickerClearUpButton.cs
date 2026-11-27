@@ -27,13 +27,17 @@ internal class PickerClearUpButton : TemplatedControl
             o => o.IsFormFeedbackVisible);
 
     /// <summary>
-    /// Size of the info icon. The icon is a registered IconPresenter, so the theme reads the picker's value on this button
-    /// and template-binds it down.
+    /// Size of the info icon. The icon is a registered IconPresenter, so the theme reads the picker's value on this
+    /// button and template-binds it down. The theme supplies it from the <c>IconSize</c> Token; <c>NaN</c>, the
+    /// registered default, does not mean that size: it reaches the icon as an unset <c>Width</c> and <c>Height</c>.
     /// </summary>
     internal static readonly StyledProperty<double> InfoIconSizeProperty =
         AvaloniaProperty.Register<PickerClearUpButton, double>(nameof(InfoIconSize), double.NaN);
 
-    /// <summary>Brush of the info icon (read on this button for the same reason as <see cref="InfoIconSize"/>).</summary>
+    /// <summary>
+    /// Brush of the info icon (read on this button for the same reason as <see cref="InfoIconSize" />). The theme
+    /// supplies it from the <c>ColorTextQuaternary</c> Token.
+    /// </summary>
     internal static readonly StyledProperty<IBrush?> InfoIconBrushProperty =
         AvaloniaProperty.Register<PickerClearUpButton, IBrush?>(nameof(InfoIconBrush));
 

@@ -10,7 +10,7 @@ using Avalonia.Controls.Primitives;
 
 namespace AtomUI.Desktop.Controls;
 
-// 滚动：滚轮/滚动条输入、偏移提交、行列滚入视口与滚动条布局
+// Scrolling: wheel and scroll bar input, offset commit, scrolling rows and columns into view, and scroll bar layout.
 public partial class DataGrid
 {
     internal bool UpdateScroll(Vector delta)
@@ -706,7 +706,8 @@ public partial class DataGrid
                     // total height of the display area
                     _vScrollBar.ViewportSize = cellsHeight;
                     _vScrollBar.IsEnabled    = true;
-                    // 与横向一致：上界较低时写入的偏移会被 RangeBase 夹住，上界回升后需按偏移重新同步 Value
+                    // Same as the horizontal bar: an offset written while the maximum is lower is clamped by
+                    // RangeBase, so Value has to be resynced from the offset once the maximum rises again.
                     if (!MathUtils.AreClose(_vScrollBar.Value, _verticalOffset))
                     {
                         _vScrollBar.Value = _verticalOffset;

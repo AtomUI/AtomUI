@@ -10,8 +10,11 @@ namespace AtomUI;
 internal sealed record EarlyStartup(AtomUIBuilder Builder, Task<PreparedThemeStartup>? Prepare);
 
 /// <summary>
-/// UseAtomUI 只登记配置；平台服务就绪后执行回调、捕获 Prepare 输入并启动后台任务，
-/// 与 Application 创建并行。每个 Application 实例使用独立 builder；未在平台回调中配置的实例在 Attach 中同步配置。
+/// Created by <c>UseAtomUI</c>, which only registers the configuration and runs nothing at that point. The
+/// callback runs once the platform services are ready; that is also when the Prepare inputs are captured and
+/// the background task starts, so that it runs in parallel with the creation of the Application. Each
+/// Application instance uses its own builder; an instance that was not configured in the platform callback is
+/// configured synchronously in <c>Attach</c>.
 /// </summary>
 internal sealed class StartupConfiguration
 {

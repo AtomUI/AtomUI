@@ -11,6 +11,9 @@ public partial class StepsShowCase : GalleryReactiveUserControl<StepsViewModel>
 {
     public const string LanguageId = nameof(StepsShowCase);
 
+    /// <summary>
+    /// Identifies the <see cref="DashedArray" /> property.
+    /// </summary>
     public static readonly StyledProperty<double[]> DashedArrayProperty =
         AvaloniaProperty.Register<StepsShowCase, double[]>(nameof(DashedArray));
 

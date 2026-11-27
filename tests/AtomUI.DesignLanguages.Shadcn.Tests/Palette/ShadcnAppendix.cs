@@ -4,8 +4,8 @@ using Avalonia.Media;
 namespace AtomUI.DesignLanguages.Shadcn.Tests;
 
 /// <summary>
-/// Parses the generated shadcn alignment appendix (docs/superpowers/specs) so tests assert against the official
-/// data instead of hand-copied tables.
+/// Parses the generated shadcn alignment appendix so tests assert against the official data instead of hand-copied
+/// tables.
 /// </summary>
 internal static partial class ShadcnAppendix
 {
@@ -29,7 +29,9 @@ internal static partial class ShadcnAppendix
             directory.FullName, "docs/superpowers/specs/2026-11-15-shadcn-latest-alignment-data.md"));
     }
 
-    /// <summary>(family, dark, variable without dashes) → hex, from appendix A.1/A.2.</summary>
+    /// <summary>
+    /// (family, dark, variable without dashes) → hex, from appendix A.1/A.2.
+    /// </summary>
     internal static IReadOnlyDictionary<(string Family, bool Dark, string Variable), Color> BaseColors()
     {
         var result = new Dictionary<(string, bool, string), Color>();
@@ -82,7 +84,9 @@ internal static partial class ShadcnAppendix
         return result;
     }
 
-    /// <summary>(theme, dark) → (primary, foreground), from appendix B.</summary>
+    /// <summary>
+    /// (theme, dark) → (primary, foreground), from appendix B.
+    /// </summary>
     internal static IReadOnlyDictionary<(string Theme, bool Dark), (Color Primary, Color Foreground)> Themes()
     {
         var result = new Dictionary<(string, bool), (Color, Color)>();
@@ -114,7 +118,9 @@ internal static partial class ShadcnAppendix
         return result;
     }
 
-    /// <summary>The seven official neutral seeds: the light --muted-foreground of each base color.</summary>
+    /// <summary>
+    /// The seven official neutral seeds: the light --muted-foreground of each base color.
+    /// </summary>
     internal static IReadOnlyList<(string Family, Color Seed)> NeutralSeeds()
     {
         var table = BaseColors();
@@ -139,7 +145,9 @@ internal static partial class ShadcnAppendix
         return match.Success ? match.Value : null;
     }
 
-    /// <summary>WCAG relative-luminance contrast ratio of two opaque colours.</summary>
+    /// <summary>
+    /// WCAG relative-luminance contrast ratio of two opaque colors.
+    /// </summary>
     internal static double Contrast(Color foreground, Color background)
     {
         double Channel(byte value)

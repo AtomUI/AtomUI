@@ -6,11 +6,19 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls.Themes.Shadcn;
 
-/// <summary>The shadcn values of the shared <see cref="AbstractColorPickerViewToken"/> layer.</summary>
+/// <summary>
+/// The shadcn values of the shared <see cref="AbstractColorPickerViewToken" /> layer.
+/// </summary>
 public static class ColorPickerViewTokenCalculator
 {
+    /// <summary>
+    /// Fills the <see cref="AbstractColorPickerViewToken" /> layer with the shadcn values: the sizes of the
+    /// editor, the handlers, the preset panel and the color spectrum, the alpha input width, the inset shadows,
+    /// the handler colors and the margins.
+    /// </summary>
     public static void Calculate(in TokenEvaluationContext<ShadcnToken> context, DesignToken global, AbstractColorPickerViewToken token)
     {
+        // Ant Design formula kept as is: shadcn has no color picker, so the language has no values of its own.
         token.EditorFontSize = 11;
         token.ColorPickerWidth = 234;
         token.ColorPickerHandlerSizeLG = 32;
@@ -32,6 +40,10 @@ public static class ColorPickerViewTokenCalculator
     }
 
 
+    /// <summary>
+    /// Sets the slider size to <paramref name="handlerSize" /> and then derives the sizes that follow the slider
+    /// geometry through <see cref="CalculateDependentSizes" />.
+    /// </summary>
     public static void CalculateSliderSizes(AbstractColorPickerViewToken token, DesignToken global, double handlerSize, double presetSize, double trackSize)
     {
         token.ColorPickerSliderSize = handlerSize;
@@ -39,6 +51,11 @@ public static class ColorPickerViewTokenCalculator
     }
 
 
+    /// <summary>
+    /// Derives the sizes that follow the slider geometry: the checked mark as 60 percent of
+    /// <paramref name="presetSize" />, the slider thumb as <paramref name="handlerSize" /> plus twice the line
+    /// width, and the preview as twice <paramref name="trackSize" /> plus the small uniform margin.
+    /// </summary>
     public static void CalculateDependentSizes(AbstractColorPickerViewToken token, DesignToken global, double handlerSize, double presetSize, double trackSize)
     {
         token.CheckedMarkSize = presetSize * 0.6;

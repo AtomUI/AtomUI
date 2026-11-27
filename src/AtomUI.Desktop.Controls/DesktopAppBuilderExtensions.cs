@@ -15,7 +15,8 @@ namespace AtomUI;
 public enum AtomUIWindowingPlatform
 {
     /// <summary>
-    /// Uses native Wayland when <c>WAYLAND_DISPLAY</c> is available; otherwise uses X11.
+    /// Uses the backend named by <c>WindowingPlatformEnvironmentVariable</c> when that variable is set to a non-blank
+    /// value. Otherwise uses native Wayland when <c>WAYLAND_DISPLAY</c> is available and X11 when it is not.
     /// </summary>
     Auto,
 
@@ -31,21 +32,30 @@ public enum AtomUIWindowingPlatform
 }
 
 /// <summary>
-/// AtomUI desktop platform extensions for <see cref="AppBuilder"/>.
+/// AtomUI desktop platform extensions for <see cref="AppBuilder" />.
 /// </summary>
 public static class DesktopAppBuilderExtensions
 {
     /// <summary>
     /// Environment variable that overrides automatic Linux windowing backend selection.
-    /// Accepted values are <c>wayland</c> and <c>x11</c>.
+    /// Accepted values are <c>wayland</c> and <c>x11</c>, ignoring case and surrounding whitespace.
     /// </summary>
     public const string WindowingPlatformEnvironmentVariable = "ATOMUI_WINDOWING_PLATFORM";
 
     /// <summary>
-    /// Configures Avalonia's desktop backend, preferring native Wayland when a Wayland display is available.
+    /// Configures Avalonia's desktop backend, preferring native Wayland on Linux when a Wayland display is available.
+    /// On other operating systems it uses Avalonia's platform detection.
     /// </summary>
+    /// <exception cref="PlatformNotSupportedException">
+    /// <paramref name="platform" /> is not <see cref="AtomUIWindowingPlatform.Auto" /> and the operating system is not
+    /// Linux.
+    /// </exception>
+    /// <exception cref="InvalidOperationException">
+    /// On Linux, <paramref name="platform" /> is <see cref="AtomUIWindowingPlatform.Auto" /> and
+    /// <c>ATOMUI_WINDOWING_PLATFORM</c> is set to a non-blank value other than <c>wayland</c> or <c>x11</c>.
+    /// </exception>
     /// <remarks>
-    /// An explicit <paramref name="platform"/> takes precedence over
+    /// An explicit <paramref name="platform" /> takes precedence over
     /// <c>ATOMUI_WINDOWING_PLATFORM</c>. Automatic detection uses <c>WAYLAND_DISPLAY</c> and falls back to
     /// X11/XWayland. Headless and framebuffer applications should configure their backend directly.
     /// On macOS, the default Skia GPU cache budget is 64 MiB when Metal is preferred and the primary

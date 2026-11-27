@@ -185,6 +185,13 @@ internal sealed class TransitionInitializationSession : IDisposable
     }
 }
 
+/// <summary>
+/// A templated control that owns the <see cref="TransitionInitializationSession" /> which gates the state
+/// motion of its template parts. A part registers its own session with the owner it finds as its
+/// <c>TemplatedParent</c>, and its initialization completes only once the owner's session is ready.
+/// Implemented by the toggle switch and segmented controls in AtomUI.Controls and by the combo box item and
+/// the list box item in AtomUI.Desktop.Controls.
+/// </summary>
 internal interface ITransitionInitializationOwner
 {
     TransitionInitializationSession TransitionInitialization { get; }

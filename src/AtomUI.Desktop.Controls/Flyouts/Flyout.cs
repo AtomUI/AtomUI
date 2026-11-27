@@ -19,96 +19,163 @@ namespace AtomUI.Desktop.Controls;
 using PopupControl = Popup;
 using AvaloniaPopup = Avalonia.Controls.Primitives.Popup;
 
+/// <summary>
+/// A flyout that shows <see cref="Content" /> in a <see cref="FlyoutPresenter" /> hosted by an AtomUI
+/// <c>Popup</c>, which adds an anchor arrow, AtomUI placement with flipping, open and close motions and shadows.
+/// </summary>
 public class Flyout : PopupFlyoutBase, IMotionAwareControl
 {
     #region 公共属性定义
 
+    /// <summary>
+    /// Identifies the <see cref="PopupRootShadow" /> property.
+    /// </summary>
     public static readonly StyledProperty<BoxShadows> PopupRootShadowProperty =
         PopupControl.PopupRootShadowProperty.AddOwner<Flyout>();
 
+    /// <summary>
+    /// Identifies the <see cref="OverlayHostShadow" /> property.
+    /// </summary>
     public static readonly StyledProperty<BoxShadows> OverlayHostShadowProperty =
         PopupControl.OverlayHostShadowProperty.AddOwner<Flyout>();
 
     /// <summary>
-    /// 是否显示指示箭头
+    /// Identifies the <see cref="IsArrowVisible" /> property.
     /// </summary>
     public static readonly StyledProperty<bool> IsArrowVisibleProperty =
         ArrowDecoratedBox.IsArrowVisibleProperty.AddOwner<Flyout>();
 
+    /// <summary>
+    /// Identifies the <see cref="MarginToAnchor" /> property.
+    /// </summary>
     public static readonly StyledProperty<double> MarginToAnchorProperty =
         PopupControl.MarginToAnchorProperty.AddOwner<Flyout>();
 
     /// <summary>
-    /// 如果要启用 AtomUI 的自定义定位功能（MarginToAnchor、箭头、翻转等），
-    /// 请使用该属性而不是 <see cref="PopupFlyoutBase.Placement"/>。
-    /// 为 null 时 Flyout 走 Avalonia 默认定位逻辑。
+    /// Identifies the <see cref="RequestedPlacement" /> property.
     /// </summary>
     public static readonly StyledProperty<PlacementMode?> RequestedPlacementProperty =
         PopupControl.RequestedPlacementProperty.AddOwner<Flyout>();
 
     /// <summary>
-    /// 箭头是否始终指向中心
+    /// Identifies the <see cref="IsPointAtCenter" /> property.
     /// </summary>
     public static readonly StyledProperty<bool> IsPointAtCenterProperty =
         AvaloniaProperty.Register<Flyout, bool>(nameof(IsPointAtCenter));
 
+    /// <summary>
+    /// Identifies the <see cref="Content" /> property.
+    /// </summary>
     public static readonly StyledProperty<object> ContentProperty =
         AvaloniaProperty.Register<Flyout, object>(nameof(Content));
 
+    /// <summary>
+    /// Identifies the <see cref="OpenMotion" /> property.
+    /// </summary>
     public static readonly StyledProperty<AbstractMotion?> OpenMotionProperty =
         PopupControl.OpenMotionProperty.AddOwner<Flyout>();
 
+    /// <summary>
+    /// Identifies the <see cref="CloseMotion" /> property.
+    /// </summary>
     public static readonly StyledProperty<AbstractMotion?> CloseMotionProperty =
         PopupControl.CloseMotionProperty.AddOwner<Flyout>();
 
+    /// <summary>
+    /// Identifies the <see cref="IsMotionEnabled" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<Flyout>();
 
+    /// <summary>
+    /// Identifies the <see cref="MotionDuration" /> property.
+    /// </summary>
     public static readonly StyledProperty<TimeSpan> MotionDurationProperty =
         MotionAwareControlProperty.MotionDurationProperty.AddOwner<Flyout>();
 
+    /// <summary>
+    /// Identifies the <see cref="ShouldUseOverlayPopup" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> ShouldUseOverlayPopupProperty =
         AvaloniaProperty.Register<Flyout, bool>(nameof(ShouldUseOverlayPopup), true);
 
+    /// <summary>
+    /// Identifies the <see cref="IsLightDismissEnabled" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsLightDismissEnabledProperty =
         AvaloniaPopup.IsLightDismissEnabledProperty.AddOwner<Flyout>();
 
+    /// <summary>
+    /// Shadow of the flyout while its popup is a native top-level window rather than the overlay layer, where
+    /// <see cref="OverlayHostShadow" /> applies. While the flyout is shown, the value follows the PopupRootShadow
+    /// token of <see cref="FlyoutHost" /> in the placement target's theme scope unless it is set explicitly.
+    /// </summary>
     public BoxShadows PopupRootShadow
     {
         get => GetValue(PopupRootShadowProperty);
         set => SetValue(PopupRootShadowProperty, value);
     }
 
+    /// <summary>
+    /// Shadow of the flyout while its popup is shown in the overlay layer rather than as a native top-level
+    /// window, where <see cref="PopupRootShadow" /> applies. While the flyout is shown, the value follows the
+    /// OverlayHostShadow token of <see cref="FlyoutHost" /> in the placement target's theme scope unless it is
+    /// set explicitly.
+    /// </summary>
     public BoxShadows OverlayHostShadow
     {
         get => GetValue(OverlayHostShadowProperty);
         set => SetValue(OverlayHostShadowProperty, value);
     }
 
+    /// <summary>
+    /// Draws an arrow that points from the flyout to its placement target. The arrow is drawn only when the
+    /// placement also supports one: <see cref="RequestedPlacement" />, or else
+    /// <see cref="PopupFlyoutBase.Placement" />, together with the placement anchor and gravity.
+    /// The default is <see langword="false" />.
+    /// </summary>
     public bool IsArrowVisible
     {
         get => GetValue(IsArrowVisibleProperty);
         set => SetValue(IsArrowVisibleProperty, value);
     }
 
+    /// <summary>
+    /// Gap between the flyout and its placement target, in device-independent pixels. It applies to the AtomUI
+    /// positioning that <see cref="RequestedPlacement" /> enables; the default is <c>0</c>.
+    /// </summary>
     public double MarginToAnchor
     {
         get => GetValue(MarginToAnchorProperty);
         set => SetValue(MarginToAnchorProperty, value);
     }
 
+    /// <summary>
+    /// Placement mode of the AtomUI positioning, which adds <see cref="MarginToAnchor" />, the anchor arrow and
+    /// flipping. Use it instead of <see cref="PopupFlyoutBase.Placement" /> to enable that positioning; while it
+    /// has a value, <see cref="PopupFlyoutBase.Placement" /> reads as <see cref="PlacementMode.Custom" />.
+    /// <see langword="null" /> leaves the flyout on Avalonia's default positioning.
+    /// </summary>
     public PlacementMode? RequestedPlacement
     {
         get => GetValue(RequestedPlacementProperty);
         set => SetValue(RequestedPlacementProperty, value);
     }
 
+    /// <summary>
+    /// Moves the flyout so that its arrow points at the center of the placement target. It has an effect only
+    /// with the AtomUI positioning of <see cref="RequestedPlacement" /> and only while the arrow is drawn.
+    /// </summary>
     public bool IsPointAtCenter
     {
         get => GetValue(IsPointAtCenterProperty);
         set => SetValue(IsPointAtCenterProperty, value);
     }
 
+    /// <summary>
+    /// The object the flyout displays. It is bound one-way to the presenter created by <see cref="CreatePresenter" />
+    /// and is the XAML content property, so markup children of the flyout become its value.
+    /// </summary>
     [Content]
     public object Content
     {
@@ -116,36 +183,66 @@ public class Flyout : PopupFlyoutBase, IMotionAwareControl
         set => SetValue(ContentProperty, value);
     }
 
+    /// <summary>
+    /// Motion played when the flyout opens. It is forwarded to the popup. Without an explicit value it falls
+    /// back to the popover open motion, or to what <see cref="FlyoutHost" /> supplies when it hosts the flyout.
+    /// </summary>
     public AbstractMotion? OpenMotion
     {
         get => GetValue(OpenMotionProperty);
         set => SetValue(OpenMotionProperty, value);
     }
 
+    /// <summary>
+    /// Motion played when the flyout closes. It is forwarded to the popup and is played only while
+    /// <see cref="IsMotionEnabled" /> is <see langword="true" />; without such a motion, hiding removes the
+    /// flyout at once. Without an explicit value it falls back to the popover close motion, or to what
+    /// <see cref="FlyoutHost" /> supplies when it hosts the flyout.
+    /// </summary>
     public AbstractMotion? CloseMotion
     {
         get => GetValue(CloseMotionProperty);
         set => SetValue(CloseMotionProperty, value);
     }
 
+    /// <summary>
+    /// Switches the open and close motions on or off. When it is <see langword="false" />, hiding the flyout
+    /// removes it at once instead of starting <see cref="CloseMotion" />. The value is forwarded to the popup and
+    /// to the presenter.
+    /// </summary>
     public bool IsMotionEnabled
     {
         get => GetValue(IsMotionEnabledProperty);
         set => SetValue(IsMotionEnabledProperty, value);
     }
 
+    /// <summary>
+    /// Duration used when the open and close motions are played. While the flyout is shown, the value follows
+    /// the shared MotionDurationMid token in the placement target's theme scope unless it is set explicitly.
+    /// </summary>
     public TimeSpan MotionDuration
     {
         get => GetValue(MotionDurationProperty);
         set => SetValue(MotionDurationProperty, value);
     }
 
+    /// <summary>
+    /// Shows the flyout in the overlay layer of the target's window instead of a native top-level popup window.
+    /// The overlay layer is also used on platforms without native popup windows. The host also decides which
+    /// shadow applies: <see cref="OverlayHostShadow" /> in the overlay layer and <see cref="PopupRootShadow" />
+    /// in a native window. The default is <see langword="true" />.
+    /// </summary>
     public bool ShouldUseOverlayPopup
     {
         get => GetValue(ShouldUseOverlayPopupProperty);
         set => SetValue(ShouldUseOverlayPopupProperty, value);
     }
 
+    /// <summary>
+    /// Closes the flyout when the user clicks or taps outside of it. The value is pushed to the popup when the
+    /// flyout is shown and whenever it changes while the popup exists. The default is <see langword="true" />;
+    /// <see cref="FlyoutStateHelper" /> sets it to <see langword="true" /> only when its trigger is Click.
+    /// </summary>
     public bool IsLightDismissEnabled
     {
         get => GetValue(IsLightDismissEnabledProperty);
@@ -260,6 +357,15 @@ public class Flyout : PopupFlyoutBase, IMotionAwareControl
 
     #region 控件 API
 
+    /// <summary>
+    /// Cancels the opening while the flyout is in the pinned-open state and the popup cannot host a pinned popup
+    /// at that moment, and holds the open request as pending.
+    /// </summary>
+    /// <remarks>
+    /// A pending request keeps the placement token bindings of <see cref="ShowAtCore" /> until the popup opens or
+    /// the pinned state is released. Overrides call the base method first; an opening that is already canceled
+    /// is not held as pending.
+    /// </remarks>
     protected override void OnOpening(CancelEventArgs args)
     {
         base.OnOpening(args);
@@ -273,6 +379,20 @@ public class Flyout : PopupFlyoutBase, IMotionAwareControl
         }
     }
 
+    /// <summary>
+    /// Hides the flyout. When a close motion applies, it only starts that motion and the flyout is removed when
+    /// the motion ends.
+    /// </summary>
+    /// <param name="canCancel">
+    /// With <see langword="true" /> the hide is refused while the flyout is pinned open
+    /// (<c>IsPopupPinnedOpen</c>). With <see langword="false" /> the popup host is closed first and the flyout
+    /// is removed without a close motion.
+    /// </param>
+    /// <returns>
+    /// <see langword="true" /> when the hide was accepted, including when the close motion was only started.
+    /// <see langword="false" /> when the hide was refused or when the base implementation did not hide the
+    /// flyout.
+    /// </returns>
     protected override bool HideCore(bool canCancel = true)
     {
         if (!canCancel && _popupControl is { IsHostOpen: true } physicalPopup)
@@ -297,6 +417,27 @@ public class Flyout : PopupFlyoutBase, IMotionAwareControl
         return base.HideCore(canCancel);
     }
 
+    /// <summary>
+    /// Shows the flyout at <paramref name="placementTarget" />, or at the pointer position when
+    /// <paramref name="showAtPointer" /> is <see langword="true" />, after the flyout's token bindings are attached
+    /// to that target's theme scope.
+    /// </summary>
+    /// <param name="placementTarget">
+    /// The control the flyout is placed at and whose theme scope supplies the flyout's token values.
+    /// </param>
+    /// <param name="showAtPointer">
+    /// <see langword="true" /> to place the flyout at the pointer position instead of the control.
+    /// </param>
+    /// <returns>
+    /// <see langword="true" /> when the flyout is open. <see langword="false" /> when the open was refused, for
+    /// example because the flyout is already open at the same target or the opening was canceled.
+    /// </returns>
+    /// <remarks>
+    /// A flyout that is open at another control is hidden without cancellation before it is shown at the new
+    /// target. A flyout that is playing its close motion for the same target reopens instead. The token bindings
+    /// of the placement session are acquired here; they are released when the open is refused without a pending
+    /// pinned open, and on close.
+    /// </remarks>
     protected override bool ShowAtCore(Control placementTarget, bool showAtPointer = false)
     {
         ArgumentNullException.ThrowIfNull(placementTarget);
@@ -325,12 +466,21 @@ public class Flyout : PopupFlyoutBase, IMotionAwareControl
         return opened;
     }
 
+    /// <summary>
+    /// Releases the placement token bindings and the pointer offset bindings of the closed session. Overrides
+    /// call the base method so that these bindings are released.
+    /// </summary>
     protected override void OnClosed()
     {
         base.OnClosed();
         ReleasePlacementTokenBindings();
     }
 
+    /// <summary>
+    /// Creates the <see cref="FlyoutPresenter" /> hosted by the popup. It carries the popup root semantic part
+    /// class and is bound one-way to the flyout's <see cref="Content" />, <see cref="IsMotionEnabled" />,
+    /// effective arrow visibility and arrow position.
+    /// </summary>
     protected override Control CreatePresenter()
     {
         var presenter = new FlyoutPresenter();
@@ -344,6 +494,12 @@ public class Flyout : PopupFlyoutBase, IMotionAwareControl
         return presenter;
     }
 
+    /// <summary>
+    /// Keeps the popup and the arrow in step with property changes: it pushes the light dismiss setting to the
+    /// popup, updates the effective arrow visibility and the arrow position, and, when
+    /// <see cref="RequestedPlacement" /> changes, re-evaluates <see cref="PopupFlyoutBase.Placement" /> and the
+    /// pointer offset bindings. Overrides call the base method to keep this in place.
+    /// </summary>
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
@@ -384,6 +540,12 @@ public class Flyout : PopupFlyoutBase, IMotionAwareControl
         }
     }
 
+    /// <summary>
+    /// Updates the effective arrow visibility, which is <see langword="true" /> only while
+    /// <see cref="IsArrowVisible" /> is <see langword="true" /> and <see cref="RequestedPlacement" />, or else
+    /// <see cref="PopupFlyoutBase.Placement" />, supports an arrow for the placement anchor and gravity. The
+    /// result is bound to the presenter. Derived flyouts call it when they change one of these inputs themselves.
+    /// </summary>
     protected void ConfigureShowArrowEffective()
     {
         if (!IsArrowVisible)
@@ -397,6 +559,13 @@ public class Flyout : PopupFlyoutBase, IMotionAwareControl
         }
     }
 
+    /// <summary>
+    /// Updates the side of the presenter that carries the arrow, derived from <see cref="RequestedPlacement" />,
+    /// or else <see cref="PopupFlyoutBase.Placement" />, the placement anchor and gravity, and mirrored when the
+    /// popup reports a horizontal or vertical flip. A placement without an arrow position leaves the value
+    /// unchanged. The result is bound to the presenter. Derived flyouts call it when they change one of these
+    /// inputs themselves.
+    /// </summary>
     protected void ConfigureArrowPosition()
     {
         var placement     = RequestedPlacement ?? Placement;
@@ -409,12 +578,13 @@ public class Flyout : PopupFlyoutBase, IMotionAwareControl
     }
 
     /// <summary>
-    /// Bind <see cref="PopupFlyoutBase.HorizontalOffsetProperty"/> / <see cref="PopupFlyoutBase.VerticalOffsetProperty"/>
-    /// to the given resource keys only while <see cref="RequestedPlacement"/> is <see cref="PlacementMode.Pointer"/>.
+    /// Binds <see cref="PopupFlyoutBase.HorizontalOffsetProperty" /> and
+    /// <see cref="PopupFlyoutBase.VerticalOffsetProperty" /> to the given resource keys only while
+    /// <see cref="RequestedPlacement" /> is <see cref="PlacementMode.Pointer" />.
     /// FlyoutHost Own token keys are normalized to that control identity; Shared, custom and already-typed keys
     /// retain their meaning in the placement target's resource scope.
-    /// For non-pointer placements the offsets stay at their default values so edge-aligned placements
-    /// (e.g. <c>BottomEdgeAlignedRight</c>) aren't shifted off anchor.
+    /// For non-pointer placements the offsets stay at their default values so edge-aligned placements (for
+    /// example <c>BottomEdgeAlignedRight</c>) are not shifted off anchor.
     /// </summary>
     protected void BindPointerPlacementOffsets(object horizontalOffsetTokenKey, object verticalOffsetTokenKey)
     {
@@ -431,8 +601,20 @@ public class Flyout : PopupFlyoutBase, IMotionAwareControl
         (ControlTokenResourceKey.Own(typeof(FlyoutHost), FlyoutHostTokenKind.PopupRootShadow),
          ControlTokenResourceKey.Own(typeof(FlyoutHost), FlyoutHostTokenKind.OverlayHostShadow));
 
+    /// <summary>
+    /// Returns the popover open motion. The flyout installs it as the default <see cref="OpenMotion" />, below a
+    /// value set directly on the property, when it creates its popup and no host has taken over the configuration of
+    /// the popup. Derived flyouts override it to start with another motion; they need not call the base
+    /// implementation.
+    /// </summary>
     internal virtual AbstractMotion GetDefaultOpenMotion() => PopupMotionDefaults.Create(PopupMotionDefaults.PopoverOpen);
 
+    /// <summary>
+    /// Returns the popover close motion. The flyout installs it as the default <see cref="CloseMotion" />, below a
+    /// value set directly on the property, when it creates its popup and no host has taken over the configuration of
+    /// the popup. Derived flyouts override it to start with another motion; they need not call the base
+    /// implementation.
+    /// </summary>
     internal virtual AbstractMotion GetDefaultCloseMotion() => PopupMotionDefaults.Create(PopupMotionDefaults.PopoverClose);
 
     internal void ReleasePlacementTokenBindings()
@@ -620,11 +802,15 @@ public class Flyout : PopupFlyoutBase, IMotionAwareControl
         }
     }
 
+    /// <summary>
+    /// Restores the popup's custom placement callback when another change replaces it while
+    /// <see cref="RequestedPlacement" /> is set.
+    /// </summary>
     /// <remarks>
-    /// <see cref="PopupFlyoutBase.ShowAtCore"/> 内部的 <c>PositionPopup</c> 会在每次打开时把
-    /// <see cref="AvaloniaPopup.Placement"/> 和 <see cref="AvaloniaPopup.CustomPopupPlacementCallback"/>
-    /// 强制覆盖为 Flyout 侧的值，导致 AtomUI 自定义定位链路失效。这里在 <see cref="RequestedPlacement"/>
-    /// 非空时把 Popup 的相关属性重新拉回 Custom 模式。
+    /// <c>PositionPopup</c> inside <see cref="PopupFlyoutBase.ShowAtCore" /> overwrites
+    /// <see cref="AvaloniaPopup.Placement" /> and <see cref="AvaloniaPopup.CustomPopupPlacementCallback" /> with
+    /// the flyout-side values every time the flyout opens, which disables the AtomUI positioning. Here the
+    /// callback is set back to the popup's own handler, which keeps the popup in Custom mode.
     /// </remarks>
     private void HandlePopupPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
     {

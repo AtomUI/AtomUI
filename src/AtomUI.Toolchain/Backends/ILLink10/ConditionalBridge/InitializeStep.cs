@@ -7,9 +7,23 @@ using Mono.Linker.Steps;
 
 namespace AtomUI.TypeMap.Linker.ConditionalBridge;
 
-/// <summary>Pre-Mark compatibility bridge. Official ILLink10 still owns all conditional selection.</summary>
+/// <summary>
+/// Pre-Mark compatibility bridge. Official ILLink10 still owns all conditional selection.
+/// </summary>
 public sealed class InitializeStep : IStep
 {
+    /// <summary>
+    /// Validates the conditional implementation inputs against the input snapshot and builds a TypeMap bridge from
+    /// their registration definitions, which is applied before official marking runs.
+    /// </summary>
+    /// <exception cref="InvalidDataException">
+    /// Thrown when the pipeline has no <see cref="MarkStep" />, the <c>AtomUIConditionalInputs</c> or
+    /// <c>AtomUIConditionalRuntimePack</c> custom data is missing, or an input fails validation.
+    /// </exception>
+    /// <remarks>
+    /// A report left at the snapshot's analysis path is deleted first, and the <c>bridged-input</c> analysis report is
+    /// written once the bridge is applied.
+    /// </remarks>
     public void Process(LinkContext context)
     {
         ToolchainContract.ValidateIdentity(typeof(LinkContext).Assembly.FullName!, ToolchainContract.ActualLinkerVersion);

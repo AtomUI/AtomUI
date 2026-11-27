@@ -58,7 +58,7 @@
                 </ControlTemplate>
             </Setter>
 
-            <!-- 基础单元格视觉 -->
+            <!-- Base cell appearance -->
             <Style Selector="^ /template/ Border#PART_Item">
                 <Setter Property="Transitions">
                     <atom:TokenTransitions>
@@ -91,7 +91,7 @@
                 </Setter>
             </Style>
 
-            <!-- Mini 布局 -->
+            <!-- Mini layout -->
             <Style Selector="^[Presentation=Compact] /template/ Border#PART_Item">
                 <Setter Property="Height" Value="{atom:OwnerTokenResource ControlHeightSM}" />
                 <Setter Property="VerticalAlignment" Value="Center" />
@@ -115,7 +115,7 @@
                 <Setter Property="Grid.RowSpan" Value="2" />
             </Style>
 
-            <!-- Fullscreen 布局 -->
+            <!-- Fullscreen layout -->
             <Style Selector="^[Presentation=Content] /template/ Border#PART_Item">
                 <Setter Property="Margin" Value="{atom:CalendarTokenResource FullCellMargin}" />
             </Style>
@@ -131,7 +131,7 @@
                 <Setter Property="VerticalAlignment" Value="Top" />
             </Style>
 
-            <!-- 今天 -->
+            <!-- Today -->
             <Style Selector="^[Presentation=Compact]:date:today /template/ Border#PART_CellOutline">
                 <Setter Property="BorderBrush" Value="{atom:OwnerTokenResource ColorPrimary}" />
                 <Setter Property="BorderThickness" Value="{atom:OwnerTokenResource BorderThickness}" />
@@ -140,7 +140,7 @@
                 <Setter Property="BorderBrush" Value="{atom:OwnerTokenResource ColorPrimary}" />
             </Style>
 
-            <!-- 选中 -->
+            <!-- Selected -->
             <Style Selector="^[Presentation=Compact]:selected:not(:disabled) /template/ Border#PART_CellInner">
                 <Setter Property="Background" Value="{atom:OwnerTokenResource ColorPrimary}" />
             </Style>
@@ -148,8 +148,10 @@
                 <Setter Property="Background" Value="{atom:CalendarTokenResource ItemActiveBg}" />
             </Style>
 
-            <!-- 键盘焦点：Compact 使用共享焦点描边包围日期块（与日期选择器面板一致，选中的主色块上也清晰可见）；
-                 Content 由格子顶部主色线表达，不叠加描边。 -->
+            <!-- Keyboard focus: Compact wraps the date block in the shared focus stroke (as in the date picker panel,
+            also clearly visible on the selected primary block); Content is expressed by the primary line at the
+            top of the cell and adds no stroke.
+            -->
             <Style Selector="^[Presentation=Content]">
                 <Setter Property="FocusAdorner" Value="{x:Null}" />
             </Style>
@@ -158,7 +160,7 @@
                 <Setter Property="BorderThickness" Value="{atom:CalendarTokenResource FullCellBorderThickness}" />
             </Style>
 
-            <!-- 禁用 -->
+            <!-- Disabled -->
             <Style Selector="^:disabled">
                 <Setter Property="Cursor" Value="Arrow" />
             </Style>
@@ -172,7 +174,7 @@
                 <Setter Property="BorderBrush" Value="{atom:OwnerTokenResource ColorTextDisabled}" />
             </Style>
 
-            <!-- hover（非禁用非周序号） -->
+            <!-- Hover (not disabled, not a week number) -->
             <Style Selector="^:pointerover:not(:disabled):not(:week):not(:selected) /template/ Border#PART_CellInner">
                 <Setter Property="Background" Value="{atom:OwnerTokenResource ControlItemBgHover}" />
             </Style>

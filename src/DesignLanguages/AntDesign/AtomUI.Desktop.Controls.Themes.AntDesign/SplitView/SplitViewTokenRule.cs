@@ -4,7 +4,9 @@ using Avalonia.Animation.Easings;
 
 namespace AtomUI.Desktop.Controls.Themes.AntDesign;
 
-/// <summary>The AntDesign view of <see cref="SplitViewToken"/>.</summary>
+/// <summary>
+/// The AntDesign view of <see cref="SplitViewToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class SplitViewTokenRule : IControlTokenRule<AntDesignToken, SplitViewToken>
 {

@@ -38,8 +38,8 @@ internal sealed class ControlThemeSnapshot
 
     /// <summary>
     /// The global token slots the control's derivation read, when its result depends on nothing else of the scope:
-    /// no global override, no own evaluation unit and an empty global delta. <see langword="null"/> otherwise; then a
-    /// child unit always derives the control again.
+    /// no global override, no own evaluation unit and no global token written to the view by the control token rule.
+    /// <see langword="null" /> otherwise; then a child unit always derives the control again.
     /// </summary>
     internal GlobalTokenReadSet? GlobalReads { get; }
     internal long EstimatedRetainedBytes { get; }

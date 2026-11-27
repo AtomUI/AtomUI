@@ -4,19 +4,47 @@ using Microsoft.Build.Framework;
 
 namespace AtomUI.Build.Tasks;
 
+/// <summary>
+/// MSBuild task that exports language templates: for one target language it turns source XLIFF documents into
+/// <c>&lt;targetLanguage&gt;.xlf</c> files, merging into the template files that already exist.
+/// </summary>
 public sealed class ExportLanguageTemplatesTask : AtomUILocalizationTask
 {
+    /// <summary>
+    /// The source-language XLIFF documents to export. Each must have no target language (<c>trgLang</c>). An item's
+    /// <c>AtomUILanguageTemplateOutputPath</c> metadata overrides where its template is written.
+    /// </summary>
     [Required]
     public ITaskItem[] SourceFiles { get; set; } = Array.Empty<ITaskItem>();
 
+    /// <summary>
+    /// The canonical BCP 47 tag of the language the templates are written for. It must already be in canonical form;
+    /// the task fails with <c>ATOMUILOC005</c> otherwise.
+    /// </summary>
     [Required]
     public string TargetLanguage { get; set; } = string.Empty;
 
+    /// <summary>
+    /// The root directory the templates are written to, each under the directory of its item's
+    /// <c>AtomUILanguagePackagePath</c> metadata with a leading <c>Localization/</c> removed. When it is
+    /// <see langword="null" /> or blank, each template is written next to its source.
+    /// </summary>
     public string? OutputRootDirectory { get; set; }
 
+    /// <summary>
+    /// The template files the task wrote. It lists the sources that succeeded even when <see cref="Execute" /> returns
+    /// <see langword="false" />.
+    /// </summary>
     [Output]
     public ITaskItem[] ExportedFiles { get; private set; } = Array.Empty<ITaskItem>();
 
+    /// <summary>
+    /// Validates the target language and exports every source file. A failed source does not stop the remaining ones.
+    /// </summary>
+    /// <returns>
+    /// <see langword="true" /> when every source was exported; <see langword="false" /> when the target language
+    /// is not canonical or at least one source failed.
+    /// </returns>
     public override bool Execute()
     {
         if (!Bcp47LanguageTagParser.TryParse(TargetLanguage, out var canonicalLanguage) ||

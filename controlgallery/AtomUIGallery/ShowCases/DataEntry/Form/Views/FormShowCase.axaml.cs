@@ -56,8 +56,8 @@ public partial class FormShowCase : GalleryReactiveUserControl<FormViewModel>
 
     private void HandleSemanticDemoFormAttached(object? sender, VisualTreeAttachmentEventArgs args)
     {
-        // 对齐上游 Semantic DOM 示例:进入语义示例时让 password 项进入
-        // 两条 error 消息的校验失败状态,username 项保持仅有 help 文案。
+        // As in the upstream Semantic DOM example: entering the semantic example puts the password item into
+        // the failed validation state with two error messages, while the username item keeps only its help text.
         if (sender is AtomUIForm semanticDemoForm)
         {
             semanticDemoForm.Validate();

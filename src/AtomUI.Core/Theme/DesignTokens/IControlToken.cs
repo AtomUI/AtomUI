@@ -6,7 +6,7 @@ namespace AtomUI.Theme.DesignTokens;
 /// Implemented by the generated half of every terminal control token class that is bound to a control.
 /// </summary>
 /// <remarks>
-/// Lets control token stages be registered without reflection: <see cref="ControlTokenAlgorithmDescriptor"/> reads
+/// Lets control token rules be registered without reflection: <see cref="ControlTokenRuleDescriptor" /> reads
 /// the control a token class belongs to from this static member.
 /// </remarks>
 public interface IControlToken

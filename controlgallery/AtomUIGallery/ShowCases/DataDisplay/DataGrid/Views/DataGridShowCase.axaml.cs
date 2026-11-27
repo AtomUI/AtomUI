@@ -526,7 +526,8 @@ internal static class DataGridShowCaseDataSources
             return;
         }
 
-        // 对齐上游 style-class 演示数据:Name/Age/Address/Description,pageSize 3 时首屏 3 行。
+        // Mirrors the upstream style-class demo data (Name, Age, Address, Description).
+        // The first page holds 3 rows at pageSize 3.
         List<ExpandableRowDataType> items =
         [
             new ExpandableRowDataType

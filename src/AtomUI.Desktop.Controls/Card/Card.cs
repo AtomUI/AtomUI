@@ -11,9 +11,19 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
 
+/// <summary>
+/// Frame treatment of a <see cref="Card" />, selected with <see cref="Card.StyleVariant" />.
+/// </summary>
 public enum CardStyleVariant
 {
+    /// <summary>
+    /// The default: the card has a border and the shadow of an outlined card.
+    /// </summary>
     Outlined,
+    /// <summary>
+    /// The card has no border and rests on the tertiary shadow instead. A border thickness set directly on the
+    /// card still draws.
+    /// </summary>
     Borderless
 }
 
@@ -25,6 +35,12 @@ internal enum CardContentType
     Tabs
 }
 
+/// <summary>
+/// Desktop card with a header area, an optional cover, a body and an actions row, styled after Ant Design.
+/// The body shows plain content or one of the dedicated content kinds (<c>CardMetaContent</c>,
+/// <c>CardTabsContent</c>, <see cref="CardGridContent" />). The card tells them apart by the type of the value
+/// assigned to <see cref="ContentControl.Content" />; grid content makes the frame keep square bottom corners.
+/// </summary>
 public partial class Card : AbstractCard,
                             ISizeTypeAware,
                             IMotionAwareControl,
@@ -33,7 +49,7 @@ public partial class Card : AbstractCard,
     #region IBorderBeamAwareControl 实现
 
     /// <summary>
-    /// The beam geometry of the card's own frame. A hosting <see cref="BorderBeam"/> draws its light on this ring,
+    /// The beam geometry of the card's own frame. A hosting <see cref="BorderBeam" /> draws its light on this ring,
     /// so the beam follows the card's border thickness and corner radius instead of the beam's theme radius, which
     /// can diverge from the card under large-radius themes (e.g. shadcn Luma BorderRadiusLG 26 vs a radius-8 card).
     /// </summary>
@@ -45,6 +61,10 @@ public partial class Card : AbstractCard,
 
     private event EventHandler? _borderBeamGeometryChanged;
 
+    /// <summary>
+    /// Returns the ring a hosting <see cref="BorderBeam" /> draws on, built from the card's current
+    /// <see cref="TemplatedControl.BorderThickness" /> and <see cref="TemplatedControl.CornerRadius" />.
+    /// </summary>
     public BorderBeamGeometry GetBorderBeamGeometry()
     {
         return new BorderBeamGeometry(BorderThickness, CornerRadius);
@@ -59,54 +79,102 @@ public partial class Card : AbstractCard,
 
     #region 公共属性定义
     
+    /// <summary>
+    /// Identifies the <see cref="BoxShadow" /> property.
+    /// </summary>
     public static readonly StyledProperty<BoxShadows> BoxShadowProperty = 
         Border.BoxShadowProperty.AddOwner<Card>();
     
+    /// <summary>
+    /// Identifies the <see cref="StyleVariant" /> property.
+    /// </summary>
     public static readonly StyledProperty<CardStyleVariant> StyleVariantProperty = 
         AvaloniaProperty.Register<Card, CardStyleVariant>(nameof (StyleVariant));
     
+    /// <summary>
+    /// Identifies the <see cref="SizeType" /> property.
+    /// </summary>
     public static readonly StyledProperty<SizeType> SizeTypeProperty = 
         SizeTypeControlProperty.SizeTypeProperty.AddOwner<Card>();
     
+    /// <summary>
+    /// Identifies the <see cref="IsInnerMode" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsInnerModeProperty = 
         AvaloniaProperty.Register<Card, bool>(nameof (IsInnerMode));
     
+    /// <summary>
+    /// Identifies the <see cref="IsHoverable" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsHoverableProperty = 
         AvaloniaProperty.Register<Card, bool>(nameof (IsHoverable));
     
+    /// <summary>
+    /// Identifies the <see cref="IsMotionEnabled" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<Card>();
     
+    /// <summary>
+    /// Shadow painted behind the card frame. The theme sets the shadow of an outlined card, the tertiary shadow for
+    /// <see cref="CardStyleVariant.Borderless" /> and the hover shadow while the pointer is over a hoverable card;
+    /// <see cref="IsMotionEnabled" /> animates the change between them. A value set here replaces these theme
+    /// shadows in every state; clearing it returns to them.
+    /// </summary>
     public BoxShadows BoxShadow
     {
         get => GetValue(BoxShadowProperty);
         set => SetValue(BoxShadowProperty, value);
     }
     
+    /// <summary>
+    /// Frame treatment of the card; <see cref="CardStyleVariant.Outlined" /> by default. Borderless removes the
+    /// frame border and the header divider line and rests the card on the tertiary shadow. A border thickness set
+    /// directly on the card still draws.
+    /// </summary>
     public CardStyleVariant StyleVariant
     {
         get => GetValue(StyleVariantProperty);
         set => SetValue(StyleVariantProperty, value);
     }
     
+    /// <summary>
+    /// Size step of the card. It sets the height, padding and font size of the header area and the padding of the
+    /// body for plain and <c>CardMetaContent</c> content; <c>CardTabsContent</c> and <see cref="CardGridContent" />
+    /// content receive the value and size themselves. Unset, the value is <c>Middle</c>.
+    /// </summary>
     public SizeType SizeType
     {
         get => GetValue(SizeTypeProperty);
         set => SetValue(SizeTypeProperty, value);
     }
     
+    /// <summary>
+    /// Whether the card is an inner card. While <see langword="true" /> the header area gets a gray fill
+    /// (ColorFillAlter) instead of the container background; the frame, cover and body do not change.
+    /// </summary>
     public bool IsInnerMode
     {
         get => GetValue(IsInnerModeProperty);
         set => SetValue(IsInnerModeProperty, value);
     }
     
+    /// <summary>
+    /// Whether the card reacts to the pointer: the shadow changes to the hover shadow, the border takes the card's
+    /// background color and the cursor becomes a hand. The change animates only while <see cref="IsMotionEnabled" />
+    /// is on. Off by default.
+    /// </summary>
     public bool IsHoverable
     {
         get => GetValue(IsHoverableProperty);
         set => SetValue(IsHoverableProperty, value);
     }
     
+    /// <summary>
+    /// Whether changes of the card animate: the shadow changes of the frame fade. A <c>CardTabsContent</c> or
+    /// <see cref="CardGridContent" /> used as content, and the actions row, take the value from the card.
+    /// The theme sets it from the EnableMotion token; clearing the value returns to that token.
+    /// </summary>
     public bool IsMotionEnabled
     {
         get => GetValue(IsMotionEnabledProperty);
@@ -183,6 +251,13 @@ public partial class Card : AbstractCard,
         AffectsMeasure<Card>(SizeTypeProperty, StyleVariantProperty);
     }
     
+    /// <summary>
+    /// Updates the card after a property value changed. A change of <see cref="TemplatedControl.BorderThickness" />
+    /// re-derives the header border thickness and the effective frame thickness; a change of
+    /// <see cref="TemplatedControl.CornerRadius" /> re-derives the effective corner radius; both notify a hosting
+    /// border beam. A change of <see cref="ContentControl.Content" /> re-derives the content kind and, with it, the
+    /// effective corner radius. Calls the base member first.
+    /// </summary>
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
@@ -207,7 +282,8 @@ public partial class Card : AbstractCard,
     private void ConfigureContentType()
     {
         DisposeContentStateBindings();
-        // 暂时只能探测 Content 直接指定的情况
+        // The content kind is read from the type of the Content value itself. Content that only becomes a
+        // CardMetaContent, CardTabsContent or CardGridContent through a data template is treated as plain content.
         if (Content is CardMetaContent)
         {
             SetCurrentValue(ContentTypeProperty, CardContentType.Meta);
@@ -252,6 +328,10 @@ public partial class Card : AbstractCard,
         _contentStateBindings = null;
     }
     
+    /// <summary>
+    /// Calls the base member, then re-applies the current <see cref="TemplatedControl.BorderThickness" /> to the
+    /// effective border thickness of the frame.
+    /// </summary>
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
@@ -280,6 +360,12 @@ public partial class Card : AbstractCard,
         }
     }
 
+    /// <summary>
+    /// Binds the applied template: empties the action row of the previous template, stores the panel named
+    /// <c>PART_ActionPanel</c> and fills it with the items of <see cref="AbstractCard.Actions" />, then re-derives
+    /// the content kind, the effective corner radius and the header border thickness. Overrides must call the base
+    /// member first.
+    /// </summary>
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
@@ -300,6 +386,12 @@ public partial class Card : AbstractCard,
         ConfigureHeaderBorderThickness();
     }
 
+    /// <summary>
+    /// Applies a change of <see cref="AbstractCard.Actions" /> to the action row once the template has been applied:
+    /// items are inserted, removed, replaced or moved one by one. Calls the base member first. A
+    /// <see cref="NotifyCollectionChangedAction.Reset" /> throws <see cref="NotSupportedException" />, so remove the
+    /// items instead of clearing the collection.
+    /// </summary>
     protected override void OnActionsChanged(NotifyCollectionChangedEventArgs e)
     {
         base.OnActionsChanged(e);
@@ -330,6 +422,10 @@ public partial class Card : AbstractCard,
         }
     }
 
+    /// <summary>
+    /// Creates the loading indicator: a <see cref="Skeleton" /> with four paragraph rows and no title that fills
+    /// the body and is not clipped by it.
+    /// </summary>
     protected override Control CreateLoadingIndicator()
     {
         return new Skeleton

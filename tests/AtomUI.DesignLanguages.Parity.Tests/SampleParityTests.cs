@@ -15,8 +15,8 @@ using Xunit;
 namespace AtomUI.DesignLanguages.Parity.Tests;
 
 /// <summary>
-/// Spec 15 (parity): a design language, a control package and value packages written against the public API only. The
-/// sample language derives from Ant Design (spec 5.6); the sample controls carry no values of their own.
+/// A design language, a control package and value packages written against the public API only. The sample language
+/// derives from Ant Design; the sample controls carry no values of their own.
 /// </summary>
 public class SampleParityTests
 {
@@ -83,7 +83,9 @@ public class SampleParityTests
     }
 }
 
-/// <summary>An application that enables the sample controls under the sample language.</summary>
+/// <summary>
+/// An application that enables the sample controls under the sample language.
+/// </summary>
 public static class SampleAppBuilder
 {
     public static AppBuilder BuildAvaloniaApp() =>
@@ -92,7 +94,9 @@ public static class SampleAppBuilder
                   .UseAtomUI(static builder => builder.UseSampleControls().UseSample(static sample => sample.AddSampleControls()));
 }
 
-/// <summary>An application that enables the sample controls under Ant Design only.</summary>
+/// <summary>
+/// An application that enables the sample controls under Ant Design only.
+/// </summary>
 public static class AntDesignAppBuilder
 {
     public static AppBuilder BuildAvaloniaApp() =>

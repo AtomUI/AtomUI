@@ -6,7 +6,9 @@ using Avalonia.Media;
 
 namespace AtomUI.Toolkits.GalleryBase.TokenRules;
 
-/// <summary>The Generic view of <see cref="GalleryWindowTitleBarToken"/>.</summary>
+/// <summary>
+/// The Generic view of <see cref="GalleryWindowTitleBarToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class GenericGalleryWindowTitleBarTokenRule : IControlTokenRule<LanguageDesignToken, GalleryWindowTitleBarToken>
 {

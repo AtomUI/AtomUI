@@ -2,20 +2,48 @@ using Avalonia.Controls;
 
 namespace AtomUI.Controls;
 
+/// <summary>
+/// Names the two groups of errors that the form writes to <see cref="DataValidationErrors" /> of a control.
+/// The two groups are written and read back separately.
+/// </summary>
 public enum FormDataValidationErrorKind
 {
+    /// <summary>
+    /// A message produced by validating the item.
+    /// </summary>
     Validation,
+    /// <summary>
+    /// A message whose source is outside the validation of the item. The form lists these before the
+    /// <see cref="Validation" /> errors.
+    /// </summary>
     External
 }
 
+/// <summary>
+/// An error message that the form stores in <see cref="DataValidationErrors" /> of a control,
+/// tagged with the group it belongs to.
+/// </summary>
 public sealed class FormDataValidationError : Exception
 {
+    /// <summary>
+    /// Creates an error for one message of a form error group.
+    /// </summary>
+    /// <param name="message">
+    /// The error text. It becomes the <see cref="Exception.Message" /> of the error.
+    /// </param>
+    /// <param name="kind">
+    /// The group the message belongs to.
+    /// </param>
     public FormDataValidationError(string message, FormDataValidationErrorKind kind = FormDataValidationErrorKind.Validation)
         : base(message)
     {
         Kind = kind;
     }
 
+    /// <summary>
+    /// Gets the group the message belongs to. The form replaces the message together with the other
+    /// messages of that group.
+    /// </summary>
     public FormDataValidationErrorKind Kind { get; }
 }
 

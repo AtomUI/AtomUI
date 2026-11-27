@@ -6,7 +6,7 @@ using Xunit;
 namespace AtomUI.DesignLanguages.Shadcn.Tests.Palette;
 
 /// <summary>
-/// <see cref="ShadcnBaseColors"/> resolves every base color from its seed
+/// <see cref="ShadcnBaseColors" /> resolves every base color from its seed
 /// (the family's 500 stop) by the shadcn step rule, matching the official appendix exactly.
 /// </summary>
 public class ShadcnBaseColorTests

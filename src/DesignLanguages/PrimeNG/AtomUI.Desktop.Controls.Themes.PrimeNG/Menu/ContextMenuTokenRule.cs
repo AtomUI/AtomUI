@@ -3,7 +3,9 @@ using AtomUI.Theme.Languages;
 
 namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 
-/// <summary>The PrimeNG view of <see cref="ContextMenuToken"/>.</summary>
+/// <summary>
+/// The PrimeNG view of <see cref="ContextMenuToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class ContextMenuTokenRule : IControlTokenRule<PrimeNGToken, ContextMenuToken>
 {
@@ -11,7 +13,8 @@ internal sealed class ContextMenuTokenRule : IControlTokenRule<PrimeNGToken, Con
     {
         var token  = target.Own;
         var global = target.Global;
-        // PrimeNG: the control-global overrides, read by the formulas below.
+        // PrimeNG: the control-global overrides (MotionDurationMid), read by the ContextMenu theme
+        // (MotionDuration) and not by the formulas below.
         PrimeNGContextMenuTokens.EvaluateGlobal(in context, global);
         MenuPopupTokenCalculator.Calculate(in context, global, token);
         token.ItemColor = global.ColorText;

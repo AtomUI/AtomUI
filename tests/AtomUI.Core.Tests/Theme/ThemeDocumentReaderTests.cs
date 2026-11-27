@@ -6,7 +6,9 @@ using Xunit;
 
 namespace AtomUI.Core.Tests.Theme;
 
-/// <summary>The v2 theme document reader (spec 7.2): XSD-validated syntax with source locations, safe by construction.</summary>
+/// <summary>
+/// The v2 theme document reader: XSD-validated syntax with source locations, safe by construction.
+/// </summary>
 public class ThemeDocumentReaderTests
 {
     private const string Namespace = "https://atomui.net/schemas/theme/v2";

@@ -18,12 +18,40 @@ public sealed class DataGridOperationColumn : DataGridColumn
         IsReadOnly = true;
     }
 
+    /// <summary>
+    /// Returns <see langword="null" />, because the cells of this column have no editing element.
+    /// </summary>
+    /// <param name="cell">
+    /// The cell that requested the editing element.
+    /// </param>
+    /// <param name="dataItem">
+    /// The data item of the row that owns the cell.
+    /// </param>
+    /// <param name="editBinding">
+    /// Always <see langword="null" />.
+    /// </param>
+    /// <returns>
+    /// Always <see langword="null" />.
+    /// </returns>
     protected override Control? GenerateEditingElement(DataGridCell cell, object dataItem, out BindingExpressionBase? editBinding)
     {
         editBinding = null;
         return null;
     }
 
+    /// <summary>
+    /// Creates the operation buttons that a cell of this column shows, and binds them to the property changes
+    /// of the owning grid.
+    /// </summary>
+    /// <param name="cell">
+    /// The cell that will contain the element.
+    /// </param>
+    /// <param name="dataItem">
+    /// The data item of the row that owns the cell.
+    /// </param>
+    /// <returns>
+    /// A new <see cref="DataGridOperationButtons" /> instance.
+    /// </returns>
     protected override Control GenerateElement(DataGridCell cell, object dataItem)
     {
         Debug.Assert(OwningGrid != null);
@@ -41,6 +69,18 @@ public sealed class DataGridOperationColumn : DataGridColumn
         }
     }
 
+    /// <summary>
+    /// Returns <see langword="null" /> without reading the editing element, because this column never edits.
+    /// </summary>
+    /// <param name="editingElement">
+    /// The editing element of the cell. This column does not generate one.
+    /// </param>
+    /// <param name="editingEventArgs">
+    /// The event arguments of the request that started the edit.
+    /// </param>
+    /// <returns>
+    /// Always <see langword="null" />.
+    /// </returns>
     protected override object? PrepareCellForEdit(Control editingElement, RoutedEventArgs editingEventArgs)
     {
         return null;
@@ -110,18 +150,32 @@ public sealed class DataGridOperationColumn : DataGridColumn
         }
     }
 
+    /// <summary>
+    /// Calls the base implementation, then attaches the handlers of this column to the owning grid through
+    /// <c>ConfigureOwningGrid</c>.
+    /// </summary>
     protected override void NotifyOwningGridAttached(DataGrid? owningGrid)
     {
         base.NotifyOwningGridAttached(owningGrid);
         ConfigureOwningGrid();
     }
 
+    /// <summary>
+    /// Calls the base implementation, then detaches the handlers of this column from the owning grid through
+    /// <c>ReleaseOwningGrid</c>.
+    /// </summary>
     protected internal override void NotifyOwningGridAboutToDetached()
     {
         base.NotifyOwningGridAboutToDetached();
         ReleaseOwningGrid();
     }
 
+    /// <summary>
+    /// Returns <see langword="false" />, because the cells of this column cannot be edited.
+    /// </summary>
+    /// <returns>
+    /// Always <see langword="false" />.
+    /// </returns>
     public override bool IsEditable()
     {
         return false;

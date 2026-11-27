@@ -19,9 +19,9 @@ internal class ColorSpectrum : TemplatedControl
 {
     #region 公共属性定义
 
-#pragma warning disable ATOMUIGEN044 // Colour-model data endpoints/default values, independent of theme chrome.
+#pragma warning disable ATOMUIGEN044 // Color-model data endpoints/default values, independent of theme chrome.
     /// <summary>
-    /// Defines the <see cref="Color"/> property.
+    /// Defines the <see cref="Color" /> property.
     /// </summary>
     public static readonly StyledProperty<Color> ColorProperty =
         AvaloniaProperty.Register<ColorSpectrum, Color>(
@@ -31,16 +31,16 @@ internal class ColorSpectrum : TemplatedControl
 #pragma warning restore ATOMUIGEN044
 
     /// <summary>
-    /// Defines the <see cref="Components"/> property.
+    /// Defines the <see cref="Components" /> property.
     /// </summary>
     public static readonly StyledProperty<ColorSpectrumComponents> ComponentsProperty =
         AvaloniaProperty.Register<ColorSpectrum, ColorSpectrumComponents>(
             nameof(Components),
             ColorSpectrumComponents.HueSaturation);
 
-#pragma warning disable ATOMUIGEN044 // Colour-model data endpoints/default values, independent of theme chrome.
+#pragma warning disable ATOMUIGEN044 // Color-model data endpoints/default values, independent of theme chrome.
     /// <summary>
-    /// Defines the <see cref="HsvColor"/> property.
+    /// Defines the <see cref="HsvColor" /> property.
     /// </summary>
     public static readonly StyledProperty<HsvColor> HsvColorProperty =
         AvaloniaProperty.Register<ColorSpectrum, HsvColor>(
@@ -50,7 +50,7 @@ internal class ColorSpectrum : TemplatedControl
 #pragma warning restore ATOMUIGEN044
 
     /// <summary>
-    /// Defines the <see cref="MaxHue"/> property.
+    /// Defines the <see cref="MaxHue" /> property.
     /// </summary>
     public static readonly StyledProperty<int> MaxHueProperty =
         AvaloniaProperty.Register<ColorSpectrum, int>(
@@ -58,7 +58,7 @@ internal class ColorSpectrum : TemplatedControl
             359);
 
     /// <summary>
-    /// Defines the <see cref="MaxSaturation"/> property.
+    /// Defines the <see cref="MaxSaturation" /> property.
     /// </summary>
     public static readonly StyledProperty<int> MaxSaturationProperty =
         AvaloniaProperty.Register<ColorSpectrum, int>(
@@ -66,7 +66,7 @@ internal class ColorSpectrum : TemplatedControl
             100);
 
     /// <summary>
-    /// Defines the <see cref="MaxValue"/> property.
+    /// Defines the <see cref="MaxValue" /> property.
     /// </summary>
     public static readonly StyledProperty<int> MaxValueProperty =
         AvaloniaProperty.Register<ColorSpectrum, int>(
@@ -74,28 +74,31 @@ internal class ColorSpectrum : TemplatedControl
             100);
 
     /// <summary>
-    /// Defines the <see cref="MinHue"/> property.
+    /// Defines the <see cref="MinHue" /> property.
     /// </summary>
     public static readonly StyledProperty<int> MinHueProperty =
         AvaloniaProperty.Register<ColorSpectrum, int>(
             nameof(MinHue));
 
     /// <summary>
-    /// Defines the <see cref="MinSaturation"/> property.
+    /// Defines the <see cref="MinSaturation" /> property.
     /// </summary>
     public static readonly StyledProperty<int> MinSaturationProperty =
         AvaloniaProperty.Register<ColorSpectrum, int>(
             nameof(MinSaturation));
 
     /// <summary>
-    /// Defines the <see cref="MinValue"/> property.
+    /// Defines the <see cref="MinValue" /> property.
     /// </summary>
     public static readonly StyledProperty<int> MinValueProperty =
         AvaloniaProperty.Register<ColorSpectrum, int>(
             nameof(MinValue));
 
     /// <summary>
-    /// Defines the <see cref="Shape"/> property.
+    /// Defines the <c>Shape</c> property. There is no CLR wrapper, so set it in XAML or through this field.
+    /// The default is <see cref="ColorSpectrumShape.Box" />. Changing the value recreates the spectrum bitmaps and
+    /// the color map. The gradient-brush rendering of the saturation/value spectrum is used only when the value is
+    /// <see cref="ColorSpectrumShape.Box" />.
     /// </summary>
     public static readonly StyledProperty<ColorSpectrumShape> ShapeProperty =
         AvaloniaProperty.Register<ColorSpectrum, ColorSpectrumShape>(
@@ -103,7 +106,7 @@ internal class ColorSpectrum : TemplatedControl
             ColorSpectrumShape.Box);
 
     /// <summary>
-    /// Defines the <see cref="ThirdComponent"/> property.
+    /// Defines the <see cref="ThirdComponent" /> property.
     /// </summary>
     public static readonly DirectProperty<ColorSpectrum, ColorComponent> ThirdComponentProperty =
         AvaloniaProperty.RegisterDirect<ColorSpectrum, ColorComponent>(
@@ -114,7 +117,7 @@ internal class ColorSpectrum : TemplatedControl
     /// Gets or sets the currently selected color in the RGB color model.
     /// </summary>
     /// <remarks>
-    /// For control authors, use <see cref="HsvColor"/> instead to avoid loss
+    /// For control authors, use <see cref="HsvColor" /> instead to avoid loss
     /// of precision and color drifting.
     /// </remarks>
     public Color Color
@@ -127,7 +130,7 @@ internal class ColorSpectrum : TemplatedControl
     /// Gets or sets the two HSV color components displayed by the spectrum.
     /// </summary>
     /// <remarks>
-    /// Internally, the <see cref="ColorSpectrum"/> uses the HSV color model.
+    /// Internally, the <see cref="ColorSpectrum" /> uses the HSV color model.
     /// </remarks>
     public ColorSpectrumComponents Components
     {
@@ -139,8 +142,8 @@ internal class ColorSpectrum : TemplatedControl
     /// Gets or sets the currently selected color in the HSV color model.
     /// </summary>
     /// <remarks>
-    /// This should be used in all cases instead of the <see cref="Color"/> property.
-    /// Internally, the <see cref="ColorSpectrum"/> uses the HSV color model and using
+    /// This should be used in all cases instead of the <see cref="Color" /> property.
+    /// Internally, the <see cref="ColorSpectrum" /> uses the HSV color model and using
     /// this property will avoid loss of precision and color drifting.
     /// </remarks>
     public HsvColor HsvColor
@@ -151,10 +154,10 @@ internal class ColorSpectrum : TemplatedControl
 
     /// <summary>
     /// Gets or sets the maximum value of the Hue component in the range from 0..359.
-    /// This property must be greater than <see cref="MinHue"/>.
+    /// This property must be greater than <see cref="MinHue" />.
     /// </summary>
     /// <remarks>
-    /// Internally, the <see cref="ColorSpectrum"/> uses the HSV color model.
+    /// Internally, the <see cref="ColorSpectrum" /> uses the HSV color model.
     /// </remarks>
     public int MaxHue
     {
@@ -164,10 +167,10 @@ internal class ColorSpectrum : TemplatedControl
 
     /// <summary>
     /// Gets or sets the maximum value of the Saturation component in the range from 0..100.
-    /// This property must be greater than <see cref="MinSaturation"/>.
+    /// This property must be greater than <see cref="MinSaturation" />.
     /// </summary>
     /// <remarks>
-    /// Internally, the <see cref="ColorSpectrum"/> uses the HSV color model.
+    /// Internally, the <see cref="ColorSpectrum" /> uses the HSV color model.
     /// </remarks>
     public int MaxSaturation
     {
@@ -177,10 +180,10 @@ internal class ColorSpectrum : TemplatedControl
 
     /// <summary>
     /// Gets or sets the maximum value of the Value component in the range from 0..100.
-    /// This property must be greater than <see cref="MinValue"/>.
+    /// This property must be greater than <see cref="MinValue" />.
     /// </summary>
     /// <remarks>
-    /// Internally, the <see cref="ColorSpectrum"/> uses the HSV color model.
+    /// Internally, the <see cref="ColorSpectrum" /> uses the HSV color model.
     /// </remarks>
     public int MaxValue
     {
@@ -190,10 +193,10 @@ internal class ColorSpectrum : TemplatedControl
 
     /// <summary>
     /// Gets or sets the minimum value of the Hue component in the range from 0..359.
-    /// This property must be less than <see cref="MaxHue"/>.
+    /// This property must be less than <see cref="MaxHue" />.
     /// </summary>
     /// <remarks>
-    /// Internally, the <see cref="ColorSpectrum"/> uses the HSV color model.
+    /// Internally, the <see cref="ColorSpectrum" /> uses the HSV color model.
     /// </remarks>
     public int MinHue
     {
@@ -203,10 +206,10 @@ internal class ColorSpectrum : TemplatedControl
 
     /// <summary>
     /// Gets or sets the minimum value of the Saturation component in the range from 0..100.
-    /// This property must be less than <see cref="MaxSaturation"/>.
+    /// This property must be less than <see cref="MaxSaturation" />.
     /// </summary>
     /// <remarks>
-    /// Internally, the <see cref="ColorSpectrum"/> uses the HSV color model.
+    /// Internally, the <see cref="ColorSpectrum" /> uses the HSV color model.
     /// </remarks>
     public int MinSaturation
     {
@@ -216,10 +219,10 @@ internal class ColorSpectrum : TemplatedControl
 
     /// <summary>
     /// Gets or sets the minimum value of the Value component in the range from 0..100.
-    /// This property must be less than <see cref="MaxValue"/>.
+    /// This property must be less than <see cref="MaxValue" />.
     /// </summary>
     /// <remarks>
-    /// Internally, the <see cref="ColorSpectrum"/> uses the HSV color model.
+    /// Internally, the <see cref="ColorSpectrum" /> uses the HSV color model.
     /// </remarks>
     public int MinValue
     {
@@ -231,12 +234,12 @@ internal class ColorSpectrum : TemplatedControl
 
     /// <summary>
     /// Gets the third HSV color component that is NOT displayed by the spectrum.
-    /// This is automatically calculated from the <see cref="Components"/> property.
+    /// This is automatically calculated from the <see cref="Components" /> property.
     /// </summary>
     /// <remarks>
     /// This property should be used for any external color slider that represents the
     /// third component of the color. Note that this property uses the generic
-    /// <see cref="ColorComponent"/> type instead of the more accurate <see cref="HsvComponent"/>
+    /// <see cref="ColorComponent" /> type instead of the more accurate <see cref="HsvComponent" />
     /// to allow direct usage by the generalized color sliders.
     /// </remarks>
     public ColorComponent ThirdComponent
@@ -250,7 +253,11 @@ internal class ColorSpectrum : TemplatedControl
     #region 公共事件定义
 
     /// <summary>
-    /// Event for when the selected color changes within the spectrum.
+    /// Occurs when the user changes the selected color within the spectrum, with the pointer or the arrow keys,
+    /// or when <see cref="HsvColor" /> is set from outside the control.
+    /// Setting <see cref="Color" /> directly does not raise it.
+    /// It is raised after <see cref="Color" /> and <see cref="HsvColor" /> hold the new value, and only when a
+    /// channel of the new color differs from the previous color or an RGB channel is zero in both colors.
     /// </summary>
     public event EventHandler<ColorChangedEventArgs>? ColorChanged;
 
@@ -316,12 +323,12 @@ internal class ColorSpectrum : TemplatedControl
     private int _minValueFromLastBitmapCreation;
     private int _maxValueFromLastBitmapCreation;
 
-#pragma warning disable ATOMUIGEN044 // Colour-model data endpoints/default values, independent of theme chrome.
+#pragma warning disable ATOMUIGEN044 // Color-model data endpoints/default values, independent of theme chrome.
     private Color _oldColor = Color.FromArgb(255, 255, 255, 255);
 #pragma warning restore ATOMUIGEN044
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="ColorSpectrum"/> class.
+    /// Initializes a new instance of the <see cref="ColorSpectrum" /> class.
     /// </summary>
     public ColorSpectrum()
     {
@@ -336,7 +343,7 @@ internal class ColorSpectrum : TemplatedControl
         _maxValueFromLastBitmapCreation = MaxValue;
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
@@ -384,7 +391,7 @@ internal class ColorSpectrum : TemplatedControl
         UpdatePseudoClasses();
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
@@ -427,7 +434,7 @@ internal class ColorSpectrum : TemplatedControl
         }
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     protected override void OnKeyDown(KeyEventArgs e)
     {
         var key = e.Key;
@@ -556,7 +563,7 @@ internal class ColorSpectrum : TemplatedControl
         e.Handled = true;
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     protected override void OnGotFocus(FocusChangedEventArgs e)
     {
         UpdatePseudoClasses();
@@ -564,7 +571,7 @@ internal class ColorSpectrum : TemplatedControl
         base.OnGotFocus(e);
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     protected override void OnLostFocus(FocusChangedEventArgs e)
     {
         UpdatePseudoClasses();
@@ -572,7 +579,7 @@ internal class ColorSpectrum : TemplatedControl
         base.OnLostFocus(e);
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     protected override void OnPointerExited(PointerEventArgs e)
     {
         UpdatePseudoClasses();
@@ -580,7 +587,7 @@ internal class ColorSpectrum : TemplatedControl
         base.OnPointerExited(e);
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         if (change.Property == ColorProperty)
@@ -734,6 +741,10 @@ internal class ColorSpectrum : TemplatedControl
         RaiseColorChanged();
     }
 
+    /// <summary>
+    /// Raises <see cref="ColorChanged" /> if a channel of <see cref="Color" /> differs from its value before the
+    /// last change, or if an RGB channel is zero in both colors.
+    /// </summary>
     public void RaiseColorChanged()
     {
         Color newColor = Color;
@@ -788,11 +799,13 @@ internal class ColorSpectrum : TemplatedControl
     /// <summary>
     /// Changes the currently selected color (always in HSV) and applies all necessary updates.
     /// </summary>
+    /// <param name="newHsv">
+    /// The new HSV color to change to.
+    /// </param>
     /// <remarks>
     /// Some additional logic is applied in certain situations to coerce and sync color values.
-    /// Use this method instead of update the <see cref="Color"/> or <see cref="HsvColor"/> directly.
+    /// Use this method instead of update the <see cref="Color" /> or <see cref="HsvColor" /> directly.
     /// </remarks>
-    /// <param name="newHsv">The new HSV color to change to.</param>
     private void UpdateColor(Hsv newHsv)
     {
         _updatingColor = true;
@@ -895,9 +908,12 @@ internal class ColorSpectrum : TemplatedControl
     }
 
     /// <summary>
-    /// Updates the selected <see cref="HsvColor"/> and <see cref="Color"/> based on a point within the color spectrum.
+    /// Updates the selected <see cref="HsvColor" /> and <see cref="Color" /> based on a point within the color
+    /// spectrum.
     /// </summary>
-    /// <param name="point">The point on the spectrum representing the color.</param>
+    /// <param name="point">
+    /// The point on the spectrum representing the color.
+    /// </param>
     private void UpdateColorFromPoint(PointerPoint point)
     {
         if (!TryGetHsvFromFastSpectrum(point, out var hsvAtPoint))
@@ -914,7 +930,7 @@ internal class ColorSpectrum : TemplatedControl
             double xPosition = point.Position.X * scale;
             double yPosition = point.Position.Y * scale;
 
-            // Now we need to find the index into the array of HSL values at each point in the spectrum m_image.
+            // Now we need to find the index into the array of HSV values at each point in the spectrum image.
             int x = (int)Math.Round(xPosition);
             int y = (int)Math.Round(yPosition);
             int width = (int)Math.Round(_imageWidthFromLastBitmapCreation);
@@ -1139,21 +1155,21 @@ internal class ColorSpectrum : TemplatedControl
         }
     }
 
-    /// <inheritdoc cref="InputElement.PointerEntered"/>
+    /// <inheritdoc cref="InputElement.PointerEntered" />
     private void HandleInputTargetPointerEntered(object? sender, PointerEventArgs args)
     {
         UpdatePseudoClasses();
         args.Handled = true;
     }
 
-    /// <inheritdoc cref="InputElement.PointerExited"/>
+    /// <inheritdoc cref="InputElement.PointerExited" />
     private void HandleInputTargetPointerExited(object? sender, PointerEventArgs args)
     {
         UpdatePseudoClasses();
         args.Handled = true;
     }
 
-    /// <inheritdoc cref="InputElement.PointerPressed"/>
+    /// <inheritdoc cref="InputElement.PointerPressed" />
     private void HandleInputTargetPointerPressed(object? sender, PointerPressedEventArgs args)
     {
         var inputTarget = _inputTarget;
@@ -1162,7 +1178,9 @@ internal class ColorSpectrum : TemplatedControl
 
         _isPointerPressed = true;
         _shouldShowLargeSelection =
-            // TODO: After Pen PR is merged: https://github.com/AvaloniaUI/Avalonia/pull/7412
+            // TODO Pen input: Avalonia 12 exposes PointerType.Pen (https://github.com/AvaloniaUI/Avalonia/pull/7412
+            // is merged), so the condition on the next line can be enabled. Enable it, verify the large selection
+            // with a pen, and remove this TODO together with the commented condition.
             // args.Pointer.Type == PointerType.Pen ||
             args.Pointer.Type == PointerType.Touch;
 
@@ -1174,7 +1192,7 @@ internal class ColorSpectrum : TemplatedControl
         args.Handled = true;
     }
 
-    /// <inheritdoc cref="InputElement.PointerMoved"/>
+    /// <inheritdoc cref="InputElement.PointerMoved" />
     private void HandleInputTargetPointerMoved(object? sender, PointerEventArgs args)
     {
         if (!_isPointerPressed)
@@ -1186,7 +1204,7 @@ internal class ColorSpectrum : TemplatedControl
         args.Handled = true;
     }
 
-    /// <inheritdoc cref="InputElement.PointerReleased"/>
+    /// <inheritdoc cref="InputElement.PointerReleased" />
     private void HandleInputTargetPointerReleased(object? sender, PointerReleasedEventArgs args)
     {
         _isPointerPressed = false;
@@ -1727,7 +1745,7 @@ internal class ColorSpectrum : TemplatedControl
                 EndPoint = new RelativePoint(1, 0.5, RelativeUnit.Relative),
                 GradientStops = new GradientStops
                 {
-#pragma warning disable ATOMUIGEN044 // Colour-model data endpoints/default values, independent of theme chrome.
+#pragma warning disable ATOMUIGEN044 // Color-model data endpoints/default values, independent of theme chrome.
                     new(Colors.White, 0),
                     _saturationValueHueStop
                 }
@@ -1745,7 +1763,7 @@ internal class ColorSpectrum : TemplatedControl
             EndPoint = new RelativePoint(0.5, 1, RelativeUnit.Relative),
             GradientStops = new GradientStops
             {
-#pragma warning disable ATOMUIGEN044 // Colour-model data endpoints/default values, independent of theme chrome.
+#pragma warning disable ATOMUIGEN044 // Color-model data endpoints/default values, independent of theme chrome.
                 new(Colors.Transparent, 0),
                 new(Colors.Black, 1)
             }

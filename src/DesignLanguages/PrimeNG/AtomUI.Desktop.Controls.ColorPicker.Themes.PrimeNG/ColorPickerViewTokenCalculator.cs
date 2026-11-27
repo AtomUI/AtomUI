@@ -6,11 +6,20 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 
-/// <summary>The PrimeNG values of the shared <see cref="AbstractColorPickerViewToken"/> layer.</summary>
+/// <summary>
+/// The PrimeNG values of the shared <see cref="AbstractColorPickerViewToken" /> layer.
+/// </summary>
 public static class ColorPickerViewTokenCalculator
 {
+    /// <summary>
+    /// Writes the PrimeNG values into the shared <see cref="AbstractColorPickerViewToken" /> layer: the editor, panel
+    /// and handler sizes (mostly fixed sizes), the handler colors and the inset shadows.
+    /// </summary>
     public static void Calculate(in TokenEvaluationContext<PrimeNGToken> context, DesignToken global, AbstractColorPickerViewToken token)
     {
+        // Ant Design formula kept as is: the PrimeNG mapping has no preset values for the color picker view
+        // (the PrimeUIX colorpicker panel), so the rule takes the Ant Design formula over the PrimeNG global
+        // tokens.
         token.EditorFontSize = 11;
         token.ColorPickerWidth = 234;
         token.ColorPickerHandlerSizeLG = 32;
@@ -32,6 +41,10 @@ public static class ColorPickerViewTokenCalculator
     }
 
 
+    /// <summary>
+    /// Writes <paramref name="handlerSize" /> as <c>ColorPickerSliderSize</c> and calls
+    /// <see cref="CalculateDependentSizes" /> for the sizes that follow from the handler, preset and track sizes.
+    /// </summary>
     public static void CalculateSliderSizes(AbstractColorPickerViewToken token, DesignToken global, double handlerSize, double presetSize, double trackSize)
     {
         token.ColorPickerSliderSize = handlerSize;
@@ -39,6 +52,11 @@ public static class ColorPickerViewTokenCalculator
     }
 
 
+    /// <summary>
+    /// Derives the sizes that follow from the slider sizes: the checked mark (60 % of
+    /// <paramref name="presetSize" />), the slider thumb (<paramref name="handlerSize" /> plus two border widths)
+    /// and the preview (twice <paramref name="trackSize" /> plus <c>UniformlyMarginSM</c>).
+    /// </summary>
     public static void CalculateDependentSizes(AbstractColorPickerViewToken token, DesignToken global, double handlerSize, double presetSize, double trackSize)
     {
         token.CheckedMarkSize = presetSize * 0.6;

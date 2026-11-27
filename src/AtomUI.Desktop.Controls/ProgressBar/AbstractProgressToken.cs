@@ -12,14 +12,13 @@ namespace AtomUI.Desktop.Controls;
 public abstract partial class AbstractProgressToken : AbstractControlDesignToken
 {
     /// <summary>
-    /// 进度条默认颜色
-    /// Default color of the progress indicator
+    /// Color of the filled part of a progress bar: the track of a line bar and the arc of a circle or dashboard.
     /// </summary>
     public partial Color DefaultColor { get; set; }
 
     /// <summary>
-    /// 进度条剩余部分颜色
-    /// Color of the remaining (unfilled) part of the progress bar
+    /// Color of the unfilled part of a progress bar: the rail behind the track of a line bar and the ring behind the
+    /// arc of a circle or dashboard.
     /// </summary>
     public partial Color RemainingColor { get; set; }
 }

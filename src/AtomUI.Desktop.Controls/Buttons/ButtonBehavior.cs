@@ -8,8 +8,8 @@ using AtomUI.Theme.Schema;
 namespace AtomUI.Desktop.Controls;
 
 /// <summary>
-/// The behaviour Own Tokens of a button owner (see <see cref="AbstractButtonGeometryToken"/>), read once per theme
-/// snapshot and owner. A button outside a themed root gets <see cref="Default"/>, the Ant Design behaviour.
+/// The behavior Own Tokens of a button owner (see <see cref="AbstractButtonGeometryToken" />), read once per theme
+/// snapshot and owner. A button outside a themed root gets <see cref="Default" />, the Ant Design behavior.
 /// </summary>
 internal sealed record ButtonBehavior(
     bool RecipeVariants,

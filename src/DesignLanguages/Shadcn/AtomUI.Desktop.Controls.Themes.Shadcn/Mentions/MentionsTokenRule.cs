@@ -4,7 +4,9 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls.Themes.Shadcn;
 
-/// <summary>The shadcn view of <see cref="MentionsToken"/>.</summary>
+/// <summary>
+/// The shadcn view of <see cref="MentionsToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class MentionsTokenRule : IControlTokenRule<ShadcnToken, MentionsToken>
 {
@@ -13,6 +15,8 @@ internal sealed class MentionsTokenRule : IControlTokenRule<ShadcnToken, Mention
         var token  = target.Own;
         var global = target.Global;
         InputTokenCalculator.CalculateGlobal(in context, global);
+        // InputTokenCalculator.CalculateGlobal merges the registry input values into the control's global view;
+        // the mentions tokens below keep the Ant formula.
         token.OptionHeight        = global.ControlHeight;
         token.PopupContentPadding = new Thickness(global.UniformlyPaddingXXS / 2);
         token.MinPopupWidth       = 120;

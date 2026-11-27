@@ -147,7 +147,7 @@ Detailed AI collaboration rules live in [docs/engineering/contributing/agent-gui
 2. **验证照常、提交信息可先备好**：构建、测试、运行验证不受本条限制照常执行；提交信息可以预先准备好（如用 commit-msg 技能生成草稿），但执行提交必须等用户明确指令。
 3. **例外仅限用户授权**：仅当用户明确要求提交（如“提交”、"commit"、“创建 commit”）或事先授权（如“这个任务做完直接提交”）时才可提交，且只提交授权范围内的工作，不顺手捎带未审查的改动。
 4. **提交前必须审查注释。** 含代码变动的提交，必须按[注释规范的提交前检查要求](docs/engineering/development/code-comment-guidelines.md#8-提交前检查)核对最终暂存内容，检查通过后方可提交。
-5. **执行本地测试准入检查**。提交前通过 `python3 scripts/verification/test.py audit --staged`，并遵循[本地提交检查](docs/engineering/development/test-value-and-lifecycle.md#32-本地提交检查)。禁止通过跳过 hook 或更改 hook 配置绕过拦截。
+5. **执行本地测试准入检查**。提交前通过 `python3 scripts/verification/test.py audit --staged`，并遵循[本地提交检查](docs/engineering/development/test-value-and-lifecycle.md#32-本地提交检查)。该命令同时拦截暂存内容新增的源码注释违规，待办用 `python3 scripts/verification/comments.py list --path <目录>` 查看。禁止通过跳过 hook 或更改 hook 配置绕过拦截。
 
 ## 分支与 Worktree 强约束（本项目生效）
 

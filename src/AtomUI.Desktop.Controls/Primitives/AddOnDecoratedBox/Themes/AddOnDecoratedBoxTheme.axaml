@@ -121,16 +121,18 @@
             <Setter Property="HorizontalSpacing" Value="{atom:OwnerTokenResource SpacingXXS}" />
         </Style>
 
-        <!-- 右侧后缀区默认前景色：作为下拉箭头（SelectHandle 继承链）与后缀内容的默认颜色，
-             用户 suffix Part Style 在 suffix 容器上以更高优先级覆写 -->
+        <!-- Default foreground of the right suffix area: it is the default color of the drop-down arrow (the
+        SelectHandle inheritance chain) and of the suffix content; a user suffix part style overrides it on the
+        suffix container with higher priority.
+        -->
         <Style Selector="^ /template/ atom|AddOnContentPresenter#PART_ContentRightAddOn">
             <Setter Property="TextElement.Foreground"
                     Value="{atom:OwnerTokenResource ColorTextQuaternary}" />
         </Style>
 
-        <!--
-            Filled 变体保留 1px 透明边框与 Outlined 等高占位，背景必须铺满 border-box，
-            否则可见填充比 Outlined 矮上下各 1px。
+        <!-- The Filled variant keeps a 1px transparent border to occupy the same height as Outlined, so the background
+        must fill the whole border-box; otherwise the visible fill is 1px shorter at the top and at the bottom than
+        Outlined.
         -->
         <Style Selector="^[StyleVariant=Filled] /template/ atom|AddOnDecoratedBoxContentFrame#PART_ContentFrame">
             <Setter Property="BackgroundSizing" Value="OuterBorderEdge" />

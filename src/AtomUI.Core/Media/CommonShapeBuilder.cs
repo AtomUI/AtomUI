@@ -4,8 +4,21 @@ using Avalonia.Media;
 
 namespace AtomUI.Media;
 
+/// <summary>
+/// Builds the geometries of shapes that controls draw themselves: arcs, check marks and arrow heads.
+/// </summary>
 public static class CommonShapeBuilder
 {
+    /// <summary>
+    /// Builds a check mark as an open polyline of two segments, meant to be stroked.
+    /// </summary>
+    /// <param name="size">
+    /// The size the mark is scaled to. The mark does not fill it: it spans 25% to 70% of the width and 30% to 70% of
+    /// the height.
+    /// </param>
+    /// <returns>
+    /// The geometry of the mark.
+    /// </returns>
     public static Geometry BuildCheckMark(Size size)
     {
         var       checkMark = new StreamGeometry();
@@ -24,12 +37,21 @@ public static class CommonShapeBuilder
     }
 
     /// <summary>
-    /// 生成一个以矩形中点为圆心，以宽和高最小的一半为半径的且指定角度的圆弧
+    /// Builds an arc of the ellipse inscribed in a rectangle. The arc starts at one angle and spans another.
     /// </summary>
-    /// <param name="rect"></param>
-    /// <param name="startAngle"></param>
-    /// <param name="sweepAngle"></param>
-    /// <returns></returns>
+    /// <param name="rect">
+    /// The bounds of the ellipse; its center is the center of the arc and half its width and height are the radii.
+    /// </param>
+    /// <param name="startAngle">
+    /// The angle of the first point in degrees, clockwise from the right; -90 is at the top.
+    /// </param>
+    /// <param name="sweepAngle">
+    /// The length of the arc in degrees, clockwise when positive and counter-clockwise when negative. A full turn
+    /// gives the complete ellipse.
+    /// </param>
+    /// <returns>
+    /// The arc, or an empty geometry when <paramref name="sweepAngle" /> is zero.
+    /// </returns>
     public static Geometry BuildArc(Rect rect, double startAngle, double sweepAngle)
     {
         if (MathUtils.IsZero(sweepAngle))
@@ -93,26 +115,40 @@ public static class CommonShapeBuilder
         return new Point(radiusX * Math.Cos(angle) + centerX, radiusY * Math.Sin(angle) + centerY);
     }
 
+    /// <summary>
+    /// Builds an arrow head: a triangle that points up and has a rounded tip. The figure is closed.
+    /// </summary>
+    /// <param name="size">
+    /// The width and height of the box the triangle is laid out in. The base is the bottom edge of the box; the tip
+    /// lies at <c>size / 2 + 1</c>, just below the center.
+    /// </param>
+    /// <param name="radius">
+    /// The half-width of the rounded tip. The rounding starts this far left of the tip and ends this far right of
+    /// it, with the control point of the curve this far above the tip.
+    /// </param>
+    /// <returns>
+    /// The geometry of the arrow head.
+    /// </returns>
     public static Geometry BuildArrow(double size, double radius)
     {
         var       geometryStream = new StreamGeometry();
         using var context        = geometryStream.Open();
 
-        // 假设 p1 是原始圆角顶点，p2 和 p3 是原始底边的顶点
+        // p1 is the apex of the triangle before rounding; p2 and p3 are the two base corners.
         var p1 = new Point(size / 2.0, size / 2.0 + 1);
         var p2 = new Point(0, size);
         var p3 = new Point(size, size);
-        // 假设 r 是圆角的半径
+        // The control point of the rounding lies `radius` above the apex.
         var controlPoint = new Point(p1.X, p1.Y - radius);
-        // 移动到调整后的底边左顶点
+        // Start the figure at the bottom-left base corner.
         context.BeginFigure(p2, true);
-        // 绘制左边的直线到圆角的起始点
+        // Draw the left edge up to where the rounding begins.
         context.LineTo(new Point(p1.X - radius, p1.Y));
-        // 绘制圆角
+        // Draw the rounded tip.
         context.QuadraticBezierTo(controlPoint, new Point(p1.X + radius, p1.Y));
-        // 绘制右边的直线到调整后的底边右顶点
+        // Draw the right edge down to the bottom-right base corner.
         context.LineTo(p3);
-        // 绘制底边，闭合路径
+        // Draw the base and close the figure.
         context.LineTo(p2);
         context.EndFigure(true);
 

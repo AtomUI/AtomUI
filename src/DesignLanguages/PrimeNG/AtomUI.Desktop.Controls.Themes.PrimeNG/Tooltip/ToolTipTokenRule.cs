@@ -4,7 +4,9 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 
-/// <summary>The PrimeNG view of <see cref="ToolTipToken"/>.</summary>
+/// <summary>
+/// The PrimeNG view of <see cref="ToolTipToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class ToolTipTokenRule : IControlTokenRule<PrimeNGToken, ToolTipToken>
 {
@@ -15,6 +17,8 @@ internal sealed class ToolTipTokenRule : IControlTokenRule<PrimeNGToken, ToolTip
         // PrimeNG: the control-global overrides (seeds included), read by the formulas below.
         PrimeNGToolTipTokens.EvaluateGlobal(in context, global);
 
+        // Ant Design formula kept as is: the PrimeNG tooltip stage at the end of the method replaces every value of
+        // this group (MotionDuration only under Nora).
         token.ToolTipMaxWidth   = 250;
         token.ToolTipFontSize   = global.FontSize;
         token.ToolTipMinHeight  = global.ControlHeight;

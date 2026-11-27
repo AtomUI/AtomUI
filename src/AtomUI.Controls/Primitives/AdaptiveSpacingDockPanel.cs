@@ -3,8 +3,19 @@ using Avalonia.Controls;
 
 namespace AtomUI.Controls.Primitives;
 
+/// <summary>
+/// A <see cref="DockPanel" /> that adds <see cref="DockPanel.HorizontalSpacing" /> after each visible child docked
+/// left or right and <see cref="DockPanel.VerticalSpacing" /> after each visible child docked top or bottom. A
+/// hidden child or one without a size in its dock direction gets no gap, so no gap takes space before the first
+/// child or after the last one; the gap before a filling last child is kept.
+/// </summary>
 public class AdaptiveSpacingDockPanel : DockPanel
 {
+    /// <summary>
+    /// Measures the docked children in the space the earlier children left and the filling child in what remains. The
+    /// returned size includes one gap per child that gets one, except for the gap after the last docked child when no
+    /// child fills.
+    /// </summary>
     protected override Size MeasureOverride(Size availableSize)
     {
         var parentWidth       = 0d;
@@ -83,6 +94,10 @@ public class AdaptiveSpacingDockPanel : DockPanel
         return new Size(parentWidth, parentHeight);
     }
 
+    /// <summary>
+    /// Arranges the docked children along their edges in child order, each followed by its gap, and gives the remaining
+    /// area to the filling last child. Hidden children are skipped. Always returns <paramref name="finalSize" />.
+    /// </summary>
     protected override Size ArrangeOverride(Size finalSize)
     {
         if (Children.Count is 0)

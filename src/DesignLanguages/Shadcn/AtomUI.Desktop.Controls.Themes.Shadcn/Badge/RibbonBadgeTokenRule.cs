@@ -5,7 +5,9 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls.Themes.Shadcn;
 
-/// <summary>The shadcn view of <see cref="RibbonBadgeToken"/>.</summary>
+/// <summary>
+/// The shadcn view of <see cref="RibbonBadgeToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class RibbonBadgeTokenRule : IControlTokenRule<ShadcnToken, RibbonBadgeToken>
 {
@@ -14,6 +16,7 @@ internal sealed class RibbonBadgeTokenRule : IControlTokenRule<ShadcnToken, Ribb
         var token  = target.Own;
         var global = target.Global;
 
+        // Ant Design formula kept as is: shadcn has no ribbon badge, so the language has no values of its own.
         token.Offset             = new Point(global.UniformlyMarginXS, global.UniformlyMarginXS);
         token.CornerTransform    = new ScaleTransform(1, 0.75).ToImmutable();
         token.CornerDarkenAmount = 15;

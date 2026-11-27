@@ -5,7 +5,9 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls.Themes.Shadcn;
 
-/// <summary>The shadcn view of <see cref="SeparatorToken"/>.</summary>
+/// <summary>
+/// The shadcn view of <see cref="SeparatorToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class SeparatorTokenRule : IControlTokenRule<ShadcnToken, SeparatorToken>
 {
@@ -13,6 +15,7 @@ internal sealed class SeparatorTokenRule : IControlTokenRule<ShadcnToken, Separa
     {
         var token  = target.Own;
         var global = target.Global;
+        // Ant Design formula kept as is: no registry value is merged into the separator tokens.
         token.TextPaddingInline              = 1.0;
         token.OrientationMarginPercent       = 0.05;
         token.VerticalMarginInline           = global.UniformlyMarginXS;

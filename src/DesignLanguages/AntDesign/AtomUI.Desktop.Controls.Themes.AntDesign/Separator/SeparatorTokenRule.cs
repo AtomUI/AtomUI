@@ -5,7 +5,9 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls.Themes.AntDesign;
 
-/// <summary>The AntDesign view of <see cref="SeparatorToken"/>.</summary>
+/// <summary>
+/// The AntDesign view of <see cref="SeparatorToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class SeparatorTokenRule : IControlTokenRule<AntDesignToken, SeparatorToken>
 {

@@ -4,7 +4,9 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls.Themes.Shadcn;
 
-/// <summary>The shadcn view of <see cref="ListBoxToken"/>.</summary>
+/// <summary>
+/// The shadcn view of <see cref="ListBoxToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class ListBoxTokenRule : IControlTokenRule<ShadcnToken, ListBoxToken>
 {
@@ -27,6 +29,7 @@ internal sealed class ListBoxTokenRule : IControlTokenRule<ShadcnToken, ListBoxT
 
         token.ItemDisabledColor = colorTextDisabled;
 
+        // Ant Design formula kept as is: only the hover and selected values above come from the list item recipe.
         token.ItemPaddingLG = new Thickness(global.UniformlyPadding, 0);
         token.ItemPaddingSM = new Thickness(global.UniformlyPaddingXS, 0);
         token.ItemPadding   = new Thickness(global.UniformlyPaddingSM, 0);

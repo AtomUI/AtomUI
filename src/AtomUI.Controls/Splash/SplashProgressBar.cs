@@ -7,32 +7,53 @@ using Avalonia.Rendering.Composition;
 namespace AtomUI.Controls;
 
 /// <summary>
-/// Splash 专用进度条：无模板，在 Render 中绘制轨道与确定进度；不确定进度由挂在本控件上的自定义合成视觉在渲染线程逐帧推进，
-/// 提交期间 UI 线程被占用时照常移动。不能给布局子元素做 Offset 动画：Visual.SynchronizeCompositionProperties 每次同步都会改写
-/// 布局元素合成视觉的 Offset 等属性并移除其上的动画，进度块会停在布局原点。合成视觉的创建与尺寸依赖挂接后的合成器与布局结果，
-/// ControlTheme 无法表达，因此写在代码中。
+/// Progress bar of the splash. It has no template: <see cref="Render" /> paints the track and the determinate
+/// progress, while the indeterminate progress is advanced frame by frame on the render thread by a custom
+/// composition visual attached to this control, so it keeps moving while the UI thread is blocked by the
+/// commit. The Offset of a layout child cannot be animated instead: <c>Visual.SynchronizeCompositionProperties</c>
+/// rewrites properties such as the Offset of the composition visual of a layout element on every synchronization
+/// and removes the animations on it, so the indicator would stop at the layout origin. The composition visual
+/// can only be created and sized in code: it depends on the compositor and on the layout result that are available
+/// after attachment, which a ControlTheme cannot express.
 /// </summary>
 public class SplashProgressBar : Control
 {
+    /// <summary>
+    /// Identifies the <see cref="Value" /> property.
+    /// </summary>
     public static readonly StyledProperty<double> ValueProperty =
         AvaloniaProperty.Register<SplashProgressBar, double>(nameof(Value), coerce: static (_, v) => Math.Clamp(v, 0d, 1d));
 
+    /// <summary>
+    /// Identifies the <see cref="IsIndeterminate" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsIndeterminateProperty =
         AvaloniaProperty.Register<SplashProgressBar, bool>(nameof(IsIndeterminate), true);
 
+    /// <summary>
+    /// Identifies the <see cref="TrackBrush" /> property.
+    /// </summary>
     public static readonly StyledProperty<IBrush?> TrackBrushProperty =
         AvaloniaProperty.Register<SplashProgressBar, IBrush?>(nameof(TrackBrush));
 
+    /// <summary>
+    /// Identifies the <see cref="IndicatorBrush" /> property.
+    /// </summary>
     public static readonly StyledProperty<IBrush?> IndicatorBrushProperty =
         AvaloniaProperty.Register<SplashProgressBar, IBrush?>(nameof(IndicatorBrush));
 
+    /// <summary>
+    /// Identifies the <see cref="CornerRadius" /> property.
+    /// </summary>
     public static readonly StyledProperty<CornerRadius> CornerRadiusProperty =
         AvaloniaProperty.Register<SplashProgressBar, CornerRadius>(nameof(CornerRadius));
 
     private const double IndeterminateSegmentRatio = 0.3;
     private static readonly TimeSpan IndeterminateCycle = TimeSpan.FromSeconds(1.2);
-    // 单帧推进上限（约 60 Hz 下两帧）。启动期渲染线程会停顿（Splash 首帧冷启动约 200 ms、主窗体首帧共用渲染线程），
-    // 按绝对时钟定位会让停顿后的下一帧整段瞬移；限幅后停顿表现为短暂停住再继续。
+    // Upper bound of the advance per frame, two frames at about 60 Hz. The render thread stalls during startup:
+    // about 200 ms for the cold first frame of the splash, and the first frame of the main window shares the
+    // render thread. Positioning by the absolute clock would make the frame after a stall jump over the whole
+    // stall. With the bound, a stall shows as a short pause, after which the indicator moves on.
     private static readonly TimeSpan MaxFrameAdvance = TimeSpan.FromSeconds(1.0 / 30);
 
     private CompositionCustomVisual? _indicatorVisual;
@@ -50,36 +71,66 @@ public class SplashProgressBar : Control
         ClipToBounds = true;
     }
 
+    /// <summary>
+    /// Completed fraction of the bar, from 0 to 1; values outside that range are clamped to it. While
+    /// <see cref="IsIndeterminate" /> is false, the indicator is painted from the left edge up to this fraction of
+    /// the width, as long as the value is greater than 0. The default theme binds the value to
+    /// <see cref="Splash.Progress" />.
+    /// </summary>
     public double Value
     {
         get => GetValue(ValueProperty);
         set => SetValue(ValueProperty, value);
     }
 
+    /// <summary>
+    /// While true, the default, an indicator loops over the track and <see cref="Value" /> is ignored; while false,
+    /// the bar shows the indicator for <see cref="Value" />. The loop runs only while the control is effectively
+    /// visible and continues from the position where it stopped once the control is visible again. The default
+    /// theme binds the value to <see cref="Splash.IsIndeterminate" />.
+    /// </summary>
     public bool IsIndeterminate
     {
         get => GetValue(IsIndeterminateProperty);
         set => SetValue(IsIndeterminateProperty, value);
     }
 
+    /// <summary>
+    /// Brush of the track, the whole area of the control. The default theme sets it to the <c>ColorFillSecondary</c>
+    /// Token; <see langword="null" /> paints no track.
+    /// </summary>
     public IBrush? TrackBrush
     {
         get => GetValue(TrackBrushProperty);
         set => SetValue(TrackBrushProperty, value);
     }
 
+    /// <summary>
+    /// Brush of the indicator: the filled part of the track while <see cref="IsIndeterminate" /> is false, and the
+    /// moving indicator while it is true. The default theme sets it to the <c>ColorPrimary</c> Token;
+    /// <see langword="null" /> paints no indicator in either mode.
+    /// </summary>
     public IBrush? IndicatorBrush
     {
         get => GetValue(IndicatorBrushProperty);
         set => SetValue(IndicatorBrushProperty, value);
     }
 
+    /// <summary>
+    /// Corner radius of the track, of the indicator and of the moving indicator. Only the top-left corner is used.
+    /// The default splash theme sets it to 2.
+    /// </summary>
     public CornerRadius CornerRadius
     {
         get => GetValue(CornerRadiusProperty);
         set => SetValue(CornerRadiusProperty, value);
     }
 
+    /// <summary>
+    /// Creates the custom composition visual of the moving indicator, attaches it to this control as its element
+    /// child visual and starts tracking the effective visibility that pauses the loop while the control is hidden.
+    /// Nothing is created when the element visual has no compositor yet. Overrides must call the base member.
+    /// </summary>
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
@@ -95,6 +146,11 @@ public class SplashProgressBar : Control
         this.TrackEffectiveVisibility(HandleEffectiveVisibilityChanged, subscriptions);
     }
 
+    /// <summary>
+    /// Stops the loop, disposes the effective-visibility subscription and removes the custom composition visual
+    /// when the control is detached from a visual tree. The visual is created again on the next attachment.
+    /// Overrides must call the base member.
+    /// </summary>
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         _effectiveVisibilitySubscriptions?.Dispose();
@@ -109,6 +165,10 @@ public class SplashProgressBar : Control
         base.OnDetachedFromVisualTree(e);
     }
 
+    /// <summary>
+    /// Sends the current state of the moving indicator to the render thread whenever <see cref="IsIndeterminate" />,
+    /// <see cref="IndicatorBrush" /> or <see cref="CornerRadius" /> changes. Overrides must call the base member.
+    /// </summary>
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
@@ -120,8 +180,16 @@ public class SplashProgressBar : Control
         }
     }
 
+    /// <summary>
+    /// Reports a desired size of zero: the bar draws nothing unless its parent or a style property such as
+    /// <c>Height</c> gives it a size.
+    /// </summary>
     protected override Size MeasureOverride(Size availableSize) => new(0, 0);
 
+    /// <summary>
+    /// Sizes the custom composition visual of the moving indicator to the arranged size and returns that size
+    /// unchanged.
+    /// </summary>
     protected override Size ArrangeOverride(Size finalSize)
     {
         if (_indicatorVisual is not null)
@@ -131,6 +199,11 @@ public class SplashProgressBar : Control
         return finalSize;
     }
 
+    /// <summary>
+    /// Paints the track with <see cref="TrackBrush" /> and, while <see cref="IsIndeterminate" /> is false, the
+    /// indicator with <see cref="IndicatorBrush" /> from the left edge up to <see cref="Value" />. The moving
+    /// indicator of the indeterminate mode is painted on the render thread and does not pass through here.
+    /// </summary>
     public override void Render(DrawingContext context)
     {
         var bounds = new Rect(Bounds.Size);
@@ -164,8 +237,10 @@ public class SplashProgressBar : Control
     private sealed record IndicatorState(bool IsActive, IImmutableBrush? Brush, double Radius);
 
     /// <summary>
-    /// 运行在渲染线程：按相邻两帧的合成时钟差推进进度块并逐帧重绘，不依赖 UI 线程。单帧推进不超过
-    /// <see cref="MaxFrameAdvance"/>；激活后的第一帧只记录时钟，进度块从轨道左侧外开始进入。
+    /// Runs on the render thread: advances the moving indicator by the composition clock difference between two
+    /// adjacent frames and repaints it on every frame, without the UI thread. A frame advances the indicator by at
+    /// most <see cref="MaxFrameAdvance" />. The first frame after an activation only records the clock. When the
+    /// loop starts, the indicator enters from beyond the left end of the track.
     /// </summary>
     private sealed class IndeterminateIndicatorHandler : CompositionCustomVisualHandler
     {
@@ -188,7 +263,8 @@ public class SplashProgressBar : Control
             Invalidate();
             if (_isActive && !wasActive)
             {
-                // 停用期间的时长不计入推进：重新激活后从停下的位置继续。
+                // The time spent inactive does not advance the indicator: after a reactivation it continues
+                // from where it stopped.
                 _lastFrameTime = null;
                 RegisterForNextAnimationFrameUpdate();
             }

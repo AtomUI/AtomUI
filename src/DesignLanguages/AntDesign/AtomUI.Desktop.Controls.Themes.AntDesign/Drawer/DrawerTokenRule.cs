@@ -6,7 +6,9 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls.Themes.AntDesign;
 
-/// <summary>The AntDesign view of <see cref="DrawerToken"/>.</summary>
+/// <summary>
+/// The AntDesign view of <see cref="DrawerToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class DrawerTokenRule : IControlTokenRule<AntDesignToken, DrawerToken>
 {

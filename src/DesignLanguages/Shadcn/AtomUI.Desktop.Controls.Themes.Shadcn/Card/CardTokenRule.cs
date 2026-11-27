@@ -5,7 +5,9 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls.Themes.Shadcn;
 
-/// <summary>The shadcn view of <see cref="CardToken"/>.</summary>
+/// <summary>
+/// The shadcn view of <see cref="CardToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class CardTokenRule : IControlTokenRule<ShadcnToken, CardToken>
 {
@@ -15,6 +17,8 @@ internal sealed class CardTokenRule : IControlTokenRule<ShadcnToken, CardToken>
         var global = target.Global;
         // The --card surface: in dark it is a step lighter than the page.
         global.ColorBgContainer = context.Language.Card;
+        // Ant Design formula kept as is: the registry `card` values are the `--card` surface above and the ring,
+        // shadows and body padding below.
         token.HeaderBg        = Colors.Transparent;
         token.HeaderFontSizeLG = global.FontSizeLG;
         token.HeaderFontSize   = global.FontSize;
@@ -51,7 +55,9 @@ internal sealed class CardTokenRule : IControlTokenRule<ShadcnToken, CardToken>
     }
 
 
-    /// <summary>The same shadow layers with a transparent colour: the resting start shape of the hover transition.</summary>
+    /// <summary>
+    /// The same shadow layers with a transparent color: the resting start shape of the hover transition.
+    /// </summary>
     private static BoxShadows Transparent(BoxShadows shadows)
     {
         if (shadows.Count == 0)

@@ -13,7 +13,9 @@ namespace AtomUI.Generator.Tests.ThemeConsumption;
 /// </summary>
 internal static class ThemeConsumptionAnalyzerTestHost
 {
-    /// <summary>Value of the opt-in build property that marks the test compilation as a control package.</summary>
+    /// <summary>
+    /// Value of the opt-in build property that marks the test compilation as a control package.
+    /// </summary>
     public const string DefaultConsumptionAnalysis = "true";
 
     public const string Stubs = """
@@ -55,7 +57,9 @@ internal static class ThemeConsumptionAnalyzerTestHost
         using AtomUI.Theme.Resources;
         """;
 
-    /// <summary>Wraps members in a <c>Control</c>-derived class together with a generated-style <c>ButtonTokenKey</c> enum.</summary>
+    /// <summary>
+    /// Wraps members in a <c>Control</c>-derived class together with a generated-style <c>ButtonTokenKey</c> enum.
+    /// </summary>
     public static string ControlWith(string members, string extraTypes = "")
     {
         return $$"""

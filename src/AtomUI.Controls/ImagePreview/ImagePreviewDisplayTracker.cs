@@ -5,13 +5,18 @@ using Avalonia.Media;
 namespace AtomUI.Desktop.Controls;
 
 /// <summary>
-/// 预览窗口显示状态机：Immediate 在目标尚无图时立即进入加载占位；WaitForLoaded 以
-/// "最近持有可用 FullImage 的 entry"作为保留帧回退，直到目标加载完成。
-/// ImagePreviewerDialog 与 ImagePreviewerOverlayHost 共用。
-/// 资源约束：WaitForLoaded 任一时刻至多额外持有 1 个保留帧 entry；
-/// 当前项与保留帧的订阅分别只经
-/// SetCurrentItem 与 SetRetained 变更，严格配对；热路径 Recompute 零分配。
+/// Display state machine of the preview window. In the <see cref="ImageSwitchMode.Immediate" /> mode the
+/// target shows the loading placeholder as soon as it has no image. In the
+/// <see cref="ImageSwitchMode.WaitForLoaded" /> mode the entry that last held a usable full image stays as the
+/// retained frame until the target has loaded. <c>ImagePreviewerDialog</c> and <c>ImagePreviewerOverlayHost</c>
+/// share it.
 /// </summary>
+/// <remarks>
+/// <see cref="ImageSwitchMode.WaitForLoaded" /> holds at most one retained frame entry besides the current
+/// entry. The subscriptions of the current entry and of the retained frame change only through
+/// <see cref="SetCurrentItem" /> and <see cref="SetRetained" />, each subscription paired with its
+/// unsubscription. <see cref="Recompute" />, the hot path, does not allocate.
+/// </remarks>
 internal sealed class ImagePreviewDisplayTracker : IDisposable
 {
     private static long s_nextTrackerId;
@@ -48,15 +53,16 @@ internal sealed class ImagePreviewDisplayTracker : IDisposable
     {
         if (!ReferenceEquals(_currentItem, item))
         {
-            // 订阅不变量：entry 被订阅 ⇔ 它是 current 或 retained。
-            // 旧 current 若同时是 retained（加载完成后的常态），
-            // 退订会切断保留帧通知链，必须保留其订阅。
+            // Subscription invariant: an entry is subscribed while it is the current or the retained one.
+            // The previous current entry is often also the retained frame (the usual state after a load completed).
+            // Unsubscribing it would cut the retained frame off from its notifications, so its subscription stays.
             var previous = _currentItem;
             _currentItem = item;
             if (_currentItem is not null)
             {
-                // 会话内单调序号只用于比较当前 tracker 的展示新旧；owner id
-                // 隔离已经关闭的宿主会话，不持有 entry 或延长其生命周期。
+                // The revision only orders display targets by age within this tracker. The owner id keeps a session of
+                // the host that is already closed apart. Both are plain values: they do not hold the entry or extend
+                // its lifetime.
                 _currentItem.DisplayTargetOwnerId = _trackerId;
                 _currentItem.DisplayTargetRevision = ++_nextTargetRevision;
             }
@@ -94,8 +100,9 @@ internal sealed class ImagePreviewDisplayTracker : IDisposable
         if (_retainedItem is not null &&
             (_currentItem is null || _retainedItem.FullImage is null))
         {
-            // 无目标项（集合清空/关闭）或保留帧源已卸载/释放/提交失败时丢弃
-            //（经 SetRetained 以同步退订）
+            // Drop the retained frame when there is no target entry (collection cleared, preview closed), or when the
+            // retained entry has unloaded, been disposed or failed to commit. Going through SetRetained unsubscribes
+            // it synchronously.
             SetRetained(null);
         }
 
@@ -112,7 +119,8 @@ internal sealed class ImagePreviewDisplayTracker : IDisposable
         }
         else
         {
-            // Immediate 不持有旧图：目标从切换瞬间的 Idle 开始即进入加载占位。
+            // Immediate keeps no old image: from the Idle state at the moment of the switch, the target goes
+            // straight to the loading placeholder.
             SetRetained(null);
         }
         if (needsFallback)
@@ -120,8 +128,9 @@ internal sealed class ImagePreviewDisplayTracker : IDisposable
             currentImage = _retainedItem?.FullImage;
             if (_retainedSeedAccessor is not null)
             {
-                // 高频切换时，前一个目标可能在离开 current 后才完成。
-                // 只采纳比当前保留帧更新的目标，避免乱序完成使画面倒退。
+                // With rapid switching the previous target may finish loading only after it is no longer the current
+                // entry. Only a target newer than the current retained frame is adopted, so that out-of-order
+                // completions never move the display back to an older image.
                 var seed = _retainedSeedAccessor.Invoke();
                 var retainedRevision = _retainedItem?.DisplayTargetRevision ?? 0;
                 if (seed?.FullImage is not null &&
@@ -147,7 +156,8 @@ internal sealed class ImagePreviewDisplayTracker : IDisposable
             IsCurrentLoading != isLoading ||
             IsCurrentFailed != isFailed)
         {
-            // 三值变更短路：未变化不触发宿主回调，避免冗余 SetCurrentValue/能力重算
+            // Skip the host callback while nothing changed, to avoid redundant SetCurrentValue calls and capability
+            // recalculations.
             EffectiveImage    = currentImage;
             EffectiveImageSize = imageSize;
             IsCurrentLoading = isLoading;
@@ -156,8 +166,9 @@ internal sealed class ImagePreviewDisplayTracker : IDisposable
         }
     }
 
-    // 保留帧引用的唯一变更通道：替换时对新旧源（与当前项不同的那个）成对退订/订阅。
-    // 禁止在 Recompute 中直接赋值 _retainedItem，避免订阅失去配对。
+    // The only way to change the retained frame reference. On replacement the old and the new entry are
+    // unsubscribed and subscribed as a pair, each one only where it is not also the current entry.
+    // Never assign _retainedItem directly in Recompute, as that would break the pairing of the subscriptions.
     private void SetRetained(ImagePreviewEntry? entry)
     {
         if (ReferenceEquals(_retainedItem, entry))

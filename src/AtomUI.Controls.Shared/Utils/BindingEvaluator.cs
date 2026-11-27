@@ -4,6 +4,18 @@ using Avalonia.Data;
 
 namespace AtomUI.Controls.Utils;
 
+/// <summary>
+/// Resolves a binding for a data item without being attached to the visual tree and returns the value; ComboBox
+/// and ListView in AtomUI.Desktop.Controls use it to resolve the display text or the selected value of an item.
+/// </summary>
+/// <typeparam name="T">
+/// Type of the value that the binding produces.
+/// </typeparam>
+/// <remarks>
+/// <see cref="UpdateBinding" /> binds <see cref="Value" /> to the given binding and reuses the existing expression
+/// while the same binding instance is passed. <see cref="Evaluate" /> moves the evaluator to the given data item
+/// and returns the value that the binding produced for it. Disposing the evaluator releases the binding expression.
+/// </remarks>
 internal sealed class BindingEvaluator<T> : StyledElement, IDisposable
 {
     private BindingExpressionBase? _expression;
@@ -17,7 +29,8 @@ internal sealed class BindingEvaluator<T> : StyledElement, IDisposable
         AvaloniaProperty.Register<BindingEvaluator<T>, T>("Value");
 
     /// <summary>
-    /// Gets or sets the data item value.
+    /// Target of the binding. Holds the value that it produces for the data item last passed to
+    /// <see cref="Evaluate" />.
     /// </summary>
     public T Value
     {

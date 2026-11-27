@@ -3,7 +3,9 @@ using AtomUI.Theme.Languages;
 
 namespace AtomUI.Desktop.Controls.Themes.AntDesign;
 
-/// <summary>The AntDesign view of <see cref="StepsProgressBarToken"/>.</summary>
+/// <summary>
+/// The AntDesign view of <see cref="StepsProgressBarToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class StepsProgressBarTokenRule : IControlTokenRule<AntDesignToken, StepsProgressBarToken>
 {

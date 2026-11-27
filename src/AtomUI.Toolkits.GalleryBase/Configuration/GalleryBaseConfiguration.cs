@@ -6,24 +6,67 @@ using Avalonia;
 
 namespace AtomUI.Toolkits.GalleryBase.Configuration;
 
+/// <summary>
+/// The validated configuration of a Gallery application, built from <see cref="GalleryBaseOptions" /> and read
+/// by the Gallery controls at run time.
+/// </summary>
+/// <remarks>
+/// Building it throws a <see cref="GalleryConfigurationException" /> when an option value is invalid or the
+/// default route is not one of the built navigation nodes. It is a snapshot: navigation nodes and routes
+/// added to the options afterwards are not part of it.
+/// </remarks>
 public sealed class GalleryBaseConfiguration
 {
+    /// <summary>
+    /// The branding of the shell: the brand block in the sidebar header and the links and version tag in the
+    /// sidebar footer.
+    /// </summary>
     public GalleryBrandingConfiguration Branding { get; }
 
+    /// <summary>
+    /// The navigation tree of the sidebar, built by the navigation builder of the options. Every page node in
+    /// it, at any depth, has a route in <see cref="Routes" />, or building the configuration fails.
+    /// </summary>
     public IReadOnlyList<GalleryNavigationNode> NavigationNodes { get; }
 
+    /// <summary>
+    /// The keys of the navigation groups that are open at startup. Each key names a group node of
+    /// <see cref="NavigationNodes" /> at any depth.
+    /// </summary>
     public IReadOnlyList<EntityKey> DefaultOpenKeys { get; }
 
+    /// <summary>
+    /// The route that the navigation view model navigates to when its activator signals activation. It names a
+    /// page node of <see cref="NavigationNodes" /> that has a route in <see cref="Routes" />.
+    /// </summary>
     public EntityKey DefaultRoute { get; }
 
+    /// <summary>
+    /// The routes that the Gallery can navigate to, as a read-only snapshot of the route registry in the options.
+    /// Routes added to the registry after the configuration was built are not part of it.
+    /// </summary>
     public GalleryRouteRegistry Routes { get; }
 
+    /// <summary>
+    /// The shell layout: the width of the sidebar, the spacing of its collapsed header, the desktop window sizes,
+    /// the menus and the sidebar footer.
+    /// </summary>
     public GalleryShellConfiguration Shell { get; }
 
+    /// <summary>
+    /// The settings that apply to only one host platform: the browser shell or the desktop host.
+    /// </summary>
     public GalleryPlatformConfiguration Platform { get; }
 
+    /// <summary>
+    /// The settings of the source code drawer, which shows the code of a showcase item over the whole page.
+    /// <see cref="GallerySourceCodeDisplayConfiguration.CanShowSourceCode" /> tells whether the drawer can open.
+    /// </summary>
     public GallerySourceCodeDisplayConfiguration SourceCodeDisplay { get; }
 
+    /// <summary>
+    /// The settings of the zoom overlay, which shows a showcase item enlarged over the whole page.
+    /// </summary>
     public GalleryShowCaseZoomConfiguration ShowCaseZoom { get; }
 
     private GalleryBaseConfiguration(GalleryBrandingConfiguration branding,
@@ -205,14 +248,36 @@ public sealed class GalleryBaseConfiguration
     }
 }
 
+/// <summary>
+/// The branding of the shell: the values of the brand block in the sidebar header and of the links and
+/// version tag in the sidebar footer.
+/// </summary>
 public sealed class GalleryBrandingConfiguration
 {
+    /// <summary>
+    /// The name of the Gallery application, shown as the text of the brand block in the sidebar header when
+    /// <see cref="Logo" /> is <see langword="null" />. It is never empty or whitespace.
+    /// </summary>
     public string AppName { get; }
 
+    /// <summary>
+    /// The logo of the brand block in the sidebar header. A <c>Control</c> is shown as it is. A string is loaded
+    /// as an SVG from that resource path and shown 190 by 45 device-independent units in size. Any other object
+    /// becomes the content of a <c>ContentControl</c>. When it is <see langword="null" />, the brand block shows
+    /// <see cref="AppName" /> as text instead.
+    /// </summary>
     public object? Logo { get; }
 
+    /// <summary>
+    /// The version shown as a tag in the sidebar footer. A <see langword="null" />, empty or whitespace value shows
+    /// no tag.
+    /// </summary>
     public string? VersionText { get; }
 
+    /// <summary>
+    /// The links of the sidebar footer, in display order. Each is shown as a hyperlink button without text that
+    /// opens its URI.
+    /// </summary>
     public IReadOnlyList<GalleryLink> Links { get; }
 
     private GalleryBrandingConfiguration(string appName,
@@ -236,22 +301,59 @@ public sealed class GalleryBrandingConfiguration
     }
 }
 
+/// <summary>
+/// The shell layout of a Gallery application: the width of the sidebar, the spacing of its collapsed header,
+/// the desktop window sizes, the menus and the sidebar footer.
+/// </summary>
 public sealed class GalleryShellConfiguration
 {
+    /// <summary>
+    /// The width of the sidebar when it is expanded, in device-independent units. It is greater than 0.
+    /// </summary>
     public double SidebarWidth { get; }
 
+    /// <summary>
+    /// A spacing for the header of the collapsed sidebar, in device-independent units. When it has a value, the
+    /// shell sets it as its own <c>CollapsedSidebarHeaderSpacing</c>; when it is <see langword="null" />, that
+    /// value is left at its default.
+    /// </summary>
     public double? CollapsedSidebarHeaderSpacing { get; }
 
+    /// <summary>
+    /// The size at which the desktop window is expected to open, in device-independent units. It is at least as
+    /// large as <see cref="MinDesktopWindowSize" /> in both dimensions. The Gallery base library does not act on
+    /// this value; it only validates it.
+    /// </summary>
     public Size InitialDesktopWindowSize { get; }
 
+    /// <summary>
+    /// The smallest size, in device-independent units, at which the desktop window is expected to be resizable.
+    /// It does not exceed <see cref="InitialDesktopWindowSize" /> in either dimension. The Gallery base library
+    /// does not act on this value; it only validates it.
+    /// </summary>
     public Size MinDesktopWindowSize { get; }
 
+    /// <summary>
+    /// Whether the Gallery application shows its theme menu. The Gallery base library does not act on this value.
+    /// </summary>
     public bool IsThemeMenuEnabled { get; }
 
+    /// <summary>
+    /// Whether the Gallery application shows its language menu. The Gallery base library does not act on this
+    /// value.
+    /// </summary>
     public bool IsLanguageMenuEnabled { get; }
 
+    /// <summary>
+    /// Whether the Gallery application shows its menu of window options. The Gallery base library does not act on
+    /// this value.
+    /// </summary>
     public bool IsWindowOptionsMenuEnabled { get; }
 
+    /// <summary>
+    /// Whether the shell creates the sidebar footer when it has nothing to show, that is no links and no version
+    /// text. When it is <see langword="false" />, the shell creates no footer in that case.
+    /// </summary>
     public bool IsFooterVisibleWhenEmpty { get; }
 
     private GalleryShellConfiguration(double sidebarWidth,
@@ -287,14 +389,34 @@ public sealed class GalleryShellConfiguration
     }
 }
 
+/// <summary>
+/// The settings that apply to only one host platform: the browser shell or the desktop host.
+/// </summary>
 public sealed class GalleryPlatformConfiguration
 {
+    /// <summary>
+    /// Whether the browser shell turns on the overlay layer, the popup overlay layer and the light-dismiss overlay
+    /// layer of the visual layer manager that wraps the shell, and creates those layers up front.
+    /// </summary>
     public bool ConfigureBrowserOverlayLayers { get; }
 
+    /// <summary>
+    /// Whether the media breakpoint follows the width of the browser shell view, so that the sidebar collapses on
+    /// narrow pages. When it is <see langword="false" />, the breakpoint stays <c>MediaBreakPoint.ExtraLarge</c> at
+    /// every width.
+    /// </summary>
     public bool EnableBrowserMediaBreakpoints { get; }
 
+    /// <summary>
+    /// Whether a desktop host writes a crash log for the Gallery application. The Gallery base library does not
+    /// act on this value.
+    /// </summary>
     public bool EnableDesktopCrashLog { get; }
 
+    /// <summary>
+    /// The name of the directory that holds the desktop crash log. It is a single directory name: not empty and
+    /// without a path separator. The Gallery base library does not act on this value; it only validates it.
+    /// </summary>
     public string CrashLogDirectoryName { get; }
 
     private GalleryPlatformConfiguration(bool configureBrowserOverlayLayers,
@@ -318,12 +440,27 @@ public sealed class GalleryPlatformConfiguration
     }
 }
 
+/// <summary>
+/// The settings of the source code drawer, which shows the code of a showcase item over the whole page.
+/// </summary>
 public sealed class GallerySourceCodeDisplayConfiguration
 {
+    /// <summary>
+    /// Whether showcase items offer their source code. The source action of a showcase item is visible only when
+    /// this is <see langword="true" /> and <see cref="SnippetProvider" /> is assigned.
+    /// </summary>
     public bool IsEnabled { get; }
 
+    /// <summary>
+    /// The <see cref="IShowCaseCodeSnippetProvider" /> that supplies the code snippets of showcase items. When it
+    /// is <see langword="null" />, no code is shown even if <see cref="IsEnabled" /> is <see langword="true" />.
+    /// </summary>
     public IShowCaseCodeSnippetProvider? SnippetProvider { get; }
 
+    /// <summary>
+    /// Whether the source code drawer can be used: <see cref="IsEnabled" /> is <see langword="true" /> and
+    /// <see cref="SnippetProvider" /> is assigned. The source action of a showcase item is visible only then.
+    /// </summary>
     public bool CanShowSourceCode => IsEnabled && SnippetProvider is not null;
 
     private GallerySourceCodeDisplayConfiguration(bool isEnabled,
@@ -339,8 +476,15 @@ public sealed class GallerySourceCodeDisplayConfiguration
     }
 }
 
+/// <summary>
+/// The settings of the zoom overlay, which shows a showcase item enlarged over the whole page.
+/// </summary>
 public sealed class GalleryShowCaseZoomConfiguration
 {
+    /// <summary>
+    /// Whether showcase items can be enlarged in the zoom overlay. When it is <see langword="false" />, the zoom
+    /// action is hidden on every item.
+    /// </summary>
     public bool IsEnabled { get; }
 
     private GalleryShowCaseZoomConfiguration(bool isEnabled)

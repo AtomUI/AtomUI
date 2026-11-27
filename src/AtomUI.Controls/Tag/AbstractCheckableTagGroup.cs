@@ -14,6 +14,17 @@ using Avalonia.VisualTree;
 
 namespace AtomUI.Controls.Commons;
 
+/// <summary>
+/// Base class for a group of checkable tags. It builds one tag for every entry of <see cref="Options" /> in the
+/// <c>PART_CheckableTagItems</c> template part and keeps the checked values in <see cref="CheckedItem" /> or in
+/// <see cref="CheckedItems" />, depending on <see cref="IsMultiple" />.
+/// </summary>
+/// <remarks>
+/// The template must provide the <c>PART_CheckableTagItems</c> part, an items control derived from
+/// <c>AbstractCheckableTagItemsControl</c>; without it no tag is shown. As <c>IFormItemAware</c>, the group
+/// reports <see cref="CheckedItems" /> in multiple mode and <see cref="CheckedItem" /> otherwise as its form
+/// value, and clearing the form value sets that property to <see langword="null" />.
+/// </remarks>
 [TemplatePart("PART_CheckableTagItems", typeof(SelectingItemsControl))]
 public abstract class AbstractCheckableTagGroup : TemplatedControl,
                                                   IMotionAwareControl,
@@ -21,18 +32,30 @@ public abstract class AbstractCheckableTagGroup : TemplatedControl,
 {
     #region 公共属性定义
 
+    /// <summary>
+    /// Identifies the <see cref="Options" /> property.
+    /// </summary>
     public static readonly StyledProperty<IEnumerable?> OptionsProperty =
         AvaloniaProperty.Register<AbstractCheckableTagGroup, IEnumerable?>(nameof(Options));
 
+    /// <summary>
+    /// Identifies the <see cref="IsMultiple" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsMultipleProperty =
         AvaloniaProperty.Register<AbstractCheckableTagGroup, bool>(nameof(IsMultiple));
 
+    /// <summary>
+    /// Identifies the <see cref="CheckedItem" /> property.
+    /// </summary>
     public static readonly StyledProperty<object?> CheckedItemProperty =
         AvaloniaProperty.Register<AbstractCheckableTagGroup, object?>(
             nameof(CheckedItem),
             defaultBindingMode: BindingMode.TwoWay,
             enableDataValidation: true);
 
+    /// <summary>
+    /// Identifies the <see cref="CheckedItems" /> property.
+    /// </summary>
     public static readonly DirectProperty<AbstractCheckableTagGroup, IList?> CheckedItemsProperty =
         AvaloniaProperty.RegisterDirect<AbstractCheckableTagGroup, IList?>(
             nameof(CheckedItems),
@@ -41,39 +64,95 @@ public abstract class AbstractCheckableTagGroup : TemplatedControl,
             defaultBindingMode: BindingMode.TwoWay,
             enableDataValidation: true);
 
+    /// <summary>
+    /// Identifies the <see cref="DefaultCheckedItem" /> property.
+    /// </summary>
     public static readonly StyledProperty<object?> DefaultCheckedItemProperty =
         AvaloniaProperty.Register<AbstractCheckableTagGroup, object?>(nameof(DefaultCheckedItem));
 
+    /// <summary>
+    /// Identifies the <see cref="DefaultCheckedItems" /> property.
+    /// </summary>
     public static readonly StyledProperty<IEnumerable?> DefaultCheckedItemsProperty =
         AvaloniaProperty.Register<AbstractCheckableTagGroup, IEnumerable?>(nameof(DefaultCheckedItems));
 
+    /// <summary>
+    /// Identifies the <see cref="ItemTemplate" /> property.
+    /// </summary>
     public static readonly StyledProperty<IDataTemplate?> ItemTemplateProperty =
         ItemsControl.ItemTemplateProperty.AddOwner<AbstractCheckableTagGroup>();
 
+    /// <summary>
+    /// Identifies the <see cref="ItemSpacing" /> property.
+    /// </summary>
     public static readonly StyledProperty<double> ItemSpacingProperty =
         AvaloniaProperty.Register<AbstractCheckableTagGroup, double>(nameof(ItemSpacing));
 
+    /// <summary>
+    /// Identifies the <see cref="LineSpacing" /> property.
+    /// </summary>
     public static readonly StyledProperty<double> LineSpacingProperty =
         AvaloniaProperty.Register<AbstractCheckableTagGroup, double>(nameof(LineSpacing));
 
+    /// <summary>
+    /// Identifies the <see cref="Orientation" /> property.
+    /// </summary>
     public static readonly StyledProperty<Orientation> OrientationProperty =
         StackPanel.OrientationProperty.AddOwner<AbstractCheckableTagGroup>();
 
+    /// <summary>
+    /// Identifies the <see cref="IsMotionEnabled" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<AbstractCheckableTagGroup>();
 
+    /// <summary>
+    /// The entries shown as tags, set on the group. One tag is created for each entry. <see langword="null" />
+    /// leaves the group without tags.
+    /// </summary>
+    /// <exception cref="ArgumentException">
+    /// Thrown while the tags are rebuilt when an entry or its value is <see langword="null" />, or when a value occurs
+    /// more than once.
+    /// </exception>
+    /// <remarks>
+    /// An entry that implements <c>ICheckableTagOption</c> is identified by its <c>Value</c> and displays its
+    /// <c>Content</c>; any other entry is used as both. Values are compared with <c>Equals</c>. The tags are rebuilt
+    /// when the group is initialized or attached, when this property changes, and when a collection that implements
+    /// <c>INotifyCollectionChanged</c> raises a change while the group is attached.
+    /// </remarks>
     public IEnumerable? Options
     {
         get => GetValue(OptionsProperty);
         set => SetValue(OptionsProperty, value);
     }
 
+    /// <summary>
+    /// Selects whether more than one tag can be checked. When <see langword="true" />, any number of tags can be
+    /// checked and their values are kept in <see cref="CheckedItems" />; when <see langword="false" />, the default,
+    /// one tag can be checked and its value is kept in <see cref="CheckedItem" />.
+    /// </summary>
+    /// <remarks>
+    /// A tag click updates only the property of the active mode. After the selection is initialized, a change of the
+    /// mode converts the selection: to multiple mode the checked item becomes the only checked value; to single mode
+    /// only the first checked value is kept. <see cref="CheckedChanged" /> is raised once for the difference.
+    /// </remarks>
     public bool IsMultiple
     {
         get => GetValue(IsMultipleProperty);
         set => SetValue(IsMultipleProperty, value);
     }
 
+    /// <summary>
+    /// The value of the checked tag while <see cref="IsMultiple" /> is <see langword="false" />.
+    /// <see langword="null" />, the default, means that no tag is checked.
+    /// </summary>
+    /// <remarks>
+    /// A tag whose value equals this value is shown as checked; a value that matches no tag is kept, but shown and
+    /// reported as <see langword="null" />. Clicking a tag sets its value and clicking the checked tag again sets
+    /// <see langword="null" />; clearing the value leaves no tag checked. While <see cref="IsMultiple" /> is
+    /// <see langword="true" /> the tags ignore this property and a tag click does not change it. Bindings default to
+    /// <see cref="BindingMode.TwoWay" />, so a click also updates the bound source.
+    /// </remarks>
     public object? CheckedItem
     {
         get => GetValue(CheckedItemProperty);
@@ -82,6 +161,19 @@ public abstract class AbstractCheckableTagGroup : TemplatedControl,
 
     private IList? _checkedItems;
 
+    /// <summary>
+    /// The values of the checked tags while <see cref="IsMultiple" /> is <see langword="true" />.
+    /// <see langword="null" />, the default, or an empty list means that no tag is checked.
+    /// </summary>
+    /// <remarks>
+    /// A tag whose value equals a value in the list is shown as checked; other entries are kept but not shown or
+    /// reported. A tag click assigns a new list that holds the checked values with the clicked value added or
+    /// removed, so the list object is replaced rather than changed. A list that implements
+    /// <c>INotifyCollectionChanged</c> updates the tags and raises <see cref="CheckedChanged" /> on every change
+    /// while the group is attached to a visual tree. While <see cref="IsMultiple" /> is <see langword="false" /> the
+    /// tags ignore this property and a tag click does not change it. Bindings default to
+    /// <see cref="BindingMode.TwoWay" />, so a click also updates the bound source.
+    /// </remarks>
     public IList? CheckedItems
     {
         get => _checkedItems;
@@ -95,18 +187,46 @@ public abstract class AbstractCheckableTagGroup : TemplatedControl,
         }
     }
 
+    /// <summary>
+    /// The value assigned to <see cref="CheckedItem" /> when the selection is initialized in single mode, that is
+    /// while <see cref="IsMultiple" /> is <see langword="false" /> and <see cref="CheckedItem" /> has not been set.
+    /// </summary>
+    /// <remarks>
+    /// It is applied once, as soon as the group is initialized and has at least one tag, without replacing a
+    /// binding on <see cref="CheckedItem" />. It is ignored in multiple mode, after <see cref="CheckedItem" /> has
+    /// been set, and after the selection has been initialized.
+    /// </remarks>
     public object? DefaultCheckedItem
     {
         get => GetValue(DefaultCheckedItemProperty);
         set => SetValue(DefaultCheckedItemProperty, value);
     }
 
+    /// <summary>
+    /// The values assigned to <see cref="CheckedItems" /> when the selection is initialized in multiple mode, that
+    /// is while <see cref="IsMultiple" /> is <see langword="true" /> and <see cref="CheckedItems" /> has not been
+    /// assigned.
+    /// </summary>
+    /// <remarks>
+    /// A copy without <see langword="null" /> entries and duplicates is assigned once the group is initialized and
+    /// has at least one tag; a binding on <see cref="CheckedItems" /> stays in place. Changing this property after
+    /// that has no effect. It is ignored in single mode.
+    /// </remarks>
     public IEnumerable? DefaultCheckedItems
     {
         get => GetValue(DefaultCheckedItemsProperty);
         set => SetValue(DefaultCheckedItemsProperty, value);
     }
 
+    /// <summary>
+    /// The template that presents each tag. It is set on the group and handed to the items control that hosts the
+    /// tags.
+    /// </summary>
+    /// <remarks>
+    /// When a template is set it is applied to the original entry of <see cref="Options" />; when it is
+    /// <see langword="null" />, the tag shows the entry's content without a template. An item template declared
+    /// inline in XAML infers its data type from <see cref="Options" />.
+    /// </remarks>
     [InheritDataTypeFromItems(nameof(Options))]
     public IDataTemplate? ItemTemplate
     {
@@ -114,24 +234,51 @@ public abstract class AbstractCheckableTagGroup : TemplatedControl,
         set => SetValue(ItemTemplateProperty, value);
     }
 
+    /// <summary>
+    /// The gap between two adjacent tags along the layout direction, in device-independent pixels. The theme hands
+    /// the value to the panel that arranges the tags. <see cref="LineSpacing" /> sets the gap between the wrapped
+    /// rows or columns.
+    /// </summary>
+    /// <remarks>
+    /// When the value is not set or is cleared, the theme uses the tag group's <c>SpacingXS</c> token.
+    /// </remarks>
     public double ItemSpacing
     {
         get => GetValue(ItemSpacingProperty);
         set => SetValue(ItemSpacingProperty, value);
     }
 
+    /// <summary>
+    /// The gap between the rows the tags wrap onto, or between the columns when <see cref="Orientation" /> is
+    /// vertical, in device-independent pixels. The theme hands the value to the panel that arranges the tags.
+    /// </summary>
+    /// <remarks>
+    /// When the value is not set or is cleared, the theme uses the tag group's <c>SpacingXS</c> token.
+    /// </remarks>
     public double LineSpacing
     {
         get => GetValue(LineSpacingProperty);
         set => SetValue(LineSpacingProperty, value);
     }
 
+    /// <summary>
+    /// The direction in which the tags are arranged before they wrap. <c>Horizontal</c>, the default, places them
+    /// from left to right and wraps onto a new row; <c>Vertical</c> places them from top to bottom and wraps onto a
+    /// new column. The theme hands the value to the panel that arranges the tags.
+    /// </summary>
     public Orientation Orientation
     {
         get => GetValue(OrientationProperty);
         set => SetValue(OrientationProperty, value);
     }
 
+    /// <summary>
+    /// Enables the color transitions of the tag background and foreground when <see langword="true" />. The value
+    /// is passed on to every tag.
+    /// </summary>
+    /// <remarks>
+    /// When the value is not set or is cleared, the theme uses the tag group's <c>EnableMotion</c> token.
+    /// </remarks>
     public bool IsMotionEnabled
     {
         get => GetValue(IsMotionEnabledProperty);
@@ -142,11 +289,27 @@ public abstract class AbstractCheckableTagGroup : TemplatedControl,
 
     #region 公共事件定义
 
+    /// <summary>
+    /// Identifies the <see cref="CheckedChanged" /> routed event.
+    /// </summary>
     public static readonly RoutedEvent<CheckableTagGroupCheckedChangedEventArgs> CheckedChangedEvent =
         RoutedEvent.Register<AbstractCheckableTagGroup, CheckableTagGroupCheckedChangedEventArgs>(
             nameof(CheckedChanged),
             RoutingStrategies.Bubble);
 
+    /// <summary>
+    /// Raised after the checked values changed and the tags show the new state. The event bubbles up the visual
+    /// tree and cannot be canceled.
+    /// </summary>
+    /// <remarks>
+    /// It is raised when a tag is clicked, when <see cref="CheckedItem" /> or <see cref="CheckedItems" /> changes
+    /// from code or a binding, when the <see cref="CheckedItems" /> collection changes, and when
+    /// <see cref="IsMultiple" /> converts the selection, even if no value was added or removed. It is not raised
+    /// while the selection is initialized from <see cref="DefaultCheckedItem" /> or
+    /// <see cref="DefaultCheckedItems" />, nor when <see cref="Options" /> changes. The event data tells the mode and
+    /// carries the previous and the new checked item in single mode, or the added and the removed values in multiple
+    /// mode. Afterwards <c>IFormItemAware.ValueChanged</c> is raised.
+    /// </remarks>
     public event EventHandler<CheckableTagGroupCheckedChangedEventArgs>? CheckedChanged
     {
         add => AddHandler(CheckedChangedEvent, value);
@@ -182,6 +345,10 @@ public abstract class AbstractCheckableTagGroup : TemplatedControl,
             (group, _) => group.ConfigureItemsControl());
     }
 
+    /// <summary>
+    /// Builds the tags from <see cref="Options" /> and initializes the selection once the control is initialized.
+    /// An override must call the base method, otherwise the tags are not built.
+    /// </summary>
     protected override void OnInitialized()
     {
         base.OnInitialized();
@@ -190,6 +357,11 @@ public abstract class AbstractCheckableTagGroup : TemplatedControl,
         InitializeSelectionIfNeeded();
     }
 
+    /// <summary>
+    /// Connects the <c>PART_CheckableTagItems</c> part of the applied template: the part receives the tags, the item
+    /// template and the current selection, and the group starts listening for tag clicks. An override must call the
+    /// base method, otherwise no tag is shown.
+    /// </summary>
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         UnsubscribeFromItemsControl();
@@ -205,6 +377,11 @@ public abstract class AbstractCheckableTagGroup : TemplatedControl,
         }
     }
 
+    /// <summary>
+    /// Refreshes the tags and the selection when the group is attached to a visual tree, and from then on observes
+    /// changes of the <see cref="Options" /> and <see cref="CheckedItems" /> collections and the tag clicks. An
+    /// override must call the base method, otherwise changes of those collections are not picked up.
+    /// </summary>
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
@@ -217,6 +394,11 @@ public abstract class AbstractCheckableTagGroup : TemplatedControl,
         SyncSelectionToItemsControl();
     }
 
+    /// <summary>
+    /// Stops observing the <see cref="Options" /> and <see cref="CheckedItems" /> collections and the tag clicks
+    /// when the group is detached from a visual tree. An override must call the base method, otherwise the group
+    /// stays subscribed to the collections after detachment.
+    /// </summary>
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         ReleaseOptionsCollectionChangedSource();
@@ -225,6 +407,10 @@ public abstract class AbstractCheckableTagGroup : TemplatedControl,
         base.OnDetachedFromVisualTree(e);
     }
 
+    /// <summary>
+    /// Updates the tags and raises <see cref="CheckedChanged" /> when <see cref="CheckedItems" /> changes. An
+    /// override must call the base method, otherwise such a change is not picked up.
+    /// </summary>
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);

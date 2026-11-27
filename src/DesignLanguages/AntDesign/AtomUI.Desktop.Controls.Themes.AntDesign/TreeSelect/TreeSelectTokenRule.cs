@@ -4,7 +4,9 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls.Themes.AntDesign;
 
-/// <summary>The AntDesign view of <see cref="TreeSelectToken"/>.</summary>
+/// <summary>
+/// The AntDesign view of <see cref="TreeSelectToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class TreeSelectTokenRule : IControlTokenRule<AntDesignToken, TreeSelectToken>
 {

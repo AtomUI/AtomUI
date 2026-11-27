@@ -5,22 +5,20 @@ namespace AtomUI.Theme.DesignTokens;
 [GlobalDesignToken]
 public partial class DesignToken
 {
-    /// <summary>
-    /// 超链接颜色
-    /// 控制超链接的颜色。
-    /// 在 Seed 文件中定义
-    /// </summary>
+    // The base link color ColorLink itself is not part of this map; only its hover and active states are.
 
     /// <summary>
-    /// 超链接悬浮颜色
-    /// 控制超链接悬浮时的颜色。
+    /// Color of a hyperlink while it is hovered.
+    /// The Ant Design language derives it from the link palette, which it generates for <c>ColorLink</c>, or for
+    /// <see cref="ColorInfo" /> when <c>ColorLink</c> is null.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Map)]
     public partial Color ColorLinkHover { get; set; }
 
     /// <summary>
-    /// 超链接激活颜色
-    /// 控制超链接被点击时的颜色。
+    /// Color of a hyperlink in the active state, that is while it is being pressed.
+    /// The Ant Design language derives it from the link palette, which it generates for <c>ColorLink</c>, or for
+    /// <see cref="ColorInfo" /> when <c>ColorLink</c> is null.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Map)]
     public partial Color ColorLinkActive { get; set; }

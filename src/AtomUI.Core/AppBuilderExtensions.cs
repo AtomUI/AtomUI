@@ -5,15 +5,26 @@ using Avalonia.Media;
 namespace AtomUI;
 
 /// <summary>
-/// AtomUI 对 <see cref="AppBuilder"/> 的扩展。
+/// AtomUI's extensions to <see cref="AppBuilder" />.
 /// </summary>
 public static class AppBuilderExtensions
 {
     /// <summary>
-    /// 启用 AtomUI。此处只登记配置；平台服务就绪后在 UI 线程执行配置回调，随后在后台准备全局 Token，
-    /// 与 Application 创建并行。回调执行时 Application 尚未创建、AtomUI 内核尚未提交；
-    /// 内核在生成的 RegisterServices 重写（ApplicationStartup.Attach）中提交。
+    /// Enables AtomUI for the application that <paramref name="appBuilder" /> builds.
     /// </summary>
+    /// <exception cref="InvalidOperationException">
+    /// This method was already called on <paramref name="appBuilder" />.
+    /// </exception>
+    /// <remarks>
+    /// This call only registers the configuration. The <paramref name="configure" /> callback runs on the UI thread
+    /// once the platform services are ready; the designer, Browser and WASI skip that early run and configure the
+    /// builder when the kernel attaches instead. After the early run, the global tokens are prepared on a
+    /// background thread in parallel with the creation of the <see cref="Application" />, when the configured
+    /// theme sources allow it. When the callback runs, no <see cref="Application" /> exists yet and the AtomUI
+    /// kernel is not committed. The kernel is committed by <see cref="ApplicationStartup.Attach" />, which the
+    /// source generator calls from the generated <c>RegisterServices</c> override of a partial application.
+    /// Startup throws an <see cref="InvalidOperationException" /> when the application never attaches.
+    /// </remarks>
     public static AppBuilder UseAtomUI(this AppBuilder appBuilder, Action<IAtomUIBuilder> configure)
     {
         ArgumentNullException.ThrowIfNull(appBuilder);
@@ -25,37 +36,52 @@ public static class AppBuilderExtensions
     }
 
     /// <summary>
-    /// 应用 AtomUI 推荐的平台默认配置。主要用途是规避当前 Avalonia 上游尚未修复、
-    /// 对 AtomUI 体验影响较大的平台问题，让框架使用者默认就拿到最佳表现，无需自行配置。
+    /// Applies the platform defaults that AtomUI recommends. Its main purpose is to work around platform issues
+    /// that Avalonia has not fixed upstream yet and that visibly degrade the AtomUI experience, so that an
+    /// application gets the best result without configuring the options itself.
     /// </summary>
     /// <remarks>
-    /// 目前包含：
+    /// It currently sets:
     /// <list type="bullet">
     ///   <item>
     ///     <description>
-    ///     <b>Windows</b>：Windows 10 和 Windows 11 的合成回退顺序为 RedirectionSurface、WinUIComposition、
-    ///     DirectComposition、LowLatencyDxgiSwapChain；CSD 窗口保留主题背景配置。RedirectionSurface 下 Avalonia 的
-    ///     渲染循环靠线程睡眠计时，不跟随显示器刷新；实际使用该计时器时，AtomUI 把它换成按 DWM 合成节拍（DwmFlush）
-    ///     唤醒的计时器，使动画节拍锁定刷新率。无法替换时退回把进程计时精度提高到 1 ms（timeBeginPeriod）。
-    ///     调用者覆盖为其他首选合成模式时两者都不做。
+    ///     <b>Windows</b>: <see cref="Win32PlatformOptions.RenderingMode" /> falls back from
+    ///     <see cref="Win32RenderingMode.AngleEgl" /> to <see cref="Win32RenderingMode.Software" />. On Windows
+    ///     10 and Windows 11 the composition fallback order is RedirectionSurface, WinUIComposition,
+    ///     DirectComposition and LowLatencyDxgiSwapChain; CSD windows keep their theme background configuration.
+    ///     With RedirectionSurface, Avalonia's render loop is timed by a thread sleep and does not follow the
+    ///     monitor refresh rate. When that timer is the one in use, AtomUI replaces it with a timer woken by the
+    ///     DWM composition cadence (DwmFlush), which locks animation ticks to the refresh rate. When the timer
+    ///     cannot be replaced, it falls back to raising the process timer resolution to 1 ms (timeBeginPeriod).
+    ///     Neither is done when the caller overrides the options with another first composition mode.
     ///     </description>
     ///   </item>
     ///   <item>
     ///     <description>
-    ///     <b>macOS</b>：<see cref="AvaloniaNativePlatformOptions.RenderingMode"/> 固定
-    ///     <see cref="AvaloniaNativeRenderingMode.Metal"/> 优先。Metal 由渲染线程直接呈现，UI 线程忙于启动提交时
-    ///     合成层动画（如启动 Splash 的进度）仍能上屏；OpenGL 与 Software 经 IOSurface 呈现，需要主线程设置图层内容。
-    ///     早先 Metal 在 live resize 时窗体内容抖动的问题已由 Avalonia 12.1.0 修复（#21588，缩放帧同步呈现）。
+    ///     <b>macOS</b>: <see cref="AvaloniaNativePlatformOptions.RenderingMode" /> puts
+    ///     <see cref="AvaloniaNativeRenderingMode.Metal" /> first. Metal is presented directly by the render
+    ///     thread, so compositor animations (such as the startup Splash progress) still reach the screen while
+    ///     the UI thread is busy with the startup commit; OpenGL and Software are presented through an
+    ///     IOSurface and need the main thread to set the layer content. Avalonia 12.1.0 fixed the earlier
+    ///     Metal jitter of the window content during live resize by presenting scaled frames synchronously.
+    ///     On macOS 14 and later, a single-screen Metal session gets a render clock that follows the display;
+    ///     the Avalonia clock is restored when the screen configuration changes or the application exits.
     ///     </description>
     ///   </item>
     ///   <item>
     ///     <description>
-    ///     <b>Linux</b>：<see cref="X11PlatformOptions.EnableDrawnDecorations"/> = <c>true</c>，
-    ///     AtomUI 自绘窗体装饰 (CSD) 需要此开关支撑。
+    ///     <b>Linux</b>: sets <see cref="X11PlatformOptions.EnableDrawnDecorations" /> to <c>true</c>, which
+    ///     the window decorations that AtomUI draws itself (CSD) require.
+    ///     </description>
+    ///   </item>
+    ///   <item>
+    ///     <description>
+    ///     <b>All platforms</b>: registers Microsoft YaHei as a font fallback, which the font manager tries
+    ///     before anything else when it matches a codepoint.
     ///     </description>
     ///   </item>
     /// </list>
-    /// 调用者在此基础上仍可继续 <c>.With(...)</c> 覆盖或扩展选项。
+    /// Callers can keep chaining <c>.With(...)</c> to override or extend these options.
     /// </remarks>
     /// <example>
     /// <code>
@@ -67,8 +93,9 @@ public static class AppBuilderExtensions
     /// </example>
     public static AppBuilder WithAtomUIDefaultOptions(this AppBuilder appBuilder)
     {
-        // 按目标平台分支设置平台选项。NativeAOT 在 RID 发布时会把 OperatingSystem.IsXxx()
-        // 折叠为常量，非目标平台的分支及其引用的平台选项类型会被整体裁剪。
+        // Platform options are set per target platform. In a RID-specific NativeAOT publish, OperatingSystem.IsXxx()
+        // is folded to a constant, so the branches of the other platforms and the platform option types they reference
+        // are trimmed away as a whole.
         if (OperatingSystem.IsMacOS())
         {
             appBuilder = appBuilder.With(new AvaloniaNativePlatformOptions
@@ -94,8 +121,9 @@ public static class AppBuilderExtensions
                     Win32RenderingMode.AngleEgl,
                     Win32RenderingMode.Software
                 ],
-                // RedirectionSurface 优先：只有 redirection surface 会被 DWM 与窗口几何变化同步合成，
-                // 拖动左/上边缘 live resize 时对向边缘不会错帧（WinUI/DComp/flip swapchain 均有 1 帧以上滞后）。
+                // RedirectionSurface first: only the redirection surface is composited by DWM in sync with window
+                // geometry changes, so the opposite edge shows no stale frame when the left or top edge is dragged in
+                // a live resize (WinUI, DComp and the flip swapchain all lag by at least one frame).
                 CompositionMode =
                 [
                     Win32CompositionMode.RedirectionSurface,
@@ -104,8 +132,11 @@ public static class AppBuilderExtensions
                     Win32CompositionMode.LowLatencyDxgiSwapChain
                 ]
             });
-            // RedirectionSurface 下 Avalonia 的渲染循环靠线程睡眠计时，不跟随显示器刷新；换成按 DWM 合成节拍唤醒的计时器。
-            // 推迟到平台服务就绪后按实际创建的计时器判断：调用者之后改用其他合成模式时不替换。
+            // With RedirectionSurface, Avalonia's render loop is timed by a thread sleep and does not follow the
+            // monitor refresh rate; WindowsRenderPacing.Apply swaps in a timer that is woken by the DWM
+            // composition cadence. It is deferred until the platform services are up and decides by the timer
+            // that was actually created, so nothing is replaced when the caller later selects another
+            // composition mode.
             appBuilder = appBuilder.AfterPlatformServicesSetup(WindowsRenderPacing.Apply);
         }
         if (OperatingSystem.IsLinux())

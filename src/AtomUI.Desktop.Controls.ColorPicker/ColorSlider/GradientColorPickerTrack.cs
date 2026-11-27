@@ -84,7 +84,7 @@ internal class GradientColorPickerTrack : AbstractColorPickerSliderTrack
                 if (stops.Count > Thumbs.Count)
                 {
                     var delta = stops.Count - Thumbs.Count;
-                    // 新增
+                    // Add the missing thumbs.
                     for (var i = 0; i < delta; i++)
                     {
                         var thumb = new GradientColorSliderThumb();
@@ -95,7 +95,7 @@ internal class GradientColorPickerTrack : AbstractColorPickerSliderTrack
                 }
                 else if (stops.Count < Thumbs.Count)
                 {
-                    // 减少
+                    // Remove the surplus thumbs.
                     var delta = Thumbs.Count - stops.Count;
                     var tobeRemoved = new List<GradientColorSliderThumb>(delta);
                     for (var i = 0; i < delta; i++)
@@ -256,7 +256,7 @@ internal class GradientColorPickerTrack : AbstractColorPickerSliderTrack
         position = Math.Max(0.0, Math.Min(1.0, position));
         if (GradientValue == null || GradientValue.GradientStops.Count == 0)
         {
-#pragma warning disable ATOMUIGEN044 // Colour-model data endpoints/default values, independent of theme chrome.
+#pragma warning disable ATOMUIGEN044 // Color-model data endpoints/default values, independent of theme chrome.
             return Colors.Black;
 #pragma warning restore ATOMUIGEN044
         }
@@ -295,7 +295,7 @@ internal class GradientColorPickerTrack : AbstractColorPickerSliderTrack
         double upperPos = colorStops[upperIndex].Offset;
         double relativePosition = (position - lowerPos) / (upperPos - lowerPos);
 
-        // 在两个颜色之间进行插值
+        // Interpolates between the two colors.
         return InterpolateColor(
             colorStops[lowerIndex].Color,
             colorStops[upperIndex].Color,

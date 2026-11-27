@@ -149,7 +149,8 @@ public partial class DataGrid
             return;
         }
         CancelRowReorder();
-        // 失效后槽位编号会变化，按旧槽位记录的导航意图不再指向原目标
+        // After an invalidation the slot numbers change, so a navigation intent recorded against the old
+        // slots no longer points at its original target.
         _pendingRangeNavigation = null;
         if (EditingRow is not null)
         {
@@ -170,7 +171,8 @@ public partial class DataGrid
         {
             return;
         }
-        // 挂起的视口请求属于上一代数据，按新代际的槽位解释会把新结果定位到旧位置
+        // A pending viewport request belongs to the previous generation of data. Interpreting it against the
+        // slots of the new generation would place the new result at the old position.
         _pendingRangeViewport = null;
         var fallback = _rangeCoordinator.AppliedSnapshot;
         var generation = _rangeCoordinator.BeginGeneration(
@@ -269,7 +271,8 @@ public partial class DataGrid
                 }
                 break;
             case DataGridPresentationTransitionKind.RolledBack:
-                // 回滚后继续显示旧快照，滚动请求退回到当前显示位置
+                // After a rollback the old snapshot stays on display, so the scroll request falls back to
+                // the position currently displayed.
                 AbandonPendingRangeScroll();
                 if (transition.Snapshot is { } fallback)
                 {
@@ -294,7 +297,8 @@ public partial class DataGrid
         }
     }
 
-    // 同一查询在快照过期后由协调器重启为新代际并完成提交时，表格改为持有新代际
+    // When the coordinator restarts the same query as a new generation after the snapshot expired and
+    // completes the commit, the grid adopts that new generation.
     private void AdoptRestartedRangeGeneration(DataGridGeneration committedGeneration)
     {
         if (_rangeCoordinator?.ActiveGeneration is { } active &&

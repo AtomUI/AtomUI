@@ -8,29 +8,47 @@ using Avalonia.Controls;
 
 namespace AtomUI.Desktop.Controls.Utils;
 
+/// <summary>
+/// A grid used as the root layout of the row and row group header templates. It provides the IsFrozen attached
+/// property, which marks the direct children that the row group header keeps in place while the grid scrolls
+/// horizontally.
+/// </summary>
 public class DataGridFrozenGrid : Grid
 {
+    /// <summary>
+    /// Identifies the IsFrozen attached property, set in XAML as <c>DataGridFrozenGrid.IsFrozen</c> or with
+    /// <see cref="SetIsFrozen" />. The value is carried by a direct child of the grid, is not inherited and
+    /// defaults to <see langword="false" />; the row group header reads it for the children of its root grid.
+    /// </summary>
     public static readonly StyledProperty<bool> IsFrozenProperty =
         AvaloniaProperty.RegisterAttached<DataGridFrozenGrid, Control, bool>("IsFrozen");
 
     /// <summary>
-    /// Gets a value that indicates whether the grid is frozen.
+    /// Gets whether the element is marked as frozen. The row group header reads the mark for the direct children
+    /// of its root grid: a frozen, visible child stays in place while the grid scrolls horizontally, and the other
+    /// children are clipped where they would overlap the frozen ones.
     /// </summary>
     /// <param name="element">
-    /// The object to get the <see cref="P:AtomUI.Desktop.Controls.Primitives.DataGridFrozenGrid.IsFrozen" /> value from.
+    /// The element to read the value from.
     /// </param>
-    /// <returns>true if the grid is frozen; otherwise, false. The default is true.</returns>
+    /// <returns>
+    /// <see langword="true" /> if the element is marked as frozen; otherwise, <see langword="false" />.
+    /// </returns>
     public static bool GetIsFrozen(Control element)
     {
         return element.GetValue(IsFrozenProperty);
     }
 
     /// <summary>
-    /// Sets a value that indicates whether the grid is frozen.
+    /// Marks or unmarks the element as frozen.
     /// </summary>
-    /// <param name="element">The object to set the <see cref="P:AtomUI.Desktop.Controls.Primitives.DataGridFrozenGrid.IsFrozen" /> value on.</param>
-    /// <param name="value">true if <paramref name="element" /> is frozen; otherwise, false.</param>
-    /// <exception cref="T:System.ArgumentNullException"><paramref name="element" /> is null.</exception>
+    /// <param name="element">
+    /// The element to mark.
+    /// </param>
+    /// <param name="value">
+    /// <see langword="true" /> to keep the element in place while the grid scrolls horizontally; otherwise,
+    /// <see langword="false" />.
+    /// </param>
     public static void SetIsFrozen(Control element, bool value)
     {
         element.SetValue(IsFrozenProperty, value);

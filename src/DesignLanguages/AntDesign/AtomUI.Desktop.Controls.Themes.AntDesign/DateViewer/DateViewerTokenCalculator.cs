@@ -6,9 +6,15 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls.Themes.AntDesign;
 
-/// <summary>The AntDesign values of the shared <see cref="AbstractDateViewerToken"/> layer.</summary>
+/// <summary>
+/// The AntDesign values of the shared <see cref="AbstractDateViewerToken" /> layer.
+/// </summary>
 public static class DateViewerTokenCalculator
 {
+    /// <summary>
+    /// Assigns the Ant Design values of the shared <see cref="AbstractDateViewerToken" /> layer to
+    /// <paramref name="token" />. The Token rules of DateViewer and RangeDateViewer call it.
+    /// </summary>
     public static void Calculate(in TokenEvaluationContext<AntDesignToken> context, DesignToken global, AbstractDateViewerToken token)
     {
         token.PanelBg = global.ColorBgContainer;
@@ -41,9 +47,14 @@ public static class DateViewerTokenCalculator
         token.HeaderHorizontalPadding = new Thickness(global.UniformlyPaddingXS, 0);
         token.DateBodyPadding = new Thickness(bodyHorizontalPadding, global.UniformlyPaddingXS);
         token.HeaderBorderThickness = new Thickness(0, 0, 0, global.LineWidth);
+        // antd dims the week number of the selected row to half alpha.
         token.WeekNumberOpacity = 0.5;
     }
 
+    /// <summary>
+    /// Returns the height of a row of date cells for a cell height of <paramref name="cellHeight" />. The row is
+    /// taller than the cell by three times the global XXS padding.
+    /// </summary>
     public static double CalculateCellRowHeight(AbstractDateViewerToken token, DesignToken global, double cellHeight) =>
         cellHeight + global.UniformlyPaddingXXS * 3;
 }

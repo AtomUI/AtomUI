@@ -5,7 +5,9 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls.Themes.Shadcn;
 
-/// <summary>The shadcn view of <see cref="SliderToken"/>.</summary>
+/// <summary>
+/// The shadcn view of <see cref="SliderToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class SliderTokenRule : IControlTokenRule<ShadcnToken, SliderToken>
 {
@@ -13,7 +15,7 @@ internal sealed class SliderTokenRule : IControlTokenRule<ShadcnToken, SliderTok
     {
         var token  = target.Own;
         var global = target.Global;
-        // Thumb line width is always width-er 1px
+        // The thumb line width is always wider than the global line width: by 1, and by 1.5 on hover.
         var increaseThumbWidth   = 1d;
         var controlSize          = global.ControlHeightLG / 4;
         var controlSizeHover     = global.ControlHeightSM / 2;
@@ -22,6 +24,7 @@ internal sealed class SliderTokenRule : IControlTokenRule<ShadcnToken, SliderTok
 
         token.SliderTrackSize                 = controlSizeHover;
 
+        // Ant Design formula kept as is: no registry value is merged into the slider tokens.
         token.RailSize                        = 4;
         token.MarkSize                        = 8;
         token.ThumbCircleSize                 = controlSize;

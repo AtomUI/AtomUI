@@ -12,6 +12,12 @@ using Avalonia.LogicalTree;
 
 namespace AtomUI.Desktop.Controls;
 
+/// <summary>
+/// Panel in the template of a <see cref="DataGridRow" /> that measures and arranges the cells of the
+/// row, including its filler cell, with column virtualization, clipping against frozen columns and
+/// support for auto-sized columns. It implements <c>IChildIndexProvider</c> with the display index of
+/// the cell's column as child index; the filler cell is not counted as a child.
+/// </summary>
 public sealed class DataGridCellsPresenter : Panel, IChildIndexProvider
 {
     internal DataGrid? OwningGrid => OwningRow?.OwningGrid;
@@ -46,14 +52,18 @@ public sealed class DataGridCellsPresenter : Panel, IChildIndexProvider
     }
     
     /// <summary>
-    /// Arranges the content of the <see cref="T:AtomUI.Desktop.Controls.DataGridCellsPresenter" />.
+    /// Arranges the visible cells of the row on one line: left-frozen columns against the left edge,
+    /// right-frozen columns against the right edge, scrolling columns at the horizontal scroll offset
+    /// and the filler cell after the last column. Scrolling cells that slide under frozen columns are
+    /// clipped. Without an owning grid or rows presenter the base layout is used, and while the grid is
+    /// auto-sizing its columns this method only completes that sizing and then uses the base layout.
     /// </summary>
-    /// <returns>
-    /// The actual size used by the <see cref="T:AtomUI.Desktop.Controls.DataGridCellsPresenter" />.
-    /// </returns>
     /// <param name="finalSize">
     /// The final area within the parent that this element should use to arrange itself and its children.
     /// </param>
+    /// <returns>
+    /// <paramref name="finalSize" />, or the result of the base layout in the cases described above.
+    /// </returns>
     protected override Size ArrangeOverride(Size finalSize)
     {
         if (OwningGrid == null || OwningRowsPresenter == null)
@@ -91,7 +101,7 @@ public sealed class DataGridCellsPresenter : Panel, IChildIndexProvider
         var lastLeftFrozenColumn  = columns.LastVisibleLeftFrozenColumn;
         var firstRightFrozenColumn = columns.FirstVisibleRightFrozenColumn;
         int displayedColumnCount = columns.GetDisplayedColumnCount();
-        // 需要先计算出 frozenRightEdge
+        // Compute the right edge of the frozen area first; clipping the scrolling cells below depends on it.
         for (int displayIndex = 0; displayIndex < displayedColumnCount; displayIndex++)
         {
             DataGridColumn column = columns.GetDisplayedColumnAtDisplayIndex(displayIndex);
@@ -108,7 +118,8 @@ public sealed class DataGridCellsPresenter : Panel, IChildIndexProvider
         }
         
         
-        // left and normal：右冻结列只在下方的右侧循环中排列并计宽一次
+        // Left-frozen and scrolling columns only. Right-frozen columns are arranged and added to the
+        // scrolling left edge exactly once, in the right-hand loop below.
         for (int displayIndex = 0; displayIndex < displayedColumnCount; displayIndex++)
         {
             DataGridColumn column = columns.GetDisplayedColumnAtDisplayIndex(displayIndex);
@@ -170,10 +181,12 @@ public sealed class DataGridCellsPresenter : Panel, IChildIndexProvider
                     if (cell.IsVisible)
                     {
                         cell.Arrange(new Rect(cellLeftEdge, 0, column.LayoutRoundedWidth, finalSize.Height));
-                        // 冻结列不裁剪；列由滚动列改为右冻结时需清掉之前的裁剪
+                        // Frozen columns are not clipped; clear the clip that was set while the column was still a
+                        // scrolling column.
                         cell.ClearClipGeometry();
                     }
-                    // 填充格位于全部列之后（未滚动时右冻结列处于自然位置）
+                    // Right-frozen columns still advance the scrolling left edge: the filler cell is placed after
+                    // every column; without a horizontal offset they sit at their natural position.
                     scrollingLeftEdge                      += column.ActualWidth;
                     column.IsInitialDesiredWidthDetermined =  true;
                 }
@@ -217,6 +230,11 @@ public sealed class DataGridCellsPresenter : Panel, IChildIndexProvider
         }
     }
     
+    /// <summary>
+    /// Called when the <c>Children</c> collection of the panel changes. Calls the base implementation,
+    /// then raises <c>ChildIndexesReset</c> through <c>IChildIndexProvider.ChildIndexChanged</c> so that
+    /// consumers re-query the child indexes.
+    /// </summary>
     protected override void ChildrenChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
         base.ChildrenChanged(sender, e);
@@ -273,14 +291,19 @@ public sealed class DataGridCellsPresenter : Panel, IChildIndexProvider
     }
 
     /// <summary>
-    /// Measures the children of a <see cref="T:AtomUI.Desktop.Controls.DataGridCellsPresenter" /> to 
-    /// prepare for arranging them during the <see cref="M:System.Windows.FrameworkElement.ArrangeOverride(System.Windows.Size)" /> pass.
+    /// Measures the cells that lie in the horizontally visible range, and falls back to the base layout
+    /// when the presenter has no owning grid or row. Every cell of the first row is measured so that the
+    /// horizontal scrollbar is accurate, and with star sizing all cells are measured again once the
+    /// final column widths are known.
     /// </summary>
     /// <param name="availableSize">
-    /// The available size that this element can give to child elements. Indicates an upper limit that child elements should not exceed.
+    /// The available size that this element can give to its children. Only the base layout uses it;
+    /// cells are measured with the width of their column and with the row height of the grid, or with
+    /// an unconstrained height when that row height is not set.
     /// </param>
     /// <returns>
-    /// The size that the <see cref="T:AtomUI.Desktop.Controls.DataGridCellsPresenter" /> determines it needs during layout, based on its calculations of child object allocated sizes.
+    /// The width of the visible columns and the desired row height: the row height of the grid, or the
+    /// height of the tallest measured cell when that row height is <see cref="double.NaN" />.
     /// </returns>
     protected override Size MeasureOverride(Size availableSize)
     {

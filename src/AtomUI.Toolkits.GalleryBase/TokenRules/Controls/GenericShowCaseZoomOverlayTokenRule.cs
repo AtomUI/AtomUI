@@ -5,7 +5,9 @@ using Avalonia;
 
 namespace AtomUI.Toolkits.GalleryBase.TokenRules;
 
-/// <summary>The Generic view of <see cref="ShowCaseZoomOverlayToken"/>.</summary>
+/// <summary>
+/// The Generic view of <see cref="ShowCaseZoomOverlayToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class GenericShowCaseZoomOverlayTokenRule : IControlTokenRule<LanguageDesignToken, ShowCaseZoomOverlayToken>
 {

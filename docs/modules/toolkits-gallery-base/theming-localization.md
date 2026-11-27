@@ -182,7 +182,9 @@ Own Token 类只在 Control 存在独有设计值时创建，并由 AtomUI gener
 [ControlDesignToken]
 internal sealed partial class ShowCaseItemToken : AbstractControlDesignToken
 {
-    /// <summary>Padding inside a showcase card.</summary>
+    /// <summary>
+    /// Padding inside a showcase card.
+    /// </summary>
     public partial Thickness CardPadding { get; set; }
 }
 ```

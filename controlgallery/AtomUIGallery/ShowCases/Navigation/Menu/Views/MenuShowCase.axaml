@@ -86,11 +86,13 @@
                             </gallery:SemanticPartPreview.PartDescriptions>
                         </gallery:SemanticPartPreview>
 
-                        <!-- Vertical 预览：子菜单以弹层打开，popup.root 只有在弹层真实打开后才
-                             挂上视觉树并成为可定位目标（Inline 模式模板里没有弹层节点，该键实例数
-                             恒为 0）。弹层框体位于菜单项模板的 Popup.Child 子树，GetTemplateDescendants
-                             在运行时生成的容器处中断，无法自动发现，因此在 code-behind 里把
-                             Popup.Child 注册进 AdditionalRoots。 -->
+                        <!-- Vertical preview: the submenu opens as a popup, and popup.root joins the visual tree and
+                        becomes a locatable target only once the popup is really open (the Inline mode template has
+                        no popup node, so that key always has 0 instances). The popup frame lives in the
+                        Popup.Child subtree of the menu item template. GetTemplateDescendants stops at the
+                        runtime-generated containers and cannot discover it, so Popup.Child is registered in
+                        AdditionalRoots by the code-behind.
+                        -->
                         <gallery:SemanticPartPreview Name="VerticalNavMenuSemanticPreview"
                                                      SemanticOwner="{Binding #VerticalNavMenuSemanticOwner}"
                                                      SemanticOwnerType="{x:Type atom:NavMenu}"
@@ -156,10 +158,12 @@
                             </gallery:SemanticPartPreview.PartDescriptions>
                         </gallery:SemanticPartPreview>
 
-                        <!-- 普通 Menu 预览：菜单栏顶层项用 TopLevelMenuItemTheme（无弹层时只暴露
-                             一级 item/itemIcon/itemContent），子菜单项用 MenuItemTheme，弹层框体与
-                             分组标题/列表在弹层打开并展开子菜单后才成为可定位目标。与两个 NavMenu
-                             预览并列，覆盖普通 Menu 自己的 12 个键路径。 -->
+                        <!-- Plain Menu preview: the top-level menu bar items use TopLevelMenuItemTheme (without a popup
+                        it exposes only the first-level item/itemIcon/itemContent) and the submenu items use
+                        MenuItemTheme. The popup frame and the group title/list become locatable targets only after
+                        the popup opens and the submenu expands. Side by side with the two NavMenu previews, it
+                        covers the 12 key paths of the plain Menu.
+                        -->
                         <gallery:SemanticPartPreview Name="MenuSemanticPreview"
                                                      SemanticOwner="{Binding #MenuSemanticOwner}"
                                                      SemanticOwnerType="{x:Type atom:Menu}"
@@ -1003,7 +1007,7 @@
                         </Style>
                     </StackPanel.Styles>
 
-                    <!-- 第一行：两个 NavMenu 并排对照 -->
+                    <!-- First row: two NavMenus side by side for comparison -->
                     <StackPanel Orientation="Horizontal" Spacing="16">
                         <atom:NavMenu Classes="semantic-style-demo"
                                       Mode="Vertical"
@@ -1058,9 +1062,11 @@
                         </atom:NavMenu>
                     </StackPanel>
 
-                    <!-- 第二行：两个普通 Menu 菜单栏并排；弹层完全收起，点击菜单项展开 -->
+                    <!-- Second row: two plain Menu bars side by side; the popups are fully collapsed and open on click
+                    -->
                     <StackPanel Orientation="Horizontal" Spacing="16">
-                        <!-- 一级 item 部件：菜单栏顶层项，只命中一级 marker。 -->
+                        <!-- First-level item parts: the top-level menu bar items. Only the first-level markers match.
+                        -->
                         <atom:Menu Classes="semantic-style-demo"
                                    IsMotionEnabled="False"
                                    HorizontalAlignment="Left"
@@ -1076,7 +1082,7 @@
                             </atom:MenuItem>
                         </atom:Menu>
 
-                        <!-- subMenu.* 部件：弹层内部的菜单项、分组标题与分组列表。 -->
+                        <!-- subMenu.* parts: the menu items, group titles and group lists inside the popup. -->
                         <atom:Menu Classes="semantic-sub-menu-style-demo"
                                    IsMotionEnabled="False"
                                    HorizontalAlignment="Left"

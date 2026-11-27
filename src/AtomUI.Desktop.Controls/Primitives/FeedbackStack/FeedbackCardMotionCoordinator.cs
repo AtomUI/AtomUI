@@ -8,7 +8,9 @@ using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
 
-/// <summary>Owns card entry and close intent; Core Motion owns playback and replacement.</summary>
+/// <summary>
+/// Owns card entry and close intent; Core Motion owns playback and replacement.
+/// </summary>
 internal sealed class FeedbackCardMotionCoordinator(Action completeClose) : IDisposable
 {
     private Action? _completeClose = completeClose;

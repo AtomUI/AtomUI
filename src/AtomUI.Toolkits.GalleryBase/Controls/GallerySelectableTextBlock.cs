@@ -7,6 +7,10 @@ using AtomUISelectableTextBlock = AtomUI.Desktop.Controls.SelectableTextBlock;
 
 namespace AtomUI.Toolkits.GalleryBase.Controls;
 
+/// <summary>
+/// A text block that shows a context menu with a single Copy command for the selected text. The command is
+/// enabled only while <c>CanCopy</c> is true; the state is refreshed each time the menu opens.
+/// </summary>
 public class GallerySelectableTextBlock : AtomUISelectableTextBlock
 {
     private readonly AtomUIContextMenu _contextMenu = new();
@@ -21,6 +25,10 @@ public class GallerySelectableTextBlock : AtomUISelectableTextBlock
         ConfigureContextMenu();
     }
 
+    /// <summary>
+    /// Enables or disables the Copy command of the context menu when <c>CanCopy</c> changes. The base
+    /// implementation runs first; an override must call it.
+    /// </summary>
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);

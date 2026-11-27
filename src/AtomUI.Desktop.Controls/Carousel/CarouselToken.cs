@@ -2,55 +2,54 @@ using AtomUI.Theme.DesignTokens;
 
 namespace AtomUI.Desktop.Controls;
 
+/// <summary>
+/// Own design tokens of the <see cref="Carousel" />: the pagination indicator and the previous/next arrow buttons.
+/// </summary>
 [ControlDesignToken]
 public sealed partial class CarouselToken : AbstractControlDesignToken
 {
     
     /// <summary>
-    /// 指示点宽度
-    /// Width of indicator
+    /// Width of one pagination indicator dot. A dot is <see cref="IndicatorActiveWidth" /> wide while its page is
+    /// the current one.
     /// </summary>
     public partial double IndicatorWidth { get; set; }
     
     /// <summary>
-    /// 指示点高度
-    /// Height of indicator
+    /// Height of one pagination indicator dot.
     /// </summary>
     public partial double IndicatorHeight { get; set; }
     
     /// <summary>
-    /// 指示点之间的间距
-    /// gap between indicator
+    /// Gap between adjacent pagination indicator dots.
     /// </summary>
     public partial double IndicatorGap { get; set; }
     
     /// <summary>
-    /// 指示点距离边缘的距离
-    /// dot offset to Carousel edge
+    /// Distance between the pagination indicator and the carousel edge it sits on.
     /// </summary>
     public partial double PaginationOffset { get; set; }
     
     /// <summary>
-    /// 激活态指示点宽度
-    /// Width of active indicator
+    /// Width of the pagination indicator dot of the current page.
     /// </summary>
     public partial double IndicatorActiveWidth { get; set; }
     
     /// <summary>
-    /// 切换箭头大小
-    /// Size of arrows
+    /// Width and height of the icon in the previous and next arrow buttons.
     /// </summary>
     public partial double ArrowSize { get; set; }
     
     /// <summary>
-    /// 切换箭头边距
-    /// arrows offset to Carousel edge
+    /// Distance between an arrow button and the carousel edge it is inset from. The previous button is inset from
+    /// the left edge and the next button from the right edge; with the pagination on the left or right, from the top
+    /// and bottom edges instead.
     /// </summary>
     public partial double ArrowOffset { get; set; }
 
     /// <summary>
-    /// 切换箭头静止时的不透明度（AtomUI 扩展；antd 固定为 0.4），悬停时完全不透明
-    /// Opacity of the resting switch arrows (an AtomUI extension; antd fixes 0.4); hovered arrows are opaque
+    /// Opacity of the previous and next arrow buttons at rest; a hovered button is fully opaque. The token is an
+    /// AtomUI extension: antd fixes the resting opacity to 0.4.
     /// </summary>
     public partial double ArrowOpacity { get; set; }
     

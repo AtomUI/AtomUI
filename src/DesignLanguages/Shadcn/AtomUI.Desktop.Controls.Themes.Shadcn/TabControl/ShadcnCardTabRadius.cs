@@ -2,7 +2,9 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls.Themes.Shadcn;
 
-/// <summary>The radius cap of the card tabs: the pill and rounded styles would otherwise turn a tab into a capsule.</summary>
+/// <summary>
+/// The radius cap of the card tabs: the pill and rounded styles would otherwise turn a tab into a capsule.
+/// </summary>
 internal static class ShadcnCardTabRadius
 {
     private const double Maximum = 8;

@@ -24,6 +24,11 @@ namespace AtomUI.Desktop.Controls;
 using AvaloniaComboBox = Avalonia.Controls.ComboBox;
 using AvaloniaTextBox = Avalonia.Controls.TextBox;
 
+/// <summary>
+/// An Ant Design style combo box: a drop-down list of options with an optional editable text box that
+/// filters the options, add-ons outside and inside the input frame, and a clear button. It reports its
+/// selected item to a form and shows the feedback of that form.
+/// </summary>
 public partial class ComboBox : AvaloniaComboBox,
                                 IMotionAwareControl,
                                 ICustomizableSizeTypeAware,
@@ -34,203 +39,369 @@ public partial class ComboBox : AvaloniaComboBox,
 {
     #region 公共属性定义
 
+    /// <summary>
+    /// Identifies the <see cref="OpenMotion" /> property.
+    /// </summary>
     public static readonly StyledProperty<AbstractMotion?> OpenMotionProperty =
         Popup.OpenMotionProperty.AddOwner<ComboBox>();
 
+    /// <summary>
+    /// Identifies the <see cref="CloseMotion" /> property.
+    /// </summary>
     public static readonly StyledProperty<AbstractMotion?> CloseMotionProperty =
         Popup.CloseMotionProperty.AddOwner<ComboBox>();
 
+    /// <summary>
+    /// Identifies the <see cref="LeftAddOn" /> property.
+    /// </summary>
     public static readonly StyledProperty<object?> LeftAddOnProperty =
         AddOnDecoratedBox.LeftAddOnProperty.AddOwner<ComboBox>();
     
+    /// <summary>
+    /// Identifies the <see cref="LeftAddOnTemplate" /> property.
+    /// </summary>
     public static readonly StyledProperty<IDataTemplate?> LeftAddOnTemplateProperty =
         AddOnDecoratedBox.LeftAddOnTemplateProperty.AddOwner<ComboBox>();
 
+    /// <summary>
+    /// Identifies the <see cref="RightAddOn" /> property.
+    /// </summary>
     public static readonly StyledProperty<object?> RightAddOnProperty =
         AddOnDecoratedBox.RightAddOnProperty.AddOwner<ComboBox>();
     
+    /// <summary>
+    /// Identifies the <see cref="RightAddOnTemplate" /> property.
+    /// </summary>
     public static readonly StyledProperty<IDataTemplate?> RightAddOnTemplateProperty =
         AddOnDecoratedBox.RightAddOnTemplateProperty.AddOwner<ComboBox>();
     
+    /// <summary>
+    /// Identifies the <see cref="ContentLeftAddOn" /> property.
+    /// </summary>
     public static readonly StyledProperty<object?> ContentLeftAddOnProperty =
         AddOnDecoratedBox.ContentLeftAddOnProperty.AddOwner<ComboBox>();
     
+    /// <summary>
+    /// Identifies the <see cref="ContentLeftAddOnTemplate" /> property.
+    /// </summary>
     public static readonly StyledProperty<IDataTemplate?> ContentLeftAddOnTemplateProperty =
         AddOnDecoratedBox.ContentLeftAddOnTemplateProperty.AddOwner<ComboBox>();
 
+    /// <summary>
+    /// Identifies the <see cref="ContentRightAddOn" /> property.
+    /// </summary>
     public static readonly StyledProperty<object?> ContentRightAddOnProperty =
         AddOnDecoratedBox.ContentRightAddOnProperty.AddOwner<ComboBox>();
     
+    /// <summary>
+    /// Identifies the <see cref="ContentRightAddOnTemplate" /> property.
+    /// </summary>
     public static readonly StyledProperty<IDataTemplate?> ContentRightAddOnTemplateProperty =
         AddOnDecoratedBox.ContentRightAddOnTemplateProperty.AddOwner<ComboBox>();
 
+    /// <summary>
+    /// Identifies the <see cref="SizeType" /> property.
+    /// </summary>
     public static readonly StyledProperty<CustomizableSizeType> SizeTypeProperty =
         CustomizableSizeTypeControlProperty.SizeTypeProperty.AddOwner<ComboBox>();
 
+    /// <summary>
+    /// Identifies the <see cref="StyleVariant" /> property.
+    /// </summary>
     public static readonly StyledProperty<InputControlStyleVariant> StyleVariantProperty =
         InputControlStyleVariantProperty.StyleVariantProperty.AddOwner<ComboBox>();
 
+    /// <summary>
+    /// Identifies the <see cref="Status" /> property.
+    /// </summary>
     public static readonly StyledProperty<InputControlStatus> StatusProperty =
         InputControlStatusProperty.StatusProperty.AddOwner<ComboBox>();
 
+    /// <summary>
+    /// Identifies the <see cref="IsAllowClear" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsAllowClearProperty =
         TextBox.IsAllowClearProperty.AddOwner<ComboBox>();
     
+    /// <summary>
+    /// Identifies the <see cref="OptionFontSize" /> property.
+    /// </summary>
     public static readonly StyledProperty<double> OptionFontSizeProperty =
         AvaloniaProperty.Register<ComboBox, double>(nameof(OptionFontSize));
 
+    /// <summary>
+    /// Identifies the <see cref="IsMotionEnabled" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<ComboBox>();
     
+    /// <summary>
+    /// Identifies the <see cref="DropDownDisplayPageSize" /> property.
+    /// </summary>
     public static readonly StyledProperty<int> DropDownDisplayPageSizeProperty =
         AvaloniaProperty.Register<ComboBox, int>(nameof (DropDownDisplayPageSize), 10);
 
+    /// <summary>
+    /// Identifies the <see cref="ShouldUseOverlayPopup" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> ShouldUseOverlayPopupProperty =
         AvaloniaProperty.Register<ComboBox, bool>(nameof(ShouldUseOverlayPopup), true);
 
     /// <summary>
-    /// 钉住候选弹层：开启后弹层忽略 light-dismiss 关闭请求，保持强制打开。
-    /// 典型场景是 Gallery 语义部件预览需要持续高亮 popup.* 部件。
+    /// Identifies the <see cref="IsPopupPinnedOpen" /> property.
     /// </summary>
     public static readonly StyledProperty<bool> IsPopupPinnedOpenProperty =
         Popup.IsPopupPinnedOpenProperty.AddOwner<ComboBox>();
 
+    /// <summary>
+    /// Identifies the <see cref="IsFilterEnabled" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsFilterEnabledProperty =
         AvaloniaProperty.Register<ComboBox, bool>(nameof(IsFilterEnabled));
 
+    /// <summary>
+    /// Identifies the <see cref="IsShowOverflowTip" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsShowOverflowTipProperty =
         AvaloniaProperty.Register<ComboBox, bool>(nameof(IsShowOverflowTip), true);
 
+    /// <summary>
+    /// Identifies the <see cref="OverflowTipDelay" /> property.
+    /// </summary>
     public static readonly StyledProperty<int> OverflowTipDelayProperty =
         AvaloniaProperty.Register<ComboBox, int>(nameof(OverflowTipDelay), 1200);
 
+    /// <summary>
+    /// Identifies the <see cref="OverflowTipPlacement" /> property.
+    /// </summary>
     public static readonly StyledProperty<PlacementMode> OverflowTipPlacementProperty =
         AvaloniaProperty.Register<ComboBox, PlacementMode>(nameof(OverflowTipPlacement), PlacementMode.TopEdgeAlignedLeft);
 
+    /// <summary>
+    /// Identifies the <see cref="Filter" /> property.
+    /// </summary>
     public static readonly StyledProperty<IValueFilter?> FilterProperty =
         AvaloniaProperty.Register<ComboBox, IValueFilter?>(nameof(Filter));
 
+    /// <summary>
+    /// Identifies the <see cref="FilterValue" /> property.
+    /// </summary>
     public static readonly StyledProperty<object?> FilterValueProperty =
         AvaloniaProperty.Register<ComboBox, object?>(nameof(FilterValue));
 
+    /// <summary>
+    /// Identifies the <see cref="FilterValueSelector" /> property.
+    /// </summary>
     public static readonly StyledProperty<DefaultFilterValueSelector?> FilterValueSelectorProperty =
         AvaloniaProperty.Register<ComboBox, DefaultFilterValueSelector?>(
             nameof(FilterValueSelector));
 
+    /// <summary>
+    /// Identifies the <see cref="IsShowEmptyIndicator" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsShowEmptyIndicatorProperty =
         AvaloniaProperty.Register<ComboBox, bool>(nameof(IsShowEmptyIndicator), true);
 
+    /// <summary>
+    /// Identifies the <see cref="EmptyIndicator" /> property.
+    /// </summary>
     public static readonly StyledProperty<object?> EmptyIndicatorProperty =
         AvaloniaProperty.Register<ComboBox, object?>(nameof(EmptyIndicator));
 
+    /// <summary>
+    /// Identifies the <see cref="EmptyIndicatorTemplate" /> property.
+    /// </summary>
     public static readonly StyledProperty<IDataTemplate?> EmptyIndicatorTemplateProperty =
         AvaloniaProperty.Register<ComboBox, IDataTemplate?>(nameof(EmptyIndicatorTemplate));
 
+    /// <summary>
+    /// Identifies the <see cref="EmptyIndicatorPadding" /> property.
+    /// </summary>
     public static readonly StyledProperty<Thickness> EmptyIndicatorPaddingProperty =
         AvaloniaProperty.Register<ComboBox, Thickness>(nameof(EmptyIndicatorPadding));
 
+    /// <summary>
+    /// Motion played when the drop-down opens. The theme sets it to <c>PopupMotionDefaults.SelectOpen</c>,
+    /// the template hands it to the drop-down popup, and clearing a local value falls back to the theme
+    /// value.
+    /// </summary>
     public AbstractMotion? OpenMotion
     {
         get => GetValue(OpenMotionProperty);
         set => SetValue(OpenMotionProperty, value);
     }
 
+    /// <summary>
+    /// Motion played when the drop-down closes. The theme sets it to <c>PopupMotionDefaults.SelectClose</c>,
+    /// the template hands it to the drop-down popup, and clearing a local value falls back to the theme
+    /// value.
+    /// </summary>
     public AbstractMotion? CloseMotion
     {
         get => GetValue(CloseMotionProperty);
         set => SetValue(CloseMotionProperty, value);
     }
 
+    /// <summary>
+    /// Content of the add-on attached outside the input frame, on its left. The add-on box is shown only
+    /// while this value is not <see langword="null" />. <see cref="ContentLeftAddOn" /> places content
+    /// inside the frame.
+    /// </summary>
     public object? LeftAddOn
     {
         get => GetValue(LeftAddOnProperty);
         set => SetValue(LeftAddOnProperty, value);
     }
     
+    /// <summary>
+    /// Template used to build <see cref="LeftAddOn" />.
+    /// </summary>
     public IDataTemplate? LeftAddOnTemplate
     {
         get => GetValue(LeftAddOnTemplateProperty);
         set => SetValue(LeftAddOnTemplateProperty, value);
     }
 
+    /// <summary>
+    /// Content of the add-on attached outside the input frame, on its right. The add-on box is shown only
+    /// while this value is not <see langword="null" />. <see cref="ContentRightAddOn" /> places content
+    /// inside the frame.
+    /// </summary>
     public object? RightAddOn
     {
         get => GetValue(RightAddOnProperty);
         set => SetValue(RightAddOnProperty, value);
     }
     
+    /// <summary>
+    /// Template used to build <see cref="RightAddOn" />.
+    /// </summary>
     public IDataTemplate? RightAddOnTemplate
     {
         get => GetValue(RightAddOnTemplateProperty);
         set => SetValue(RightAddOnTemplateProperty, value);
     }
     
+    /// <summary>
+    /// Content of the add-on inside the input frame, to the left of the text. <see cref="LeftAddOn" /> is
+    /// the add-on attached outside the frame.
+    /// </summary>
     public object? ContentLeftAddOn
     {
         get => GetValue(ContentLeftAddOnProperty);
         set => SetValue(ContentLeftAddOnProperty, value);
     }
     
+    /// <summary>
+    /// Template used to build <see cref="ContentLeftAddOn" />.
+    /// </summary>
     public IDataTemplate? ContentLeftAddOnTemplate
     {
         get => GetValue(ContentLeftAddOnTemplateProperty);
         set => SetValue(ContentLeftAddOnTemplateProperty, value);
     }
 
+    /// <summary>
+    /// Content of the add-on inside the input frame, to the right of the text and before the form feedback
+    /// icon and the action group with the clear button and the arrow handle.
+    /// <see cref="RightAddOn" /> is the add-on attached outside the frame.
+    /// </summary>
     public object? ContentRightAddOn
     {
         get => GetValue(ContentRightAddOnProperty);
         set => SetValue(ContentRightAddOnProperty, value);
     }
     
+    /// <summary>
+    /// Template used to build <see cref="ContentRightAddOn" />.
+    /// </summary>
     public IDataTemplate? ContentRightAddOnTemplate
     {
         get => GetValue(ContentRightAddOnTemplateProperty);
         set => SetValue(ContentRightAddOnTemplateProperty, value);
     }
 
+    /// <summary>
+    /// Size of the control. The template passes it to the input frame, and every option item container
+    /// follows it. <see cref="CustomizableSizeType.Large" /> and <see cref="CustomizableSizeType.Small" />
+    /// use the large and small font sizes; <see cref="CustomizableSizeType.Middle" /> and
+    /// <see cref="CustomizableSizeType.Custom" /> use the middle font size.
+    /// </summary>
     public CustomizableSizeType SizeType
     {
         get => GetValue(SizeTypeProperty);
         set => SetValue(SizeTypeProperty, value);
     }
 
+    /// <summary>
+    /// Visual style of the input frame: outlined, filled or borderless. The template passes it to the
+    /// frame. With the filled and borderless styles, the selected text takes the error or warning color
+    /// under the <c>:error</c> or <c>:warning</c> state.
+    /// </summary>
     public InputControlStyleVariant StyleVariant
     {
         get => GetValue(StyleVariantProperty);
         set => SetValue(StyleVariantProperty, value);
     }
 
+    /// <summary>
+    /// Status that the input frame shows, such as error or warning. The template passes it to the frame,
+    /// and the <c>:warning</c> pseudo-class follows the status resolved from this value and
+    /// <c>FormStatus</c>.
+    /// </summary>
     public InputControlStatus Status
     {
         get => GetValue(StatusProperty);
         set => SetValue(StatusProperty, value);
     }
 
+    /// <summary>
+    /// Shows the clear button inside the input frame. It appears only while there is a value to clear, the
+    /// control is enabled, and the pointer is over the control or the focus is within it. Clicking it
+    /// clears the typed text and the selection.
+    /// </summary>
     public bool IsAllowClear
     {
         get => GetValue(IsAllowClearProperty);
         set => SetValue(IsAllowClearProperty, value);
     }
     
+    /// <summary>
+    /// Font size of the option items in the drop-down; it is bound to every item container. The theme
+    /// supplies the token value.
+    /// </summary>
     public double OptionFontSize
     {
         get => GetValue(OptionFontSizeProperty);
         set => SetValue(OptionFontSizeProperty, value);
     }
 
+    /// <summary>
+    /// Switch for the motion of the control. The drop-down popup, the input frame, the arrow handle, the
+    /// clear button and the option item containers all receive this value. The theme supplies the token
+    /// value.
+    /// </summary>
     public bool IsMotionEnabled
     {
         get => GetValue(IsMotionEnabledProperty);
         set => SetValue(IsMotionEnabledProperty, value);
     }
     
+    /// <summary>
+    /// Number of option rows the drop-down shows before it scrolls; the default is 10. The maximum
+    /// drop-down height is this number times <c>ItemHeight</c>, plus the top and bottom padding of the
+    /// popup content.
+    /// </summary>
     public int DropDownDisplayPageSize
     {
         get => GetValue(DropDownDisplayPageSizeProperty);
         set => SetValue(DropDownDisplayPageSizeProperty, value);
     }
 
+    /// <summary>
+    /// Value handed to the drop-down popup as <c>ShouldUseOverlayLayer</c>. When
+    /// <see langword="true" />, the default, the popup is hosted in the overlay layer of the window.
+    /// </summary>
     public bool ShouldUseOverlayPopup
     {
         get => GetValue(ShouldUseOverlayPopupProperty);
@@ -238,8 +409,11 @@ public partial class ComboBox : AvaloniaComboBox,
     }
 
     /// <summary>
-    /// 钉住候选弹层：开启后弹层忽略 light-dismiss 关闭请求，保持强制打开。
-    /// 典型场景是 Gallery 语义部件预览需要持续高亮 popup.* 部件。
+    /// Keeps the candidate popup open: while <see langword="true" />, light-dismiss close requests (an
+    /// outside click or Escape) are ignored, and clearing <c>IsDropDownOpen</c> re-opens the drop-down.
+    /// The drop-down still closes while the control is detached and opens again when it is attached.
+    /// Setting it to <see langword="true" /> opens a closed drop-down. The Gallery semantic part preview
+    /// uses it to keep the <c>popup.*</c> parts highlighted.
     /// </summary>
     public bool IsPopupPinnedOpen
     {
@@ -247,42 +421,74 @@ public partial class ComboBox : AvaloniaComboBox,
         set => SetCurrentValue(IsPopupPinnedOpenProperty, value);
     }
 
+    /// <summary>
+    /// Hides the option items that do not match the typed text. It takes effect only while
+    /// <c>IsEditable</c> is <see langword="true" />: <see cref="FilterValue" /> then follows <c>Text</c>,
+    /// and an item stays visible while <see cref="Filter" /> accepts it.
+    /// </summary>
     public bool IsFilterEnabled
     {
         get => GetValue(IsFilterEnabledProperty);
         set => SetValue(IsFilterEnabledProperty, value);
     }
 
+    /// <summary>
+    /// Shows a tip with the text of the selected item when that text does not fit the selection area of
+    /// the input frame. The default is <see langword="true" />.
+    /// </summary>
     public bool IsShowOverflowTip
     {
         get => GetValue(IsShowOverflowTipProperty);
         set => SetValue(IsShowOverflowTipProperty, value);
     }
 
+    /// <summary>
+    /// Time in milliseconds the pointer must rest on the selection before its overflow tip appears. The
+    /// default is 1200.
+    /// </summary>
     public int OverflowTipDelay
     {
         get => GetValue(OverflowTipDelayProperty);
         set => SetValue(OverflowTipDelayProperty, value);
     }
 
+    /// <summary>
+    /// Position of the overflow tip relative to the input frame. The default is
+    /// <see cref="PlacementMode.TopEdgeAlignedLeft" />.
+    /// </summary>
     public PlacementMode OverflowTipPlacement
     {
         get => GetValue(OverflowTipPlacementProperty);
         set => SetValue(OverflowTipPlacementProperty, value);
     }
 
+    /// <summary>
+    /// Filter that decides whether an option item matches the typed text: it receives the item's filter
+    /// value and the current <see cref="FilterValue" />. It is used while <see cref="IsFilterEnabled" />
+    /// is in effect and <see cref="FilterValue" /> is not empty. A <see langword="null" /> filter is
+    /// replaced by a contains filter when the control is initialized.
+    /// </summary>
     public IValueFilter? Filter
     {
         get => GetValue(FilterProperty);
         set => SetValue(FilterProperty, value);
     }
 
+    /// <summary>
+    /// Text the filter compares the option items with. While filtering is in effect it follows
+    /// <c>Text</c> (an empty text gives <see langword="null" />, which leaves every item visible); a value
+    /// set directly is overwritten by the next text change.
+    /// </summary>
     public object? FilterValue
     {
         get => GetValue(FilterValueProperty);
         set => SetValue(FilterValueProperty, value);
     }
 
+    /// <summary>
+    /// Chooses the value of an item that <see cref="Filter" /> compares with <see cref="FilterValue" />.
+    /// When it is <see langword="null" />, the display text of the item is used.
+    /// </summary>
     public DefaultFilterValueSelector? FilterValueSelector
     {
         get => GetValue(FilterValueSelectorProperty);
@@ -533,10 +739,10 @@ public partial class ComboBox : AvaloniaComboBox,
         Items.CollectionChanged += HandleItemsCollectionChanged;
         ContainerPrepared       += HandleContainerPrepared;
 
-        // 阻止下拉框打开时的 BringIntoView 行为，防止触发页面滚动
+        // Stop BringIntoView requests raised while the drop-down is open; they would scroll the page.
         AddHandler(RequestBringIntoViewEvent, (sender, e) =>
         {
-            // 如果是下拉框内的元素触发的 BringIntoView，则取消事件
+            // Cancel the request when the drop-down is open and its target is not the control itself.
             if (IsDropDownOpen && e.TargetObject != this)
             {
                 e.Handled = true;
@@ -544,6 +750,10 @@ public partial class ComboBox : AvaloniaComboBox,
         }, handledEventsToo: true);
     }
 
+    /// <summary>
+    /// Sets a contains filter when <see cref="Filter" /> is <see langword="null" />, then applies the filter
+    /// state to the option items. The base method runs first.
+    /// </summary>
     protected override void OnInitialized()
     {
         base.OnInitialized();
@@ -556,16 +766,25 @@ public partial class ComboBox : AvaloniaComboBox,
         RefreshFilteredItemVisibility();
     }
 
+    /// <summary>
+    /// Detaches the clear button handler of the previous template before the base method runs.
+    /// </summary>
     protected override void OnTemplateChanged(AvaloniaPropertyChangedEventArgs change)
     {
         DetachClearButton();
         base.OnTemplateChanged(change);
     }
     
+    /// <summary>
+    /// Resolves the template parts and connects them: the frame, the editable text box, the drop-down popup
+    /// (pin relay, open and close handlers), the arrow handle and the clear button. Handlers and subscriptions
+    /// of the previous template are released first. When <c>IsDropDownOpen</c> is already
+    /// <see langword="true" />, the popup is opened here, after the base method has run.
+    /// </summary>
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
-        this.SetPopup(null); // 清空父类，防止鼠标点击的错误处理
+        this.SetPopup(null); // Clears the base class popup to stop its pointer click handling.
 
         if (_popup != null)
         {
@@ -636,14 +855,19 @@ public partial class ComboBox : AvaloniaComboBox,
         ConfigureMaxDropdownHeight();
         RefreshFilteredItemVisibility();
 
-        // 模板应用期若业务状态已是打开（例如预览在 AXAML 上声明 IsDropDownOpen="True"），
-        // 此时才在抑制遮罩之后补开弹层。弹层不再由模板绑定打开，因此这一步是必需的。
+        // The business state may already be open when the template is applied, for example when a preview
+        // declares IsDropDownOpen="True" in AXAML. The popup is opened only here, after the mask has been
+        // suppressed; no template binding opens it any more, so this step is required.
         if (IsDropDownOpen && _popup is { IsOpen: false })
         {
             _popup.IsOpen = true;
         }
     }
     
+    /// <summary>
+    /// Subscribes to the deactivation of the hosting window, and opens the drop-down when
+    /// <see cref="IsPopupPinnedOpen" /> is set while the drop-down is closed. The base method runs first.
+    /// </summary>
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
@@ -655,12 +879,21 @@ public partial class ComboBox : AvaloniaComboBox,
         }
     }
 
+    /// <summary>
+    /// Refreshes the subscription to the form feedback once the control is in the logical tree.
+    /// The base method runs first.
+    /// </summary>
     protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
     {
         base.OnAttachedToLogicalTree(e);
         ConfigureFormFeedbackSubscription();
     }
 
+    /// <summary>
+    /// Closes the drop-down (a pinned popup is not re-opened) and runs the base method, then disposes the
+    /// window deactivation subscription and clears the candidate selection and the filter state of the item
+    /// containers.
+    /// </summary>
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         _popupLifecycleCloseDepth++;
@@ -681,6 +914,9 @@ public partial class ComboBox : AvaloniaComboBox,
         ClearFilteredItemVisibility();
     }
 
+    /// <summary>
+    /// Disposes the form feedback subscription after the base method ran.
+    /// </summary>
     protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
     {
         base.OnDetachedFromLogicalTree(e);
@@ -688,6 +924,10 @@ public partial class ComboBox : AvaloniaComboBox,
         _feedbackStatusSubscription = null;
     }
 
+    /// <summary>
+    /// Returns a new <see cref="ComboBoxItem" /> with the semantic item marker for an item that needs a
+    /// container.
+    /// </summary>
     protected override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey)
     {
         var comboBoxItem = new ComboBoxItem();
@@ -695,6 +935,11 @@ public partial class ComboBox : AvaloniaComboBox,
         return comboBoxItem;
     }
     
+    /// <summary>
+    /// Returns <see langword="true" /> for an item that is not a <see cref="ComboBoxItem" />, with
+    /// <paramref name="recycleKey" /> set to <c>DefaultRecycleKey</c>. For a <see cref="ComboBoxItem" /> the
+    /// result is <see langword="false" /> and the key is <see langword="null" />.
+    /// </summary>
     protected override bool NeedsContainerOverride(object? item, int index, out object? recycleKey)
     {
         if (item is ComboBoxItem)
@@ -707,6 +952,12 @@ public partial class ComboBox : AvaloniaComboBox,
         return true;
     }
 
+    /// <summary>
+    /// Prepares a <see cref="ComboBoxItem" /> container after the base method: a non-visual item
+    /// becomes the content when the container has none; <c>ItemTemplate</c>, <see cref="SizeType" />,
+    /// <see cref="OptionFontSize" />, <see cref="IsMotionEnabled" /> and <c>ItemHeight</c> are bound to the
+    /// container; then the current filter state and the semantic item marker are applied.
+    /// </summary>
     protected override void PrepareContainerForItemOverride(Control container, object? item, int index)
     {
         base.PrepareContainerForItemOverride(container, item, index);
@@ -731,12 +982,18 @@ public partial class ComboBox : AvaloniaComboBox,
             comboBoxItem[!ComboBoxItem.HeightProperty]          = this[!ItemHeightProperty];
 
             ApplyCurrentFilterState(comboBoxItem, item);
-            // NeedsContainerOverride 对显式提供的 ComboBoxItem 返回 false，这类容器不经过
-            // CreateContainerForItemOverride，因此在这里兜底注入同一 marker（重复添加是幂等操作）。
+            // NeedsContainerOverride returns false for an explicitly supplied ComboBoxItem, so that container
+            // never goes through CreateContainerForItemOverride. The same marker is injected here as a
+            // fallback; adding it twice is idempotent.
             ApplySemanticItemMarker(comboBoxItem);
         }
     }
 
+    /// <summary>
+    /// Resets a container for reuse before the base method clears it: the transition initialization state,
+    /// the candidate selection reference, and the candidate and filter state of a
+    /// <see cref="ComboBoxItem" />.
+    /// </summary>
     protected override void ClearContainerForItemOverride(Control element)
     {
         if (element is ITransitionInitializationOwner owner)
@@ -758,6 +1015,12 @@ public partial class ComboBox : AvaloniaComboBox,
         base.ClearContainerForItemOverride(element);
     }
 
+    /// <summary>
+    /// Runs the base handler, then keeps the derived state in step with the change: the drop-down popup
+    /// follows <c>IsDropDownOpen</c> (a pinned popup is re-opened), the candidate view follows selection,
+    /// text and filter changes, the pseudo-classes follow the status and the maximum drop-down height
+    /// follows the page size and popup layout. A selection made while the drop-down is open closes it.
+    /// </summary>
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         // Avalonia fills Text from SelectedItem inside its base property handler.
@@ -891,6 +1154,11 @@ public partial class ComboBox : AvaloniaComboBox,
         }
     }
 
+    /// <summary>
+    /// Hands a focus that arrives from outside to the editable text box. The base handler is skipped when
+    /// the focus goes to the clear button or to add-on content, which are keyboard stops of their own; a
+    /// focus inside the drop-down popup is left as it is.
+    /// </summary>
     protected override void OnGotFocus(FocusChangedEventArgs e)
     {
         // The clear button (Ant Design renders it as a button) and focusable add-on content are keyboard stops of
@@ -911,6 +1179,10 @@ public partial class ComboBox : AvaloniaComboBox,
         FocusEditableTextBox(e.NavigationMethod);
     }
 
+    /// <summary>
+    /// Lets the open drop-down handle a key first while the control is enabled; the base handler is
+    /// skipped when the key was consumed.
+    /// </summary>
     protected override void OnKeyDown(KeyEventArgs e)
     {
         if (!e.Handled && IsEnabled && IsDropDownOpen && HandleOpenDropDownKeyDown(e))
@@ -921,6 +1193,10 @@ public partial class ComboBox : AvaloniaComboBox,
         base.OnKeyDown(e);
     }
     
+    /// <summary>
+    /// Sets the <c>:pressed</c> pseudo-class, which <see cref="OnPointerReleased" /> reads to toggle the
+    /// drop-down. It is set only while the drop-down is closed.
+    /// </summary>
     protected override void OnPointerPressed(PointerPressedEventArgs e)
     {
         if (!IsDropDownOpen)
@@ -929,6 +1205,10 @@ public partial class ComboBox : AvaloniaComboBox,
         }
     }
 
+    /// <summary>
+    /// Moves the candidate selection to the option item under the mouse pointer while the drop-down is
+    /// open. The base method runs first.
+    /// </summary>
     protected override void OnPointerMoved(PointerEventArgs e)
     {
         base.OnPointerMoved(e);
@@ -939,6 +1219,11 @@ public partial class ComboBox : AvaloniaComboBox,
         }
     }
     
+    /// <summary>
+    /// Raises the context request for a right click on the control itself, toggles the drop-down for a
+    /// release inside the control but outside the popup, and clears the <c>:pressed</c> pseudo-class at
+    /// the end. The base method is not called.
+    /// </summary>
     protected override void OnPointerReleased(PointerReleasedEventArgs e)
     {
         if (e.Source == this
@@ -965,6 +1250,11 @@ public partial class ComboBox : AvaloniaComboBox,
         PseudoClasses.Set(StdPseudoClass.Pressed, false);
     }
 
+    /// <summary>
+    /// Commits the selection of a container through the base method and closes the drop-down when that
+    /// succeeded, which is also when <see langword="true" /> is returned. The filtered view is not
+    /// published during the commit; a refresh that became due is published afterwards.
+    /// </summary>
     public override bool UpdateSelectionFromEvent(Control container, RoutedEventArgs eventArgs)
     {
         _selectionCommitDepth++;
@@ -985,6 +1275,10 @@ public partial class ComboBox : AvaloniaComboBox,
         }
     }
 
+    /// <summary>
+    /// Keeps the minimum width of the drop-down popup equal to the new width of the control. The base
+    /// method runs first.
+    /// </summary>
     protected override void OnSizeChanged(SizeChangedEventArgs e)
     {
         base.OnSizeChanged(e);
@@ -1006,26 +1300,45 @@ public partial class ComboBox : AvaloniaComboBox,
     void IFormItemAware.NotifyValidateStatus(FormValidateStatus status) => NotifyValidateStatus(status);
     void IFormItemFeedbackAware.SetFeedbackControl(FormValidateFeedback? value) => NotifySetFeedBackControl(value);
     
+    /// <summary>
+    /// Notifies the form that the value of the control changed. It runs whenever <c>SelectionBoxItem</c>
+    /// changes, after the new value is stored; <paramref name="value" /> is that new item.
+    /// </summary>
     protected virtual void NotifyFormValueChanged(object? value)
     {
         _formValueChanged?.Invoke(this, EventArgs.Empty);
     }
 
+    /// <summary>
+    /// Applies a value handed over by a form: <paramref name="value" /> becomes <c>SelectedItem</c>.
+    /// <see langword="null" /> clears the selection.
+    /// </summary>
     protected virtual void NotifySetFormValue(object? value)
     {
         SelectedItem = value;
     }
 
+    /// <summary>
+    /// Returns the selected item as the value handed to a form, or <see langword="null" /> when nothing is
+    /// selected.
+    /// </summary>
     protected virtual object? NotifyGetFormValue()
     {
         return SelectedItem;
     }
 
+    /// <summary>
+    /// Clears the selection when a form resets the control.
+    /// </summary>
     protected virtual void NotifyClearFormValue()
     {
         SelectedItem = null;
     }
 
+    /// <summary>
+    /// Stores a validation status handed over by a form in <c>FormStatus</c>, unless it is the current
+    /// status.
+    /// </summary>
     protected virtual void NotifyValidateStatus(FormValidateStatus status)
     {
         if (FormStatus != status)
@@ -1034,6 +1347,10 @@ public partial class ComboBox : AvaloniaComboBox,
         }
     }
     
+    /// <summary>
+    /// Stores the feedback control handed over by a form in <c>FormFeedback</c>.
+    /// <see langword="null" /> removes it.
+    /// </summary>
     protected virtual void NotifySetFeedBackControl(FormValidateFeedback? value)
     {
         FormFeedback = value;
@@ -1246,9 +1563,10 @@ public partial class ComboBox : AvaloniaComboBox,
     }
 
     /// <summary>
-    /// 按业务状态打开弹层。开合不再由模板 <c>IsOpen</c> 绑定承担，因为模板充气阶段的绑定求值
-    /// 会早于遮罩抑制打开弹层，钉住场景因而残留遮罩层。改为跟随 <c>IsDropDownOpen</c> 以代码打开，
-    /// 与共享 <c>AbstractSelect</c> 的约定一致。
+    /// Opens the popup from code, following <c>IsDropDownOpen</c>. The template no longer binds <c>IsOpen</c>:
+    /// a binding evaluated during template inflation opened the popup before the mask was suppressed, which
+    /// left the mask in place for a pinned popup. The shared <c>AbstractSelect</c> follows the same
+    /// convention.
     /// </summary>
     private void OpenPopup()
     {
@@ -1267,8 +1585,9 @@ public partial class ComboBox : AvaloniaComboBox,
     }
 
     /// <summary>
-    /// 弹层自行关闭（light-dismiss 外点、Escape）时把状态回写业务属性。此前该回传由模板上的
-    /// TwoWay <c>IsOpen</c> 绑定承担，开合改由代码接管后必须显式补齐，否则状态会卡在打开。
+    /// Clears the open state of the control when the popup closed itself (a light-dismiss outside click or
+    /// Escape). A TwoWay <c>IsOpen</c> binding in the template used to write this back; now that opening and
+    /// closing are handled in code, it must be done explicitly, or the state stays open.
     /// </summary>
     private void HandlePopupClosed(object? sender, EventArgs e)
     {
@@ -1282,9 +1601,11 @@ public partial class ComboBox : AvaloniaComboBox,
 
         if (IsPopupPinnedOpen && _popupLifecycleCloseDepth == 0)
         {
-            // 钉住语义：外点/Escape 不改变有效打开状态。共享 Popup 会在钉住时自行抑制物理关闭并
-            // 重新收敛，因此这里通常不会到达；若因锚点/TopLevel 失效走到这里，按设计保留“请求
-            // 打开”状态而不改写业务状态，等待 reattach 或 pin 变更重新打开。
+            // Pinned semantics: an outside click or Escape does not change the effective open state. The
+            // shared Popup suppresses the physical close and converges again while it is pinned, so this
+            // branch is normally not reached. If it is reached because the anchor or the TopLevel became
+            // invalid, the requested open state is kept by design and the business state is not written;
+            // a reattach or a pin change opens the popup again.
             return;
         }
 

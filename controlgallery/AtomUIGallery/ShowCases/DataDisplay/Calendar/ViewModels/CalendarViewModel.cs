@@ -15,22 +15,33 @@ public class CalendarViewModel : ReactiveObject, IRoutableViewModel
 
     public string UrlPathSegment { get; } = ID.ToString();
 
-    /// <summary>示例锚点日期，跟随 Calendar 默认值。</summary>
+    /// <summary>
+    /// Anchor date of the examples. It follows the Calendar default.
+    /// </summary>
     public DateTime SampleDate { get; } = DateTime.Today;
 
-    /// <summary>农历示例固定使用春节，确保节日和农历次级文案可见。</summary>
+    /// <summary>
+    /// The lunar example is pinned to the Spring Festival so that the holiday and the lunar
+    /// secondary text are visible.
+    /// </summary>
     public DateTime LunarCalendarSampleDate { get; } = new(2024, 2, 10);
 
-    /// <summary>完整农历示例使用的应用级节假日数据 Provider。</summary>
+    /// <summary>
+    /// Application-level holiday data provider used by the full lunar example.
+    /// </summary>
     public ILunarCalendarHolidayProvider LunarCalendarHolidayProvider { get; } =
         new GalleryLunarCalendarHolidayProvider();
 
-    /// <summary>跨日期事件示例固定展示 2026 年 1 月。</summary>
+    /// <summary>
+    /// The cross-date event example always shows January 2026.
+    /// </summary>
     public DateTime CrossDateEventsSampleDate { get; } = new(2026, 1, 1);
 
     private DateTime _selectableCalendarValue = new(2017, 1, 25);
 
-    /// <summary>可选择日历当前显示和选中的 Calendar 值。</summary>
+    /// <summary>
+    /// The Calendar value that the selectable calendar currently displays and has selected.
+    /// </summary>
     public DateTime SelectableCalendarValue
     {
         get => _selectableCalendarValue;
@@ -39,7 +50,9 @@ public class CalendarViewModel : ReactiveObject, IRoutableViewModel
 
     private DateTime _selectableCalendarSelectedValue = new(2017, 1, 25);
 
-    /// <summary>可选择日历最后一次实际选择，用于 Alert 反馈。</summary>
+    /// <summary>
+    /// The last value the user actually selected in the selectable calendar. It feeds the Alert feedback.
+    /// </summary>
     public DateTime SelectableCalendarSelectedValue
     {
         get => _selectableCalendarSelectedValue;

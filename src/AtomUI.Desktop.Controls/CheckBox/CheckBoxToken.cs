@@ -4,22 +4,36 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
 
+/// <summary>
+/// Design tokens of the desktop check box: the indicator and mark sizes, the content margin and the hover
+/// border color.
+/// </summary>
 [ControlDesignToken]
 public sealed partial class CheckBoxToken : AbstractControlDesignToken
 {
     
-    /// <summary>Width and height of the checkbox indicator.</summary>
+    /// <summary>
+    /// Width and height of the checkbox indicator.
+    /// </summary>
     public partial double CheckIndicatorSize { get; set; }
-    /// <summary>Size of the check mark inside a checked checkbox indicator.</summary>
+    /// <summary>
+    /// Size of the check mark inside a checked checkbox indicator.
+    /// </summary>
     public partial double CheckedMarkSize { get; set; }
 
-    /// <summary>Size of the mark inside an indeterminate checkbox indicator.</summary>
+    /// <summary>
+    /// Size of the mark inside an indeterminate checkbox indicator.
+    /// </summary>
     public partial double IndicatorTristateMarkSize { get; set; }
     
-    /// <summary>Margin around the content displayed beside the checkbox indicator.</summary>
+    /// <summary>
+    /// Margin around the content displayed beside the checkbox indicator.
+    /// </summary>
     public partial Thickness TextMargin { get; set; }
 
-    /// <summary>The border of an unchecked (or indeterminate) indicator under the pointer.</summary>
+    /// <summary>
+    /// The border of an unchecked (or indeterminate) indicator under the pointer.
+    /// </summary>
     public partial Color IndicatorHoverBorderColor { get; set; }
     
 }

@@ -6,7 +6,9 @@ using Avalonia.Controls.Platform;
 
 namespace AtomUI.Native.Windows;
 
-/// <summary>Completes borderless top-level HWND styles before redirection-surface creation.</summary>
+/// <summary>
+/// Completes borderless top-level HWND styles before redirection-surface creation.
+/// </summary>
 [SupportedOSPlatform("windows")]
 internal sealed class WindowsBorderlessStyleHook : IDisposable
 {

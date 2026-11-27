@@ -142,10 +142,12 @@ internal sealed class SemanticPartContractValidator
     }
 
     /// <summary>
-    /// <c>Since</c> 必须是可以被用户引用的具体发布版本，即 <c>major.minor.patch</c> 三段非负十进制数字
-    /// （例如 <c>6.2.0</c>）。只写版本线（<c>6.0</c>、<c>6.2</c>）会让 descriptor 与控件文档声称一个
-    /// 不存在的引入版本；预发布后缀、前导 <c>v</c> 与任意字符串同样不属于可比较的发布版本。
-    /// 这里按字符显式解析而不使用正则，与 Generator 不引入正则依赖的既有约定一致。
+    /// Checks whether <c>Since</c> names a concrete release version that a user can cite: <c>major.minor.patch</c>,
+    /// three non-negative decimal numbers (for example <c>6.2.0</c>). A version line alone (<c>6.0</c>, <c>6.2</c>)
+    /// would make the descriptor and the control documentation claim an introduction version that does not exist.
+    /// A prerelease suffix, a leading <c>v</c> or any other string is not a comparable release version either. The
+    /// text is parsed character by character instead of with a regular expression, in line with the existing
+    /// convention that the Generator takes no dependency on regular expressions.
     /// </summary>
     internal static bool IsReleaseVersion(string since)
     {
@@ -163,7 +165,8 @@ internal sealed class SemanticPartContractValidator
                 return false;
             }
 
-            // 多段数字过长几乎必然是误写（如时间戳或内部构建号），拒绝以免污染兼容契约。
+            // A numeric part longer than five digits is almost certainly a mistake, such as a timestamp or an internal
+            // build number. Reject it so that it does not pollute the compatibility contract.
             if (partIndex - digitStart > 5)
             {
                 return false;
@@ -190,8 +193,8 @@ internal sealed class SemanticPartContractValidator
         var valid = true;
         valid &= ValidateUnique(control, parts, static part => part.Name, "name");
         valid &= ValidateUnique(control, parts, static part => part.Path, "path");
-        // 同一终端 marker 可以被未限定与限定（如 source.header）部件共享，
-        // 真正需要防重的是完全相同的解析路由。
+        // The same terminal marker can be shared by an unqualified part and a qualified one (such as source.header).
+        // What has to be kept unique is the fully identical resolution route.
         valid &= ValidateUnique(
             control,
             parts,
@@ -400,8 +403,9 @@ internal sealed class SemanticPartContractValidator
             return false;
         }
 
-        // 可选的首段自锚点：owner 节点自身携带的过滤类（如方向限定的 source-item），
-        // 出现时整体 token 数为奇数，其余仍按 step/class 成对解析。
+        // Optional leading self-anchor: a filter class that the owner node itself carries (such as a direction-specific
+        // source-item). When it is present the token count is odd; the remaining tokens are still parsed as
+        // step/class pairs.
         var index = 0;
         if (tokens[0].StartsWith(".", StringComparison.Ordinal))
         {

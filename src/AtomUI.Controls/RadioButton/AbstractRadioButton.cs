@@ -5,24 +5,46 @@ namespace AtomUI.Controls.Commons;
 
 using AvaloniaRadioButton = Avalonia.Controls.RadioButton;
 
+/// <summary>
+/// Base class of the radio button. It adds the motion and click wave switches to the Avalonia radio button and
+/// lets a form item read and write the checked state.
+/// </summary>
 public abstract class AbstractRadioButton : AvaloniaRadioButton,
                                             IWaveSpiritAwareControl,
                                             IFormItemAware
 {
     #region 公共属性定义
 
+    /// <summary>
+    /// Identifies the <see cref="IsMotionEnabled" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<AbstractRadioButton>();
 
+    /// <summary>
+    /// Identifies the <see cref="IsWaveSpiritEnabled" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsWaveSpiritEnabledProperty =
         WaveSpiritAwareControlProperty.IsWaveSpiritEnabledProperty.AddOwner<AbstractRadioButton>();
     
+    /// <summary>
+    /// Gets or sets whether changes of the indicator animate: the border brush, the background and the size of the
+    /// inner dot. The theme forwards the value to the indicator and sets it from the <c>EnableMotion</c> token.
+    /// </summary>
     public bool IsMotionEnabled
     {
         get => GetValue(IsMotionEnabledProperty);
         set => SetValue(IsMotionEnabledProperty, value);
     }
 
+    /// <summary>
+    /// Gets or sets whether a click wave expands from the indicator when the radio button becomes checked.
+    /// The theme forwards the value to the indicator and sets it from the <c>EnableWaveSpirit</c> token.
+    /// </summary>
+    /// <remarks>
+    /// The wave plays only while <see cref="IsMotionEnabled" /> is also <see langword="true" /> and the radio button
+    /// is enabled.
+    /// </remarks>
     public bool IsWaveSpiritEnabled
     {
         get => GetValue(IsWaveSpiritEnabledProperty);
@@ -31,6 +53,10 @@ public abstract class AbstractRadioButton : AvaloniaRadioButton,
 
     #endregion
     
+    /// <summary>
+    /// Runs the Avalonia handling and then marks the pointer-pressed event as unhandled again, so that it keeps
+    /// bubbling to the ancestors of the radio button.
+    /// </summary>
     protected override void OnPointerPressed(PointerPressedEventArgs e)
     {
         base.OnPointerPressed(e);
@@ -57,21 +83,47 @@ public abstract class AbstractRadioButton : AvaloniaRadioButton,
         _formValueChanged?.Invoke(this, EventArgs.Empty);
     }
 
+    /// <summary>
+    /// Called when the <c>FormItem</c> that hosts the radio button sets or resets its value. The default implementation
+    /// assigns <paramref name="value" /> to <see cref="Avalonia.Controls.Primitives.ToggleButton.IsChecked" /> while
+    /// keeping an existing binding on it.
+    /// </summary>
+    /// <param name="value">
+    /// The checked state to apply; <see langword="null" /> clears the checked state.
+    /// </param>
     protected virtual void NotifySetFormValue(bool? value)
     {
         SetCurrentValue(IsCheckedProperty, value);
     }
 
+    /// <summary>
+    /// Called when the <c>FormItem</c> that hosts the radio button reads its value.
+    /// </summary>
+    /// <returns>
+    /// The value of <see cref="Avalonia.Controls.Primitives.ToggleButton.IsChecked" />.
+    /// </returns>
     protected virtual bool? NotifyGetFormValue()
     {
         return IsChecked;
     }
 
+    /// <summary>
+    /// Called when the <c>FormItem</c> that hosts the radio button resets and has no initial value. The default
+    /// implementation sets <see cref="Avalonia.Controls.Primitives.ToggleButton.IsChecked" /> to
+    /// <see langword="null" /> while keeping an existing binding on it.
+    /// </summary>
     protected virtual void NotifyClearFormValue()
     {
         SetCurrentValue(IsCheckedProperty, null);
     }
     
+    /// <summary>
+    /// Called when the validation status of the <c>FormItem</c> that hosts the radio button changes, for example
+    /// after a validation run. The default implementation does nothing.
+    /// </summary>
+    /// <param name="status">
+    /// The status that the form item now shows.
+    /// </param>
     protected virtual void NotifyValidateStatus(FormValidateStatus status)
     {
     }

@@ -5,7 +5,9 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls.Themes.Shadcn;
 
-/// <summary>The shadcn view of <see cref="StepsToken"/>.</summary>
+/// <summary>
+/// The shadcn view of <see cref="StepsToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class StepsTokenRule : IControlTokenRule<ShadcnToken, StepsToken>
 {
@@ -24,8 +26,11 @@ internal sealed class StepsTokenRule : IControlTokenRule<ShadcnToken, StepsToken
         token.DotSize             = global.ControlHeight / 4;
         token.DotCurrentSize      = global.ControlHeightLG / 4;
         token.NavArrowColor       = global.ColorTextDisabled;
+        // antd v6 no longer caps the description width; AtomUI keeps 140 as the default of this token.
         token.DescriptionMaxWidth = 140;
 
+        // Ant Design formula kept as is: shadcn has no Steps, so the state colors have no values of their own. The
+        // panel radius and the dark panel colors at the end of this method are the language's own values.
         token.WaitIconColor         = global.ColorTextLabel;
         token.WaitIconBgColor       = global.ColorFillContent;
         token.WaitIconBorderColor   = Colors.Transparent;
@@ -122,6 +127,7 @@ internal sealed class StepsTokenRule : IControlTokenRule<ShadcnToken, StepsToken
         token.PanelLastCornerRadius  = new CornerRadius(0, panelRadius, panelRadius, 0);
         token.PanelFirstCornerRadiusSM = new CornerRadius(panelRadiusSM, 0, 0, panelRadiusSM);
         token.PanelLastCornerRadiusSM  = new CornerRadius(0, panelRadiusSM, panelRadiusSM, 0);
+        // Coordinated value (shadcn has no step component): the panel radius is the global radius capped at 8.
         const double maximumPanelRadius = 8;
         var stylePanelRadius      = Math.Min(global.BorderRadius.TopLeft, maximumPanelRadius);
         var stylePanelSmallRadius = Math.Min(global.BorderRadiusSM.TopLeft, maximumPanelRadius);
@@ -131,7 +137,7 @@ internal sealed class StepsTokenRule : IControlTokenRule<ShadcnToken, StepsToken
         token.PanelLastCornerRadiusSM  = new CornerRadius(0, stylePanelSmallRadius, stylePanelSmallRadius, 0);
         if (context.Variant.IsDark)
         {
-            // A filled panel colours the whole step: a tint with its own text colour for that larger surface.
+            // A filled panel colors the whole step: a tint with its own text color for that larger surface.
             var currentBackground = ShadcnRecipes.CompositeOver(global.ColorPrimary, 0.18, token.PanelWaitBackground);
             token.PanelWaitActiveBackground    = currentBackground;
             token.PanelProcessActiveBackground = currentBackground;

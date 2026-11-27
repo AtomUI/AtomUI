@@ -3,6 +3,13 @@ using AtomUI.Theme.DesignTokens;
 
 namespace AtomUI.Theme.Compilation;
 
+/// <summary>
+/// An immutable table of compiled Token values indexed by Token slot. <c>Freeze</c> builds it by copying each
+/// value of a token builder into the slot of its descriptor, and <c>Get</c> returns a consumer copy of the stored
+/// value. <see cref="ThemeSnapshot" /> keeps its global and language Token values in it.
+/// AtomUI.Desktop.Controls uses it for the Token values of a container query in the media break point
+/// bootstrapper.
+/// </summary>
 internal sealed class TokenValueTable
 {
     internal static readonly TokenValueTable Empty = new(Array.Empty<object?>());

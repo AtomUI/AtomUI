@@ -8,6 +8,16 @@ using Avalonia.Layout;
 
 namespace AtomUI.Controls.Commons;
 
+/// <summary>
+/// Base class of the items control that hosts the check boxes of a check box group and keeps their checked state
+/// and the selection in step; <c>CheckBoxItemsControl</c> in AtomUI.Desktop.Controls derives from it.
+/// </summary>
+/// <remarks>
+/// Every container is an <c>AbstractCheckBox</c>. For an item that implements <c>ICheckBoxOption</c>, the check
+/// box takes the enabled state and the initial checked state from the option; it shows the item itself when
+/// <c>ItemTemplate</c> is set and otherwise the content of the option. The checked state then follows the
+/// selection of the control, which allows several items to be selected at once.
+/// </remarks>
 internal abstract class AbstractCheckBoxItemsControl : SelectingItemsControl
 {
     public static readonly StyledProperty<double> ItemSpacingProperty = 

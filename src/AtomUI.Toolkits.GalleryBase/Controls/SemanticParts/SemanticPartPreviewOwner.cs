@@ -4,27 +4,30 @@ using Avalonia.Controls;
 namespace AtomUI.Toolkits.GalleryBase.Controls;
 
 /// <summary>
-/// 一个 Semantic Part Preview 的 owner 声明：owner 实例锚点加可选的 owner 类型。
-/// 单个 Preview 需要覆盖多个公开 owner 时（例如 Message 的 notice 卡片与列表宿主），
-/// 把它们依次声明在 <see cref="SemanticPartPreview.SemanticOwners" /> 上，
-/// Preview 会按声明顺序合并各 descriptor 的 Part 列表，并在高亮时按 Part 所属 owner 解析。
+/// Declares one owner of a Semantic Part preview: an owner instance anchor plus an optional owner type.
+/// When a single preview has to cover several public owners (for example the notice card and the list
+/// host of Message), declare them in order on <see cref="SemanticPartPreview.SemanticOwners" />. The
+/// preview merges the part lists of the descriptors in declaration order and resolves each highlight
+/// against the owner the part belongs to.
 /// </summary>
 public class SemanticPartPreviewOwner : AvaloniaObject
 {
     /// <summary>
-    /// owner 实例锚点，用于确定 owner type、校验兼容性，并在 PreviewContent 中定位该类型的所有实例。
+    /// Identifies the <see cref="Owner" /> property.
     /// </summary>
     public static readonly StyledProperty<Control?> OwnerProperty =
         AvaloniaProperty.Register<SemanticPartPreviewOwner, Control?>(nameof(Owner));
 
     /// <summary>
-    /// owner 类型契约；未指定时取 <see cref="Owner" /> 的精确 CLR 类型，不做类型层次反射发现。
+    /// Identifies the <see cref="OwnerType" /> property.
     /// </summary>
     public static readonly StyledProperty<Type?> OwnerTypeProperty =
         AvaloniaProperty.Register<SemanticPartPreviewOwner, Type?>(nameof(OwnerType));
 
     /// <summary>
-    /// owner 实例锚点，用于确定 owner type、校验兼容性，并在 PreviewContent 中定位该类型的所有实例。
+    /// The owner instance anchor. It supplies the owner type when <see cref="OwnerType" /> is not set,
+    /// is used to verify compatibility, and locates every instance of that type in the preview content.
+    /// An owner declaration must set it: the preview fails when it is <see langword="null" />.
     /// </summary>
     public Control? Owner
     {
@@ -33,7 +36,8 @@ public class SemanticPartPreviewOwner : AvaloniaObject
     }
 
     /// <summary>
-    /// owner 类型契约；未指定时取 <see cref="Owner" /> 的精确 CLR 类型，不做类型层次反射发现。
+    /// The owner type contract. When it is <see langword="null" />, the exact runtime type of
+    /// <see cref="Owner" /> is used; the type hierarchy is not searched through reflection.
     /// </summary>
     public Type? OwnerType
     {

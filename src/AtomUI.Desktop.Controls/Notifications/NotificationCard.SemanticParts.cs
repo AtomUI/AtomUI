@@ -5,47 +5,63 @@ using Avalonia.Controls.Presenters;
 
 namespace AtomUI.Desktop.Controls;
 
-// NotificationCard 的 Semantic Part 声明。模板内的节点拓扑为：
-//   root(NotificationCard) > wrapper > (icon, section > (title, description)) + actions + close + progress
-// 除 root 外的卡片级 Part 全部属于 public owner NotificationCard；list / listContent 属于服务宿主
-// WindowNotificationManager。progress 由 NotificationCard 运行时创建（仅在显示进度且未持久化时存在），
-// 因此声明 RuntimeCreated 并给出显式 SelectorRoute；其余 Part 都是 NotificationCard 自身 ControlTheme
-// 的静态模板节点，使用默认 owner 模板边界，不需要 CrossVisualRoot。
+// The row that holds the status icon and the text column of title and description. The action area, the
+// close button and the remaining-time bar are outside it. Present once the template is applied.
+// NotificationCardWrapperStyle applies to it.
+// The card-level parts other than root belong to the public owner NotificationCard; the list and listContent
+// parts belong to WindowNotificationManager. Except for progress, the parts are static nodes of the card's own
+// ControlTheme inside the default owner template boundary, so they need no CrossVisualRoot.
 [SemanticPart(
     "wrapper",
     SelectorClass = "semantic-wrapper",
     ContractType = typeof(DockPanel),
     Since = "6.2.0")]
+// The status icon in front of the text. Present only while the card's Icon is not null.
+// NotificationCardIconStyle applies to it.
 [SemanticPart(
     "icon",
     SelectorClass = "semantic-icon",
     ContractType = typeof(IconPresenter),
     Since = "6.2.0")]
+// The text column to the right of the status icon, holding the title and the description.
+// NotificationCardSectionStyle applies to it.
 [SemanticPart(
     "section",
     SelectorClass = "semantic-section",
     ContractType = typeof(StackPanel),
     Since = "6.2.0")]
+// The title above the description.
+// NotificationCardTitleStyle applies to it.
 [SemanticPart(
     "title",
     SelectorClass = "semantic-title",
     ContractType = typeof(SelectableTextBlock),
     Since = "6.2.0")]
+// The message below the title.
+// NotificationCardDescriptionStyle applies to it.
 [SemanticPart(
     "description",
     SelectorClass = "semantic-description",
     ContractType = typeof(ContentPresenter),
     Since = "6.2.0")]
+// The action area below the description. Present only while Actions is not null.
+// NotificationCardActionsStyle applies to it.
 [SemanticPart(
     "actions",
     SelectorClass = "semantic-actions",
     ContractType = typeof(ContentPresenter),
     Since = "6.2.0")]
+// The close button overlaid on the top-right corner of the card.
+// NotificationCardCloseStyle applies to it.
 [SemanticPart(
     "close",
     SelectorClass = "semantic-close",
     ContractType = typeof(IconButton),
     Since = "6.2.0")]
+// The remaining-time bar along the bottom edge of the card. The card creates it at runtime, only while
+// IsShowProgress is set and the card has an expiration, so it is not a template node and needs an explicit
+// SelectorRoute.
+// NotificationCardProgressStyle applies to it.
 [SemanticPart(
     "progress",
     SelectorClass = "semantic-progress",

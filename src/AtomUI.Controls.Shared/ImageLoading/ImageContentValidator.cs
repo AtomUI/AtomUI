@@ -13,6 +13,14 @@ internal enum ImageContentFormat
     Svg
 }
 
+/// <summary>
+/// Describes encoded image content before it is decoded; it is passed to a codec such as <c>SvgImageCodec</c> in
+/// AtomUI.Controls.
+/// </summary>
+/// <remarks>
+/// It names the content format and its media type, the pixel size of the content and whether it is animated.
+/// <c>SvgMetadata</c> is set only for SVG content.
+/// </remarks>
 internal readonly record struct ImageProbeResult(
     ImageContentFormat Format,
     string MediaType,

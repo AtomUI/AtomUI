@@ -6,7 +6,9 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls.Themes.AntDesign;
 
-/// <summary>The AntDesign view of <see cref="CardToken"/>.</summary>
+/// <summary>
+/// The AntDesign view of <see cref="CardToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class CardTokenRule : IControlTokenRule<AntDesignToken, CardToken>
 {
@@ -34,6 +36,7 @@ internal sealed class CardTokenRule : IControlTokenRule<AntDesignToken, CardToke
         token.HeaderPaddingLG  = new Thickness(global.UniformlyPaddingLG, 0);
         token.HeaderPadding    = new Thickness(global.UniformlyPaddingSM, 0);
         token.HeaderPaddingSM  = new Thickness(global.UniformlyPaddingXS, 0);
+        // antd cardShadow: the shadow of a hoverable card.
         token.CardShadows         = new BoxShadows(new BoxShadow()
             {
                 OffsetX = 0,
@@ -59,6 +62,7 @@ internal sealed class CardTokenRule : IControlTokenRule<AntDesignToken, CardToke
                     Color   = ColorUtils.FromRgbF(0.09, 0, 0, 0)
                 }
             ]);
+        // Ant Design gives an outlined card no resting shadow, so the hover shadow is kept as transparent layers.
         token.RestingShadows = Transparent(token.CardShadows);
         token.CardGridHoverShadows = token.CardShadows;
 
@@ -70,7 +74,9 @@ internal sealed class CardTokenRule : IControlTokenRule<AntDesignToken, CardToke
     }
 
 
-    /// <summary>The same shadow layers with a transparent colour: the resting start shape of the hover transition.</summary>
+    /// <summary>
+    /// The same shadow layers with a transparent color: the resting start shape of the hover transition.
+    /// </summary>
     private static BoxShadows Transparent(BoxShadows shadows)
     {
         if (shadows.Count == 0)

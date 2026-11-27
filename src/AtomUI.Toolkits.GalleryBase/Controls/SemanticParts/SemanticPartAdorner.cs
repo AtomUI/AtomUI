@@ -20,9 +20,9 @@ internal sealed class SemanticPartAdorner : Control
     private readonly Visual? _clipHost;
 
     /// <summary>
-    /// 语义预览的高亮画布（PART_PreviewStage）。声明后描边与画布求交：
-    /// 溢出画布的部件只高亮画布内的部分，完全在画布之外的部件整体隐藏，
-    /// 高亮框绝不越出画布边界。
+    /// The highlight canvas of the semantic preview (PART_PreviewStage). When it is set, the marker stroke
+    /// is intersected with the canvas: a part that overflows the canvas is highlighted only inside it, a
+    /// part entirely outside the canvas is hidden, and no marker crosses the canvas edge.
     /// </summary>
     internal Visual? ClipHost => _clipHost;
 
@@ -53,12 +53,13 @@ internal sealed class SemanticPartAdorner : Control
     {
         base.Render(context);
 
-        // AdornerLayer 按目标尺寸排列 child。负 Margin 让 adorner 自身覆盖外扩区域，
-        // 避免把描边画到 Bounds 之外后在目标左侧或上侧被裁掉。
+        // AdornerLayer arranges its children at the size of the target. The negative Margin lets the adorner
+        // cover the outset area itself, so a stroke drawn outside Bounds is not clipped on the left or top
+        // side of the target.
         //
-        // 主标记只画一条金色描边，不带白色外环。上游 dumi Marker 的
-        // `box-shadow: 0 0 0 1px #fff` 会在浅色舞台背景上显出一条突兀的白线，
-        // 产品决定不采用。
+        // The primary marker draws a single golden stroke without a white outer ring. The box-shadow
+        // `0 0 0 1px #fff` of the upstream dumi Marker would show a jarring white line on the light stage
+        // background, so the product decided not to adopt it.
         if (_isPrimary)
         {
             DrawMarker(context, PrimaryPen, 1);
@@ -73,10 +74,12 @@ internal sealed class SemanticPartAdorner : Control
     {
         var markerRect = GetMarkerRect(Bounds.Size, _layoutOutset, markerOutset);
 
-        // 贴边满区目标（如 popup 根、native 预览对话框的 popup.root/body）外扩描边会越出
-        // 宿主窗口表面被 OS 裁剪。钳制到 adorner 所在层（窗口/弹层客户区）内，仅内收
-        // 半个笔宽让描边贴边完整可见——对齐上游 Marker（border 沿目标边缘、不内收留白）；
-        // 层不可达或余量不足时按原矩形绘制。
+        // A target that fills its surface up to the edge (such as a popup root, or popup.root and body of the
+        // native preview dialog) would have its outset stroke reach beyond the host window surface, where the
+        // OS clips it. Clamp to the layer that hosts the adorner (the window or popup client area) and inset
+        // by half the pen width only, so an edge-aligned stroke stays fully visible. This matches the upstream
+        // Marker (border along the target edge, no inset padding). When the layer is unreachable or leaves too
+        // little room, the marker is drawn with the original rect.
         var layer = _layer ??= this.GetVisualAncestors().OfType<AdornerLayer>().FirstOrDefault();
         if (layer is not null)
         {
@@ -85,8 +88,9 @@ internal sealed class SemanticPartAdorner : Control
                 Bounds.Position.X + transform.M31,
                 Bounds.Position.Y + transform.M32);
 
-            // 预览画布钳制优先：跨视觉根的目标（popup/独立窗口宿主）无法换算画布坐标，
-            // 退回仅按层钳制的旧行为。
+            // Clamping to the preview canvas comes first: a target in another visual root (a popup or a standalone
+            // window host) cannot be converted to canvas coordinates, so the marker keeps the earlier behavior
+            // and is clamped by the layer alone.
             if (_clipHost is { } host &&
                 host.TranslatePoint(default, layer) is { } hostTopLeft)
             {
@@ -94,7 +98,7 @@ internal sealed class SemanticPartAdorner : Control
                 var clampedByHost = ClampMarkerRectToClipHost(markerRect, hostRect, positionInLayer, pen.Thickness);
                 if (clampedByHost is null)
                 {
-                    // 目标完全在画布之外：整体隐藏，不跨画布边界绘制。
+                    // The target lies entirely outside the canvas: hide it instead of drawing across the canvas edge.
                     return;
                 }
                 markerRect = clampedByHost.Value;
@@ -107,9 +111,13 @@ internal sealed class SemanticPartAdorner : Control
     }
 
     /// <summary>
-    /// 把描边矩形钳制到预览画布在 adorner 本地坐标空间的范围内，仅内收半个笔宽。
-    /// 与画布无交集（目标完全在画布外）时返回 null，调用方应整体隐藏该标记。
+    /// Clamps the marker rect to the preview canvas, after converting the canvas rect to the adorner's
+    /// local coordinate space, and insets the canvas by half the pen width only.
     /// </summary>
+    /// <returns>
+    /// The clamped rect, or <see langword="null" /> when the overlap with the inset canvas is less than one
+    /// pixel wide or high; the caller then hides the marker.
+    /// </returns>
     internal static Rect? ClampMarkerRectToClipHost(
         Rect markerRect,
         Rect clipHostRectInLayer,
@@ -126,10 +134,15 @@ internal sealed class SemanticPartAdorner : Control
     }
 
     /// <summary>
-    /// 把描边矩形钳制到层（窗口/弹层客户区）在 adorner 本地坐标空间的范围内。仅内收
-    /// 半个笔宽：超出层的边贴到层边缘，描边中心落在层边界上，一半线宽完整可见；
-    /// 交集退化（层过小）时返回原矩形。
+    /// Clamps the marker rect to the layer (the window or popup client area), after converting the layer
+    /// bounds to the adorner's local coordinate space, inset by half the pen width only: an edge beyond the
+    /// layer moves onto the layer edge, so the stroke is centered on the layer boundary and half of its
+    /// width stays visible.
     /// </summary>
+    /// <returns>
+    /// The clamped rect, or <paramref name="markerRect" /> when the intersection is degenerate (the layer
+    /// is too small).
+    /// </returns>
     internal static Rect ClampMarkerRect(
         Rect markerRect,
         Rect layerBounds,

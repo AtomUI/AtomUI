@@ -10,23 +10,26 @@ namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 /// <summary>
 /// The PrimeNG button owners (Button, DropdownButton, SubmitButton, ResetButton), PrimeUIX 3.1.1 <c>button</c>:
 /// <list type="bullet">
-/// <item>behaviour (the behaviour Tokens of <see cref="AbstractButtonGeometryToken"/>): the pressed colours on press (no movement), disabled buttons at
-/// <c>disabled.opacity</c> 0.6 with their own colours, links underlined on hover, no click wave;</item>
-/// <item>severities: the primary solid as the preset writes it; <c>danger</c> the error palette at the status stops
-/// (light 500 / 600 / 700, Nora 600 / 700 / 800; dark 400 / 300 / 200, Nora 500 / 400 / 300) with the palette's 950
-/// text in dark; <c>contrast</c> (AtomUI Default + Solid) surface.950 / 900 / 800 (dark white / surface.100 /
-/// 200); <c>button.link</c> the primary colour in every state;</item>
-/// <item>AtomUI Default (outlined) is <c>outlined.secondary</c>: a constant surface.200 border (Nora surface.600; dark
-/// surface.700, Nora surface.400) and text.muted text on a transparent fill that hovers to surface.50 (dark white at
-/// 4%) and presses to surface.100 (dark white at 16%); AtomUI Text is <c>text.secondary</c>;</item>
-/// <item>geometry: one radius at every size (<c>border.radius.md</c>), <c>gap</c> 0.5rem between icon and label,
-/// <c>sm.font.size</c> 0.75rem, no resting shadow, <c>label.font.weight</c> (Aura 500, Lara 600, Nora 700) and the
-/// <c>padding.x</c> of each size (the field padding; Lara 0.875rem) plus the border, because a CSS button adds the
-/// border to its padding while the AtomUI label inset includes it.</item>
+/// <item>behavior (the behavior Tokens of <see cref="AbstractButtonGeometryToken" />): the pressed colors on
+/// press (no movement), disabled buttons at <c>disabled.opacity</c> 0.6 with their own colors, links underlined
+/// on hover, no click wave;</item>
+/// <item>severities: the primary solid as the preset writes it; <c>danger</c> the error palette at the status
+/// stops (light 500 / 600 / 700, Nora 600 / 700 / 800; dark 400 / 300 / 200, Nora 500 / 400 / 300) with the
+/// palette's 950 text in dark; <c>contrast</c> (AtomUI Default + Solid) surface.950 / 900 / 800 (dark white /
+/// surface.100 / 200); <c>button.link</c> the primary color in every state;</item>
+/// <item>AtomUI Default (outlined) is <c>outlined.secondary</c>: a constant surface.200 border (Nora surface.600;
+/// dark surface.700, Nora surface.400) and text.muted text on a transparent fill that hovers to surface.50 (dark
+/// white at 4%) and presses to surface.100 (dark white at 16%); AtomUI Text is <c>text.secondary</c>;</item>
+/// <item>geometry: one radius at every size (the <c>md</c> step of <c>border.radius</c>), <c>gap</c> 0.5rem
+/// between icon and label, <c>sm.font.size</c> 0.75rem, no resting shadow, <c>label.font.weight</c> (Aura 500,
+/// Lara 600, Nora 700) and the <c>padding.x</c> of each size (the field padding; Lara 0.875rem) plus the border,
+/// because a CSS button adds the border to its padding while the AtomUI label inset includes it.</item>
 /// </list>
-/// The global link colours stay the deeper, page-readable stops for hyperlinks and other link text.
+/// The global link colors stay the deeper, page-readable stops for hyperlinks and other link text.
 /// </summary>
-/// <summary>The button family's link and danger colours, which the controls read from LinkColor / DangerAccentColor.</summary>
+/// <summary>
+/// The button family's link and danger colors, which the controls read from LinkColor / DangerAccentColor.
+/// </summary>
 internal readonly record struct PrimeNGButtonColors(Color Link, Color Danger);
 
 internal static class PrimeNGButtonFamilyTokens<TToken>
@@ -37,7 +40,7 @@ internal static class PrimeNGButtonFamilyTokens<TToken>
         var kind = context.Variant.Style;
         var dark = context.Variant.Appearance == ThemeAppearance.Dark;
 
-        // button.link is the primary colour in every state.
+        // button.link is the primary color in every state.
         controlGlobal.ColorLinkHover  = controlGlobal.ColorPrimary;
         controlGlobal.ColorLinkActive = controlGlobal.ColorPrimary;
         var link = controlGlobal.ColorPrimary;
@@ -45,10 +48,12 @@ internal static class PrimeNGButtonFamilyTokens<TToken>
         Color danger;
         (danger, controlGlobal.ColorErrorHover, controlGlobal.ColorErrorActive) = DangerFills(context, controlGlobal);
 
+        // button.contrast: surface.950 / 900 / 800 (dark surface.0 / 100 / 200).
         controlGlobal.ColorBgSolid       = context.Language.GetSurfaceColor(dark ? 0 : 950);
         controlGlobal.ColorBgSolidHover  = context.Language.GetSurfaceColor(dark ? 100 : 900);
         controlGlobal.ColorBgSolidActive = context.Language.GetSurfaceColor(dark ? 200 : 800);
 
+        // One border.radius (the md step) at every size.
         controlGlobal.BorderRadiusSM   = controlGlobal.BorderRadius;
         controlGlobal.BorderRadiusLG   = controlGlobal.BorderRadius;
         controlGlobal.OpacityLoading   = 0.6;
@@ -63,6 +68,8 @@ internal static class PrimeNGButtonFamilyTokens<TToken>
         var recipes = context.Language.GetVisualRecipes(effectiveGlobal, context.Variant);
         var kind     = context.Variant.Style;
         var dark     = context.Variant.Appearance == ThemeAppearance.Dark;
+        // button.disabled.opacity 0.6: the disabled button keeps its colors and dims. button.link underlines the label
+        // on hover.
         token.DisabledByOpacity    = true;
         token.DisabledOpacity      = 0.6;
         token.UnderlineLinkOnHover = true;
@@ -71,6 +78,8 @@ internal static class PrimeNGButtonFamilyTokens<TToken>
             standard.FontWeight = recipes.ButtonFontWeight;
         }
 
+        // button.padding.x (the field padding, Lara 0.875rem) plus the border: a CSS button adds its border to the
+        // padding, the AtomUI label inset includes it. gap 0.5rem between icon and label.
         var border     = effectiveGlobal.LineWidth;
         var horizontal = recipes.ButtonPaddingHorizontal ?? effectiveGlobal.InputPadding.Left;
         token.ContentPadding      = WithHorizontal(token.ContentPadding, horizontal + border);
@@ -82,15 +91,20 @@ internal static class PrimeNGButtonFamilyTokens<TToken>
         token.IconMargin       = new Thickness(0, 0, 8, 0);
         token.IconEndMargin    = new Thickness(8, 0, 0, 0);
 
+        // button has no resting shadow in any severity (only the raised variant adds one).
         token.PrimaryShadow = default;
         token.DefaultShadow = default;
         token.DangerShadow  = default;
+        // Dark: the danger fill is a light stop and takes the error palette's 950 text; the solid fill is surface.0 and
+        // takes surface.950 text. Light keeps the text the formulas gave.
         if (dark)
         {
             token.DangerColor    = context.Language.GetStatusScale(context.Variant, colors.Danger, error: true)[950];
             token.SolidTextColor = context.Language.GetSurfaceColor(950);
         }
 
+        // button.outlined.secondary (the AtomUI Default button): a constant border (surface.200, Nora 600; dark 700,
+        // Nora 400) and the muted text color on a transparent fill.
         var nora    = kind == PrimeNGLanguage.Nora;
         var outline = context.Language.GetSurfaceColor(nora ? (dark ? 400 : 600) : (dark ? 700 : 200));
         var muted   = context.Language.GetSurfaceColor(nora ? (dark ? 400 : 600) : (dark ? 400 : 500));
@@ -104,6 +118,8 @@ internal static class PrimeNGButtonFamilyTokens<TToken>
         token.DefaultHoverBg  = dark ? Color.FromArgb(0x0A, 255, 255, 255) : context.Language.GetSurfaceColor(50);
         token.DefaultActiveBg = dark ? Color.FromArgb(0x29, 255, 255, 255) : context.Language.GetSurfaceColor(100);
 
+        // button.text.secondary: the preset's muted text color on a transparent fill that hovers to its content hover
+        // background.
         var lara      = kind == PrimeNGLanguage.Lara;
         var textColor = context.Language.GetSurfaceColor(dark ? (lara ? 300 : 400) : (kind == PrimeNGLanguage.Aura ? 500 : 600));
         token.TextTextColor       = textColor;

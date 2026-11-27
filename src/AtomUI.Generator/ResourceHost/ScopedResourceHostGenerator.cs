@@ -5,6 +5,13 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace AtomUI.Generator.ResourceHost;
 
+/// <summary>
+/// For a non-generic, non-nested partial class marked with <c>[GenerateScopedResourceHost]</c>: the other half of the
+/// partial class, which makes a non-visual <c>AvaloniaObject</c> a scoped resource host and theme variant host. The
+/// marker attribute is added to the compilation in the same pass. A target that is not an <c>AvaloniaObject</c>, that
+/// is or inherits a control, a styled element or a visual, or that already implements one of the two interfaces is
+/// reported with a diagnostic instead.
+/// </summary>
 [Generator]
 public sealed class ScopedResourceHostGenerator : IIncrementalGenerator
 {
@@ -15,6 +22,13 @@ public sealed class ScopedResourceHostGenerator : IIncrementalGenerator
     private const string ResourceHostMetadataName = "Avalonia.Controls.IResourceHost";
     private const string ThemeVariantHostMetadataName = "Avalonia.Styling.IThemeVariantHost";
 
+    /// <summary>
+    /// Registers the three steps of the pipeline: the marker attribute, the collection of the marked classes with
+    /// their checked type information, and the output that writes one partial class per valid target.
+    /// </summary>
+    /// <param name="initContext">
+    /// The pipeline context of the compilation the generator runs in.
+    /// </param>
     public void Initialize(IncrementalGeneratorInitializationContext initContext)
     {
         initContext.RegisterPostInitializationOutput(static context =>

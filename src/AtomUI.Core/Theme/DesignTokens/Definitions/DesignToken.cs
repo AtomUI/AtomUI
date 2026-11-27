@@ -4,6 +4,11 @@ using AtomUI.Theme.Derivation;
 
 namespace AtomUI.Theme.DesignTokens;
 
+/// <summary>
+/// The global design tokens shared by every control: the Seed values a theme is built from, the Map values a
+/// design language derives from them, and the Alias values derived for a purpose of use. Control token rules
+/// read these values. The tokens are declared in partial files, one per group.
+/// </summary>
 public partial class DesignToken : AbstractDesignToken
 {
     private const int PresetColorCount = 14;
@@ -17,7 +22,8 @@ public partial class DesignToken : AbstractDesignToken
     private static readonly FontFamily DefaultFontFamily = new FontFamily("fonts:AlibabaSans#Alibaba Sans, Segoe UI, Segoe UI Symbol, Helvetica Neue, Noto Sans, Noto Sans CJK SC, 文泉驿正黑, Microsoft YaHei, PingFang SC, $Default");
 
     /// <summary>
-    /// 现在这里的实现是写死的主色，后面是不是可以读取配置
+    /// The color palette of each preset primary color, stored by <see cref="SetColorPalette" />. It is not a
+    /// token, so the token source generator leaves it out.
     /// </summary>
 
     [NotTokenDefinition] public IDictionary<PresetPrimaryColor, ColorMap> ColorPalettes { get; set; }
@@ -47,16 +53,39 @@ public partial class DesignToken : AbstractDesignToken
         ColorTransparent = Colors.Transparent;
     }
 
+    /// <summary>
+    /// Returns the built-in preset primary color of the given type. The result is the same for every instance
+    /// and does not depend on <see cref="ColorPrimary" />.
+    /// </summary>
+    /// <param name="colorType">
+    /// The type of the preset to return.
+    /// </param>
     public PresetPrimaryColor GetPresetPrimaryColor(PresetColorType colorType)
     {
         return s_defaultPresetColors[colorType];
     }
 
+    /// <summary>
+    /// Stores the palette of one preset primary color, replacing the palette stored earlier for it.
+    /// </summary>
+    /// <param name="primaryColor">
+    /// The preset the palette belongs to.
+    /// </param>
+    /// <param name="colorMap">
+    /// The palette generated from the color of that preset.
+    /// </param>
     public void SetColorPalette(PresetPrimaryColor primaryColor, ColorMap colorMap)
     {
         ColorPalettes[primaryColor] = colorMap;
     }
 
+    /// <summary>
+    /// Returns the palette stored for the given preset primary color, or <see langword="null" /> when no palette
+    /// was stored for it.
+    /// </summary>
+    /// <param name="primaryColor">
+    /// The preset whose palette to return.
+    /// </param>
     public ColorMap? GetColorPalette(PresetPrimaryColor primaryColor)
     {
         ColorMap? value;

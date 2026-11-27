@@ -4,7 +4,9 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls.Themes.AntDesign;
 
-/// <summary>The AntDesign view of <see cref="ProgressBarToken"/>.</summary>
+/// <summary>
+/// The AntDesign view of <see cref="ProgressBarToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class ProgressBarTokenRule : IControlTokenRule<AntDesignToken, ProgressBarToken>
 {
@@ -19,6 +21,7 @@ internal sealed class ProgressBarTokenRule : IControlTokenRule<AntDesignToken, P
         token.LineStrokeThicknessSM = 4;
         token.LineProgressPadding = global.UniformlyPaddingXXS / 2;
         token.InnerLabelColor = global.ColorTextLabel;
+        // The label stays visible on an empty bar; PrimeNG hides it with 0.
         token.InnerLabelEmptyOpacity = 1;
         token.ProgressActiveMotionDuration = TimeSpan.FromSeconds(2.4); // antd progressActiveMotionDuration: '2.4s'
     }

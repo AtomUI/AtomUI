@@ -11,24 +11,43 @@ using Avalonia.Layout;
 
 namespace AtomUI.Desktop.Controls;
 
+/// <summary>
+/// A tab control with card tabs. The tabs have rounded corners on the edge away from the content, an add-tab
+/// button can be shown next to them, and each item is hosted in a card-shaped <see cref="TabItem" />.
+/// </summary>
 public partial class CardTabControl : BaseTabControl
 {
     #region 公共属性实现
 
+    /// <summary>
+    /// Identifies the <see cref="IsShowAddTabButton" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsShowAddTabButtonProperty =
         AvaloniaProperty.Register<CardTabControl, bool>(nameof(IsShowAddTabButton));
 
+    /// <summary>
+    /// Identifies the <see cref="AddTabRequest" /> routed event.
+    /// </summary>
     public static readonly RoutedEvent<RoutedEventArgs> AddTabRequestEvent =
         RoutedEvent.Register<CardTabControl, RoutedEventArgs>(
             nameof(AddTabRequest),
             RoutingStrategies.Bubble);
 
+    /// <summary>
+    /// Shows the add-tab button next to the tabs; the default is <see langword="false" />.
+    /// Clicking the button raises <see cref="AddTabRequest" />; the control adds no tab itself.
+    /// The button is the <c>add</c> semantic part and is styled with <c>CardTabControlAddStyle</c>.
+    /// </summary>
     public bool IsShowAddTabButton
     {
         get => GetValue(IsShowAddTabButtonProperty);
         set => SetValue(IsShowAddTabButtonProperty, value);
     }
 
+    /// <summary>
+    /// Raised when the add-tab button is clicked. The event bubbles up and carries no data. The control does not
+    /// add a tab itself; a handler adds it.
+    /// </summary>
     public event EventHandler<RoutedEventArgs>? AddTabRequest
     {
         add => AddHandler(AddTabRequestEvent, value);
@@ -55,8 +74,17 @@ public partial class CardTabControl : BaseTabControl
         ControlTokenResourceKey.Global(CardTabControlTokens.Identity, SharedTokenKind.BorderRadiusLG)
     ];
 
+    /// <summary>
+    /// The border-radius tokens of this control, one for each size type in the order small, middle and large.
+    /// The theme of the control sets <c>UseCardRadiusTokenResources</c>, so the corner radius of its card tabs
+    /// follows the token of the current <c>SizeType</c> through <c>CardRadius</c>.
+    /// </summary>
     private protected override object[] CardRadiusKeys => s_cardRadiusKeys;
 
+    /// <summary>
+    /// Recalculates the corner radius of the card tabs and the size of the add-tab button from the new
+    /// <c>CardRadius</c> and the tab strip placement, with the update that also runs when the placement changes.
+    /// </summary>
     private protected override void OnCardRadiusChanged() => HandleTabStripPlacementChanged();
 
     internal CornerRadius EffectiveCardBorderRadius
@@ -82,6 +110,10 @@ public partial class CardTabControl : BaseTabControl
     private IconButton? _addTabButton;
     private ItemsPresenter? _itemsPresenter;
     
+    /// <summary>
+    /// Creates the container for an item that is not a <see cref="TabItem" /> already: a new card-shaped tab that
+    /// carries the semantic item class.
+    /// </summary>
     protected override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey)
     {
         var tabItem = new TabItem
@@ -100,6 +132,12 @@ public partial class CardTabControl : BaseTabControl
         BindingOperations.GetBindingExpressionBase(tabItem, BorderThicknessProperty)?.Dispose();
     }
 
+    /// <summary>
+    /// Calls the base member and then turns a <see cref="TabItem" /> container into a card tab: sets the card shape,
+    /// adds the semantic item class, and binds the corner radius and border thickness of the tab to the effective
+    /// card radius and border thickness of the control.
+    /// <see cref="ReleaseTabItemOwnerBindings" /> disposes those two bindings.
+    /// </summary>
     protected override void PrepareContainerForItemOverride(Control container, object? item, int index)
     {
         base.PrepareContainerForItemOverride(container, item, index);
@@ -112,6 +150,10 @@ public partial class CardTabControl : BaseTabControl
         }
     }
 
+    /// <summary>
+    /// Applies the template and hooks up the add-tab button: the click handler of the previous button is detached,
+    /// the base member is called, and a click on the new button raises <see cref="AddTabRequest" />.
+    /// </summary>
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         if (_addTabButton is not null)
@@ -128,6 +170,10 @@ public partial class CardTabControl : BaseTabControl
         }
     }
 
+    /// <summary>
+    /// Calls the base member and then recalculates the card corner radius and the add-tab button size when
+    /// <c>TabStripPlacement</c> or <see cref="CardSize" /> changes.
+    /// </summary>
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
@@ -144,6 +190,10 @@ public partial class CardTabControl : BaseTabControl
         RaiseEvent(new RoutedEventArgs(AddTabRequestEvent));
     }
 
+    /// <summary>
+    /// Arranges the control and then applies the card corner radius and the add-tab button size of the current tab
+    /// strip placement. Call the base member first.
+    /// </summary>
     protected override Size ArrangeOverride(Size finalSize)
     {
         var size = base.ArrangeOverride(finalSize);

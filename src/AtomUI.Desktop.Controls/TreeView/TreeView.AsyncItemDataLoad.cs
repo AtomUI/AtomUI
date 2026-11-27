@@ -23,10 +23,19 @@ public partial class TreeView
     #endregion
 
     #region 公开属性定义
+    /// <summary>
+    /// Identifies the <see cref="AsyncLoadTimeout" /> property.
+    /// </summary>
     public static readonly StyledProperty<TimeSpan> AsyncLoadTimeoutProperty =
         AvaloniaProperty.Register<TreeView, TimeSpan>(nameof(AsyncLoadTimeout),
             TimeSpan.FromSeconds(30));
 
+    /// <summary>
+    /// Maximum time a <see cref="DataLoader" /> call for the children of a node may take. Defaults to 30 seconds.
+    /// The value is read each time a node load starts. A load that takes longer ends with a
+    /// <see cref="TreeItemLoaded" /> result whose status is <see cref="RpcStatusCode.Timeout" />, and no children
+    /// are added.
+    /// </summary>
     public TimeSpan AsyncLoadTimeout
     {
         get => GetValue(AsyncLoadTimeoutProperty);

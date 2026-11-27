@@ -3,7 +3,9 @@ using AtomUI.Theme.Languages;
 
 namespace AtomUI.Desktop.Controls.Themes.AntDesign;
 
-/// <summary>The AntDesign view of <see cref="BorderBeamToken"/>.</summary>
+/// <summary>
+/// The AntDesign view of <see cref="BorderBeamToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class BorderBeamTokenRule : IControlTokenRule<AntDesignToken, BorderBeamToken>
 {

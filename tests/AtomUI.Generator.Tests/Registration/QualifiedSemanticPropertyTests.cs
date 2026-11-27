@@ -75,7 +75,8 @@ public partial class TypeMapIntegrationTests
         var providerType = core.GetType("AtomUI.Theme.Resources.ControlThemesProvider")!;
         var provider = Activator.CreateInstance(providerType)!;
         providerType.GetProperty("Id")!.SetValue(provider, "Probe");
-        // 分级启动为 Build 增加了余量收集重载；本测试按精确 2 参签名解析原路径。
+        // Tiered startup added a margin-collection overload to Build; this test resolves the original path by
+        // its exact two-parameter signature.
         var buildMethod = collectionType.GetMethods(BindingFlags.Instance | BindingFlags.NonPublic)
             .Single(method => method.Name == "Build" && method.GetParameters().Length == 2);
         var package = buildMethod.Invoke(collection, ["Probe", provider])!;

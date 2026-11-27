@@ -4,7 +4,9 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 
-/// <summary>The PrimeNG view of <see cref="DateViewerToken"/>.</summary>
+/// <summary>
+/// The PrimeNG view of <see cref="DateViewerToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class DateViewerTokenRule : IControlTokenRule<PrimeNGToken, DateViewerToken>
 {
@@ -12,7 +14,7 @@ internal sealed class DateViewerTokenRule : IControlTokenRule<PrimeNGToken, Date
     {
         var token  = target.Own;
         var global = target.Global;
-        // PrimeNG: the control-global overrides, read by the formulas below.
+        // PrimeNG: no control-global overrides; EvaluateGlobal writes nothing.
         PrimeNGDateViewerTokens.EvaluateGlobal(in context, global);
         DateViewerTokenCalculator.Calculate(in context, global, token);
         token.CellHeight = global.ControlHeightSM;

@@ -5,13 +5,21 @@
 
 namespace AtomUI.Desktop.Controls;
 
+/// <summary>
+/// Describes a row edit that has ended, for the <see cref="DataGrid.RowEditEnded" /> event, which the grid
+/// raises after the row edit has been committed or canceled.
+/// </summary>
 public class DataGridRowEditEndedEventArgs : EventArgs
 {
     /// <summary>
     /// Instantiates a new instance of this class.
     /// </summary>
-    /// <param name="row">The row container of the cell container that has just exited edit mode.</param>
-    /// <param name="editAction">The editing action that has been taken.</param>
+    /// <param name="row">
+    /// The row container of the cell container that has just exited edit mode.
+    /// </param>
+    /// <param name="editAction">
+    /// The editing action that has been taken.
+    /// </param>
     public DataGridRowEditEndedEventArgs(DataGridRow row, DataGridEditAction editAction)
     {
         Row        = row;

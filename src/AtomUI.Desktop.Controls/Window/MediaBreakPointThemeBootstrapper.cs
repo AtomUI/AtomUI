@@ -8,21 +8,25 @@ using Avalonia.Styling;
 namespace AtomUI.Desktop.Controls;
 
 /// <summary>
-/// 在 Window 的 ControlTheme 里程序化注入媒体断点 ContainerQuery。
-///
-/// 断点数值来自当前 Theme 的 Alias Token (ScreenSMMin/ScreenSMMax 等),使得开发者
-/// 通过主题配置文件覆盖 Alias Token 就能改断点,不需要动 axaml 里的字面量。
-/// 订阅 ThemeManager.ThemeChanged,每次 committed theme 切换后重建 CQ。
-///
-/// 注意:CQ 必须按从大到小的顺序注入 (ExtraExtraExtraLarge → ExtraSmall)。
-/// Avalonia 在跨断点 resize 过程中 activator 的评估顺序与声明顺序相关,
-/// 经实测只有这个顺序下所有方向的断点切换都能正确 fire。
+/// Injects the media breakpoint <see cref="ContainerQuery" /> items into the <see cref="ControlTheme" /> of
+/// <see cref="Window" /> from code. The breakpoint values come from the alias tokens of the committed theme
+/// snapshot (ScreenSMMin, ScreenSMMax and so on), so overriding them in the theme configuration changes the
+/// breakpoints without editing literals in AXAML.
 /// </summary>
+/// <remarks>
+/// <see cref="ThemeManager.ControlThemeResolved" /> adds the queries when the Window theme is resolved, and
+/// <see cref="ThemeManager.ThemeChanged" /> updates their breakpoints in place after each committed theme switch.
+/// The queries must be added from the largest breakpoint to the smallest (ExtraExtraExtraLarge to ExtraSmall),
+/// in the order of <see cref="Rows" />: while a resize crosses breakpoints, Avalonia evaluates the activators in
+/// declaration order, and only this order was measured to make the breakpoint change fire correctly in every
+/// direction.
+/// </remarks>
 internal sealed class MediaBreakPointThemeBootstrapper : IDisposable
 {
-    // 注意:ContainerQuery.SetParent 只允许 ControlTheme 作为 parent,不接受 null,
-    // 意味着一旦加入 ControlTheme.Children 就无法 Remove。因此首次加载后缓存 CQ,
-    // 后续主题切换只就地更新 Query (断点阈值),不再增删节点。
+    // ContainerQuery.SetParent only accepts a ControlTheme as parent and never null, so a query cannot be removed
+    // once it is in ControlTheme.Children. The queries are therefore cached after the first load, and a later
+    // theme switch only updates their Query (the breakpoint thresholds) in place instead of adding or removing
+    // nodes.
     private readonly ConditionalWeakTable<ControlTheme, ThemeQueries> _themeQueries = new();
     private readonly List<WeakReference<ThemeQueries>> _liveThemes = new();
     private ThemeManager? _themeManager;

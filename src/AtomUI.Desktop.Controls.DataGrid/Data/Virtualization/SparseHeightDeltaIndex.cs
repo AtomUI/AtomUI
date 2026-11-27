@@ -179,10 +179,13 @@ internal sealed class SparseHeightDeltaIndex
                 continue;
             }
 
-            // 槽位区间必须首尾相接：一行的结束边界就是下一槽位的起点，只能按下一槽位的起点算式求值。
-            // 用“本行起点 + 实测高度”求值会与该起点相差若干 ULP（行高不能被二进制精确表示时，
-            // 例如 125%、150% 缩放下的布局取整结果），偏移落进这条缝时两行都判定它不属于自己，上下界随之交叉。
-            // 到达上界槽位时无需再比较：偏移小于其后一个槽位的起点（或总高度）已由之前的比较确定。
+            // Slot intervals must join end to end: the end of a row is the start of the next slot, so it can
+            // only be evaluated with the next slot's start formula. Evaluating it as "start of this row +
+            // measured height" differs from that start by a few ULPs when the row height is not exactly
+            // representable in binary (for example the layout rounding results at 125% and 150% scaling).
+            // An offset that falls into this gap is claimed by neither row, and the lower and upper bounds
+            // cross. Once the upper slot is reached no further comparison is needed: an earlier comparison
+            // already established that the offset is before the following slot's start (or the total height).
             var nextPrefixDelta = SafeAdd(prefixDelta, SafeAdd(leftDelta, node.Delta));
             if (node.Slot >= upperSlot ||
                 offset < StartOf(node.Slot + 1, nextPrefixDelta))
@@ -272,8 +275,9 @@ internal sealed class SparseHeightDeltaIndex
         return null;
     }
 
-    // 槽位起点的唯一算式：槽位边界（含总高度，即末槽位之后的起点）都必须经由这里求值，
-    // 同一边界才不会因运算结合顺序不同而得到两个相差若干 ULP 的值。
+    // The only formula for a slot start: every slot boundary (including the total height, which is the
+    // start after the last slot) must be evaluated through here, so that one boundary never yields two
+    // values a few ULPs apart because of a different grouping of the operations.
     private double StartOf(int slot, double prefixDelta) =>
         Math.Max(0, SafeAdd(SafeMultiply(slot, DefaultHeight), prefixDelta));
 

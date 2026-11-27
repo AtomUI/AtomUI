@@ -5,7 +5,9 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls.Themes.AntDesign;
 
-/// <summary>The AntDesign view of <see cref="StepsToken"/>.</summary>
+/// <summary>
+/// The AntDesign view of <see cref="StepsToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class StepsTokenRule : IControlTokenRule<AntDesignToken, StepsToken>
 {
@@ -24,6 +26,7 @@ internal sealed class StepsTokenRule : IControlTokenRule<AntDesignToken, StepsTo
         token.DotSize             = global.ControlHeight / 4;
         token.DotCurrentSize      = global.ControlHeightLG / 4;
         token.NavArrowColor       = global.ColorTextDisabled;
+        // antd v6 no longer caps the description width; AtomUI keeps 140 as the default of this token.
         token.DescriptionMaxWidth = 140;
 
         token.WaitIconColor         = global.ColorTextLabel;

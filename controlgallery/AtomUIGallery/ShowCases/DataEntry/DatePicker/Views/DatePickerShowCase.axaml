@@ -29,9 +29,11 @@
                                                  PreviewStageMinHeight="560"
                                                  PreviewContentAlignment="Top">
                         <gallery:SemanticPartPreview.PreviewContent>
-                            <!-- 双月日历弹层约 470px 高:舞台最小高度 560 且锚点置顶,
-                                 让弹层向下展开,避免翻转向上遮挡页面 Tabs;
-                                 舞台随宿主钳制高度收缩,不产生可视区之外的布局。 -->
+                            <!-- The two-month calendar popup is about 470 high: the stage has a minimum height of 560
+                            and a top anchor, so the popup opens downward instead of flipping upward over the page
+                            tabs. The stage shrinks with the height the host clamps it to and produces no layout
+                            outside the visible area.
+                            -->
                             <atom:RangeDatePicker x:Name="DatePickerSemanticOwner"
                                                       VerticalAlignment="Top"
                                                       Width="420"

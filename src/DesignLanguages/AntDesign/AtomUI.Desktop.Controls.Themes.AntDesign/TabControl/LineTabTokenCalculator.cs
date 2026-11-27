@@ -5,9 +5,16 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls.Themes.AntDesign;
 
-/// <summary>The AntDesign values of the shared <see cref="AbstractLineTabToken"/> layer.</summary>
+/// <summary>
+/// The AntDesign values of the shared <see cref="AbstractLineTabToken" /> layer.
+/// </summary>
 public static class LineTabTokenCalculator
 {
+    /// <summary>
+    /// Assigns the Ant Design values of the shared <see cref="AbstractLineTabToken" /> layer to
+    /// <paramref name="token" />. It first runs <c>TabTokenCalculator</c>, so the base tab layer of the same Token
+    /// is filled as well.
+    /// </summary>
     public static void Calculate(in TokenEvaluationContext<AntDesignToken> context, DesignToken global, AbstractLineTabToken token)
     {
         TabTokenCalculator.Calculate(in context, global, token);

@@ -6,7 +6,9 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls.Themes.Shadcn;
 
-/// <summary>The shadcn view of <see cref="OptionButtonToken"/>.</summary>
+/// <summary>
+/// The shadcn view of <see cref="OptionButtonToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class OptionButtonTokenRule : IControlTokenRule<ShadcnToken, OptionButtonToken>
 {
@@ -17,6 +19,7 @@ internal sealed class OptionButtonTokenRule : IControlTokenRule<ShadcnToken, Opt
     {
         var token  = target.Own;
         var global = target.Global;
+        // Ant Design formula kept as is: no registry value is merged into the option button tokens.
         token.ButtonSolidCheckedColor            = global.ColorTextLightSolid;
         token.ButtonSolidCheckedBackground       = global.ColorPrimary;
         token.ButtonSolidCheckedHoverBackground  = global.ColorPrimaryHover;

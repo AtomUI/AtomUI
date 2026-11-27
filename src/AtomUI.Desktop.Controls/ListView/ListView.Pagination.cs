@@ -11,20 +11,49 @@ public partial class ListView
 {
     #region 公共属性定义
     
+    /// <summary>
+    /// Identifies the <see cref="PageIndex" /> property.
+    /// </summary>
     public static readonly StyledProperty<int> PageIndexProperty =
         AvaloniaProperty.Register<ListView, int>(
             nameof(PageIndex), AbstractPagination.DefaultCurrentPage);
     
+    /// <summary>
+    /// Identifies the <see cref="PageSize" /> property.
+    /// </summary>
     public static readonly StyledProperty<int> PageSizeProperty =
         AvaloniaProperty.Register<ListView, int>(
             nameof(PageSize), 0);
     
+    /// <summary>
+    /// Zero-based index of the page shown by the data view, as reported by the last page change of the view.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// The list updates this value when the data view reports a page change. Until the first report it holds
+    /// the default <see cref="AbstractPagination.DefaultCurrentPage" />, which is a one-based pager page number.
+    /// </para>
+    /// <para>
+    /// Assigning a value is not applied to the data view. Change pages through the pagers, whose page number
+    /// is one-based.
+    /// </para>
+    /// </remarks>
     public int PageIndex
     {
         get => GetValue(PageIndexProperty);
         set => SetValue(PageIndexProperty, value);
     }
     
+    /// <summary>
+    /// Number of items per page. The default is <c>0</c>, which turns paging off; a value greater than zero
+    /// turns paging on and is handed to both pagers as well.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// The value is passed to the data view whenever it changes. When the data view changes its page size on
+    /// its own, this property follows.
+    /// </para>
+    /// </remarks>
     public int PageSize
     {
         get => GetValue(PageSizeProperty);

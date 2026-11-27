@@ -12,76 +12,149 @@ using Avalonia.Interactivity;
 
 namespace AtomUI.Desktop.Controls;
 
+/// <summary>
+/// The container of one option in a level of a <see cref="CascaderView" />. It shows the icon and the header of
+/// the option, preceded by a check box when <see cref="ToggleType" /> is <see cref="ItemToggleType.CheckBox" />.
+/// </summary>
+/// <remarks>
+/// When the item is prepared for an <see cref="ICascaderOption" />, it copies the icon, value, key, check
+/// state, expansion state and enabled flags of the option into its own properties. For a
+/// <see cref="BindableCascaderOption" /> the item also follows later changes of the option until it is
+/// detached from the visual tree, and writes <see cref="IsChecked" /> and <see cref="IsExpanded" /> back to
+/// the option.
+/// </remarks>
 [PseudoClasses(CascaderViewPseudoClass.NodeToggleTypeCheckBox, StdPseudoClass.Pressed, StdPseudoClass.Expanded,
     StdPseudoClass.Selected)]
 public class CascaderViewItem : TemplatedControl, ISelectable, IListItemVirtualizingContextAware
 {
     #region 公共属性定义
+    /// <summary>
+    /// Identifies the <see cref="Header" /> property.
+    /// </summary>
     public static readonly StyledProperty<object?> HeaderProperty =
         AvaloniaProperty.Register<CascaderViewItem, object?>(nameof(Header));
 
+    /// <summary>
+    /// Identifies the <see cref="HeaderTemplate" /> property.
+    /// </summary>
     public static readonly StyledProperty<IDataTemplate?> HeaderTemplateProperty =
         AvaloniaProperty.Register<CascaderViewItem, IDataTemplate?>(nameof(HeaderTemplate));
 
+    /// <summary>
+    /// Identifies the <see cref="IsSelected" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsSelectedProperty =
         SelectingItemsControl.IsSelectedProperty.AddOwner<CascaderViewItem>();
 
+    /// <summary>
+    /// Identifies the <see cref="IsExpanded" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsExpandedProperty =
         AvaloniaProperty.Register<CascaderViewItem, bool>(
             nameof(IsExpanded),
             defaultBindingMode: BindingMode.TwoWay);
 
+    /// <summary>
+    /// Gets or sets the content presented in the header area of the item. When the item is prepared, the value is
+    /// the <see cref="ICascaderOption" /> itself, not its text; <see cref="HeaderTemplate" /> builds the visuals.
+    /// </summary>
     public object? Header
     {
         get => GetValue(HeaderProperty);
         set => SetValue(HeaderProperty, value);
     }
 
+    /// <summary>
+    /// Gets or sets the template that builds the visuals of <see cref="Header" />. When the item is prepared and
+    /// its level has an item template, that template is bound to this property; the item template of the level
+    /// follows <see cref="CascaderView.OptionTemplate" />.
+    /// </summary>
     public IDataTemplate? HeaderTemplate
     {
         get => GetValue(HeaderTemplateProperty);
         set => SetValue(HeaderTemplateProperty, value);
     }
 
+    /// <summary>
+    /// Identifies the <see cref="Icon" /> property.
+    /// </summary>
     public static readonly StyledProperty<PathIcon?> IconProperty =
         AvaloniaProperty.Register<CascaderViewItem, PathIcon?>(nameof(Icon));
 
+    /// <summary>
+    /// Identifies the <see cref="IsChecked" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool?> IsCheckedProperty =
         AvaloniaProperty.Register<CascaderViewItem, bool?>(nameof(IsChecked), false);
 
+    /// <summary>
+    /// Identifies the <see cref="IsLeaf" /> property.
+    /// </summary>
     public static readonly DirectProperty<CascaderViewItem, bool> IsLeafProperty =
         AvaloniaProperty.RegisterDirect<CascaderViewItem, bool>(nameof(IsLeaf),
             o => o.IsLeaf);
 
+    /// <summary>
+    /// Identifies the <see cref="IsLoading" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsLoadingProperty =
         AvaloniaProperty.Register<CascaderViewItem, bool>(nameof(IsLoading), false);
 
+    /// <summary>
+    /// Identifies the <see cref="Value" /> property.
+    /// </summary>
     public static readonly DirectProperty<CascaderViewItem, object?> ValueProperty =
         AvaloniaProperty.RegisterDirect<CascaderViewItem, object?>(nameof(Value),
             o => o.Value,
             (o, v) => o.Value = v);
 
+    /// <summary>
+    /// Identifies the <see cref="IsCheckBoxEnabled" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsCheckBoxEnabledProperty =
         AvaloniaProperty.Register<CascaderViewItem, bool>(nameof(IsCheckBoxEnabled), true);
 
+    /// <summary>
+    /// Gets or sets whether the option is the selected option of the <see cref="CascaderView" />, apart from its
+    /// checked state. The level list changes the value when the user activates the item. Once the value is
+    /// <see langword="true" />, the view stores the option as its <c>SelectedOption</c> and raises
+    /// <see cref="CascaderView.OptionSelected" />.
+    /// </summary>
     public bool IsSelected
     {
         get => GetValue(IsSelectedProperty);
         set => SetValue(IsSelectedProperty, value);
     }
 
+    /// <summary>
+    /// Gets or sets whether the option is expanded, which makes the <see cref="CascaderView" /> show the children
+    /// of the option as the next level and paints the item with the selected option colors of the theme. The
+    /// property binds two-way by default.
+    /// </summary>
     public bool IsExpanded
     {
         get => GetValue(IsExpandedProperty);
         set => SetValue(IsExpandedProperty, value);
     }
 
+    /// <summary>
+    /// Gets or sets the icon shown in front of the option's header, or <see langword="null" /> to show none.
+    /// </summary>
     public PathIcon? Icon
     {
         get => GetValue(IconProperty);
         set => SetValue(IconProperty, value);
     }
 
+    /// <summary>
+    /// Gets or sets the check state of the option: <see langword="true" /> checked, <see langword="false" />
+    /// unchecked and <see langword="null" /> partly checked, which the view uses for a parent with some but not
+    /// all of its children checked.
+    /// </summary>
+    /// <remarks>
+    /// The check box of the item template binds to this property two-way. The view stores a change on the option
+    /// and derives the state of each parent option from its children.
+    /// </remarks>
     public bool? IsChecked
     {
         get => GetValue(IsCheckedProperty);
@@ -90,6 +163,16 @@ public class CascaderViewItem : TemplatedControl, ISelectable, IListItemVirtuali
 
     private bool _isLeaf;
 
+    /// <summary>
+    /// Gets whether the option has no children. Only a leaf can be picked as the selection, unless the view
+    /// allows selecting parents.
+    /// </summary>
+    /// <remarks>
+    /// The item computes the value from the option. An option whose children are loaded asynchronously is a
+    /// leaf only after it reports <see cref="ICascaderOption.IsLeaf" /> or its children were loaded and there are
+    /// none. The template derives the visibility of the expand icon from this value and from
+    /// <see cref="IsLoading" />.
+    /// </remarks>
     public bool IsLeaf
     {
         get => _isLeaf;
@@ -98,24 +181,40 @@ public class CascaderViewItem : TemplatedControl, ISelectable, IListItemVirtuali
 
     private object? _value;
 
+    /// <summary>
+    /// Gets or sets the value of the option. When the view resolves a path of segments, an option matches a
+    /// segment by the string form of this value when its <see cref="ItemKey" /> does not match.
+    /// </summary>
     public object? Value
     {
         get => _value;
         set => SetAndRaise(ValueProperty, ref _value, value);
     }
 
+    /// <summary>
+    /// Gets or sets whether the children of the option are being loaded asynchronously. While
+    /// <see langword="true" />, the item shows its loading icon and the option cannot be picked as the selection.
+    /// </summary>
     public bool IsLoading
     {
         get => GetValue(IsLoadingProperty);
         set => SetValue(IsLoadingProperty, value);
     }
 
+    /// <summary>
+    /// Gets or sets whether the option may be checked. When <see langword="false" />, the check box of the item
+    /// is disabled and clicking the item leaves <see cref="IsChecked" /> unchanged.
+    /// </summary>
     public bool IsCheckBoxEnabled
     {
         get => GetValue(IsCheckBoxEnabledProperty);
         set => SetValue(IsCheckBoxEnabledProperty, value);
     }
 
+    /// <summary>
+    /// Gets or sets the key that identifies the option when the view resolves a path of segments. A segment
+    /// matches this key first and the string form of <see cref="Value" /> second.
+    /// </summary>
     public EntityKey? ItemKey { get; set; }
 
     #endregion
@@ -227,6 +326,12 @@ public class CascaderViewItem : TemplatedControl, ISelectable, IListItemVirtuali
         set => SetValue(IsMotionEnabledProperty, value);
     }
     
+    /// <summary>
+    /// Gets or sets the toggle marker shown in front of the option's header. With
+    /// <see cref="ItemToggleType.CheckBox" /> the item shows a check box bound two-way to
+    /// <see cref="IsChecked" />; with <see cref="ItemToggleType.None" /> it shows none. The item template draws
+    /// nothing for <see cref="ItemToggleType.Radio" />.
+    /// </summary>
     public ItemToggleType ToggleType
     {
         get => GetValue(ToggleTypeProperty);
@@ -255,6 +360,10 @@ public class CascaderViewItem : TemplatedControl, ISelectable, IListItemVirtuali
         set => SetValue(IsCandidateSelectedProperty, value);
     }
 
+    /// <summary>
+    /// Gets the depth of the option in the option tree: 1 for an option of the root level and one more for each
+    /// ancestor. The value is 0 when the data context of the item is not an <see cref="ICascaderOption" />.
+    /// </summary>
     public int Level => GetLevel();
     internal ICascaderOption? AttachedOption => DataContext as ICascaderOption;
     
@@ -327,6 +436,12 @@ public class CascaderViewItem : TemplatedControl, ISelectable, IListItemVirtuali
         RaiseEvent(new RoutedEventArgs(SelectedEvent, this));
     }
     
+    /// <summary>
+    /// Calls the base member first, then keeps the item in step with the changed property: recomputes
+    /// <see cref="IsLeaf" /> when <see cref="HasItemAsyncDataLoader" /> or the data context changes, and updates
+    /// the pseudo-classes when <see cref="ToggleType" />, <see cref="IsChecked" />, <see cref="IsSelected" /> or
+    /// <see cref="IsExpanded" /> changes. Call the base member from an override to keep these states current.
+    /// </summary>
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
@@ -350,6 +465,10 @@ public class CascaderViewItem : TemplatedControl, ISelectable, IListItemVirtuali
         }
     }
 
+    /// <summary>
+    /// Releases the subscriptions that connect the item to its <see cref="BindableCascaderOption" />, then calls
+    /// the base member. An override must call the base member to release them.
+    /// </summary>
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         ClearPreparedCascaderOptionData();
@@ -408,6 +527,10 @@ public class CascaderViewItem : TemplatedControl, ISelectable, IListItemVirtuali
         }
     }
 
+    /// <summary>
+    /// Calls the base member, then recomputes <see cref="IsLeaf" /> from the option that is the data context of
+    /// the item.
+    /// </summary>
     protected override void OnLoaded(RoutedEventArgs e)
     {
         base.OnLoaded(e);
@@ -418,7 +541,7 @@ public class CascaderViewItem : TemplatedControl, ISelectable, IListItemVirtuali
     private int GetLevel()
     {
         var level = 0;
-        // 通过数据
+        // The level is counted along the parent chain of the option in the data context.
         if (DataContext is ICascaderOption option)
         {
             var current = option;

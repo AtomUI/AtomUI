@@ -15,6 +15,9 @@ namespace AtomUI.Desktop.Controls;
 
 // Token-owner transparent item container: the item theme reads the hosting list's Tokens (ListView, or the host of a derived
 // list such as the Select candidate list), so Controls[ListView] also reaches the items and their transitions.
+/// <summary>
+/// Container for one item of a <see cref="ListView" />; also the base class of the group header of a grouped list.
+/// </summary>
 [TokenOwnerTransparent]
 public class ListViewItem : ContentControl,
                             IListItemVirtualizingContextAware,
@@ -22,9 +25,22 @@ public class ListViewItem : ContentControl,
 {
     #region 公共属性定义
 
+    /// <summary>
+    /// Identifies the <see cref="IsSelected" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsSelectedProperty =
         ListView.IsSelectedProperty.AddOwner<ListViewItem>();
     
+    /// <summary>
+    /// Whether the item shown by this container is selected in the owning <see cref="ListView" />.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// The owning list writes the value from its selection and clears it when the container is recycled.
+    /// A change that the list did not write itself is applied by the list to its selection, following its selection
+    /// mode, when the container is a direct child of the list.
+    /// </para>
+    /// </remarks>
     public bool IsSelected
     {
         get => GetValue(IsSelectedProperty);
@@ -35,11 +51,28 @@ public class ListViewItem : ContentControl,
     
     #region 公共事件定义
 
+    /// <summary>
+    /// Identifies the <see cref="Clicked" /> routed event.
+    /// </summary>
     public static readonly RoutedEvent<RoutedEventArgs> ClickedEvent =
         RoutedEvent.Register<ListViewItem, RoutedEventArgs>(
             nameof(Clicked),
             RoutingStrategies.Bubble);
     
+    /// <summary>
+    /// Raised when the item is clicked: on the left button press while the owning list has
+    /// <see cref="ListView.ItemClickMode" /> set to <see cref="ClickMode.Press" />, or on the left button release
+    /// while it is set to <see cref="ClickMode.Release" />.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// The event bubbles and is not raised when the pointer event is already handled. The handling of a press by
+    /// this container to update the selection does not count as handled here; the handling of a release does.
+    /// </para>
+    /// <para>
+    /// The press variant requires the container to belong to a <see cref="ListView" />.
+    /// </para>
+    /// </remarks>
     public event EventHandler<RoutedEventArgs>? Clicked
     {
         add => AddHandler(ClickedEvent, value);
@@ -321,30 +354,74 @@ public class ListViewItem : ContentControl,
         _transitionInitialization = new TransitionInitializationSession(this);
     }
 
+    /// <summary>
+    /// Completes the transition initialization session once the template is applied. The completion releases the
+    /// suppression of the item's transitions.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Completion takes effect only when the item is loaded and attached to the visual tree. Otherwise
+    /// <see cref="OnLoaded" /> completes the session.
+    /// </para>
+    /// <para>
+    /// An override must call the base method, otherwise the transitions stay suppressed for a template that is
+    /// applied while the item is loaded.
+    /// </para>
+    /// </remarks>
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
         _transitionInitialization.CompleteInitialization();
     }
 
+    /// <summary>
+    /// Resets the transition initialization session when the template is replaced, which suppresses the item's
+    /// transitions again until <see cref="OnApplyTemplate" /> or <see cref="OnLoaded" /> completes it.
+    /// </summary>
+    /// <remarks>
+    /// An override must call the base method, otherwise the item's transitions are not suppressed for the new
+    /// template.
+    /// </remarks>
     protected override void OnTemplateChanged(AvaloniaPropertyChangedEventArgs e)
     {
         _transitionInitialization?.Reset();
         base.OnTemplateChanged(e);
     }
 
+    /// <summary>
+    /// Resets the transition initialization session when the item leaves the visual tree. This suppresses the
+    /// transitions of the item again until <see cref="OnLoaded" /> completes the session after the next attach.
+    /// </summary>
+    /// <remarks>
+    /// An override must call the base method, otherwise the transitions of the item are not suppressed when it is
+    /// attached again.
+    /// </remarks>
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         _transitionInitialization.Reset();
         base.OnDetachedFromVisualTree(e);
     }
 
+    /// <summary>
+    /// Completes the transition initialization session once the item is loaded. The completion releases the
+    /// suppression of the item's transitions.
+    /// </summary>
+    /// <remarks>
+    /// An override must call the base method, otherwise the transitions stay suppressed until the next time the
+    /// template is applied.
+    /// </remarks>
     protected override void OnLoaded(RoutedEventArgs e)
     {
         base.OnLoaded(e);
         _transitionInitialization.CompleteInitialization();
     }
 
+    /// <summary>
+    /// Updates the selected indicator and the effective split line of the item when their inputs change.
+    /// </summary>
+    /// <remarks>
+    /// An override must call the base method, otherwise these two states are not kept up to date.
+    /// </remarks>
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
@@ -364,6 +441,12 @@ public class ListViewItem : ContentControl,
         }
     }
 
+    /// <summary>
+    /// Computes the selected indicator and the effective split line once the item is initialized.
+    /// </summary>
+    /// <remarks>
+    /// An override must call the base method, otherwise both are only computed when an input changes later.
+    /// </remarks>
     protected override void OnInitialized()
     {
         base.OnInitialized();
@@ -376,6 +459,23 @@ public class ListViewItem : ContentControl,
 
 
     
+    /// <summary>
+    /// Forwards a press on the item to the selection of the owning <see cref="ListView" /> and raises
+    /// <see cref="Clicked" /> on a left press while <see cref="ListView.ItemClickMode" /> is
+    /// <see cref="ClickMode.Press" />.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// A mouse press or a right pen press updates the selection immediately. The press is marked handled when the
+    /// list handled that update. A touch or pen tip press only stores the press point, because its selection
+    /// update happens in <see cref="OnPointerReleased" />. The press is left unhandled so that the scroll gesture
+    /// recognizer works.
+    /// </para>
+    /// <para>
+    /// Nothing happens when the press is already handled or when the container does not belong to a
+    /// <see cref="ListView" />. An override must call the base method before it handles the press itself.
+    /// </para>
+    /// </remarks>
     protected override void OnPointerPressed(PointerPressedEventArgs e)
     {
         base.OnPointerPressed(e);
@@ -409,7 +509,6 @@ public class ListViewItem : ContentControl,
 
                     // Ideally we'd set handled here, but that would prevent the scroll gesture
                     // recognizer from working.
-                    ////e.Handled = true;
                 }
             }
 
@@ -423,6 +522,23 @@ public class ListViewItem : ContentControl,
         }
     }
 
+    /// <summary>
+    /// Forwards a tap on the item to the selection of the owning <see cref="ListView" /> and raises
+    /// <see cref="Clicked" /> on a left button release while <see cref="ListView.ItemClickMode" /> is
+    /// <see cref="ClickMode.Release" />.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// Only a touch or pen tip press stores the point that this method needs, so only such a press can update the
+    /// selection on release. The release must lie inside the item and within the platform tap size around the
+    /// stored point. When the list handled the update, the release is marked handled and raised again on the
+    /// list.
+    /// </para>
+    /// <para>
+    /// <see cref="Clicked" /> is not raised when the release is already handled, including a release handled here
+    /// to update the selection. An override must call the base method before it handles the release itself.
+    /// </para>
+    /// </remarks>
     protected override void OnPointerReleased(PointerReleasedEventArgs e)
     {
         base.OnPointerReleased(e);

@@ -4,7 +4,9 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls.Themes.Shadcn;
 
-/// <summary>The shadcn view of <see cref="PaginationToken"/>.</summary>
+/// <summary>
+/// The shadcn view of <see cref="PaginationToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class PaginationTokenRule : IControlTokenRule<ShadcnToken, PaginationToken>
 {
@@ -13,6 +15,7 @@ internal sealed class PaginationTokenRule : IControlTokenRule<ShadcnToken, Pagin
         var token  = target.Own;
         var global = target.Global;
         PaginationTokenCalculator.Calculate(in context, global, token);
+        // Ant Design formula kept as is: no registry value is merged into the pagination tokens.
         token.PaginationItemPaddingInline = new Thickness(global.UniformlyMarginXXS * 1.5, 0);
         token.ItemBg                    = global.ColorBgContainer;
         token.ItemActiveBg              = global.ColorBgContainer;

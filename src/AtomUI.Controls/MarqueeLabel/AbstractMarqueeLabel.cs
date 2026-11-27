@@ -13,26 +13,49 @@ using Avalonia.VisualTree;
 
 namespace AtomUI.Controls.Commons;
 
+/// <summary>
+/// Base class for a <see cref="TextBlock" /> that scrolls text wider than the available width to the left in an
+/// endless loop; text that fits its width stays still.
+/// </summary>
 public abstract class AbstractMarqueeLabel : TextBlock
 {
     #region 公共属性定义
 
+    /// <summary>
+    /// Identifies the <see cref="CycleSpace" /> property.
+    /// </summary>
     public static readonly StyledProperty<double> CycleSpaceProperty =
         AvaloniaProperty.Register<AbstractMarqueeLabel, double>(nameof(CycleSpace));
 
+    /// <summary>
+    /// Identifies the <see cref="MoveSpeed" /> property.
+    /// </summary>
     public static readonly StyledProperty<double> MoveSpeedProperty =
         AvaloniaProperty.Register<AbstractMarqueeLabel, double>(nameof(MoveSpeed), 150);
 
+    /// <summary>
+    /// Identifies the <see cref="StartDelay" /> property.
+    /// </summary>
     public static readonly StyledProperty<TimeSpan> StartDelayProperty =
         AvaloniaProperty.Register<AbstractMarqueeLabel, TimeSpan>(nameof(StartDelay), TimeSpan.Zero);
 
+    /// <summary>
+    /// Identifies the <see cref="IsPausedOnPointerOver" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsPausedOnPointerOverProperty =
         AvaloniaProperty.Register<AbstractMarqueeLabel, bool>(nameof(IsPausedOnPointerOver), true);
 
+    /// <summary>
+    /// Identifies the <see cref="IsMotionEnabled" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<AbstractMarqueeLabel>();
 
-    /// <summary>Usually bound to the <c>EnableMotion</c> token; when false overflowing text stays where it stopped.</summary>
+    /// <summary>
+    /// Whether overflowing text scrolls. No theme of AtomUI binds it to the <c>EnableMotion</c> token; when false
+    /// overflowing text stays where it stopped. The default is <see langword="true" />, so a label without such a
+    /// binding scrolls regardless of the global motion setting.
+    /// </summary>
     public bool IsMotionEnabled
     {
         get => GetValue(IsMotionEnabledProperty);
@@ -40,7 +63,8 @@ public abstract class AbstractMarqueeLabel : TextBlock
     }
 
     /// <summary>
-    /// 默认的间隔
+    /// Gap between the end of the text and the start of its next copy, in DIPs. One scroll cycle covers the text width
+    /// plus this gap, so the value also sets how far each cycle moves. The default is 0.
     /// </summary>
     public double CycleSpace
     {
@@ -49,7 +73,9 @@ public abstract class AbstractMarqueeLabel : TextBlock
     }
 
     /// <summary>
-    /// 移动速度
+    /// Horizontal scrolling speed; larger values scroll faster. The text travels <c>MoveSpeed / 4</c> DIPs per second,
+    /// so the default of 150 gives 37.5 DIPs per second. Use a value greater than 0: 0 makes the cycle duration
+    /// infinite, which throws when the animation is configured, and a negative value gives the shortest cycle of 4 ms.
     /// </summary>
     public double MoveSpeed
     {
@@ -83,7 +109,9 @@ public abstract class AbstractMarqueeLabel : TextBlock
         AvaloniaProperty.Register<AbstractMarqueeLabel, double>(nameof(PivotOffset));
 
     /// <summary>
-    /// 内部动画使用，当前焦点，也就是文字最左侧
+    /// Horizontal offset of the text in DIPs, driven by the scrolling animation. 0 is the natural position; each cycle
+    /// lowers the offset by one cycle width, the text width plus <see cref="CycleSpace" />, and then repeats. Values
+    /// below 0 also draw a second copy of the text one cycle width to the right, which makes the loop seamless.
     /// </summary>
     internal double PivotOffset
     {
@@ -108,10 +136,14 @@ public abstract class AbstractMarqueeLabel : TextBlock
     // Opt in only for labels that restart from the beginning when the gate reopens.
     internal virtual bool UseCompositedMarquee => false;
 
-    /// <summary>True while a scrolling animation is running.</summary>
+    /// <summary>
+    /// True while a scrolling animation is running.
+    /// </summary>
     internal bool IsMarqueeAnimating => _cancellationTokenSource is not null || _compositedText is not null;
 
-    /// <summary>True while a delayed start is waiting for its timer.</summary>
+    /// <summary>
+    /// True while a delayed start is waiting for its timer.
+    /// </summary>
     internal bool HasPendingStartDelay => _startDelayTimer is not null;
 
     static AbstractMarqueeLabel()
@@ -151,12 +183,20 @@ public abstract class AbstractMarqueeLabel : TextBlock
         }
     }
     
+    /// <summary>
+    /// Calls the base member, then starts the scrolling, immediately or after <see cref="StartDelay" />. Starting needs
+    /// overflowing text, an open motion gate and no pointer-over pause. Derived labels must call the base member.
+    /// </summary>
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
         HandleStartupMarqueeAnimation();
     }
 
+    /// <summary>
+    /// Calls the base member, then stops the scrolling, cancels a pending delayed start and forgets the offset to
+    /// resume from, so the next attach starts from the beginning. Derived labels must call the base member.
+    /// </summary>
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnDetachedFromVisualTree(e);
@@ -164,6 +204,12 @@ public abstract class AbstractMarqueeLabel : TextBlock
         _pivotOffsetStartValue = 0;
     }
 
+    /// <summary>
+    /// Calls the base member, then keeps the scrolling in step with property changes: <see cref="IsMotionEnabled" />
+    /// is passed to the motion gate, the pointer-over pause is applied while the label is attached, and a change of
+    /// <see cref="CycleSpace" /> or <see cref="MoveSpeed" /> reconfigures the animation and restarts it if it was
+    /// running. Derived labels must call the base member.
+    /// </summary>
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
@@ -223,12 +269,19 @@ public abstract class AbstractMarqueeLabel : TextBlock
         }
     }
 
+    /// <summary>
+    /// Seals the base implementation; derived labels cannot override template application.
+    /// </summary>
     public sealed override void ApplyTemplate()
     {
         base.ApplyTemplate();
-        // 为了强制
     }
 
+    /// <summary>
+    /// Measures the text, then aligns the scrolling with the result: text that fits the available width stops and
+    /// returns to its start position, and overflowing text that is idle starts scrolling. Derived labels must call the
+    /// base member.
+    /// </summary>
     protected override Size MeasureOverride(Size availableSize)
     {
         var size = base.MeasureOverride(availableSize);
@@ -238,7 +291,8 @@ public abstract class AbstractMarqueeLabel : TextBlock
 
     private double CalculateDuration(double distance)
     {
-        // 计算持续时间，确保至少有一毫秒的持续时间以避免除以零的错误
+        // The floor of 1 ms keeps one cycle at 4 ms or more when the quotient is zero or negative. It does not catch a
+        // speed of 0, for which the quotient is infinite.
         return 4 * Math.Max(1, distance / MoveSpeed * 1000);
     }
 
@@ -426,6 +480,11 @@ public abstract class AbstractMarqueeLabel : TextBlock
         };
     }
 
+    /// <summary>
+    /// Draws the text shifted by <see cref="PivotOffset" />, and its next copy once the offset is negative. While a
+    /// composited marquee draws the text in a child visual, only a transparent rectangle over the bounds is drawn.
+    /// Derived labels call the base member to keep the marquee rendering.
+    /// </summary>
     protected override void RenderTextLayout(DrawingContext context, Point origin)
     {
         if (_compositedText is not null)

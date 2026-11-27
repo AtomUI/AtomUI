@@ -5,10 +5,11 @@ using Avalonia.Layout;
 namespace AtomUI.Desktop.Controls;
 
 /// <summary>
-/// 占位文本元素的水平对齐：HorizontalContentAlignment 的 Stretch 映射为 Left。
-/// 占位文字始终从内容对齐起点渲染，若让元素按 Stretch 撑满内容区，其边界
-/// （语义部件 placeholder 高亮的度量基准）会宽于文字本身，与 Ant Design 的
-/// placeholder 语义结构（内联、紧贴文字）不一致。
+/// Horizontal alignment of the placeholder text element: a <see cref="HorizontalAlignment.Stretch" /> value of
+/// HorizontalContentAlignment maps to <see cref="HorizontalAlignment.Left" />.
+/// The placeholder text always renders from the start of the content alignment. Stretched over the whole content
+/// area, the element's bounds, which are the measuring basis of the placeholder semantic part highlight, would be
+/// wider than the text itself, unlike the inline placeholder of Ant Design that hugs its text.
 /// </summary>
 internal class PlaceholderHorizontalAlignmentConverter : IValueConverter
 {

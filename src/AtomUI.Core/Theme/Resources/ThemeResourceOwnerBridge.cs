@@ -5,8 +5,10 @@ using Avalonia.Styling;
 namespace AtomUI.Theme.Resources;
 
 /// <summary>
-/// 字典的局部资源宿主。装配期间仅刷新自身绑定，资源根由主题提交统一通知。
-/// owner 订阅在解绑时对称释放，普通运行时字典变更仍转发到资源根。
+/// Local resource host of the theme resource dictionaries. During assembly an update refreshes only the
+/// bindings of the dictionaries, and the resource root is notified once by the theme commit.
+/// The subscriptions taken on the owner are released again on detach; resource changes raised at run time
+/// are still forwarded to the resource root.
 /// </summary>
 internal sealed class ThemeResourceOwnerBridge : IThemeVariantHost
 {
@@ -21,8 +23,9 @@ internal sealed class ThemeResourceOwnerBridge : IThemeVariantHost
 
     public bool TryGetResource(object key, ThemeVariant? theme, out object? value)
     {
-        // 对齐真实 owner 的查找入口：先回到宿主，保持应用覆盖优先于静态字典。
-        // 此处不能先查询内层/兄弟字典，否则 DynamicResource 会绕过应用覆盖。
+        // Mirror the lookup entry of the real owner: go back to the host first, so that application overrides
+        // win over the static dictionaries. Do not query an inner or sibling dictionary here first, or
+        // DynamicResource would bypass the application overrides.
         if (_owner is not null)
         {
             return _owner.TryFindResource(key, theme, out value);
@@ -87,7 +90,8 @@ internal sealed class ThemeResourceOwnerBridge : IThemeVariantHost
         }
         finally
         {
-            // EndUpdate 也会调用资源绑定，不能用其异常覆盖原始挂载/释放失败。
+            // EndUpdate notifies resource bindings too; an exception from it must not hide the original
+            // attach or release failure.
             TryCleanup(EndUpdate, failures);
         }
         ThrowFailures(failures);

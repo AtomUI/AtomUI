@@ -14,73 +14,142 @@ using Avalonia.VisualTree;
 
 namespace AtomUI.Controls.Commons;
 
+/// <summary>
+/// Base class of the progress controls. It computes <see cref="Percentage" /> from the value and the range,
+/// owns the properties that style the groove and the indicator, and drives the progress info (percentage text,
+/// status icon or custom content). Derived classes provide the geometry and the drawing through the abstract
+/// members of this class.
+/// </summary>
 [PseudoClasses(ProgressBarPseudoClass.Indeterminate, ProgressBarPseudoClass.Completed)]
 public abstract class AbstractProgressBar : RangeBase,
                                             ISizeTypeAware,
                                             IMotionAwareControl
 {
+    /// <summary>
+    /// Stroke thickness, in DIPs, of the large size type. A line progress bar draws with it when its effective size
+    /// type is <see cref="SizeType.Large" />.
+    /// </summary>
     protected const double LARGE_STROKE_THICKNESS = 8;
+    /// <summary>
+    /// Stroke thickness, in DIPs, of the middle size type. A line progress bar draws with it when its effective size
+    /// type is <see cref="SizeType.Middle" />.
+    /// </summary>
     protected const double MIDDLE_STROKE_THICKNESS = 6;
+    /// <summary>
+    /// Stroke thickness, in DIPs, of the small size type. A line progress bar draws with it when its effective size
+    /// type is <see cref="SizeType.Small" />.
+    /// </summary>
     protected const double SMALL_STROKE_THICKNESS = 4;
 
     #region 公共属性定义
+    /// <summary>
+    /// Identifies the <see cref="IsIndeterminate" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsIndeterminateProperty =
         AvaloniaProperty.Register<AbstractProgressBar, bool>(nameof(IsIndeterminate));
     
+    /// <summary>
+    /// Identifies the <see cref="IsProgressInfoVisible" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsProgressInfoVisibleProperty =
         AvaloniaProperty.Register<AbstractProgressBar, bool>(nameof(IsProgressInfoVisible), true);
     
+    /// <summary>
+    /// Identifies the <see cref="ProgressTextFormat" /> property.
+    /// </summary>
     public static readonly StyledProperty<string> ProgressTextFormatProperty =
         AvaloniaProperty.Register<AbstractProgressBar, string>(nameof(ProgressTextFormat), "{0:0}%");
     
+    /// <summary>
+    /// Identifies the <see cref="Percentage" /> property.
+    /// </summary>
     public static readonly DirectProperty<AbstractProgressBar, double> PercentageProperty =
         AvaloniaProperty.RegisterDirect<AbstractProgressBar, double>(
             nameof(Percentage),
             o => o.Percentage,
             (o, v) => o.Percentage = v);
     
+    /// <summary>
+    /// Identifies the <see cref="StrokeBrush" /> property.
+    /// </summary>
     public static readonly StyledProperty<IBrush?> StrokeBrushProperty =
         AvaloniaProperty.Register<AbstractProgressBar, IBrush?>(nameof(StrokeBrush));
 
+    /// <summary>
+    /// Identifies the <see cref="TrailColor" /> property.
+    /// </summary>
     public static readonly StyledProperty<Color?> TrailColorProperty =
         AvaloniaProperty.Register<AbstractProgressBar, Color?>(nameof(TrailColor));
 
+    /// <summary>
+    /// Identifies the <see cref="StrokeLineCap" /> property.
+    /// </summary>
     public static readonly StyledProperty<PenLineCap> StrokeLineCapProperty =
         AvaloniaProperty.Register<AbstractProgressBar, PenLineCap>(nameof(StrokeLineCap), PenLineCap.Round);
 
+    /// <summary>
+    /// Identifies the <see cref="SizeType" /> property.
+    /// </summary>
     public static readonly StyledProperty<SizeType> SizeTypeProperty =
         SizeTypeControlProperty.SizeTypeProperty.AddOwner<AbstractProgressBar>();
 
+    /// <summary>
+    /// Identifies the <see cref="Status" /> property.
+    /// </summary>
     public static readonly StyledProperty<ProgressStatus> StatusProperty =
         AvaloniaProperty.Register<AbstractProgressBar, ProgressStatus>(nameof(Status));
 
+    /// <summary>
+    /// Identifies the <see cref="IndicatorThickness" /> property.
+    /// </summary>
     public static readonly StyledProperty<double> IndicatorThicknessProperty =
         AvaloniaProperty.Register<AbstractProgressBar, double>(nameof(IndicatorThickness), double.NaN);
 
+    /// <summary>
+    /// Identifies the <see cref="SuccessThreshold" /> property.
+    /// </summary>
     public static readonly StyledProperty<double> SuccessThresholdProperty =
         AvaloniaProperty.Register<AbstractProgressBar, double>(nameof(SuccessThreshold), double.NaN);
 
+    /// <summary>
+    /// Identifies the <see cref="SuccessStrokeBrush" /> property.
+    /// </summary>
     public static readonly StyledProperty<IBrush?> SuccessStrokeBrushProperty =
         AvaloniaProperty.Register<AbstractProgressBar, IBrush?>(nameof(SuccessStrokeBrush));
 
+    /// <summary>
+    /// Identifies the <see cref="IsMotionEnabled" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<AbstractProgressBar>();
     
+    /// <summary>
+    /// Identifies the <see cref="ExceptionCompletedIcon" /> property.
+    /// </summary>
     public static readonly StyledProperty<PathIcon?> ExceptionCompletedIconProperty =
         AvaloniaProperty.Register<AbstractProgressBar, PathIcon?>(nameof(ExceptionCompletedIcon));
     
+    /// <summary>
+    /// Identifies the <see cref="SuccessCompletedIcon" /> property.
+    /// </summary>
     public static readonly StyledProperty<PathIcon?> SuccessCompletedIconProperty =
         AvaloniaProperty.Register<AbstractProgressBar, PathIcon?>(nameof(SuccessCompletedIcon));
 
+    /// <summary>
+    /// Identifies the <see cref="ProgressInfoContent" /> property.
+    /// </summary>
     public static readonly StyledProperty<object?> ProgressInfoContentProperty =
         AvaloniaProperty.Register<AbstractProgressBar, object?>(nameof(ProgressInfoContent));
 
+    /// <summary>
+    /// Identifies the <see cref="ProgressInfoContentTemplate" /> property.
+    /// </summary>
     public static readonly StyledProperty<IDataTemplate?> ProgressInfoContentTemplateProperty =
         AvaloniaProperty.Register<AbstractProgressBar, IDataTemplate?>(nameof(ProgressInfoContentTemplate));
 
     /// <summary>
-    /// Gets or sets a value indicating whether the progress bar shows the actual value or a generic,
-    /// continues progress indicator (indeterminate state).
+    /// Gets or sets a value indicating whether the progress bar shows the actual value or a generic, continuous
+    /// progress indicator (indeterminate state).
     /// </summary>
     public bool IsIndeterminate
     {
@@ -106,30 +175,54 @@ public abstract class AbstractProgressBar : RangeBase,
         set => SetValue(ProgressTextFormatProperty, value);
     }
     
+    /// <summary>
+    /// Brush of the indicator, the filled part of the bar. The control theme sets it from <see cref="Status" /> and
+    /// shows the success color once the progress is complete. A value set here replaces those colors for every
+    /// status; clearing it returns to them.
+    /// </summary>
     public IBrush? StrokeBrush
     {
         get => GetValue(StrokeBrushProperty);
         set => SetValue(StrokeBrushProperty, value);
     }
 
+    /// <summary>
+    /// Color of the groove, the unfilled part of the bar. Setting it replaces the groove brush of the theme with a
+    /// solid brush of this color; clearing it restores the theme brush.
+    /// </summary>
     public Color? TrailColor
     {
         get => GetValue(TrailColorProperty);
         set => SetValue(TrailColorProperty, value);
     }
 
+    /// <summary>
+    /// Line cap used for the stroke of the bar, <see cref="PenLineCap.Round" /> by default. In step mode the arc is
+    /// drawn with flat ends and this value is ignored.
+    /// </summary>
     public PenLineCap StrokeLineCap
     {
         get => GetValue(StrokeLineCapProperty);
         set => SetValue(StrokeLineCapProperty, value);
     }
 
+    /// <summary>
+    /// Size preset requested for the control, <see cref="SizeType.Large" /> by default. A change assigns the value to
+    /// <see cref="EffectiveSizeType" />, from which the stroke thickness is taken; a line progress bar also derives
+    /// the effective size type from its own thickness.
+    /// </summary>
     public SizeType SizeType
     {
         get => GetValue(SizeTypeProperty);
         set => SetValue(SizeTypeProperty, value);
     }
 
+    /// <summary>
+    /// Status the progress bar presents, <see cref="ProgressStatus.Normal" /> by default. The theme derives the
+    /// indicator color and the status icon from it. <see cref="ProgressStatus.Exception" /> shows the error color
+    /// and the exception icon in place of the percentage text, while <see cref="ProgressStatus.Success" /> shows the
+    /// success color. Normal and Active keep the default color.
+    /// </summary>
     public ProgressStatus Status
     {
         get => GetValue(StatusProperty);
@@ -151,36 +244,64 @@ public abstract class AbstractProgressBar : RangeBase,
         private set => SetAndRaise(PercentageProperty, ref _percentage, value);
     }
 
+    /// <summary>
+    /// Thickness of the indicator stroke, in DIPs. <see cref="double.NaN" />, the default, uses the thickness of
+    /// the effective size type. A circle progress bar raises a smaller value to its minimum stroke thickness, and a
+    /// steps progress bar keeps <c>ChunkHeight</c> equal to this value.
+    /// </summary>
     public double IndicatorThickness
     {
         get => GetValue(IndicatorThicknessProperty);
         set => SetValue(IndicatorThicknessProperty, value);
     }
 
+    /// <summary>
+    /// Brush of the part of the indicator that lies up to <see cref="SuccessThreshold" />. The theme sets it to the
+    /// success color while the control is enabled.
+    /// </summary>
     public IBrush? SuccessStrokeBrush
     {
         get => GetValue(SuccessStrokeBrushProperty);
         set => SetValue(SuccessStrokeBrushProperty, value);
     }
 
+    /// <summary>
+    /// Value, in the unit of <see cref="RangeBase.Value" />, up to which the indicator is overpainted with
+    /// <see cref="SuccessStrokeBrush" />. <see cref="double.NaN" />, the default, adds no such segment. A value
+    /// outside the range is clamped to it.
+    /// </summary>
     public double SuccessThreshold
     {
         get => GetValue(SuccessThresholdProperty);
         set => SetValue(SuccessThresholdProperty, value);
     }
 
+    /// <summary>
+    /// Enables the transitions the theme applies to <see cref="RangeBase.Value" />, <see cref="StrokeBrush" />
+    /// and the foreground brush. The theme sets it from the <c>EnableMotion</c> Token; a local value overrides
+    /// the Token, and clearing the local value returns to it.
+    /// </summary>
     public bool IsMotionEnabled
     {
         get => GetValue(IsMotionEnabledProperty);
         set => SetValue(IsMotionEnabledProperty, value);
     }
     
+    /// <summary>
+    /// Icon shown in place of the percentage text while <see cref="Status" /> is
+    /// <see cref="ProgressStatus.Exception" />. When this property is <see langword="null" />, the derived control
+    /// installs its built-in default icon.
+    /// </summary>
     public PathIcon? ExceptionCompletedIcon
     {
         get => GetValue(ExceptionCompletedIconProperty);
         set => SetValue(ExceptionCompletedIconProperty, value);
     }
 
+    /// <summary>
+    /// Icon shown in place of the percentage text once the progress is complete. When this property is
+    /// <see langword="null" />, the derived control installs its built-in default icon.
+    /// </summary>
     public PathIcon? SuccessCompletedIcon
     {
         get => GetValue(SuccessCompletedIconProperty);
@@ -188,8 +309,9 @@ public abstract class AbstractProgressBar : RangeBase,
     }
 
     /// <summary>
-    /// 自定义进度信息内容。非空时总是显示（不受 <see cref="IsProgressInfoVisible"/> 约束），
-    /// 并替代百分比文本与两个状态图标。
+    /// Custom content of the progress info area. When it is not <see langword="null" />, it is always presented,
+    /// regardless of <see cref="IsProgressInfoVisible" />, and it replaces the percentage text and the two
+    /// status icons.
     /// </summary>
     public object? ProgressInfoContent
     {
@@ -197,6 +319,10 @@ public abstract class AbstractProgressBar : RangeBase,
         set => SetValue(ProgressInfoContentProperty, value);
     }
 
+    /// <summary>
+    /// Template used to present <see cref="ProgressInfoContent" />, or <see langword="null" /> to present the
+    /// content directly, the way a <see cref="ContentPresenter" /> without a template presents it.
+    /// </summary>
     public IDataTemplate? ProgressInfoContentTemplate
     {
         get => GetValue(ProgressInfoContentTemplateProperty);
@@ -235,7 +361,8 @@ public abstract class AbstractProgressBar : RangeBase,
     private bool _isProgressInfoPresented;
 
     /// <summary>
-    /// 信息区是否呈现：<see cref="IsProgressInfoVisible"/> 为真，或设置了 <see cref="ProgressInfoContent"/>。
+    /// Whether the progress info area is presented: <see cref="IsProgressInfoVisible" /> is
+    /// <see langword="true" /> or <see cref="ProgressInfoContent" /> is set.
     /// </summary>
     internal bool IsProgressInfoPresented
     {
@@ -252,6 +379,13 @@ public abstract class AbstractProgressBar : RangeBase,
 
     private SizeType _effectiveSizeType;
 
+    /// <summary>
+    /// Size step the progress bar currently uses, for its stroke thickness and for the font size the themes select.
+    /// It starts as <see cref="SizeType" /> and follows every change of it. A line progress bar replaces it with the
+    /// step that <see cref="CalculateEffectiveSizeType" /> maps from its stroke thickness or from an explicitly set
+    /// dimension. While the control is attached, a change recalculates the stroke thickness through
+    /// <see cref="NotifyEffectSizeTypeChanged" />; it always invalidates the measure.
+    /// </summary>
     internal SizeType EffectiveSizeType
     {
         get => _effectiveSizeType;
@@ -260,18 +394,34 @@ public abstract class AbstractProgressBar : RangeBase,
 
     private double _strokeThickness;
 
+    /// <summary>
+    /// Stroke thickness, in DIPs, that the groove and the indicator are drawn with. The derived class assigns it in
+    /// <see cref="CalculateStrokeThickness" />.
+    /// </summary>
     protected double EffectiveStrokeThickness
     {
         get => _strokeThickness;
         set => SetAndRaise(EffectiveStrokeThicknessProperty, ref _strokeThickness, value);
     }
 
+    /// <summary>
+    /// Brush of the groove, the unfilled part of the bar. The built-in themes set it from the <c>RemainingColor</c>
+    /// Token of the progress control and, while the control is disabled, from <c>ColorBgContainerDisabled</c>.
+    /// Setting <see cref="TrailColor" /> replaces the theme value with a solid brush of that color; clearing
+    /// <see cref="TrailColor" /> clears this property as well, so the theme value applies again. The default is
+    /// <see langword="null" />.
+    /// </summary>
     internal IBrush? GrooveBrush
     {
         get => GetValue(GrooveBrushProperty);
         set => SetValue(GrooveBrushProperty, value);
     }
 
+    /// <summary>
+    /// Whether the percentage text of the progress info is shown, <see langword="true" /> by default. The circle
+    /// progress bar (<c>AbstractCircleProgress</c>) sets it to whether the "100%" text fits into the square inside
+    /// the stroke. The circle and dashboard themes bind the visibility of the percentage text to it.
+    /// </summary>
     internal bool IsPercentLabelVisible
     {
         get => GetValue(IsPercentLabelVisibleProperty);
@@ -284,18 +434,36 @@ public abstract class AbstractProgressBar : RangeBase,
         set => SetValue(IsStatusIconVisibleProperty, value);
     }
 
+    /// <summary>
+    /// Whether <see cref="RangeBase.Value" /> has reached <see cref="RangeBase.Maximum" />, <see langword="false" />
+    /// by default. The control updates it whenever the value changes, but not when only the range changes. A change
+    /// invalidates the measure. The theme selects on it to hide the percentage text and, for the Normal and Active
+    /// statuses, to switch to the success color and show the success icon.
+    /// </summary>
     internal bool IsCompleted
     {
         get => GetValue(IsCompletedProperty);
         set => SetValue(IsCompletedProperty, value);
     }
 
+    /// <summary>
+    /// Brush of the exception status icon. The theme of the progress bar binds the <c>IconBrush</c> of
+    /// <c>PART_ExceptionCompletedIconPresenter</c> to it. The built-in theme sets it from the <c>ColorError</c> Token
+    /// and, while the control is disabled, from <c>ControlItemBgActiveDisabled</c>. The default is
+    /// <see langword="null" />.
+    /// </summary>
     internal IBrush? ExceptionIconBrush
     {
         get => GetValue(ExceptionIconBrushProperty);
         set => SetValue(ExceptionIconBrushProperty, value);
     }
 
+    /// <summary>
+    /// Brush of the success status icon. The theme of the progress bar binds the <c>IconBrush</c> of
+    /// <c>PART_SuccessCompletedIconPresenter</c> to it. The built-in theme sets it from the <c>ColorSuccess</c>
+    /// Token and, while the control is disabled, from <c>ControlItemBgActiveDisabled</c>. The default is
+    /// <see langword="null" />.
+    /// </summary>
     internal IBrush? SuccessIconBrush
     {
         get => GetValue(SuccessIconBrushProperty);
@@ -319,11 +487,38 @@ public abstract class AbstractProgressBar : RangeBase,
 
     #endregion
 
+    /// <summary>
+    /// The <c>PART_LayoutTransformControl</c> part of the template, which hosts <see cref="PercentageLabel" />.
+    /// The base class hides it while <see cref="ProgressInfoContent" /> is set. <see langword="null" /> when the
+    /// template has no such part.
+    /// </summary>
     protected LayoutTransformControl? LayoutTransformLabel;
+    /// <summary>
+    /// The <c>PART_PercentageLabel</c> part of the template, which shows the percentage formatted with
+    /// <see cref="ProgressTextFormat" />. <see langword="null" /> when the template has no such part.
+    /// </summary>
     protected Label? PercentageLabel;
+    /// <summary>
+    /// The <c>PART_ProgressIndicator</c> part of the template: the panel that
+    /// <see cref="ArrangeProgressIndicator" /> places and sizes with a given rectangle.
+    /// <see langword="null" /> when the template has no such part.
+    /// </summary>
     private protected Panel? ProgressIndicator;
+    /// <summary>
+    /// The <c>PART_SuccessCompletedIconPresenter</c> part of the template, which shows
+    /// <see cref="SuccessCompletedIcon" />. <see langword="null" /> when the template has no such part.
+    /// </summary>
     protected IconPresenter? SuccessCompletedIconPresenter;
+    /// <summary>
+    /// The <c>PART_ExceptionCompletedIconPresenter</c> part of the template, which shows
+    /// <see cref="ExceptionCompletedIcon" />. <see langword="null" /> when the template has no such part.
+    /// </summary>
     protected IconPresenter? ExceptionCompletedIconPresenter;
+    /// <summary>
+    /// The <c>PART_ProgressInfoContentPresenter</c> part of the template, which presents
+    /// <see cref="ProgressInfoContent" /> with <see cref="ProgressInfoContentTemplate" />.
+    /// <see langword="null" /> when the template has no such part.
+    /// </summary>
     protected ContentPresenter? ProgressInfoContentPresenter;
     private readonly TransitionInitializationSession _transitionInitialization;
     private bool _isMeasuringProgressInfoContent;
@@ -352,11 +547,19 @@ public abstract class AbstractProgressBar : RangeBase,
     public AbstractProgressBar()
     {
         _transitionInitialization = new TransitionInitializationSession(this);
-        // 子类可以覆盖 IsProgressInfoVisible 的默认值，标志要从实际默认值起算，而不是等第一次变化
+        // A derived class can override the default value of IsProgressInfoVisible, so the flag starts from the actual
+        // default instead of waiting for the first change.
         _isProgressInfoPresented = IsProgressInfoVisible || ProgressInfoContent is not null;
         _effectiveSizeType = SizeType;
     }
 
+    /// <summary>
+    /// Reacts to property changes with the derived state of the progress bar. It recalculates
+    /// <see cref="Percentage" /> and the progress info, refreshes the pseudo classes, updates the visuals of
+    /// <see cref="ProgressInfoContent" />, assigns <see cref="SizeType" /> to <see cref="EffectiveSizeType" />,
+    /// updates <see cref="IsCompleted" />, and forwards every change to <see cref="NotifyPropertyChanged" />.
+    /// Derived overrides must call the base member.
+    /// </summary>
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
@@ -369,7 +572,8 @@ public abstract class AbstractProgressBar : RangeBase,
             change.Property == IsProgressInfoVisibleProperty ||
             change.Property == StatusProperty)
         {
-            // 信息区在运行中打开、或从异常状态恢复时，文本与可见性要随之刷新
+            // The info can be turned on at runtime and the status can leave Exception; both refresh the text and the
+            // visibility of the info elements.
             UpdateProgress();
         }
 
@@ -378,7 +582,8 @@ public abstract class AbstractProgressBar : RangeBase,
             change.Property == MinimumProperty ||
             change.Property == MaximumProperty)
         {
-            // Completed 与 ValueZero 都随值域变化，值变化时必须刷新伪类，主题取值才会跟随
+            // Completed and ValueZero follow the value and the range, so the pseudo classes are refreshed on each such
+            // change; the theme values follow them.
             UpdatePseudoClasses();
         }
 
@@ -396,7 +601,7 @@ public abstract class AbstractProgressBar : RangeBase,
             {
                 if (ProgressInfoContent is null)
                 {
-                    // 清除后恢复百分比文本
+                    // Restores the percentage text once the custom content is cleared.
                     UpdateProgress();
                 }
 
@@ -407,9 +612,15 @@ public abstract class AbstractProgressBar : RangeBase,
         HandlePropertyChangedForStyle(change);
     }
 
+    /// <summary>
+    /// Releases the custom info content from the presenter of the previous template, calls the base member, looks up
+    /// the template parts into fields such as <see cref="PercentageLabel" />, and then refreshes the info visuals,
+    /// the stroke thickness and the progress. Derived overrides must call the base member.
+    /// </summary>
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
-        // 旧呈现器仍是自定义内容的视觉父级，新呈现器接管前必须先释放，否则同一控件会出现两个父级
+        // The presenter of the previous template is still the visual parent of the custom content. It must release the
+        // content before the new presenter takes it over, otherwise the content gets two visual parents.
         if (ProgressInfoContentPresenter is not null)
         {
             ProgressInfoContentPresenter.Content         = null;
@@ -431,33 +642,98 @@ public abstract class AbstractProgressBar : RangeBase,
         SuccessCompletedIconPresenter = e.NameScope.Find<IconPresenter>(SuccessCompletedIconPresenterPart);
         ProgressInfoContentPresenter = e.NameScope.Find<ContentPresenter>(ProgressInfoContentPresenterPart);
         UpdateProgressInfoContentVisuals();
-        // 创建完更新调用一次
+        // The parts have just been created, so the size-dependent state is updated once here.
         NotifyEffectSizeTypeChanged();
         UpdateProgress();
     }
 
+    /// <summary>
+    /// Calls the base member and then refreshes the indeterminate, completed and value-zero pseudo classes from the
+    /// current property values.
+    /// </summary>
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
         UpdatePseudoClasses();
     }
     
+    /// <summary>
+    /// Maps a layout size, in DIPs, to the size type it belongs to, for example the thickness of a line progress bar
+    /// to the size type of its stroke. The base class does not call it; a derived class calls it when that size
+    /// changes and assigns the result to <see cref="EffectiveSizeType" />.
+    /// </summary>
+    /// <param name="size">
+    /// The layout size, in DIPs, that decides the size type.
+    /// </param>
+    /// <returns>
+    /// The size type that <paramref name="size" /> belongs to.
+    /// </returns>
     protected abstract SizeType CalculateEffectiveSizeType(double size);
 
+    /// <summary>
+    /// Returns the rectangle the groove occupies within the control rectangle.
+    /// </summary>
+    /// <param name="controlRect">
+    /// The rectangle of the control.
+    /// </param>
+    /// <returns>
+    /// The rectangle of the groove.
+    /// </returns>
     protected abstract Rect GetProgressBarRect(Rect controlRect);
+    /// <summary>
+    /// Returns the rectangle the progress info occupies within the control rectangle.
+    /// </summary>
+    /// <param name="controlRect">
+    /// The rectangle of the control.
+    /// </param>
+    /// <returns>
+    /// The rectangle of the progress info.
+    /// </returns>
     protected abstract Rect GetExtraInfoRect(Rect controlRect);
 
+    /// <summary>
+    /// Draws the groove with <see cref="GrooveBrush" />. The base class calls it from <see cref="Render" /> after
+    /// <see cref="NotifyPrepareDrawingContext" />, unless <see cref="HasTemplateProgressVisuals" /> is
+    /// <see langword="true" />.
+    /// </summary>
     protected abstract void RenderGroove(DrawingContext context);
+    /// <summary>
+    /// Draws the indicator, the filled part of the bar. The base class calls it from <see cref="Render" /> directly
+    /// after <see cref="RenderGroove" />, unless <see cref="HasTemplateProgressVisuals" /> is
+    /// <see langword="true" />.
+    /// </summary>
     protected abstract void RenderIndicatorBar(DrawingContext context);
+    /// <summary>
+    /// Computes the stroke thickness and assigns it to <see cref="EffectiveStrokeThickness" />. The base class calls
+    /// it from <see cref="NotifyEffectSizeTypeChanged" />; a derived class calls it again when a property the
+    /// thickness depends on changes.
+    /// </summary>
     protected abstract void CalculateStrokeThickness();
 
+    /// <summary>
+    /// Whether the template of the derived control provides a panel that draws the progress body itself. When it is
+    /// <see langword="true" />, <see cref="Render" /> draws nothing and the template parts take the place of
+    /// <see cref="RenderGroove" /> and <see cref="RenderIndicatorBar" />.
+    /// </summary>
     private protected virtual bool HasTemplateProgressVisuals => false;
 
+    /// <summary>
+    /// Called after the template has been applied and, while the control is attached to a visual tree, whenever
+    /// <see cref="EffectiveSizeType" /> changes. It recalculates the stroke thickness. Derived overrides must call
+    /// the base member.
+    /// </summary>
     protected virtual void NotifyEffectSizeTypeChanged()
     {
         CalculateStrokeThickness();
     }
 
+    /// <summary>
+    /// Places <see cref="ProgressIndicator" /> at the given rectangle and sizes it to that rectangle. Does nothing
+    /// when the template has no such part.
+    /// </summary>
+    /// <param name="bounds">
+    /// The rectangle to place the indicator panel at.
+    /// </param>
     private protected void ArrangeProgressIndicator(Rect bounds)
     {
         if (ProgressIndicator is null)
@@ -473,6 +749,16 @@ public abstract class AbstractProgressBar : RangeBase,
         ProgressIndicator.Arrange(bounds);
     }
 
+    /// <summary>
+    /// Returns the position of a value in the range of <see cref="RangeBase.Minimum" /> and
+    /// <see cref="RangeBase.Maximum" />, as a ratio that is not clamped.
+    /// </summary>
+    /// <param name="value">
+    /// The value to locate in the range.
+    /// </param>
+    /// <returns>
+    /// <c>(value - Minimum) / (Maximum - Minimum)</c>, or <c>1.0</c> when the two limits are equal.
+    /// </returns>
     private protected double CalculateProgressRatio(double value)
     {
         var range = Maximum - Minimum;
@@ -485,6 +771,15 @@ public abstract class AbstractProgressBar : RangeBase,
         NotifyUpdateProgress();
     }
 
+    /// <summary>
+    /// Called after <see cref="Percentage" /> has been recalculated: when the value, the range,
+    /// <see cref="IsIndeterminate" />, <see cref="ProgressTextFormat" />,
+    /// <see cref="IsProgressInfoVisible" /> or <see cref="Status" /> changes, when
+    /// <see cref="ProgressInfoContent" /> is cleared and after the template has been applied. While the progress
+    /// info is visible it writes the formatted percentage into <see cref="PercentageLabel" />, unless
+    /// <see cref="Status" /> is <see cref="ProgressStatus.Exception" />, and then calls
+    /// <see cref="NotifyHandleExtraInfoVisibility" />. Derived overrides must call the base member.
+    /// </summary>
     protected virtual void NotifyUpdateProgress()
     {
         if (IsProgressInfoVisible && PercentageLabel != null)
@@ -498,21 +793,31 @@ public abstract class AbstractProgressBar : RangeBase,
         }
     }
 
+    /// <summary>
+    /// Lets a derived class update the visibility of the progress info elements. The base class calls it while
+    /// <see cref="IsProgressInfoVisible" /> is <see langword="true" /> and the template provides
+    /// <see cref="PercentageLabel" />, once from <see cref="NotifyUpdateProgress" /> and once when
+    /// <see cref="Avalonia.Layout.Layoutable.Width" /> or <see cref="Avalonia.Layout.Layoutable.Height" /> changes
+    /// while the control is attached to a visual tree.
+    /// </summary>
     protected virtual void NotifyHandleExtraInfoVisibility()
     {
     }
 
     /// <summary>
-    /// 自定义信息内容被设置或清除后，子类据此重算信息区尺寸。
+    /// Called after <see cref="ProgressInfoContent" /> is set or cleared, so that a derived class can recalculate
+    /// the size of the progress info area.
     /// </summary>
     protected virtual void NotifyProgressInfoContentChanged()
     {
     }
 
-    // 自定义内容存在时，隐藏百分比标签与状态图标；清除后交还给样式与默认逻辑。
-    // 呈现器的内容由这里直接写入，保证随后的测量读到的就是最新内容。
-    // 标签与图标以可释放的 Animation 优先级隐藏：它高于本地值与绑定但不替换它们，
-    // 清除内容或换模板时释放，自定义模板上原有的本地 IsVisible 与绑定随即恢复。
+    // While custom content is present, the percentage label and the status icons are hidden; clearing the content
+    // hands them back to the styles and the default logic.
+    // The content is written into the presenter directly here, so a following measure reads the latest content.
+    // The label and the icons are hidden at a disposable Animation priority: it outranks local values and bindings
+    // without replacing them. The value is released when the content is cleared or the template changes, which
+    // restores the local IsVisible values and bindings a custom template had set.
     private void UpdateProgressInfoContentVisuals()
     {
         var hasContent = ProgressInfoContent is not null;
@@ -537,7 +842,8 @@ public abstract class AbstractProgressBar : RangeBase,
         ReleaseInfoContentVisibilityOverrides();
     }
 
-    // 默认图标以模板优先级写入，主题或本地图标可替换它；重套模板时替换持有的句柄，避免累积属性帧
+    // The default icon is written at template priority, so a theme icon or a local icon replaces it. Applying the
+    // template again replaces the held handle, so that value frames do not accumulate.
     private protected void SetupDefaultCompletedIcons(Func<PathIcon> createExceptionIcon, Func<PathIcon> createSuccessIcon)
     {
         if (ExceptionCompletedIcon == null)
@@ -571,7 +877,8 @@ public abstract class AbstractProgressBar : RangeBase,
     }
 
     /// <summary>
-    /// 自定义内容呈现器的期望尺寸；没有呈现器（模板缺失该部件）时返回 null。
+    /// Measures the presenter of <see cref="ProgressInfoContent" /> with an infinite available size and returns its
+    /// desired size, or <see langword="null" /> when no custom content is set or the template has no presenter.
     /// </summary>
     private protected Size? MeasureProgressInfoContent()
     {
@@ -643,6 +950,10 @@ public abstract class AbstractProgressBar : RangeBase,
         PseudoClasses.Set(ProgressBarPseudoClass.ValueZero, MathUtils.AreClose(Value, 0d));
     }
 
+    /// <summary>
+    /// Called at the end of <see cref="OnPropertyChanged" /> for every property change. The base member applies
+    /// <see cref="TrailColor" /> to <see cref="GrooveBrush" />. Derived overrides must call the base member.
+    /// </summary>
     protected virtual void NotifyPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         if (change.Property == TrailColorProperty)
@@ -658,6 +969,11 @@ public abstract class AbstractProgressBar : RangeBase,
         }
     }
 
+    /// <summary>
+    /// Draws the groove and the indicator through <see cref="RenderGroove" /> and
+    /// <see cref="RenderIndicatorBar" /> unless <see cref="HasTemplateProgressVisuals" /> is
+    /// <see langword="true" />; in that case the template provides the progress visuals and nothing is drawn here.
+    /// </summary>
     public override void Render(DrawingContext context)
     {
         if (HasTemplateProgressVisuals)
@@ -670,16 +986,31 @@ public abstract class AbstractProgressBar : RangeBase,
         RenderIndicatorBar(context);
     }
 
+    /// <summary>
+    /// Called from <see cref="Render" /> before <see cref="RenderGroove" />, to let a derived class prepare the
+    /// drawing context.
+    /// </summary>
+    /// <param name="context">
+    /// The context the groove and the indicator are drawn into.
+    /// </param>
     protected virtual void NotifyPrepareDrawingContext(DrawingContext context)
     {
     }
 
+    /// <summary>
+    /// Resets the transition initialization session and then calls the base member. Derived overrides must call the
+    /// base member.
+    /// </summary>
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         _transitionInitialization.Reset();
         base.OnDetachedFromVisualTree(e);
     }
 
+    /// <summary>
+    /// Calls the base member and then completes the transition initialization session. Derived overrides must call
+    /// the base member, otherwise the session is never completed.
+    /// </summary>
     protected override void OnLoaded(RoutedEventArgs e)
     {
         base.OnLoaded(e);

@@ -12,7 +12,7 @@ namespace AtomUI.Generator;
 /// <c>ATOMUIGEN041</c> (global Token read kind versus the ControlTheme's Token identity; load-time frozen
 /// <c>SharedTokenResourceValue</c> reads and TokenResource reads on transition durations in any ControlTheme),
 /// <c>ATOMUIGEN045</c> (visual literals).
-/// The analysis is pure <see cref="XElement"/> traversal. Only provable patterns are reported; anything that cannot be
+/// The analysis is pure <see cref="XElement" /> traversal. Only provable patterns are reported; anything that cannot be
 /// resolved statically is left to review. The parsed documents never enter the incremental cache.
 /// </summary>
 internal static class ThemeAssetConsumptionAnalyzer
@@ -48,7 +48,7 @@ internal static class ThemeAssetConsumptionAnalyzer
     // Signed numbers and comma/space separated tuples (Thickness, Point, CornerRadius).
     private static readonly Regex s_numeric = new(@"^[-+\d.,\s]+$", RegexOptions.CultureInvariant);
 
-    // Attributes (and Setter Property names) that carry colour values.
+    // Attributes (and Setter Property names) that carry color values.
     private static readonly HashSet<string> s_colorProperties = new(StringComparer.Ordinal)
     {
         "Background", "Foreground", "BorderBrush", "Fill", "Stroke", "Color"
@@ -65,7 +65,7 @@ internal static class ThemeAssetConsumptionAnalyzer
     private static bool IsNumericProperty(string property) =>
         s_numericProperties.Contains(property) || property.EndsWith("Offset", StringComparison.Ordinal);
 
-    // Avalonia's named colours except Transparent, which (like ATOMUIGEN044 for code) is not a visual decision.
+    // Avalonia's named colors except Transparent, which (like ATOMUIGEN044 for code) is not a visual decision.
     private static readonly HashSet<string> s_namedColors = new(
         ("AliceBlue AntiqueWhite Aqua Aquamarine Azure Beige Bisque Black BlanchedAlmond Blue BlueViolet Brown BurlyWood " +
          "CadetBlue Chartreuse Chocolate Coral CornflowerBlue Cornsilk Crimson Cyan DarkBlue DarkCyan DarkGoldenrod " +
@@ -104,7 +104,22 @@ internal static class ThemeAssetConsumptionAnalyzer
         }
     }
 
-    /// <param name="tokenIdentityControls">Names of the controls of this package that have a Token identity.</param>
+    /// <summary>
+    /// Runs the Token read checks (<c>ATOMUIGEN041</c>) and the visual literal check (<c>ATOMUIGEN045</c>) of this
+    /// class over one parsed theme asset, and passes every finding to <paramref name="report" />.
+    /// </summary>
+    /// <param name="asset">
+    /// The theme asset that the document belongs to. It provides the location of the asset in the reported diagnostics.
+    /// </param>
+    /// <param name="root">
+    /// The root element of the parsed asset.
+    /// </param>
+    /// <param name="tokenIdentityControls">
+    /// Names of the controls of this package that have a Token identity.
+    /// </param>
+    /// <param name="report">
+    /// Receives every diagnostic that the analysis finds.
+    /// </param>
     internal static void Analyze(
         ThemeAssetInfo asset,
         XElement root,
@@ -149,8 +164,8 @@ internal static class ThemeAssetConsumptionAnalyzer
     }
 
     /// <summary>
-    /// Resolves the TargetType of a <c>ControlTheme</c> element: its simple type name and whether that type is a Token owner
-    /// (has a Token identity) among <paramref name="tokenIdentityControls"/>.
+    /// Resolves the TargetType of a <c>ControlTheme</c> element: its simple type name and whether that type is a Token
+    /// owner (has a Token identity) among <paramref name="tokenIdentityControls" />.
     /// </summary>
     internal static ThemeScope CreateScope(XElement controlTheme, ISet<string> tokenIdentityControls)
     {
@@ -191,7 +206,9 @@ internal static class ThemeAssetConsumptionAnalyzer
         internal string? TargetTypeName { get; }
         internal bool HasIdentity { get; }
 
-        /// <summary>The ControlTheme carries an <c>owner:</c> marker: owner reads are allowed on its identity TargetType.</summary>
+        /// <summary>
+        /// The ControlTheme carries an <c>owner:</c> marker: owner reads are allowed on its identity TargetType.
+        /// </summary>
         internal bool AllowsOwnerReads { get; }
     }
 

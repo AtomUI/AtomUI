@@ -64,7 +64,8 @@ public partial class CascaderView
             var pathNodes = BuildOptionPath(cascaderViewOption);
             
             Debug.Assert(pathNodes.Count > 0);
-            // 检查是否是野数据
+            // An option is "wild" when its parent chain does not end at one of the root options, which means it does
+            // not belong to this option tree. Expanding such an option is rejected.
             var rootNode  = pathNodes[0];
             var foundRoot = false;
             foreach (var root in _options)
@@ -165,7 +166,8 @@ public partial class CascaderView
         return false;
     }
     
-    // 这个方法默认判断 cascaderViewItem 的父亲都已经正常展开了，从而可以正常的展开自己
+    // Expects every ancestor of the item to be expanded already: the child level list is appended to the items panel
+    // and must land at the level index of the item. Callers expand the path from the root, one option at a time.
     private async Task DoExpandItemAsync(CascaderViewItem cascaderViewItem)
     {
         Debug.Assert(_itemsPanel != null);
@@ -410,6 +412,14 @@ public partial class CascaderView
         return level;
     }
     
+    /// <summary>
+    /// Collapses every expanded option: clears the expanded state of all options and removes every level list except
+    /// the root list.
+    /// </summary>
+    /// <remarks>
+    /// Does nothing when the items panel is not created yet, or while another expand or collapse operation of this
+    /// view is in progress. <see cref="ItemCollapsed" /> is not raised for the collapsed options.
+    /// </remarks>
     public void CollapseAll()
     {
         if (_itemsPanel == null || _ignoreExpandAndCollapseLevel > 0)

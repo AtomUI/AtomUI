@@ -116,11 +116,13 @@ public class SemanticPartGeneratorTests
     }
 
     /// <summary>
-    /// 原先本用例用带控制字符的 <c>Since</c> 证明 manifest writer 会转义控制字符。引入
-    /// <c>ATOMUIGEN038</c> 后该输入按契约非法（<c>Since</c> 必须是三段式发布版本），因此
-    /// "合法声明携带控制字符" 这一前提不再成立：<c>Name</c> / <c>Path</c> / <c>SelectorClass</c>
-    /// 只允许字母数字与连字符，<c>ThemePropertyName</c> 需解析到真实成员，都不接受控制字符。
-    /// 该用例改为锁定新的拒绝契约；writer 的转义逻辑保留为纵深防御，但经声明字段已不可达。
+    /// This case used to prove that the manifest writer escapes control characters, with a <c>Since</c> value
+    /// that carried one. Since <c>ATOMUIGEN038</c> that input is invalid by contract (<c>Since</c> must be a
+    /// three-part release version), so the premise of a valid declaration that carries a control character no
+    /// longer holds: <c>Name</c>, <c>Path</c> and <c>SelectorClass</c> allow only letters, digits and hyphens,
+    /// and <c>ThemePropertyName</c> must resolve to a real member. None of them accepts a control character.
+    /// The case now pins the new rejection contract. The writer's escaping stays as defense in depth, but it
+    /// is no longer reachable through the declaration fields.
     /// </summary>
     [Fact]
     public void Rejects_Control_Characters_In_Since_Metadata()
@@ -150,7 +152,8 @@ public class SemanticPartGeneratorTests
     }
 
     [Theory]
-    // 隐式 root 的 Since 取该 Control 已声明 Part 中最早的发布版本：root 随 Control 的第一个 Part 一起引入。
+    // The Since of the implicit root is the earliest release version among the parts declared on the control:
+    // the root arrives together with the control's first part.
     [InlineData("6.2.0", "6.2.0", "6.2.0")]
     [InlineData("6.2.0", "6.4.1", "6.2.0")]
     [InlineData("7.0.0", "6.10.3", "6.10.3")]
@@ -190,13 +193,15 @@ public class SemanticPartGeneratorTests
         diagnostics.ShouldBeEmpty();
         var manifest = GetGeneratedSource(outputCompilation, "GeneratedSemanticPartManifest.g.cs");
 
-        // root 描述块形如 root/root/null/typeof(...)/Single/Root/null/false/<since>/false)
+        // The root descriptor block looks like root/root/null/typeof(...)/Single/Root/null/false/<since>/false).
         manifest.ShouldContain($"                        \"{expectedRootSince}\",");
     }
 
     /// <summary>
-    /// root 是生成器隐式加入的描述块，control 上没有声明可以承载它的版本，因此必须从声明的 Part 推导。
-    /// 这里钉住它不能退化为硬编码版本线，否则会与 Part 的版本声明不一致，而 root 自身没有声明可承载该值。
+    /// The root is a descriptor block the generator adds implicitly; no declaration on the control can carry
+    /// its version, so it has to be derived from the declared parts. This pins that it must not degrade into a
+    /// hard-coded version line, which would disagree with the version declarations of the parts, while the root
+    /// itself has no declaration to carry the value.
     /// </summary>
     [Fact]
     public void Implicit_Root_Since_Is_A_Three_Part_Release_Version()
@@ -1008,9 +1013,10 @@ public class SemanticPartGeneratorTests
     }
 
     /// <summary>
-    /// <c>Since</c> 必须是 <c>major.minor.patch</c> 三段式具体发布版本，例如 <c>6.2.0</c>。
-    /// 只写版本线（<c>6.0</c>、<c>6.2</c>）或段数不符的值都不是可引用的发布版本，
-    /// 会让 descriptor 与文档声称一个不存在的引入版本，因此按声明契约错误阻断构建。
+    /// <c>Since</c> must be a concrete three-part release version <c>major.minor.patch</c>, for example
+    /// <c>6.2.0</c>. A version line alone (<c>6.0</c>, <c>6.2</c>) or a value with another number of parts is
+    /// not a releasable version and would make the descriptor and the documentation claim an introduction
+    /// version that never existed, so it breaks the build as a declaration contract error.
     /// </summary>
     [Theory]
     [InlineData("6.0")]

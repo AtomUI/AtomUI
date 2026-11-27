@@ -2,6 +2,19 @@ using System.Collections.ObjectModel;
 
 namespace AtomUI.Controls;
 
+/// <summary>
+/// A value that either holds for every breakpoint or is picked per breakpoint; the responsive row information of
+/// <c>Grid</c> in AtomUI.Controls keeps its values in it.
+/// </summary>
+/// <typeparam name="T">
+/// Type of the value that is resolved for a breakpoint.
+/// </typeparam>
+/// <remarks>
+/// A scalar map ignores the breakpoint. A breakpoint map holds the value of the largest breakpoint in
+/// <c>ResponsiveBreakpoints.Descending</c> that is not above the current one and has a value; when there is none,
+/// <c>Resolve</c> returns the fallback and <c>TryResolve</c> returns <see langword="false" />. The dictionary
+/// given to the constructor is copied.
+/// </remarks>
 internal readonly record struct ResponsiveValueMap<T>
 {
     private readonly IReadOnlyDictionary<MediaBreakPoint, T>? _values;

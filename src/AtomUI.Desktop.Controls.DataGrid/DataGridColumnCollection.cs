@@ -281,7 +281,7 @@ internal class DataGridColumnCollection : ObservableCollection<DataGridColumn>
         Debug.Assert(ItemsInternal != null);
         int            columnCount    = 0;
         DataGridColumn? dataGridColumn = ItemsInternal[fromColumnIndex];
-        // TODO 需要审查
+        // TODO column walk: review this loop and fix any defect found. Remove this TODO when that is done.
         while (dataGridColumn != null && dataGridColumn != ItemsInternal[toColumnIndex])
         {
             dataGridColumn = GetNextColumn(dataGridColumn, isVisible, isFrozen, null /*isReadOnly*/);
@@ -308,8 +308,12 @@ internal class DataGridColumnCollection : ObservableCollection<DataGridColumn>
     /// <summary>
     /// Returns an enumeration of all columns that meet the criteria of the filter predicate.
     /// </summary>
-    /// <param name="filter">Criteria for inclusion.</param>
-    /// <returns>Columns that meet the criteria, in ascending DisplayIndex order.</returns>
+    /// <param name="filter">
+    /// Criteria for inclusion.
+    /// </param>
+    /// <returns>
+    /// Columns that meet the criteria, in ascending DisplayIndex order.
+    /// </returns>
     internal IEnumerable<DataGridColumn> GetDisplayedColumns(Predicate<DataGridColumn> filter)
     {
         Debug.Assert(ItemsInternal != null);
@@ -329,9 +333,15 @@ internal class DataGridColumnCollection : ObservableCollection<DataGridColumn>
     /// Returns an enumeration of all columns that meet the criteria of the filter predicate.
     /// The columns are returned in the order specified by the reverse flag.
     /// </summary>
-    /// <param name="reverse">Whether or not to return the columns in descending DisplayIndex order.</param>
-    /// <param name="filter">Criteria for inclusion.</param>
-    /// <returns>Columns that meet the criteria, in the order specified by the reverse flag.</returns>
+    /// <param name="reverse">
+    /// Whether or not to return the columns in descending DisplayIndex order.
+    /// </param>
+    /// <param name="filter">
+    /// Criteria for inclusion.
+    /// </param>
+    /// <returns>
+    /// Columns that meet the criteria, in the order specified by the reverse flag.
+    /// </returns>
     internal IEnumerable<DataGridColumn> GetDisplayedColumns(bool reverse, Predicate<DataGridColumn> filter)
     {
         return reverse ? GetDisplayedColumnsReverse(filter) : GetDisplayedColumns(filter);
@@ -341,8 +351,12 @@ internal class DataGridColumnCollection : ObservableCollection<DataGridColumn>
     /// Returns an enumeration of all columns that meet the criteria of the filter predicate.
     /// The columns are returned in descending DisplayIndex order.
     /// </summary>
-    /// <param name="filter">Criteria for inclusion.</param>
-    /// <returns>Columns that meet the criteria, in descending DisplayIndex order.</returns>
+    /// <param name="filter">
+    /// Criteria for inclusion.
+    /// </param>
+    /// <returns>
+    /// Columns that meet the criteria, in descending DisplayIndex order.
+    /// </returns>
     internal IEnumerable<DataGridColumn> GetDisplayedColumnsReverse(Predicate<DataGridColumn> filter)
     {
         Debug.Assert(ItemsInternal != null);

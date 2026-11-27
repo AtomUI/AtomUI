@@ -4,7 +4,9 @@ using AtomUI.Theme.Languages;
 
 namespace AtomUI.Desktop.Controls.Themes.Shadcn;
 
-/// <summary>The shadcn view of <see cref="RateToken"/>.</summary>
+/// <summary>
+/// The shadcn view of <see cref="RateToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class RateTokenRule : IControlTokenRule<ShadcnToken, RateToken>
 {
@@ -12,6 +14,7 @@ internal sealed class RateTokenRule : IControlTokenRule<ShadcnToken, RateToken>
     {
         var token  = target.Own;
         var global = target.Global;
+        // Ant Design formula kept as is: shadcn has no rate, so the language has no values of its own.
         token.StarColor      = global.ColorPalettes[PresetPrimaryColor.Yellow].Color6;
         token.StarSize       = global.ControlHeight * 0.625;
         token.StarSizeSM     = global.ControlHeightSM * 0.625;

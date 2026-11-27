@@ -55,7 +55,7 @@ public class CheckBoxViewModel : ReactiveObject, IRoutableViewModel
         set => this.RaiseAndSetIfChanged(ref _controlledCheckBoxText, value);
     }
 
-    // CheckAll 例子
+    // CheckAll example
     private bool? _checkedAllStatus;
 
     public bool? CheckedAllStatus

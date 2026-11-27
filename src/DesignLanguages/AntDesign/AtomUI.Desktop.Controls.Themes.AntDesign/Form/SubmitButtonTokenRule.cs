@@ -4,7 +4,9 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls.Themes.AntDesign;
 
-/// <summary>The AntDesign view of <see cref="SubmitButtonToken"/>.</summary>
+/// <summary>
+/// The AntDesign view of <see cref="SubmitButtonToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class SubmitButtonTokenRule : IControlTokenRule<AntDesignToken, SubmitButtonToken>
 {

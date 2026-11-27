@@ -9,6 +9,7 @@ public partial class GridShowCase : GalleryReactiveUserControl<GridViewModel>
         InitializeComponent();
     }
 
+    /// <inheritdoc />
     protected override void OnDataContextChanged(EventArgs e)
     {
         base.OnDataContextChanged(e);

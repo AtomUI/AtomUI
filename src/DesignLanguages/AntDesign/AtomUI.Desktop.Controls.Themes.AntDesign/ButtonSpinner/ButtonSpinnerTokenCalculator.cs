@@ -6,9 +6,15 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls.Themes.AntDesign;
 
-/// <summary>The AntDesign values of the shared <see cref="AbstractButtonSpinnerToken"/> layer.</summary>
+/// <summary>
+/// The AntDesign values of the shared <see cref="AbstractButtonSpinnerToken" /> layer.
+/// </summary>
 public static class ButtonSpinnerTokenCalculator
 {
+    /// <summary>
+    /// Assigns the Ant Design values of the shared <see cref="AbstractButtonSpinnerToken" /> layer to
+    /// <paramref name="token" />: geometry, colors and border of the handle buttons for all interactive states.
+    /// </summary>
     public static void Calculate(in TokenEvaluationContext<AntDesignToken> context, DesignToken global, AbstractButtonSpinnerToken token)
     {
 
@@ -18,7 +24,7 @@ public static class ButtonSpinnerTokenCalculator
 
         token.HandleHoverColor  = global.ColorPrimary;
         // Ant Design has no hover fill on the handle buttons (only the icon changes) and the resting icon is the
-        // shared icon colour; both slots exist so a design language can give the handle its own surface.
+        // shared icon color; both slots exist so a design language can give the handle its own surface.
         token.HandleHoverBg     = Colors.Transparent;
         token.HandleIconColor   = global.ColorIcon;
         token.HandlePressedColor = global.ColorPrimaryActive;
@@ -26,6 +32,10 @@ public static class ButtonSpinnerTokenCalculator
     }
 
 
+    /// <summary>
+    /// Returns the value for <c>FilledHandleBg</c> of the ButtonSpinner and NumericUpDown Tokens: the secondary
+    /// fill color of <paramref name="global" /> composited over the handle background <paramref name="handleBg" />.
+    /// </summary>
     public static Color CalculateFilledHandleBackground(AbstractButtonSpinnerToken token, DesignToken global, Color handleBg)
     {
         return ColorUtils.OnBackground(global.ColorFillSecondary, handleBg);

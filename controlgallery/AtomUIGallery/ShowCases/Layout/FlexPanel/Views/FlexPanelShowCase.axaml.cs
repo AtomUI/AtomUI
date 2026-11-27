@@ -35,6 +35,7 @@ public partial class FlexPanelShowCase : GalleryReactiveUserControl<FlexPanelVie
         InitializeComponent();
     }
 
+    /// <inheritdoc />
     protected override void OnDataContextChanged(EventArgs e)
     {
         base.OnDataContextChanged(e);

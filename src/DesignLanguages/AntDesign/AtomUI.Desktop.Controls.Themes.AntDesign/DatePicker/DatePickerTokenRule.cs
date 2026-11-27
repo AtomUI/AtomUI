@@ -4,7 +4,9 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls.Themes.AntDesign;
 
-/// <summary>The AntDesign view of <see cref="DatePickerToken"/>.</summary>
+/// <summary>
+/// The AntDesign view of <see cref="DatePickerToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class DatePickerTokenRule : IControlTokenRule<AntDesignToken, DatePickerToken>
 {

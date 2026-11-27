@@ -4,7 +4,9 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls.Themes.Shadcn;
 
-/// <summary>The shadcn view of <see cref="RangeTimePickerToken"/>.</summary>
+/// <summary>
+/// The shadcn view of <see cref="RangeTimePickerToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class RangeTimePickerTokenRule : IControlTokenRule<ShadcnToken, RangeTimePickerToken>
 {

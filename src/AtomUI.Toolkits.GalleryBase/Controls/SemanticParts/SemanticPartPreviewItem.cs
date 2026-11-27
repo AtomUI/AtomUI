@@ -35,13 +35,21 @@ internal sealed class SemanticPartPreviewItem : INotifyPropertyChanged
 
     internal SemanticPartDescriptor Descriptor { get; }
 
-    /// <summary>Part 所属 owner 类型；多 owner Preview 用于在 UI 上标注归属并按 owner 解析高亮。</summary>
+    /// <summary>
+    /// The type of the owner the part is declared on. A preview that covers several owners uses it to label
+    /// the owner in the part list and to resolve the highlight of the part per owner.
+    /// </summary>
     internal Type OwnerType { get; }
 
-    /// <summary>owner 类型短名，供列表行显示。</summary>
+    /// <summary>
+    /// Short name of the owner type, shown on the list row.
+    /// </summary>
     public string OwnerTypeName => OwnerType.Name;
 
-    /// <summary>多 owner Preview 时在列表行标注 Part 归属；单 owner 时隐藏，避免噪音。</summary>
+    /// <summary>
+    /// Whether the list row shows which owner the part belongs to. It is <see langword="true" /> only when
+    /// the preview covers several owners; a single-owner preview hides the label to avoid noise.
+    /// </summary>
     public bool IsOwnerLabelVisible { get; internal set; }
 
     internal string? CodeSnippet { get; }

@@ -4,6 +4,10 @@ using AtomUI.Theme.Languages;
 
 namespace AtomUI.Desktop.Controls.Themes.Shadcn;
 
+/// <summary>
+/// Provides <see cref="AddDesktopDataGrid" />, the entry point that adds the shadcn values of the desktop
+/// data grid.
+/// </summary>
 public static class ShadcnDataGridExtensions
 {
     /// <summary>

@@ -8,10 +8,10 @@ namespace AtomUI.Controls.Commons;
 
 internal struct TagCalcColor
 {
-    public Color LightColor { get; set; } // 1 号色
-    public Color LightBorderColor { get; set; } // 3 号色
-    public Color DarkColor { get; set; } // 6 号色
-    public Color TextColor { get; set; } // 7 号色
+    public Color LightColor { get; set; } // Palette color 1
+    public Color LightBorderColor { get; set; } // Palette color 3
+    public Color DarkColor { get; set; } // Palette color 6
+    public Color TextColor { get; set; } // Palette color 7
 }
 
 internal struct TagStatusCalcColor

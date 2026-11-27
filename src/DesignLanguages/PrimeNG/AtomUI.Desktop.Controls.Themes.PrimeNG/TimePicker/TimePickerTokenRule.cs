@@ -4,7 +4,9 @@ using AtomUI.Theme.Languages;
 
 namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 
-/// <summary>The PrimeNG view of <see cref="TimePickerToken"/>.</summary>
+/// <summary>
+/// The PrimeNG view of <see cref="TimePickerToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class TimePickerTokenRule : IControlTokenRule<PrimeNGToken, TimePickerToken>
 {
@@ -12,9 +14,12 @@ internal sealed class TimePickerTokenRule : IControlTokenRule<PrimeNGToken, Time
     {
         var token  = target.Own;
         var global = target.Global;
-        // PrimeNG: the control-global overrides, read by the formulas below.
+        // PrimeNG: the control-global overrides of PrimeNGInputStage.Apply; BorderRadiusSM and ColorTextDisabled are
+        // read by the TimePicker theme (CornerRadius, Foreground); the formulas below read none of them.
         PrimeNGTimePickerTokens.EvaluateGlobal(in context, global);
         TimePickerTokenCalculator.Calculate(in context, global, token);
+        // Ant Design formula kept as is: the preset's stage for this token sets only PopupArrowVisible, so the item
+        // sizes and paddings are the Ant formula over the PrimeNG global tokens.
         token.ItemWidth = global.ControlHeightLG * 1.4;
         token.ItemHeight = global.ControlHeight - 4;
         token.PeriodHostWidth = token.ItemWidth;

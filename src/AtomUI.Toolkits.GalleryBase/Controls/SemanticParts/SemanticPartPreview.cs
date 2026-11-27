@@ -15,6 +15,13 @@ using Avalonia.VisualTree;
 
 namespace AtomUI.Toolkits.GalleryBase.Controls;
 
+/// <summary>
+/// Gallery inspector for the Semantic Parts of a control. It shows the control in a preview stage, lists
+/// the parts of one or more owners, highlights the hovered or pinned part in the preview and shows the
+/// details of a selected part together with a styling example.
+/// The part list is built when the preview is activated and rebuilt when the preview content, an owner or
+/// a description changes. Dispose the control to release the highlight session and the detail views.
+/// </summary>
 [PseudoClasses(CompactPseudoClass)]
 public class SemanticPartPreview : TemplatedControl, IDisposable
 {
@@ -27,17 +34,24 @@ public class SemanticPartPreview : TemplatedControl, IDisposable
     /// </summary>
     public static readonly IValueConverter PaneMaxHeightConverter = new SemanticPartPaneMaxHeightConverter();
 
+    /// <summary>
+    /// Identifies the <see cref="PreviewContent" /> property.
+    /// </summary>
     public static readonly StyledProperty<Control?> PreviewContentProperty =
         AvaloniaProperty.Register<SemanticPartPreview, Control?>(nameof(PreviewContent));
 
     /// <summary>
-    /// 预览内容在画布中的垂直对齐方式，默认居中；
-    /// 内容型预览（如大尺寸组件）可按需覆盖为 Top。
+    /// Identifies the <see cref="PreviewContentAlignment" /> property.
     /// </summary>
     public static readonly StyledProperty<VerticalAlignment> PreviewContentAlignmentProperty =
         AvaloniaProperty.Register<SemanticPartPreview, VerticalAlignment>(
             nameof(PreviewContentAlignment), VerticalAlignment.Center);
 
+    /// <summary>
+    /// Vertical position of <see cref="PreviewContent" /> in the area of the preview stage below the title.
+    /// The content is centered by default. Set it to <see cref="VerticalAlignment.Top" /> for tall content,
+    /// such as a large component, so that it starts directly under the title.
+    /// </summary>
     public VerticalAlignment PreviewContentAlignment
     {
         get => GetValue(PreviewContentAlignmentProperty);
@@ -45,26 +59,40 @@ public class SemanticPartPreview : TemplatedControl, IDisposable
     }
 
     /// <summary>
-    /// 预览画布的最小高度，默认 360。大型内容（如日历弹层）需要更大的
-    /// 锚点下方空间时调高；画布始终收缩到宿主钳制高度以内，不产生
-    /// 可视区之外的布局。
+    /// Identifies the <see cref="PreviewStageMinHeight" /> property.
     /// </summary>
     public static readonly StyledProperty<double> PreviewStageMinHeightProperty =
         AvaloniaProperty.Register<SemanticPartPreview, double>(
             nameof(PreviewStageMinHeight), 360d);
 
+    /// <summary>
+    /// Minimum height, in device-independent pixels, of the preview stage. The default is 360. Raise it when
+    /// tall content, such as a calendar popup, needs more room below its anchor.
+    /// The stage still shrinks to the height the showcase host clamps the preview to. When the host bounds the
+    /// height of the Semantic Parts content, it uses this value plus the insets of the inspection panel as the
+    /// lower limit of the clamp; below that limit the page scrolls.
+    /// </summary>
     public double PreviewStageMinHeight
     {
         get => GetValue(PreviewStageMinHeightProperty);
         set => SetValue(PreviewStageMinHeightProperty, value);
     }
 
+    /// <summary>
+    /// Identifies the <see cref="SemanticOwner" /> property.
+    /// </summary>
     public static readonly StyledProperty<Control?> SemanticOwnerProperty =
         AvaloniaProperty.Register<SemanticPartPreview, Control?>(nameof(SemanticOwner));
 
+    /// <summary>
+    /// Identifies the <see cref="SemanticOwnerType" /> property.
+    /// </summary>
     public static readonly StyledProperty<Type?> SemanticOwnerTypeProperty =
         AvaloniaProperty.Register<SemanticPartPreview, Type?>(nameof(SemanticOwnerType));
 
+    /// <summary>
+    /// Identifies the <see cref="Title" /> property.
+    /// </summary>
     public static readonly StyledProperty<string?> TitleProperty =
         AvaloniaProperty.Register<SemanticPartPreview, string?>(nameof(Title));
 
@@ -104,24 +132,50 @@ public class SemanticPartPreview : TemplatedControl, IDisposable
         SemanticOwners.CollectionChanged += (_, _) => ResetPresentation();
     }
 
+    /// <summary>
+    /// The control demonstrated in the preview stage.
+    /// While <see cref="SemanticOwners" /> is empty and <see cref="SemanticOwner" /> is
+    /// <see langword="null" />, this control is also the single Semantic Part owner: the parts come from the
+    /// descriptor of <see cref="SemanticOwnerType" /> or of the control's own runtime type, and every instance
+    /// of that type found in the content is highlighted. It must then be set before the preview is activated.
+    /// </summary>
     public Control? PreviewContent
     {
         get => GetValue(PreviewContentProperty);
         set => SetValue(PreviewContentProperty, value);
     }
 
+    /// <summary>
+    /// The control that anchors the inspection when the Semantic Part owner is not
+    /// <see cref="PreviewContent" />. The parts come from the descriptor of <see cref="SemanticOwnerType" />
+    /// or of the runtime type of this control. Highlighting covers every instance of that owner type found in
+    /// the preview content, or in this control and its descendants when the content is <see langword="null" />.
+    /// Ignored while <see cref="SemanticOwners" /> declares owners.
+    /// </summary>
     public Control? SemanticOwner
     {
         get => GetValue(SemanticOwnerProperty);
         set => SetValue(SemanticOwnerProperty, value);
     }
 
+    /// <summary>
+    /// The owner type whose Semantic Part descriptor supplies the parts of the single owner path.
+    /// When it is <see langword="null" />, the runtime type of <see cref="SemanticOwner" />, or of
+    /// <see cref="PreviewContent" />, is used.
+    /// The owner control must be an instance of this type, and a descriptor must be registered for the type;
+    /// otherwise building the part list throws <see cref="InvalidOperationException" />.
+    /// Ignored while <see cref="SemanticOwners" /> declares owners.
+    /// </summary>
     public Type? SemanticOwnerType
     {
         get => GetValue(SemanticOwnerTypeProperty);
         set => SetValue(SemanticOwnerTypeProperty, value);
     }
 
+    /// <summary>
+    /// The heading shown above the preview content in the preview stage.
+    /// The heading is hidden when the value is <see langword="null" /> or empty.
+    /// </summary>
     public string? Title
     {
         get => GetValue(TitleProperty);
@@ -129,13 +183,29 @@ public class SemanticPartPreview : TemplatedControl, IDisposable
     }
 
     /// <summary>
-    /// 单个 Preview 覆盖多个公开 owner 时的 owner 声明集合（按声明顺序合并 Part 列表）。
-    /// 声明后忽略 <see cref="SemanticOwner" /> / <see cref="SemanticOwnerType" /> 的单 owner 路径。
+    /// The owner declarations used when one preview covers several public owners. The part lists of the owners
+    /// are merged in declaration order. Once the collection has entries, the single owner path through
+    /// <see cref="SemanticOwner" /> and <see cref="SemanticOwnerType" /> is ignored.
+    /// Any change to the collection rebuilds the part list.
     /// </summary>
     public AvaloniaList<SemanticPartPreviewOwner> SemanticOwners { get; } = [];
 
+    /// <summary>
+    /// Optional descriptions for the listed parts. A description replaces the default text of a part and can
+    /// replace the code of its styling example.
+    /// Described parts are listed first, in the order of this collection; the other parts of an owner follow.
+    /// <see cref="SemanticPartDescription.OwnerType" /> can be omitted only while the preview has a single
+    /// owner. A path that does not exist on its owner, a duplicate path or a missing owner type with several
+    /// owners makes building the part list throw <see cref="InvalidOperationException" />.
+    /// </summary>
     public AvaloniaList<SemanticPartDescription> PartDescriptions { get; } = [];
 
+    /// <summary>
+    /// Additional visual roots, such as the presenter of an open popup, that a highlight also searches for
+    /// Semantic Part instances. Register a root when the demonstrated control shows a part in a visual root
+    /// that the preview content does not contain, for example in a flyout, and remove it when that root closes.
+    /// A highlight session takes a snapshot of the list when it starts, so a change applies to the next update.
+    /// </summary>
     public AvaloniaList<Visual> AdditionalRoots { get; } = [];
 
     internal IReadOnlyList<SemanticPartPreviewItem> Items
@@ -227,12 +297,25 @@ public class SemanticPartPreview : TemplatedControl, IDisposable
         CodeContent = _codeView;
     }
 
+    /// <summary>
+    /// Sets the <c>:compact</c> pseudo-class when the arranged width is below 820 and clears it otherwise.
+    /// The theme rearranges the panes for this class. An override must call the base implementation or set
+    /// the class itself.
+    /// </summary>
     protected override Size ArrangeOverride(Size finalSize)
     {
         PseudoClasses.Set(CompactPseudoClass, finalSize.Width < CompactWidth);
         return base.ArrangeOverride(finalSize);
     }
 
+    /// <summary>
+    /// Clears the part list, the part details and the highlight when <see cref="PreviewContent" /> changes, or
+    /// when <see cref="SemanticOwner" /> or <see cref="SemanticOwnerType" /> changes to a consistent pair.
+    /// The pair is consistent when either value is <see langword="null" /> or the control is an instance of the
+    /// type. A change that leaves it inconsistent is skipped; the change that makes it consistent is applied.
+    /// The list is rebuilt at once while the preview is active, and otherwise when it is activated next.
+    /// An override must call the base implementation.
+    /// </summary>
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
@@ -245,12 +328,21 @@ public class SemanticPartPreview : TemplatedControl, IDisposable
         }
     }
 
+    /// <summary>
+    /// Deactivates the preview when the control leaves the visual tree, which releases the highlight session.
+    /// An override must call the base implementation.
+    /// </summary>
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         DeactivatePreview();
         base.OnDetachedFromVisualTree(e);
     }
 
+    /// <summary>
+    /// Releases the highlight session, the part detail views and the code viewer, and clears the part list and
+    /// the resolved owners. Further calls have no effect. A disposed preview rejects activation with
+    /// <see cref="ObjectDisposedException" />.
+    /// </summary>
     public void Dispose()
     {
         if (_isDisposed)
@@ -294,7 +386,8 @@ public class SemanticPartPreview : TemplatedControl, IDisposable
         foreach (var binding in bindings)
         {
             var partsByPath = binding.Descriptor.Parts.ToDictionary(static part => part.Path, StringComparer.Ordinal);
-            // 顺序契约：先按 PartDescriptions 的声明顺序列出该 owner 已描述的 Part，再追加其余 Part。
+            // Order contract: the parts of this owner that have a description come first, in the order of
+            // PartDescriptions, then the remaining parts of the owner.
             var describedPaths = descriptions.Keys
                                              .Where(key => key.OwnerType == binding.Descriptor.ControlType)
                                              .Select(static key => key.Path)
@@ -327,7 +420,8 @@ public class SemanticPartPreview : TemplatedControl, IDisposable
         Items = items.ToArray();
     }
 
-    // owner 解析：声明了 SemanticOwners 时逐个解析并按顺序合并；否则退回单 owner 路径。
+    // Owner resolution: when SemanticOwners declares owners, each one is resolved and the part lists are
+    // merged in that order; otherwise the single owner path is used.
     private List<OwnerBinding> ResolveOwnerBindings(SemanticPartRegistry registry)
     {
         var bindings = new List<OwnerBinding>();
@@ -380,11 +474,13 @@ public class SemanticPartPreview : TemplatedControl, IDisposable
         return new OwnerBinding(descriptor, owner);
     }
 
-    // 描述映射以 (ownerType, path) 为键：多 owner 下 root 等路径会在不同 owner 上重名。
+    // The description map is keyed by (ownerType, path): with several owners, paths such as root repeat on
+    // different owners.
     private Dictionary<(Type OwnerType, string Path), SemanticPartDescription> BuildDescriptionMap(
         IReadOnlyList<OwnerBinding> bindings)
     {
-        // 单 owner 时描述可省略 OwnerType，默认归属该唯一 owner；多 owner 时必须显式区分。
+        // With a single owner a description may omit OwnerType and belongs to that owner; with several owners it
+        // must be stated explicitly.
         var singleOwnerType = bindings.Count == 1 ? bindings[0].Descriptor.ControlType : null;
         var result = new Dictionary<(Type, string), SemanticPartDescription>();
         foreach (var description in PartDescriptions)
@@ -402,7 +498,7 @@ public class SemanticPartPreview : TemplatedControl, IDisposable
             }
         }
 
-        // 未知路径必须拒绝：description 只能在所属 owner 的真实 Part 上声明。
+        // Unknown paths must be rejected: a description may only be declared on a real part of its owner.
         var knownPaths = bindings.ToDictionary(
             static binding => binding.Descriptor.ControlType,
             static binding => binding.Descriptor.Parts.Select(static part => part.Path)
@@ -478,8 +574,9 @@ public class SemanticPartPreview : TemplatedControl, IDisposable
             return;
         }
 
-        // 高亮框钳制在预览画布内：溢出画布的部件只高亮画布内部分，
-        // 画布外的描边会误导为页面其他区域也是语义部件。
+        // The highlight is clipped to the preview stage: a part that overflows the stage is highlighted only
+        // inside it, because a stroke outside the stage suggests that other regions of the page are Semantic
+        // Parts too.
         var stage = this.GetTemplateDescendants()
                         .OfType<Border>()
                         .FirstOrDefault(static border => border.Name == "PART_PreviewStage");
@@ -608,9 +705,10 @@ public class SemanticPartPreview : TemplatedControl, IDisposable
                 : char.ToUpperInvariant(segment[0]) + segment.Substring(1)));
     }
 
-    // 一个 Preview 内的单个 owner 绑定：descriptor + 实例锚点。
+    // One owner binding of a preview: the descriptor and the instance that anchors it.
     private sealed record OwnerBinding(ControlSemanticDescriptor Descriptor, Control Anchor);
 
-    // 单 owner 与多 owner 的解析结果：多 owner 时 Part 列表按 owner 声明顺序合并。
+    // The result of the owner resolution for one owner or several; with several owners the part list is merged
+    // in owner declaration order.
     private sealed record ControlDescriptorBundle(bool IsMultiOwner, Type[] OwnerTypes);
 }

@@ -17,51 +17,108 @@ namespace AtomUI.Desktop.Controls;
 
 using AvaloniaTabStripItem = Avalonia.Controls.Primitives.TabStripItem;
 
+/// <summary>
+/// The shape of the tabs of a tab strip or tab control.
+/// </summary>
 public enum TabSharp
 {
+    /// <summary>
+    /// The tab shape of <see cref="TabStrip" /> and <see cref="TabControl" />. A
+    /// <see cref="TabStripItem" /> with this shape uses the <c>TabStripItemTheme</c> control theme.
+    /// </summary>
     Line,
+    /// <summary>
+    /// The tab shape of <see cref="CardTabStrip" /> and <see cref="CardTabControl" />. A
+    /// <see cref="TabStripItem" /> with this shape uses the <c>CardTabStripItemTheme</c> control theme.
+    /// </summary>
     Card
 }
 
+/// <summary>
+/// One tab of a tab strip or tab control. The strip creates an instance for each item of its items source, or
+/// accepts a <c>TabStripItem</c> that is used directly as an item as its own container. For an item that
+/// implements <see cref="ITabItemData" />, the strip copies the values of the item onto the tab. The tab is not a
+/// token owner: the content it hosts keeps the token owner inherited from its host.
+/// </summary>
 [TokenOwnerTransparent]
 public partial class TabStripItem : AvaloniaTabStripItem
 {
     #region 公共属性定义
 
+    /// <summary>
+    /// Identifies the <see cref="Icon" /> property.
+    /// </summary>
     public static readonly StyledProperty<PathIcon?> IconProperty =
         AvaloniaProperty.Register<TabStripItem, PathIcon?>(nameof(Icon));
 
+    /// <summary>
+    /// Identifies the <see cref="CloseIcon" /> property.
+    /// </summary>
     public static readonly StyledProperty<PathIcon?> CloseIconProperty =
         AvaloniaProperty.Register<TabStripItem, PathIcon?>(nameof(CloseIcon));
 
+    /// <summary>
+    /// Identifies the <see cref="IsClosable" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsClosableProperty =
         AvaloniaProperty.Register<TabStripItem, bool>(nameof(IsClosable));
 
+    /// <summary>
+    /// Identifies the <see cref="IsAutoHideCloseButton" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsAutoHideCloseButtonProperty =
         AvaloniaProperty.Register<TabStripItem, bool>(nameof(IsAutoHideCloseButton));
 
+    /// <summary>
+    /// Identifies the <see cref="TabStripPlacement" /> property.
+    /// </summary>
     public static readonly DirectProperty<TabStripItem, Dock?> TabStripPlacementProperty =
         AvaloniaProperty.RegisterDirect<TabStripItem, Dock?>(nameof(TabStripPlacement),
             o => o.TabStripPlacement);
 
+    /// <summary>
+    /// Icon shown in front of the tab label, or <see langword="null" /> to show none. For an item that implements
+    /// <see cref="ITabItemData" />, the strip copies the icon of the item onto the tab unless a value is set on the
+    /// tab. Setting or clearing the icon notifies the owning strip, which then decides whether the tabs without an
+    /// icon keep an empty icon slot.
+    /// </summary>
     public PathIcon? Icon
     {
         get => GetValue(IconProperty);
         set => SetValue(IconProperty, value);
     }
 
+    /// <summary>
+    /// Icon of the close button, shown only while <see cref="IsClosable" /> is <see langword="true" />. While the
+    /// tab is closable, <see langword="null" /> falls back to the default <c>CloseOutlined</c> icon. For an item
+    /// that implements <see cref="ITabItemData" />, the strip copies the close icon of the item onto the tab unless
+    /// a value is set on the tab.
+    /// </summary>
     public PathIcon? CloseIcon
     {
         get => GetValue(CloseIconProperty);
         set => SetValue(CloseIconProperty, value);
     }
 
+    /// <summary>
+    /// Whether the tab shows a close button at the end of its label. Clicking the button asks the owning strip to
+    /// close the tab. The default is <see langword="false" />. For an item that implements <see cref="ITabItemData" />,
+    /// the strip copies the value of the item onto the tab unless a value is set on the tab.
+    /// </summary>
     public bool IsClosable
     {
         get => GetValue(IsClosableProperty);
         set => SetValue(IsClosableProperty, value);
     }
 
+    /// <summary>
+    /// Whether the close button of a closable tab stays transparent until the pointer is over the tab; while
+    /// transparent it still takes its place and receives clicks. It has no effect while
+    /// <see cref="IsClosable" /> is <see langword="false" />. The default is <see langword="false" />, which paints
+    /// the button as soon as the tab is closable. For an item that implements
+    /// <see cref="ITabItemData" />, the strip copies the value of the item onto the tab unless a value is set on
+    /// the tab.
+    /// </summary>
     public bool IsAutoHideCloseButton
     {
         get => GetValue(IsAutoHideCloseButtonProperty);
@@ -70,6 +127,11 @@ public partial class TabStripItem : AvaloniaTabStripItem
 
     private Dock? _tabStripPlacement;
 
+    /// <summary>
+    /// Where the tab strip that owns this tab is placed. The owning strip copies its own
+    /// <see cref="BaseTabStrip.TabStripPlacement" /> onto the tab when it prepares the tab, so the setter is
+    /// internal. The theme selects horizontal or vertical margins and padding from the value.
+    /// </summary>
     public Dock? TabStripPlacement
     {
         get => _tabStripPlacement;
@@ -102,6 +164,11 @@ public partial class TabStripItem : AvaloniaTabStripItem
     internal static readonly StyledProperty<bool> IsIconSlotReservedProperty =
         AvaloniaProperty.Register<TabStripItem, bool>(nameof(IsIconSlotReserved));
 
+    /// <summary>
+    /// The preset size of the tab; the theme derives its padding from the value. The owning strip binds the tab to
+    /// its own <see cref="BaseTabStrip.SizeType" /> when it prepares the tab, so the size is set on the strip, not
+    /// on the tab.
+    /// </summary>
     public SizeType SizeType
     {
         get => GetValue(SizeTypeProperty);
@@ -114,6 +181,10 @@ public partial class TabStripItem : AvaloniaTabStripItem
         set => SetValue(IsTabReorderDraggingProperty, value);
     }
 
+    /// <summary>
+    /// The shape of the tab, which decides the control theme of the tab. The owning strip sets it when it creates
+    /// the tab. A change of a tab that is attached to a logical tree applies the theme of the new shape.
+    /// </summary>
     public TabSharp Shape
     {
         get => GetValue(ShapeProperty);
@@ -198,18 +269,32 @@ public partial class TabStripItem : AvaloniaTabStripItem
         _transitionInitialization = new TransitionInitializationSession(this);
     }
 
+    /// <summary>
+    /// Resets the transition initialization session, then calls the base method. An override that does not call the
+    /// base method must still reset the session, so that it is completed again by <see cref="OnLoaded" />, when the
+    /// tab is attached once more.
+    /// </summary>
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         _transitionInitialization.Reset();
         base.OnDetachedFromVisualTree(e);
     }
 
+    /// <summary>
+    /// Resets the transition initialization session, then lets the base method run. An override that does not call
+    /// the base method must still reset the session, so that it is completed again for the new template by
+    /// <see cref="OnApplyTemplate" /> or <see cref="OnLoaded" />.
+    /// </summary>
     protected override void OnTemplateChanged(AvaloniaPropertyChangedEventArgs e)
     {
         _transitionInitialization?.Reset();
         base.OnTemplateChanged(e);
     }
 
+    /// <summary>
+    /// Applies the control theme of the tab's shape when the tab has no theme yet, then updates the icon state that
+    /// the owning strip uses to reserve icon slots. The base method runs first.
+    /// </summary>
     protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
     {
         base.OnAttachedToLogicalTree(e);
@@ -218,6 +303,11 @@ public partial class TabStripItem : AvaloniaTabStripItem
         NotifyIconSlotOwner();
     }
 
+    /// <summary>
+    /// Releases the bindings that the owning strip created on the tab when the strip removes the tab directly from
+    /// its logical children, so that the removed tab does not keep the strip alive. A detach that cascades from an
+    /// ancestor keeps the bindings, because attaching the tree again relies on them. The base method runs first.
+    /// </summary>
     protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
     {
         base.OnDetachedFromLogicalTree(e);
@@ -233,6 +323,12 @@ public partial class TabStripItem : AvaloniaTabStripItem
         }
     }
 
+    /// <summary>
+    /// Applies the default close icon before the template is built, then releases the click handler of the previous
+    /// close button, subscribes the click of the <c>PART_ItemCloseButton</c> of the new template and completes the
+    /// transition initialization. An override that does not call the base method must still complete the
+    /// initialization.
+    /// </summary>
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         SetupDefaultCloseIcon();
@@ -257,6 +353,12 @@ public partial class TabStripItem : AvaloniaTabStripItem
         }
     }
 
+    /// <summary>
+    /// Calls the base method, then keeps the tab in step with its properties: a shape change of a tab that is
+    /// attached to a logical tree applies the theme of the new shape, an icon change updates the icon slot state,
+    /// and a change of the close icon or of <see cref="IsClosable" /> applies the default close icon when the tab
+    /// is closable and has no close icon.
+    /// </summary>
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
@@ -304,12 +406,22 @@ public partial class TabStripItem : AvaloniaTabStripItem
         }
     }
 
+    /// <summary>
+    /// Completes the transition initialization once the tab is loaded. The base method runs first; an override that
+    /// does not call it must still complete the initialization.
+    /// </summary>
     protected override void OnLoaded(RoutedEventArgs e)
     {
         base.OnLoaded(e);
         _transitionInitialization.CompleteInitialization();
     }
 
+    /// <summary>
+    /// Hands the press to the owning strip before the base method runs, so that the strip can prepare the activation
+    /// of the tab and start a tab reorder. After the base method ran, the strip captures the pointer when a reorder
+    /// started on this tab. An override that does not call the base method must still forward the press to the
+    /// strip.
+    /// </summary>
     protected override void OnPointerPressed(PointerPressedEventArgs e)
     {
         var tabStrip = ItemsControl.ItemsControlFromItemContainer(this) as BaseTabStrip;
@@ -321,6 +433,10 @@ public partial class TabStripItem : AvaloniaTabStripItem
         tabStrip?.NotifyTabReorderPointerPressCompleted(this, e);
     }
 
+    /// <summary>
+    /// Lets the base method run, then the owning strip update a tab reorder of this tab. When the strip consumed the
+    /// move for the reorder, the tab sets its pressed pseudo-class and marks the event as handled.
+    /// </summary>
     protected override void OnPointerMoved(PointerEventArgs e)
     {
         base.OnPointerMoved(e);
@@ -332,6 +448,12 @@ public partial class TabStripItem : AvaloniaTabStripItem
         }
     }
 
+    /// <summary>
+    /// When the owning strip reports that the release ended a tab reorder of this tab, the event is marked as
+    /// handled and the base method is skipped, so that this release does not select the tab. Otherwise the strip
+    /// updates its selection from the release, the base method runs and the strip drops the activation pending
+    /// from the press.
+    /// </summary>
     protected override void OnPointerReleased(PointerReleasedEventArgs e)
     {
         var tabStrip = ItemsControl.ItemsControlFromItemContainer(this) as BaseTabStrip;

@@ -10,15 +10,31 @@ namespace AtomUI.Controls;
 
 using IconControl = Icon;
 
+/// <summary>
+/// Hosts one <see cref="PathIcon" /> as its only child and gives it the presenter's size and brush.
+/// </summary>
 public class IconPresenter : Control
 {
     #region 公共属性定义
+    /// <summary>
+    /// Identifies the <see cref="IconPresenter.Icon" /> property.
+    /// </summary>
     public static readonly StyledProperty<PathIcon?> IconProperty =
         AvaloniaProperty.Register<IconPresenter, PathIcon?>(nameof(Icon));
     
+    /// <summary>
+    /// Identifies the <see cref="IconPresenter.IconBrush" /> property.
+    /// </summary>
     public static readonly StyledProperty<IBrush?> IconBrushProperty =
         AvaloniaProperty.Register<IconPresenter, IBrush?>(nameof(IconBrush));
     
+    /// <summary>
+    /// The icon shown as the presenter's only visual and logical child.
+    /// </summary>
+    /// <value>
+    /// Set on the presenter; in XAML it is the content of the presenter. Assigning another icon removes the
+    /// previous one. <see langword="null" /> leaves the presenter without an icon.
+    /// </value>
     [Content]
     public PathIcon? Icon
     {
@@ -26,6 +42,14 @@ public class IconPresenter : Control
         set => SetValue(IconProperty, value);
     }
     
+    /// <summary>
+    /// The brush the displayed icon is painted with.
+    /// </summary>
+    /// <value>
+    /// Set on the presenter. For an <see cref="AtomUI.Controls.Icon" /> it becomes the stroke, fill,
+    /// secondary-layer and fallback brushes; for any other <see cref="PathIcon" /> it becomes the foreground.
+    /// When no value is set, the control theme supplies the <c>ColorIconHover</c> token color.
+    /// </value>
     public IBrush? IconBrush
     {
         get => GetValue(IconBrushProperty);
@@ -62,6 +86,11 @@ public class IconPresenter : Control
         }
     }
 
+    /// <summary>
+    /// Rebinds the current icon to the presenter's size and brush when the presenter is attached to the visual tree,
+    /// replacing the bindings created when the icon was assigned. An override has to call the base member to keep
+    /// this behavior.
+    /// </summary>
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
@@ -71,6 +100,10 @@ public class IconPresenter : Control
         }
     }
 
+    /// <summary>
+    /// Disposes the bindings that give the current icon the presenter's size and brush when the presenter is
+    /// detached from the visual tree. An override has to call the base member to release them.
+    /// </summary>
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnDetachedFromVisualTree(e);

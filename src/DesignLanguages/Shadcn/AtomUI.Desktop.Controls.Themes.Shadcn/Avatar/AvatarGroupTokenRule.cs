@@ -3,7 +3,9 @@ using AtomUI.Theme.Languages;
 
 namespace AtomUI.Desktop.Controls.Themes.Shadcn;
 
-/// <summary>The shadcn view of <see cref="AvatarGroupToken"/>.</summary>
+/// <summary>
+/// The shadcn view of <see cref="AvatarGroupToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class AvatarGroupTokenRule : IControlTokenRule<ShadcnToken, AvatarGroupToken>
 {

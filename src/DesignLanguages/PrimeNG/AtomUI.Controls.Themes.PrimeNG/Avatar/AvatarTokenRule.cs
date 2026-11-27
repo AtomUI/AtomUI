@@ -3,7 +3,9 @@ using AtomUI.Theme.Languages;
 
 namespace AtomUI.Controls.Themes.PrimeNG;
 
-/// <summary>The PrimeNG view of <see cref="AvatarToken"/>.</summary>
+/// <summary>
+/// The PrimeNG view of <see cref="AvatarToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class AvatarTokenRule : IControlTokenRule<PrimeNGToken, AvatarToken>
 {
@@ -11,7 +13,7 @@ internal sealed class AvatarTokenRule : IControlTokenRule<PrimeNGToken, AvatarTo
     {
         var token  = target.Own;
         var global = target.Global;
-        // PrimeNG: the control-global overrides, read by the formulas below.
+        // PrimeNG: the control-global overrides, read by the Avatar theme (CornerRadius) and not by the formulas below.
         PrimeNGAvatarTokens.EvaluateGlobal(in context, global);
         token.ContainerSize = global.ControlHeight;
         token.ContainerSizeLG = global.ControlHeightLG;

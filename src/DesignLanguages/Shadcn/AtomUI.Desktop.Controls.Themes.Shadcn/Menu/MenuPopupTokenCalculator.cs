@@ -5,11 +5,18 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls.Themes.Shadcn;
 
-/// <summary>The shadcn values of the shared <see cref="AbstractMenuPopupToken"/> layer.</summary>
+/// <summary>
+/// The shadcn values of the shared <see cref="AbstractMenuPopupToken" /> layer.
+/// </summary>
 public static class MenuPopupTokenCalculator
 {
+    /// <summary>
+    /// Assigns the shadcn values to <paramref name="token" />, the shared
+    /// <see cref="AbstractMenuPopupToken" /> layer of the menu and the context menu.
+    /// </summary>
     public static void Calculate(in TokenEvaluationContext<ShadcnToken> context, DesignToken global, AbstractMenuPopupToken token)
     {
+        // Ant Design formula kept as is: no registry value is merged into the shared menu popup tokens here.
         token.KeyGestureColor = global.ColorTextQuaternary;
         token.ItemBorderRadius = global.BorderRadius;
         token.ItemBg = global.ColorBgElevated;

@@ -6,7 +6,9 @@ using Xunit;
 
 namespace AtomUI.Build.Tasks.Tests;
 
-/// <summary>The one-shot v1 → v2 rewrite of theme definitions (spec 7.11).</summary>
+/// <summary>
+/// The one-shot v1 → v2 rewrite of theme definitions.
+/// </summary>
 public class ThemeDefinitionV1ConverterTests
 {
     private static readonly XNamespace V2 = ThemeDefinitionV1Converter.V2Namespace;

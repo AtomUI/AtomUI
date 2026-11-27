@@ -3,7 +3,9 @@ using AtomUI.Theme.Languages;
 
 namespace AtomUI.Controls.Themes.AntDesign;
 
-/// <summary>The AntDesign view of <see cref="AvatarToken"/>.</summary>
+/// <summary>
+/// The AntDesign view of <see cref="AvatarToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class AvatarTokenRule : IControlTokenRule<AntDesignToken, AvatarToken>
 {

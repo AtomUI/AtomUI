@@ -23,8 +23,8 @@ using Xunit;
 namespace AtomUI.Core.Tests.Theme;
 
 /// <summary>
-/// <see cref="TokenTransitions"/>: transition durations follow the Effective Global duration Tokens of the control that
-/// receives the transitions, live, instead of the application value frozen at load.
+/// <see cref="TokenTransitions" />: transition durations follow the Effective Global duration Tokens of the control
+/// that receives the transitions, live, instead of the application value frozen at load.
 /// </summary>
 [Collection(ThemeConfigProviderTestCollection.Name)]
 public class TransitionDurationTests
@@ -482,7 +482,9 @@ public class TransitionDurationTests
             Dispatcher.UIThread.RunJobs();
         }
 
-        /// <summary>A control without Token identity whose theme installs the token transitions.</summary>
+        /// <summary>
+        /// A control without Token identity whose theme installs the token transitions.
+        /// </summary>
         internal FrameTestPrimitive CreateAnimated() => new()
         {
             Theme = new ControlTheme(typeof(FrameTestPrimitive))
@@ -491,7 +493,9 @@ public class TransitionDurationTests
             }
         };
 
-        /// <summary>A registered control whose theme installs the token transitions on the control itself.</summary>
+        /// <summary>
+        /// A registered control whose theme installs the token transitions on the control itself.
+        /// </summary>
         internal TemplatedControl CreateOwner(Type controlType, Control? templateContent = null)
         {
             var theme = new ControlTheme(controlType)
@@ -552,7 +556,9 @@ public class TransitionDurationTests
         }
     }
 
-    /// <summary>Answers only the control-template context query; everything else is resolved per target later.</summary>
+    /// <summary>
+    /// Answers only the control-template context query; everything else is resolved per target later.
+    /// </summary>
     private sealed class TemplateContextServiceProvider(IAvaloniaXamlIlControlTemplateProvider? templateProvider)
         : IServiceProvider
     {

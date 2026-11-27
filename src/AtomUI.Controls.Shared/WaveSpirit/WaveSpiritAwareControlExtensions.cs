@@ -6,8 +6,25 @@ using Avalonia.Controls;
 
 namespace AtomUI.Controls;
 
+/// <summary>
+/// Provides the token bindings for controls that implement <see cref="IWaveSpiritAwareControl" />.
+/// </summary>
 public static class WaveSpiritAwareControlExtensions
 {
+    /// <summary>
+    /// Binds <c>IsMotionEnabled</c> and <c>IsWaveSpiritEnabled</c> of a control to the <c>EnableMotion</c> and
+    /// <c>EnableWaveSpirit</c> shared tokens, so that both follow resource changes.
+    /// </summary>
+    /// <param name="waveSpiritAwareControl">
+    /// The control to bind.
+    /// </param>
+    /// <returns>
+    /// A disposable that removes both bindings, or <see langword="null" /> when the control is neither a
+    /// <see cref="Control" /> nor a <see cref="StyledElement" />.
+    /// </returns>
+    /// <remarks>
+    /// The bindings use template priority, so a local value on the control wins and a style setter loses.
+    /// </remarks>
     public static IDisposable? ConfigureWaveSpiritBindingStyle(this IWaveSpiritAwareControl waveSpiritAwareControl)
     {
         if (waveSpiritAwareControl is Control control)

@@ -4,7 +4,9 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 
-/// <summary>The PrimeNG view of <see cref="ComboBoxToken"/>.</summary>
+/// <summary>
+/// The PrimeNG view of <see cref="ComboBoxToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class ComboBoxTokenRule : IControlTokenRule<PrimeNGToken, ComboBoxToken>
 {
@@ -12,7 +14,7 @@ internal sealed class ComboBoxTokenRule : IControlTokenRule<PrimeNGToken, ComboB
     {
         var token  = target.Own;
         var global = target.Global;
-        // PrimeNG: the control-global overrides, read by the formulas below.
+        // PrimeNG: no control-global overrides; EvaluateGlobal writes nothing.
         PrimeNGComboBoxTokens.EvaluateGlobal(in context, global);
         token.PopupContentPadding  = new Thickness(global.UniformlyPaddingXXS, global.BorderRadiusLG.TopLeft / 2);
 
@@ -21,6 +23,9 @@ internal sealed class ComboBoxTokenRule : IControlTokenRule<PrimeNGToken, ComboB
         var colorBgContainer   = global.ColorBgElevated;
         var colorBgTextHover   = global.ColorBgTextHover;
 
+        // Ant Design formula kept as is; the PrimeNG combo box stage (PrimeNGComboBoxTokens.EvaluateOwn)
+        // replaces the item height and padding, the item and hover text colors, the hover background and
+        // the popup padding. The item margin and the selected, disabled and handle colors stay.
         token.ItemColor         = colorTextSecondary;
         token.ItemHoverColor    = colorTextSecondary;
         token.ItemSelectedColor = global.ControlItemColorActive;

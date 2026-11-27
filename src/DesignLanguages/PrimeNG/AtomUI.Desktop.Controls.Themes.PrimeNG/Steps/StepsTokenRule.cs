@@ -5,7 +5,9 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 
-/// <summary>The PrimeNG view of <see cref="StepsToken"/>.</summary>
+/// <summary>
+/// The PrimeNG view of <see cref="StepsToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class StepsTokenRule : IControlTokenRule<PrimeNGToken, StepsToken>
 {
@@ -13,9 +15,12 @@ internal sealed class StepsTokenRule : IControlTokenRule<PrimeNGToken, StepsToke
     {
         var token  = target.Own;
         var global = target.Global;
-        // PrimeNG: the control-global overrides, read by the formulas below.
+        // PrimeNG: no control-global overrides; EvaluateGlobal writes nothing.
         PrimeNGStepsTokens.EvaluateGlobal(in context, global);
 
+        // Ant Design formula kept as is: the steps stage (PrimeNGStepsTokens) replaces the number size and font,
+        // the title weight and the wait, process and finish colors (PrimeUIX steps); the rest keeps the Ant
+        // Design formula.
         token.CustomIconSize      = global.ControlHeight;
         token.CustomIconFontSize  = global.ControlHeightSM;
         token.IconContainerSize   = global.ControlHeight;
@@ -26,6 +31,7 @@ internal sealed class StepsTokenRule : IControlTokenRule<PrimeNGToken, StepsToke
         token.DotSize             = global.ControlHeight / 4;
         token.DotCurrentSize      = global.ControlHeightLG / 4;
         token.NavArrowColor       = global.ColorTextDisabled;
+        // antd v6 no longer caps the description width; AtomUI keeps 140 as the default of this token.
         token.DescriptionMaxWidth = 140;
 
         token.WaitIconColor         = global.ColorTextLabel;

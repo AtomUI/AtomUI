@@ -87,14 +87,20 @@ public interface IControlTokenRule<TLanguageToken, TToken>
 [LanguageDesignToken]
 public partial class AcmeToken : LanguageDesignToken
 {
-    /// <summary>Base colour family the neutral roles are taken from.</summary>
+    /// <summary>
+    /// Base colour family the neutral roles are taken from.
+    /// </summary>
     [DesignTokenKind(DesignTokenKind.Seed)]
     public partial Color BaseColor { get; set; }
 
-    /// <summary>Border of form fields.</summary>
+    /// <summary>
+    /// Border of form fields.
+    /// </summary>
     public partial Color Input { get; set; }
 
-    /// <summary>Focus ring colour; pairs with the field background.</summary>
+    /// <summary>
+    /// Focus ring colour; pairs with the field background.
+    /// </summary>
     public partial Color Ring { get; set; }
 }
 ```
@@ -431,7 +437,9 @@ public static class AntDesignDesktopControlsExtensions
 [LanguageDesignToken]
 public partial class BrandToken : AntDesignToken
 {
-    /// <summary>Brand accent used for highlighted surfaces.</summary>
+    /// <summary>
+    /// Brand accent used for highlighted surfaces.
+    /// </summary>
     public partial Color Accent { get; set; }
 }
 ```

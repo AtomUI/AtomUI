@@ -7,6 +7,19 @@ public partial class Upload
 {
     internal IUploadStorageProviderAdapter? StorageProviderAdapter { get; set; }
 
+    /// <summary>
+    /// Opens the system file picker and feeds the picked files into the upload. The picker uses
+    /// <see cref="AllowedFileTypes" /> as its filter and offers several files only when
+    /// <see cref="IsMultipleEnabled" /> is <see langword="true" />. Nothing happens when the platform storage
+    /// provider is missing or cannot open files.
+    /// </summary>
+    /// <param name="cancellationToken">
+    /// Passed to the picker and to the processing of the picked files.
+    /// </param>
+    /// <remarks>
+    /// The task completes when the input pipeline has processed the picked files; it does not wait for the
+    /// uploads to finish.
+    /// </remarks>
     public async Task SelectFilesAsync(CancellationToken cancellationToken = default)
     {
         var storageProvider = ResolveStorageProviderAdapter();
@@ -30,6 +43,19 @@ public partial class Upload
             cancellationToken).ConfigureAwait(false);
     }
 
+    /// <summary>
+    /// Opens the system folder picker and feeds the files found directly inside the picked folders into the
+    /// upload. The picker offers several folders only when <see cref="IsMultipleEnabled" /> is
+    /// <see langword="true" />. Nested folders are not read, and at most 10,000 items are enumerated. Nothing
+    /// happens when the platform storage provider is missing or cannot open folders.
+    /// </summary>
+    /// <param name="cancellationToken">
+    /// Passed to the picker and to the processing of the picked folders.
+    /// </param>
+    /// <remarks>
+    /// The task completes when the input pipeline has processed the picked folders; it does not wait for the
+    /// uploads to finish.
+    /// </remarks>
     public async Task SelectDirectoriesAsync(CancellationToken cancellationToken = default)
     {
         var storageProvider = ResolveStorageProviderAdapter();

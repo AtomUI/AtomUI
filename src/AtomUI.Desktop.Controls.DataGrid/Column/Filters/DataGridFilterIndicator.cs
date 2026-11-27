@@ -86,7 +86,8 @@ internal class DataGridFilterIndicator : IconButton
     private INotifyCollectionChanged? _subscribedFilters;
     private bool _isFlyoutContentMaterialized;
     private IDisposable? _popupPinnedOpenRelay;
-    // 弹层对表格动效开关的绑定会订阅表格的属性变更；与弹层同生命周期，在 ClearFlyout 中释放
+    // The binding that connects the flyout to the grid's motion switch subscribes to the grid's property
+    // changes. It lives as long as the flyout and is disposed in ClearFlyout.
     private IDisposable? _flyoutMotionBinding;
     private int _pinnedOpenGeneration;
 
@@ -105,8 +106,8 @@ internal class DataGridFilterIndicator : IconButton
             _owningColumn = value;
             if (_owningColumn != null)
             {
-                // 对列与表格的订阅只在挂接期间持有，与 OnAttached/OnDetachedFromVisualTree 成对；
-                // 未挂接时注册会因永远不触发 Detach 而泄漏
+                // The column and grid subscriptions are held only while this control is attached, in pairs with
+                // OnAttached/OnDetachedFromVisualTree. Registering while detached leaks, because Detach never fires.
                 if (this.IsAttachedToVisualTree())
                 {
                     RegisterOwningColumnSubscriptions(_owningColumn);

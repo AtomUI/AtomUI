@@ -3,10 +3,16 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls;
 
+/// <summary>
+/// Design tokens shared by the single and the range time picker: the spacing of the action buttons in the popup
+/// panel and the layout of a time option row.
+/// </summary>
 [ControlDesignToken]
 public abstract partial class AbstractTimePickerToken : AbstractTimeViewToken
 {
-    /// <summary>Space around the action buttons in the time picker panel.</summary>
+    /// <summary>
+    /// Space around the action buttons in the time picker panel.
+    /// </summary>
     public partial Thickness ButtonsMargin { get; set; }
 
     /// <summary>

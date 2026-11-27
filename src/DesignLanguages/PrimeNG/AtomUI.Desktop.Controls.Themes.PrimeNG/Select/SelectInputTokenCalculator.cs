@@ -5,9 +5,16 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 
-/// <summary>The PrimeNG values of the shared <see cref="AbstractSelectInputToken"/> layer.</summary>
+/// <summary>
+/// The PrimeNG values of the shared <see cref="AbstractSelectInputToken" /> layer.
+/// </summary>
 public static class SelectInputTokenCalculator
 {
+    /// <summary>
+    /// Writes the PrimeNG values into the shared select input layer: the font sizes, the height, background and
+    /// disabled colors of the multiple selection items, the paddings of the input in multiple and single mode at
+    /// each size and the prefix indent of the multiple mode.
+    /// </summary>
     public static void Calculate(in TokenEvaluationContext<PrimeNGToken> context, DesignToken global, AbstractSelectInputToken token)
     {
 
@@ -20,6 +27,8 @@ public static class SelectInputTokenCalculator
         double multipleItemHeightSM = Math.Min(global.ControlHeightSM - dblPaddingXXS, global.ControlHeightSM - dblLineWidth);
         double multipleItemHeightLG = Math.Min(global.ControlHeightLG - dblPaddingXXS, global.ControlHeightLG - dblLineWidth);
 
+        // Ant Design formula kept as is: the stages of the callers replace only InputFontSizeSM and MultipleItemBg
+        // after this calculator; the item heights and paddings are the Ant formula over the PrimeNG global tokens.
         token.OptionFontSize =  global.FontSize;
         token.InputFontSizeSM = global.FontSize;
         token.MultipleItemBg = global.ColorFillSecondary;

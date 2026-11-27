@@ -1,6 +1,9 @@
 namespace AtomUI;
 
-/// <summary>启动诊断阶段；事件负载名称由 StartupEventSource 显式映射。</summary>
+/// <summary>
+/// Diagnostic phases of the application startup. <see cref="StartupEventSource" /> maps each value explicitly
+/// to the name used in the event payload.
+/// </summary>
 internal enum StartupPhase
 {
     Configure,

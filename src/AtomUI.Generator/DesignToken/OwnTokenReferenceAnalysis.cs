@@ -14,7 +14,7 @@ internal enum OwnTokenState
 }
 
 /// <summary>
-/// One Own Token field of a control with its promise state. <see cref="Location"/> is only used to report
+/// One Own Token field of a control with its promise state. <see cref="Location" /> is only used to report
 /// <c>ATOMUIGEN042</c>; the entry never enters the incremental cache.
 /// </summary>
 internal sealed class OwnTokenAnalysisEntry
@@ -43,7 +43,10 @@ internal sealed class OwnTokenAnalysisEntry
     internal Location? Location { get; }
 }
 
-/// <summary>A control (or <c>shared-primitive</c>) that reads a global Token from theme AXAML (<c>axaml</c>) or code (<c>code</c>).</summary>
+/// <summary>
+/// A control (or <c>shared-primitive</c>) that reads a global Token from theme AXAML (<c>axaml</c>) or code
+/// (<c>code</c>).
+/// </summary>
 internal readonly record struct GlobalConsumerAnalysisEntry(string Catalog, string ControlId, string GlobalToken, string Source);
 
 internal sealed class OwnTokenReferenceAnalysisResult
@@ -62,9 +65,9 @@ internal sealed class OwnTokenReferenceAnalysisResult
 
 /// <summary>
 /// Classifies every Own Token field of a package as Active (referenced by its theme AXAML or code), Reserved
-/// (<c>[ReservedToken]</c>) or Unreferenced (<c>ATOMUIGEN042</c>), and collects which control consumes which global Token.
-/// Matching is purely textual/syntactic: AXAML attribute values and elements, and <see cref="MemberAccessExpressionSyntax"/>
-/// of the package's own syntax trees. No semantic model is involved.
+/// (<c>[ReservedToken]</c>) or Unreferenced (<c>ATOMUIGEN042</c>), and collects which control consumes which global
+/// Token. Matching is purely textual/syntactic: AXAML attribute values and elements, and <see
+/// cref="MemberAccessExpressionSyntax" /> of the package's own syntax trees. No semantic model is involved.
 /// </summary>
 internal static class OwnTokenReferenceAnalysis
 {

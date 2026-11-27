@@ -4,7 +4,9 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls.Themes.Shadcn;
 
-/// <summary>The shadcn view of <see cref="ToolTipToken"/>.</summary>
+/// <summary>
+/// The shadcn view of <see cref="ToolTipToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class ToolTipTokenRule : IControlTokenRule<ShadcnToken, ToolTipToken>
 {
@@ -13,6 +15,8 @@ internal sealed class ToolTipTokenRule : IControlTokenRule<ShadcnToken, ToolTipT
         var token  = target.Own;
         var global = target.Global;
 
+        // Ant Design formula kept as is: registry `tooltip` is merged only as the surface, radius, padding, shadow
+        // and arrow, at the end of this method.
         token.ToolTipMaxWidth   = 250;
         token.ToolTipFontSize   = global.FontSize;
         token.ToolTipMinHeight  = global.ControlHeight;

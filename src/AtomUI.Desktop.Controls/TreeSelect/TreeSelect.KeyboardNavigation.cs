@@ -27,6 +27,16 @@ public partial class TreeSelect
                ReferenceEquals(input.FindAncestorOfType<TreeSelect>(), this);
     }
 
+    /// <summary>
+    /// Processes the drop-down shortcut keys (toggle, open, close and navigate the tree) after the base member has
+    /// processed the event. Keys raised by a <see cref="TextBox" /> are skipped: this control's own filter input is
+    /// handled earlier on the tunnel pass by the class handler registered in
+    /// <see cref="ConfigureKeyboardNavigation" />, and a <see cref="TextBox" /> in an add-on or an item template
+    /// keeps its keys.
+    /// </summary>
+    /// <param name="e">
+    /// The key event. Its <c>Handled</c> flag is set when a shortcut key is consumed.
+    /// </param>
     protected override void OnKeyDown(KeyEventArgs e)
     {
         base.OnKeyDown(e);

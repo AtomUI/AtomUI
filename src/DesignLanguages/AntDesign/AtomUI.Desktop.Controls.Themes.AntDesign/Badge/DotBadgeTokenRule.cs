@@ -4,7 +4,9 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls.Themes.AntDesign;
 
-/// <summary>The AntDesign view of <see cref="DotBadgeToken"/>.</summary>
+/// <summary>
+/// The AntDesign view of <see cref="DotBadgeToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class DotBadgeTokenRule : IControlTokenRule<AntDesignToken, DotBadgeToken>
 {

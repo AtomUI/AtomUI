@@ -9,21 +9,39 @@ using Avalonia.Data;
 namespace AtomUI.Controls.Commons;
 
 /// <summary>
-/// 浮动表面（FloatButton / FloatButtonGroup）的表面宿主（规则 3）：浮动控件先包进一个表面宿主，再由宿主作为
-/// <see cref="ScopeAwareOverlayLayer"/> 的直接子项，浮动控件内的焦点描边、Badge 因此紧贴自己的表面，
-/// 不会画到同层更高的兄弟表面之上。
+/// Provides the surface host of a floating control such as a FloatButton or a FloatButtonGroup. The floating
+/// control is wrapped in a surface host, and that host is the direct child of the
+/// <see cref="ScopeAwareOverlayLayer" />, so the focus adorner and the badge inside the floating control stay
+/// close to its own surface and are not drawn above a sibling surface that is higher in the same layer.
 /// <para>
-/// 为什么不在 ControlTheme 中声明：浮动控件由 FloatButtonHost / FloatButtonGroupHost 在运行时创建，并移入另一个
-/// 视觉根（作用域宿主）的 T4 层，宿主自身的模板够不到那里；FloatButton 自身的模板还用于内联场景
-/// （FloatButtonGroup 内的子按钮、IsEmbedMode），在模板里声明会让每个内联按钮也各带一个宿主。
+/// The surface host is not declared in a ControlTheme because the floating control is created at run time by
+/// FloatButtonHost or FloatButtonGroupHost and moved into the T4 layer of another visual root (the scoped
+/// host), which the template of these hosts cannot reach. The template of FloatButton itself is also used for
+/// inline scenarios (the child buttons of a FloatButtonGroup, IsEmbedMode), and declaring the surface host
+/// there would give every inline button its own host.
 /// </para>
 /// <para>
-/// 浮动控件仍以自身的 Canvas.Left / Canvas.Top 表达在层中的位置；表面宿主单向跟随这两个值，层按宿主排布。
+/// The floating control still expresses its position in the layer through its own Canvas.Left and Canvas.Top.
+/// The surface host follows these two values one way, and the layer arranges the host.
 /// </para>
 /// </summary>
 internal static class FloatingSurfaceHost
 {
-    /// <summary>把浮动控件包进新建的表面宿主并加入层；位置跟随的绑定登记到 disposables。</summary>
+    /// <summary>
+    /// Wraps a floating control in a new surface host, adds the host to the layer and returns the host.
+    /// </summary>
+    /// <param name="layer">
+    /// The layer that receives the surface host.
+    /// </param>
+    /// <param name="floating">
+    /// The control to wrap.
+    /// </param>
+    /// <param name="disposables">
+    /// Receives the two one-way bindings through which the surface host follows the position of the floating control.
+    /// </param>
+    /// <returns>
+    /// The surface host, which <see cref="Detach" /> takes to remove the control from the layer.
+    /// </returns>
     internal static VisualLayerManager Attach(ScopeAwareOverlayLayer layer,
                                               Control floating,
                                               CompositeDisposable disposables)
@@ -31,13 +49,23 @@ internal static class FloatingSurfaceHost
         var host = LayerLadder.CreateSurfaceHost();
         disposables.Add(BindUtils.RelayBind(floating, Canvas.LeftProperty, host, Canvas.LeftProperty, BindingMode.OneWay));
         disposables.Add(BindUtils.RelayBind(floating, Canvas.TopProperty, host, Canvas.TopProperty, BindingMode.OneWay));
-        // 先入层再挂 Child：浮动控件的 Parent 变化发生时，宿主已经在层里，浮动控件据此解析到所在层。
+        // Add the host to the layer before attaching the child: when the parent of the floating control changes, the
+        // host is already in the layer, and the floating control resolves its layer from that.
         layer.Children.Add(host);
         host.Child = floating;
         return host;
     }
 
-    /// <summary>把表面宿主移出层，并解除浮动控件与宿主的父子关系（浮动控件据此退订层的尺寸变化）。</summary>
+    /// <summary>
+    /// Removes the surface host from the layer and detaches the floating control from it, through which the
+    /// floating control unsubscribes from the size changes of the layer. A <see langword="null" /> host is ignored.
+    /// </summary>
+    /// <param name="layer">
+    /// The layer that holds the surface host. <see langword="null" /> skips the removal from the layer.
+    /// </param>
+    /// <param name="host">
+    /// The surface host to remove.
+    /// </param>
     internal static void Detach(ScopeAwareOverlayLayer? layer, VisualLayerManager? host)
     {
         if (host is null)
@@ -49,7 +77,16 @@ internal static class FloatingSurfaceHost
         host.Child = null;
     }
 
-    /// <summary>浮动控件所在的 T4 层：逻辑父级是层本身，或是层中的表面宿主。</summary>
+    /// <summary>
+    /// Returns the T4 layer that a floating control is in: the layer that is its logical parent, or the layer that
+    /// holds the surface host which is its logical parent.
+    /// </summary>
+    /// <param name="parent">
+    /// The logical parent of the floating control.
+    /// </param>
+    /// <returns>
+    /// The layer, or <see langword="null" /> when the parent is neither a layer nor a surface host inside one.
+    /// </returns>
     internal static ScopeAwareOverlayLayer? ResolveLayer(StyledElement? parent)
     {
         if (parent is ScopeAwareOverlayLayer layer)

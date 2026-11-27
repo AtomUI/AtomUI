@@ -11,7 +11,7 @@ namespace AtomUI.DesignLanguages.Shadcn.TokenEvaluation;
 /// an explicit value follow it.
 /// </summary>
 /// <remarks>
-/// The shadcn values a later formula reads (the focus ring colour and width, read by the input shadows) are written in
+/// The shadcn values a later formula reads (the focus ring color and width, read by the input shadows) are written in
 /// place of their formula; the others are written after the formulas, so the formulas that read them keep the antd
 /// value, as the pre-refactor staged alias evaluation did.
 /// </remarks>
@@ -268,7 +268,9 @@ internal static class AliasTokenRules
         WriteShadcnAliases(token, language);
     }
 
-    /// <summary>The shadcn variables that have the last word over the antd alias formulas.</summary>
+    /// <summary>
+    /// The shadcn variables that have the last word over the antd alias formulas.
+    /// </summary>
     private static void WriteShadcnAliases(DesignToken token, ShadcnToken language)
     {
         token.ColorTextLightSolid = language.ThemePrimaryForeground;

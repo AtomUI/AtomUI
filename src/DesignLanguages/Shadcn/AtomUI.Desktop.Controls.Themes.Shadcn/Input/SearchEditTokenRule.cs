@@ -3,7 +3,9 @@ using AtomUI.Theme.Languages;
 
 namespace AtomUI.Desktop.Controls.Themes.Shadcn;
 
-/// <summary>The shadcn view of <see cref="SearchEditToken"/>.</summary>
+/// <summary>
+/// The shadcn view of <see cref="SearchEditToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class SearchEditTokenRule : IControlTokenRule<ShadcnToken, SearchEditToken>
 {

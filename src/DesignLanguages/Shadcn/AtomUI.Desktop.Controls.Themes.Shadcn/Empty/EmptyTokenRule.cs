@@ -4,7 +4,9 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls.Themes.Shadcn;
 
-/// <summary>The shadcn view of <see cref="EmptyToken"/>.</summary>
+/// <summary>
+/// The shadcn view of <see cref="EmptyToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class EmptyTokenRule : IControlTokenRule<ShadcnToken, EmptyToken>
 {
@@ -22,6 +24,8 @@ internal sealed class EmptyTokenRule : IControlTokenRule<ShadcnToken, EmptyToken
         global.ColorFillQuaternary  = ShadcnRecipes.CompositeOver(emptyForeground, 0.02, emptyBackground);
         global.ColorBorderSecondary = ShadcnRecipes.CompositeOver(emptyForeground, 0.06, emptyBackground);
         var controlHeightLG = global.ControlHeightLG;
+        // Ant Design formula kept as is: the illustration sizes are not registry values (the illustration is AtomUI's
+        // own).
         token.EmptyImgHeight      = controlHeightLG * 2.5;
         token.EmptyImgHeightMD    = controlHeightLG * 1.85;
         token.EmptyImgHeightSM    = controlHeightLG * 0.875;

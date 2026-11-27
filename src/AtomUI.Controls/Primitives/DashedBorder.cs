@@ -9,35 +9,66 @@ using Avalonia.VisualTree;
 
 namespace AtomUI.Controls.Primitives;
 
+/// <summary>
+/// A <see cref="Decorator" /> that paints a background, a box shadow and a border with rounded corners and an
+/// optional dash pattern, and lays out a single child inset by the border thickness and the padding.
+/// </summary>
 public class DashedBorder : Decorator
 {
     #region 公共属性定义
+    /// <summary>
+    /// Identifies the <see cref="Background" /> property.
+    /// </summary>
     public static readonly StyledProperty<IBrush?> BackgroundProperty =
             AvaloniaProperty.Register<DashedBorder, IBrush?>(nameof(Background));
     
+    /// <summary>
+    /// Identifies the <see cref="BackgroundSizing" /> property.
+    /// </summary>
     public static readonly StyledProperty<BackgroundSizing> BackgroundSizingProperty =
         AvaloniaProperty.Register<DashedBorder, BackgroundSizing>(
             nameof(BackgroundSizing),
             BackgroundSizing.CenterBorder);
     
+    /// <summary>
+    /// Identifies the <see cref="BorderBrush" /> property.
+    /// </summary>
     public static readonly StyledProperty<IBrush?> BorderBrushProperty =
         AvaloniaProperty.Register<DashedBorder, IBrush?>(nameof(BorderBrush));
         
+    /// <summary>
+    /// Identifies the <see cref="BorderThickness" /> property.
+    /// </summary>
     public static readonly StyledProperty<Thickness> BorderThicknessProperty =
         AvaloniaProperty.Register<DashedBorder, Thickness>(nameof(BorderThickness));
         
+    /// <summary>
+    /// Identifies the <see cref="CornerRadius" /> property.
+    /// </summary>
     public static readonly StyledProperty<CornerRadius> CornerRadiusProperty =
         AvaloniaProperty.Register<DashedBorder, CornerRadius>(nameof(CornerRadius));
         
+    /// <summary>
+    /// Identifies the <see cref="BoxShadow" /> property.
+    /// </summary>
     public static readonly StyledProperty<BoxShadows> BoxShadowProperty =
         AvaloniaProperty.Register<DashedBorder, BoxShadows>(nameof(BoxShadow));
     
+    /// <summary>
+    /// Identifies the <see cref="StrokeDashArray" /> property.
+    /// </summary>
     public static readonly StyledProperty<IReadOnlyList<double>?> StrokeDashArrayProperty =
         AvaloniaProperty.Register<DashedBorder, IReadOnlyList<double>?>(nameof(StrokeDashArray));
     
+    /// <summary>
+    /// Identifies the <see cref="StrokeDaskOffset" /> property.
+    /// </summary>
     public static readonly StyledProperty<double> StrokeDaskOffsetProperty =
         AvaloniaProperty.Register<DashedBorder, double>(nameof(StrokeDaskOffset), 0.0);
 
+    /// <summary>
+    /// Identifies the <see cref="ClipContentToCornerRadius" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> ClipContentToCornerRadiusProperty =
         AvaloniaProperty.Register<DashedBorder, bool>(nameof(ClipContentToCornerRadius));
 
@@ -98,7 +129,7 @@ public class DashedBorder : Decorator
     }
 
     /// <summary>
-    /// Gets or sets the box shadow effect parameters
+    /// Gets or sets the box shadow effect parameters.
     /// </summary>
     public BoxShadows BoxShadow
     {
@@ -106,12 +137,20 @@ public class DashedBorder : Decorator
         set => SetValue(BoxShadowProperty, value);
     }
     
+    /// <summary>
+    /// The dash pattern of the border stroke, as alternating dash and gap lengths in device independent units.
+    /// <see langword="null" /> or an empty list paints a solid stroke.
+    /// </summary>
     public IReadOnlyList<double>? StrokeDashArray
     {
         get => GetValue(StrokeDashArrayProperty);
         set => SetValue(StrokeDashArrayProperty, value);
     }
 
+    /// <summary>
+    /// The distance along the border stroke at which the dash pattern given by <see cref="StrokeDashArray" /> starts,
+    /// in the same units as the pattern. It has no effect on a solid stroke; the default is 0.
+    /// </summary>
     public double StrokeDaskOffset
     {
         get => GetValue(StrokeDaskOffsetProperty);
@@ -123,14 +162,21 @@ public class DashedBorder : Decorator
     internal static readonly StyledProperty<bool> DrawOnlyBottomBorderProperty =
         AvaloniaProperty.Register<DashedBorder, bool>(nameof(DrawOnlyBottomBorder));
 
+    /// <summary>
+    /// While <see langword="true" />, the border is painted only along the bottom edge; the background and the shadow
+    /// are still painted with the full <c>BorderThickness</c>, so the layout and the child clipping do not change.
+    /// <see langword="false" />, the default, paints all four edges. The themes set it for the frames of an add-on
+    /// decorated box and of an input frame that use a bottom-only border.
+    /// </summary>
     internal bool DrawOnlyBottomBorder
     {
         get => GetValue(DrawOnlyBottomBorderProperty);
         set => SetValue(DrawOnlyBottomBorderProperty, value);
     }
     
-    // 不能使用 readonly + inline 初始化：win-x86 ReadyToRun 镜像会把这个字段错误地
-    // 读成 null（见 https://github.com/AtomUI/AtomUI/issues/429），这里改为使用时惰性兜底。
+    // Keep this field non-readonly: a win-x86 ReadyToRun image can read a readonly field initialized inline
+    // as null (https://github.com/AtomUI/AtomUI/issues/429), so Render falls back to creating the helper on
+    // first use.
     private BorderRenderHelper? _borderRenderHelper = new BorderRenderHelper();
     // The bottom-only stroke keeps its own pen cache; sharing the fill helper would recreate the pen every render.
     private BorderRenderHelper? _bottomBorderRenderHelper;
@@ -158,6 +204,9 @@ public class DashedBorder : Decorator
         AffectsMeasure<DashedBorder>(BorderThicknessProperty);
     }
 
+    /// <summary>
+    /// Paints the background, the border and the box shadow of this control.
+    /// </summary>
     public sealed override void Render(DrawingContext context)
     {
         var borderRenderHelper = _borderRenderHelper ??= new BorderRenderHelper();
@@ -197,6 +246,12 @@ public class DashedBorder : Decorator
             BoxShadow);
     }
 
+    /// <summary>
+    /// Releases the clip of a replaced child and rebuilds the child clip when
+    /// <see cref="ClipContentToCornerRadius" />, <see cref="BorderThickness" />, <see cref="CornerRadius" /> or
+    /// <see cref="BackgroundSizing" /> changes. A change of <see cref="BorderThickness" /> or layout rounding
+    /// also invalidates the cached render thickness.
+    /// </summary>
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         if (change.Property == ChildProperty)
@@ -230,23 +285,36 @@ public class DashedBorder : Decorator
         }
     }
 
+    /// <summary>
+    /// Subscribes to scaling changes of the owning top level while <see cref="ClipContentToCornerRadius" /> is set,
+    /// so that the child clip is rebuilt when the layout scale changes.
+    /// </summary>
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
         UpdateClipScaleSubscription();
     }
 
+    /// <summary>
+    /// Releases the scaling subscription that <see cref="OnAttachedToVisualTree" /> established.
+    /// </summary>
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         ReleaseClipScaleSubscription();
         base.OnDetachedFromVisualTree(e);
     }
 
+    /// <summary>
+    /// Measures the child in the available size reduced by the padding and the border thickness.
+    /// </summary>
     protected override Size MeasureOverride(Size availableSize)
     {
         return LayoutHelper.MeasureChild(Child, availableSize, Padding, BorderThickness);
     }
 
+    /// <summary>
+    /// Arranges the child in the area inset by the padding and the border thickness, then updates the child clip.
+    /// </summary>
     protected override Size ArrangeOverride(Size finalSize)
     {
         var size = LayoutHelper.ArrangeChild(Child, finalSize, Padding, BorderThickness);
@@ -315,6 +383,8 @@ public class DashedBorder : Decorator
     /// clip figure. The clip narrows pointer input to the rounded shape, so it must
     /// only be applied when the platform reports containment for the figure's
     /// interior and rejects its exterior.
+    /// Called on every arrange pass while <see cref="ClipContentToCornerRadius" /> is enabled, with the figure
+    /// built for the child's current size. When it returns <c>false</c>, the border applies no clip.
     /// </summary>
     protected virtual bool SupportsGeometryClipHitTesting(Geometry figure)
     {

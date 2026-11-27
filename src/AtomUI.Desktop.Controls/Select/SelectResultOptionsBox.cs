@@ -265,8 +265,9 @@ internal class SelectResultOptionsBox : TemplatedControl
         {
             HorizontalAlignment = HorizontalAlignment.Stretch
         };
-        // 多选/标签模式下的搜索输入是运行时创建的，静态模板中的 PART_SingleFilterInput
-        // 在非 Single 模式保持隐藏，因此此处注入 input 部件 marker 以便语义高亮/样式可达。
+        // In multiple and tag modes the search input is created at runtime, and PART_SingleFilterInput in the static
+        // template stays hidden outside Single mode. The input part marker is added here so that semantic
+        // highlighting and styles reach it.
         _searchTextBox.Classes.Add(SelectSemanticParts.InputClass);
         _searchInputEmptySubscription =
             _searchTextBox.GetObservable(TextBox.IsPlaceholderTextVisibleProperty)

@@ -9,21 +9,51 @@ using Avalonia.Media;
 
 namespace AtomUI.Controls;
 
+/// <summary>
+/// Adorner that repeats a <see cref="WatermarkGlyph" /> over the bounds of an element. It is created and
+/// installed by <see cref="SetGlyph" />, repaints whenever a property of the glyph changes, and lets pointer
+/// input pass through to the element.
+/// </summary>
 public sealed class Watermark : Control
 {
+    /// <summary>
+    /// Gets the glyph that <paramref name="element" /> shows as a watermark, or <see langword="null" /> when it
+    /// shows none.
+    /// </summary>
+    /// <param name="element">
+    /// The element that carries the value.
+    /// </param>
     public static WatermarkGlyph? GetGlyph(Layoutable element)
     {
         return element.GetValue(GlyphProperty);
     }
 
+    /// <summary>
+    /// Tiles <paramref name="value" /> as a watermark over the bounds of <paramref name="element" />, once the
+    /// element has been arranged. The value applies to that element alone, not to its children. An element
+    /// that already carries a different adorner shows no watermark, and neither does an element with no
+    /// scope-aware adorner layer in its scope; that case is written to the trace log.
+    /// </summary>
+    /// <param name="element">
+    /// The element to show the watermark on.
+    /// </param>
+    /// <param name="value">
+    /// The glyph to tile, or <see langword="null" /> to remove the watermark.
+    /// </param>
     public static void SetGlyph(Layoutable element, WatermarkGlyph? value)
     {
         element.SetValue(GlyphProperty, value);
     }
 
+    /// <summary>
+    /// Identifies the <c>Glyph</c> attached property that <see cref="SetGlyph" /> describes.
+    /// </summary>
     public static readonly AttachedProperty<WatermarkGlyph?> GlyphProperty = AvaloniaProperty
         .RegisterAttached<Watermark, Layoutable, WatermarkGlyph?>("Glyph");
 
+    /// <summary>
+    /// The element that carries this adorner. Its bounds are the area the watermark is tiled over.
+    /// </summary>
     public Layoutable Target { get; }
 
     private WatermarkGlyph? Glyph { get; }
@@ -43,13 +73,18 @@ public sealed class Watermark : Control
     private readonly WatermarkTileRenderer _renderer = new();
     private IDisposable? _glyphResourceAttachment;
 
+    /// <summary>
+    /// Calls the base member first, then attaches the glyph to the resource scope of <see cref="Target" /> and
+    /// makes the watermark repaint on every change of a glyph property.
+    /// </summary>
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
         if (Glyph != null)
         {
-            // 解析动态资源会同步发布 Glyph 属性变化，应用回调可能立即移除水印。
-            // 先保存可释放的生命周期槽，退出发生在获取 token 期间时也能释放返回的 token。
+            // Resolving a dynamic resource publishes glyph property changes synchronously, and a callback that runs
+            // during that may remove the watermark at once. The disposable lifetime slot is stored first, so a detach
+            // while the token is being acquired still releases the token the call returns.
             var attachment = new SingleAssignmentDisposable();
             _glyphResourceAttachment = attachment;
             Glyph.PropertyChanged += HandleGlyphPropertyChanged;
@@ -96,6 +131,10 @@ public sealed class Watermark : Control
         InstallWatermark(target);
     }
 
+    /// <summary>
+    /// Calls the base member first, then stops listening to the glyph and releases its resource attachment, so
+    /// the glyph no longer resolves resources in the scope of <see cref="Target" />.
+    /// </summary>
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnDetachedFromVisualTree(e);
@@ -157,6 +196,10 @@ public sealed class Watermark : Control
         return layer != null;
     }
 
+    /// <summary>
+    /// Calls the base member, then tiles the glyph over an area the size of the bounds of <see cref="Target" />,
+    /// clipped to that area.
+    /// </summary>
     public override void Render(DrawingContext context)
     {
         base.Render(context);

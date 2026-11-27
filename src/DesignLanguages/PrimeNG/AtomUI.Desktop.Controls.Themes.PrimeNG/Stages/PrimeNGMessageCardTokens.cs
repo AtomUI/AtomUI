@@ -18,7 +18,7 @@ internal static class PrimeNGMessageCardTokens
     {
         PrimeNGMotion.Restore(context, controlGlobal, mid: PrimeNGMotion.Toast);
         var statuses = PrimeNGMessageSeverity.ApplyForCard(context, controlGlobal);
-        // PrimeUIX message.border.radius border.radius.md.
+        // PrimeUIX message.border.radius is the md step of border.radius.
         controlGlobal.BorderRadiusLG = controlGlobal.BorderRadius;
         return statuses;
     }
@@ -65,7 +65,7 @@ internal static class PrimeNGMessageCardTokens
 
     /// <summary>
     /// A plain (white) toast card outlined by <c>content.border.color</c> (Aura and Lara surface 200, Nora surface 400;
-    /// dark surface 700 / 500) as a 1px ring ahead of <paramref name="shadows"/>: Aura's toast border for a card without
+    /// dark surface 700 / 500) as a 1px ring ahead of <paramref name="shadows" />: Aura's toast border for a card without
     /// a severity, and AtomUI's legibility addition for Lara and Nora, whose plain toast has no outline and blends into
     /// a white page (their 6px start bar only marks the leading edge).
     /// </summary>
@@ -74,7 +74,7 @@ internal static class PrimeNGMessageCardTokens
 
     /// <summary>
     /// The PrimeUIX severity shadow: <c>0px 4px 8px 0px</c> in the palette's 500 stop at 4% opacity
-    /// (96% transparent colour-mix; 4% of 255 rounds to alpha 0x0A, as the 10% layers round to 0x1A).
+    /// (96% transparent color-mix; 4% of 255 rounds to alpha 0x0A, as the 10% layers round to 0x1A).
     /// </summary>
     internal static BoxShadows SeverityShadow(PrimeNGSeverityScale palette) => new(new BoxShadow
     {

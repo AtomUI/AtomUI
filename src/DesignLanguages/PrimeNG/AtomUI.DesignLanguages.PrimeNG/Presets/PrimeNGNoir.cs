@@ -7,11 +7,17 @@ namespace AtomUI.DesignLanguages.PrimeNG.Presets;
 
 /// <summary>
 /// The rows of the primary "noir" that differ from a preset's own rules: the primary family on the surface scale, the
-/// link row and the contrast colour.
+/// link row and the contrast color.
 /// </summary>
-/// <param name="Primary">The primary family's stops on the surface scale.</param>
-/// <param name="Link">The link stops on the surface scale, used when the link seed is noir too.</param>
-/// <param name="SelectionForeground">The contrast colour (PrimeUIX <c>primary.contrastColor</c>).</param>
+/// <param name="Primary">
+/// The primary family's stops on the surface scale.
+/// </param>
+/// <param name="Link">
+/// The link stops on the surface scale, used when the link seed is noir too.
+/// </param>
+/// <param name="SelectionForeground">
+/// The contrast color (PrimeUIX <c>primary.contrastColor</c>).
+/// </param>
 internal sealed record PrimeNGNoirRule(
     PrimeNGFamilyRule Primary,
     PrimeNGLinkRule Link,
@@ -76,7 +82,7 @@ internal static class PrimeNGNoir
             Base: new(50), Hover: new(200), Active: new(300),
             // The pale primary (filled buttons, tags): primary.color at 16% / 24%, the Aura dark shape (PrimeUIX
             // button.text hover / active background). The borders are opaque N600 / N500: the primary end of this
-            // scale is the light one, so the Aura P700@36% would be a dark grey that vanishes on N950.
+            // scale is the light one, so the Aura P700@36% would be a dark gray that vanishes on N950.
             Bg: new(50, 0.16), BgHover: new(50, 0.24),
             Border: new(600), BorderHover: new(500),
             // AtomUI: primary-coloured text follows the primary states; it is drawn on the page background (surface
@@ -124,11 +130,11 @@ internal static class PrimeNGNoir
     }
 
     /// <summary>
-    /// A preset's rules with the noir rows: the primary family, the contrast colour and the site's highlight
+    /// A preset's rules with the noir rows: the primary family, the contrast color and the site's highlight
     /// (background <c>primary.color</c>, focus background <c>primary.activeColor</c> - light 950 / 700, dark 50 / 300 -
-    /// with the contrast colour as text). The link row is applied separately, because the link seed can differ from
+    /// with the contrast color as text). The link row is applied separately, because the link seed can differ from
     /// the primary seed. The checked switch handle keeps the preset's row (Aura / Lara surface.0 / surface.900, Nora
-    /// the contrast colour), which stays visible on either noir track.
+    /// the contrast color), which stays visible on either noir track.
     /// </summary>
     internal static PrimeNGAppearanceRules Apply(PrimeNGAppearanceRules rules, PrimeNGNoirRule noir) =>
         rules with
@@ -141,7 +147,7 @@ internal static class PrimeNGNoir
 
     /// <summary>
     /// For the Alias and control stages, which see the computed tokens and not the seed: the rules of the appearance,
-    /// with the noir rows when the primary colour is the noir primary of that appearance (light surface 950, dark
+    /// with the noir rows when the primary color is the noir primary of that appearance (light surface 950, dark
     /// surface 50), which is what the map derivation writes for a noir seed.
     /// </summary>
     internal static PrimeNGAppearanceRules Resolve(PrimeNGAppearanceRules rules, ThemeAppearance appearance, DesignToken token)
@@ -152,7 +158,7 @@ internal static class PrimeNGNoir
     }
 
     /// <summary>
-    /// Whether the computed primary colour is the noir primary of the appearance.
+    /// Whether the computed primary color is the noir primary of the appearance.
     /// </summary>
     internal static bool IsNoirPrimary(PrimeNGAppearanceRules rules, ThemeAppearance appearance, Color primary)
     {

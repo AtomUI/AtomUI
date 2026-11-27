@@ -109,8 +109,9 @@ internal sealed class ImageLoader : IImageLoader, IAtomUIOwnedService
         }
         catch (OperationCanceledException)
         {
-            // 共享操作的内部取消（并发 waiter 竞争退出触发拆除、ClearCache(CancelInFlight) 等）
-            // 不是源失败：与调用方取消一致，按取消交付，由调用方归类为取消。
+            // The shared operation was canceled from inside, for example by teardown when concurrent waiters race to
+            // leave or by ClearCacheAsync with CancelInFlight. That is not a source failure: like caller cancellation,
+            // it is delivered as canceled and the caller classifies it as canceled.
             Interlocked.Increment(ref _canceledLoads);
             RaiseEvent(
                 ImageLoaderEventKind.Canceled,

@@ -18,21 +18,41 @@ namespace AtomUI.Desktop.Controls.Primitives;
 internal static class ColorPickerHelpers
 {
     /// <summary>
-    /// Generates a new bitmap of the specified size by changing a specific color component.
+    /// Generates the BGRA pixel data of a bitmap of the specified size by changing a specific color component.
     /// This will produce a gradient representing a sweep of all possible values of the color component.
     /// </summary>
-    /// <param name="bgraPixelData">The target buffer which will contain the bitmap data on return.</param>
-    /// <param name="width">The pixel width (X, horizontal) of the resulting bitmap.</param>
-    /// <param name="height">The pixel height (Y, vertical) of the resulting bitmap.</param>
-    /// <param name="orientation">The orientation of the resulting bitmap (gradient direction).</param>
-    /// <param name="colorModel">The color model being used: RGBA or HSVA.</param>
-    /// <param name="component">The specific color component to sweep.</param>
-    /// <param name="baseHsvColor">The base HSV color used for components not being changed.</param>
-    /// <param name="isAlphaVisible">Whether the alpha component is visible and rendered in the bitmap.
-    /// This property is ignored when the alpha component itself is being rendered.</param>
-    /// <param name="isPerceptive">Whether the slider adapts rendering to improve user-perception over exactness.
-    /// This will ensure colors are always discernible.</param>
-    /// <returns>A new bitmap representing a gradient of color component values.</returns>
+    /// <param name="bgraPixelData">
+    /// The target buffer which will contain the bitmap data when the returned task completes.
+    /// </param>
+    /// <param name="width">
+    /// The pixel width (X, horizontal) of the resulting bitmap.
+    /// </param>
+    /// <param name="height">
+    /// The pixel height (Y, vertical) of the resulting bitmap.
+    /// </param>
+    /// <param name="orientation">
+    /// The orientation of the resulting bitmap (gradient direction).
+    /// </param>
+    /// <param name="colorModel">
+    /// The color model being used: RGBA or HSVA.
+    /// </param>
+    /// <param name="component">
+    /// The specific color component to sweep.
+    /// </param>
+    /// <param name="baseHsvColor">
+    /// The base HSV color used for components not being changed.
+    /// </param>
+    /// <param name="isAlphaVisible">
+    /// Whether the alpha component is visible and rendered in the bitmap.
+    /// This property is ignored when the alpha component itself is being rendered.
+    /// </param>
+    /// <param name="isPerceptive">
+    /// Whether the slider adapts rendering to improve user-perception over exactness.
+    /// This will ensure colors are always discernible.
+    /// </param>
+    /// <returns>
+    /// A task that completes when the pixel data has been written to <paramref name="bgraPixelData" />.
+    /// </returns>
     public static Task CreateComponentBitmapAsync(
         PooledList<byte> bgraPixelData,
         int width,
@@ -53,7 +73,7 @@ internal static class ColorPickerHelpers
         {
             int pixelDataIndex = 0;
             double componentStep;
-#pragma warning disable ATOMUIGEN044 // Colour-model data endpoints/default values, independent of theme chrome.
+#pragma warning disable ATOMUIGEN044 // Color-model data endpoints/default values, independent of theme chrome.
             Color baseRgbColor = Colors.White;
 #pragma warning restore ATOMUIGEN044
             Color rgbColor;
@@ -214,7 +234,7 @@ internal static class ColorPickerHelpers
 
             Color GetColor(double componentValue)
             {
-#pragma warning disable ATOMUIGEN044 // Colour-model data endpoints/default values, independent of theme chrome.
+#pragma warning disable ATOMUIGEN044 // Color-model data endpoints/default values, independent of theme chrome.
                 Color newRgbColor = Colors.White;
 #pragma warning restore ATOMUIGEN044
 
@@ -614,10 +634,18 @@ internal static class ColorPickerHelpers
     /// <summary>
     /// Converts the given raw BGRA pre-multiplied alpha pixel data into a bitmap.
     /// </summary>
-    /// <param name="bgraPixelData">The bitmap (in raw BGRA pre-multiplied alpha pixels).</param>
-    /// <param name="pixelWidth">The pixel width of the bitmap.</param>
-    /// <param name="pixelHeight">The pixel height of the bitmap.</param>
-    /// <returns>A new <see cref="Bitmap"/>. The caller is responsible for disposing the returned bitmap.</returns>
+    /// <param name="bgraPixelData">
+    /// The bitmap (in raw BGRA pre-multiplied alpha pixels).
+    /// </param>
+    /// <param name="pixelWidth">
+    /// The pixel width of the bitmap.
+    /// </param>
+    /// <param name="pixelHeight">
+    /// The pixel height of the bitmap.
+    /// </param>
+    /// <returns>
+    /// A new <see cref="Bitmap" />. The caller is responsible for disposing the returned bitmap.
+    /// </returns>
     public static unsafe Bitmap CreateBitmapFromPixelData(
         PooledList<byte> bgraPixelData,
         int pixelWidth,

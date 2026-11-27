@@ -69,7 +69,8 @@ internal class DataGridOperationButtons : TemplatedControl
             (buttons, args) => buttons.HandlePopupConfirmed(args));
     }
 
-    // 绑定订阅表格的属性变更，由生成它的列在行被丢弃时通过 ReleaseOwningGridBinding 释放
+    // The binding subscribes to the property changes of the grid. The column that created this control releases
+    // it through ReleaseOwningGridBinding when the row is discarded.
     internal void BindOwningGridProperties(DataGrid owningGrid)
     {
         _owningGridBinding?.Dispose();

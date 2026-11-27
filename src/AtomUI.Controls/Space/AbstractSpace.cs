@@ -22,60 +22,111 @@ public abstract class AbstractSpace : Control,
 {
     #region 公共属性定义
 
+    /// <summary>
+    /// Identifies the <see cref="ItemSpacing" /> property.
+    /// </summary>
     public static readonly StyledProperty<double> ItemSpacingProperty =
         AvaloniaProperty.Register<AbstractSpace, double>(nameof(ItemSpacing));
 
+    /// <summary>
+    /// Identifies the <see cref="LineSpacing" /> property.
+    /// </summary>
     public static readonly StyledProperty<double> LineSpacingProperty =
         AvaloniaProperty.Register<AbstractSpace, double>(nameof(LineSpacing));
 
+    /// <summary>
+    /// Identifies the <see cref="Orientation" /> property.
+    /// </summary>
     public static readonly StyledProperty<Orientation> OrientationProperty =
         AvaloniaProperty.Register<AbstractSpace, Orientation>(nameof(Orientation), defaultValue: Orientation.Horizontal);
 
+    /// <summary>
+    /// Identifies the <see cref="ItemsAlignment" /> property.
+    /// </summary>
     public static readonly StyledProperty<SpaceItemsAlignment> ItemsAlignmentProperty =
         AvaloniaProperty.Register<AbstractSpace, SpaceItemsAlignment>(nameof(ItemsAlignment), defaultValue: SpaceItemsAlignment.Start);
 
+    /// <summary>
+    /// Identifies the <see cref="ItemWidth" /> property.
+    /// </summary>
     public static readonly StyledProperty<double> ItemWidthProperty =
         AvaloniaProperty.Register<AbstractSpace, double>(nameof(ItemWidth), double.NaN);
 
+    /// <summary>
+    /// Identifies the <see cref="ItemHeight" /> property.
+    /// </summary>
     public static readonly StyledProperty<double> ItemHeightProperty =
         AvaloniaProperty.Register<AbstractSpace, double>(nameof(ItemHeight), double.NaN);
 
+    /// <summary>
+    /// Identifies the <see cref="IsWrap" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsWrapProperty =
         AvaloniaProperty.Register<AbstractSpace, bool>(nameof(IsWrap), true);
 
+    /// <summary>
+    /// Identifies the <see cref="Justify" /> property.
+    /// </summary>
     public static readonly StyledProperty<SpaceJustify> JustifyProperty =
         AvaloniaProperty.Register<AbstractSpace, SpaceJustify>(nameof(Justify), SpaceJustify.Start);
 
+    /// <summary>
+    /// Gap between two adjacent items of the same line, not added around invisible children. Extra gaps from
+    /// <see cref="Justify" /> come on top of it. The default is 0.
+    /// </summary>
     public double ItemSpacing
     {
         get => GetValue(ItemSpacingProperty);
         set => SetValue(ItemSpacingProperty, value);
     }
 
+    /// <summary>
+    /// Gap between two adjacent lines. It applies only when <see cref="IsWrap" /> is <c>true</c> and the content
+    /// needs more than one line; nothing is added before the first line or after the last one.
+    /// The default is 0.
+    /// </summary>
     public double LineSpacing
     {
         get => GetValue(LineSpacingProperty);
         set => SetValue(LineSpacingProperty, value);
     }
 
+    /// <summary>
+    /// Axis along which the items are placed one after another. Lines wrap perpendicular to it: into rows for
+    /// <c>Horizontal</c>, into columns for <c>Vertical</c>. The default is <c>Horizontal</c>.
+    /// </summary>
     public Orientation Orientation
     {
         get => GetValue(OrientationProperty);
         set => SetValue(OrientationProperty, value);
     }
 
+    /// <summary>
+    /// Placement of the items across their line when they differ in cross-axis size: at the start of the line,
+    /// centered in it, or at its end. The default is <see cref="SpaceItemsAlignment.Start" />.
+    /// </summary>
     public SpaceItemsAlignment ItemsAlignment
     {
         get => GetValue(ItemsAlignmentProperty);
         set => SetValue(ItemsAlignmentProperty, value);
     }
 
+    /// <summary>
+    /// Fixed width of every item, whatever the orientation. Each child is measured with this width and is
+    /// arranged in a slot of this width. <see cref="double.NaN" /> lets each child keep the width it asked for.
+    /// The default is <see cref="double.NaN" />.
+    /// </summary>
     public double ItemWidth
     {
         get => GetValue(ItemWidthProperty);
         set => SetValue(ItemWidthProperty, value);
     }
 
+    /// <summary>
+    /// Fixed height of every item, whatever the orientation. Each child is measured with this height and is
+    /// arranged in a slot of this height. <see cref="double.NaN" /> lets each child keep the height it asked
+    /// for. The default is <see cref="double.NaN" />.
+    /// </summary>
     public double ItemHeight
     {
         get => GetValue(ItemHeightProperty);
@@ -101,9 +152,19 @@ public abstract class AbstractSpace : Control,
         set => SetValue(JustifyProperty, value);
     }
 
+    /// <summary>
+    /// The items this control lays out, in layout order. It is the XAML content property. Changing the list
+    /// updates the layout, but clearing it throws <see cref="NotSupportedException" />, so remove the items one
+    /// by one. Invisible children take no space.
+    /// </summary>
     [Content]
     public AvaloniaList<Control> Children { get; } = new();
 
+    /// <summary>
+    /// Whether the items are only visual children of this control. When <c>true</c>, a change of
+    /// <see cref="Children" /> is mirrored to the visual children only and the logical children are left alone,
+    /// so that another control can own the items logically. The default is <c>false</c>.
+    /// </summary>
     public bool IsItemsHost { get; internal set; }
 
     #endregion
@@ -126,6 +187,22 @@ public abstract class AbstractSpace : Control,
         Children.CollectionChanged += HandleChildrenChanged;
     }
 
+    /// <summary>
+    /// Mirrors a change of <see cref="Children" /> into the visual children and, unless
+    /// <see cref="IsItemsHost" /> is <c>true</c>, into the logical children. It then reports
+    /// <c>ChildIndexesReset</c> to <see cref="IChildIndexProvider.ChildIndexChanged" /> subscribers and
+    /// invalidates the measure. The <see cref="Children" /> list calls it for every Add, Move, Remove or Replace
+    /// change. An override must call the base implementation unless it rebuilds both child collections itself.
+    /// </summary>
+    /// <param name="sender">
+    /// The <see cref="Children" /> list that changed.
+    /// </param>
+    /// <param name="e">
+    /// The collection change. A <see cref="NotifyCollectionChangedAction.Reset" /> change is not supported.
+    /// </param>
+    /// <exception cref="NotSupportedException">
+    /// Thrown when <paramref name="e" /> describes a <see cref="NotifyCollectionChangedAction.Reset" /> change.
+    /// </exception>
     protected virtual void HandleChildrenChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
         switch (e.Action)
@@ -174,6 +251,14 @@ public abstract class AbstractSpace : Control,
         InvalidateMeasureOnChildrenChanged();
     }
 
+    /// <summary>
+    /// Invalidates the measure after <see cref="HandleChildrenChanged" /> mirrored a change of
+    /// <see cref="Children" /> into the child collections and reported <c>ChildIndexesReset</c> to the
+    /// subscribers of <see cref="IChildIndexProvider.ChildIndexChanged" />.
+    /// </summary>
+    /// <remarks>
+    /// An override that does not call the base member must invalidate the measure itself.
+    /// </remarks>
     private protected virtual void InvalidateMeasureOnChildrenChanged()
     {
         InvalidateMeasure();
@@ -188,6 +273,19 @@ public abstract class AbstractSpace : Control,
         return default;
     }
 
+    /// <summary>
+    /// Measures the children line by line and returns the size of the resulting lines. Invisible children are
+    /// skipped.
+    /// </summary>
+    /// <param name="constraint">
+    /// The available size. The layout inset returned by <see cref="GetLayoutInset" /> is deducted from it
+    /// before the lines are broken.
+    /// </param>
+    /// <returns>
+    /// The size of all lines, inflated by the layout inset. It is the natural size of the content and is not
+    /// expanded to the available size; it exceeds <paramref name="constraint" /> when <see cref="IsWrap" /> is
+    /// <c>false</c> and the items do not fit, or when a single item is longer than a line.
+    /// </returns>
     protected override Size MeasureOverride(Size constraint)
     {
         double itemWidth     = ItemWidth;
@@ -217,7 +315,7 @@ public abstract class AbstractSpace : Control,
         {
             var child = children[i] as Control;
             Debug.Assert(child != null);
-            // Flow passes its own constraint to children
+            // A fixed item size, when set, replaces the available size in the child constraint.
             child.Measure(childConstraint);
 
             if (!child.IsVisible)
@@ -259,6 +357,18 @@ public abstract class AbstractSpace : Control,
         return new Size(panelSize.Width, panelSize.Height).Inflate(frameInset);
     }
 
+    /// <summary>
+    /// Breaks the children into lines the way the measure pass does, but against <paramref name="finalSize" />,
+    /// and places every line: <see cref="Justify" /> distributes the main-axis space left in the line and
+    /// <see cref="ItemsAlignment" /> positions each item across the line. Invisible children are skipped.
+    /// </summary>
+    /// <param name="finalSize">
+    /// The size assigned to this control. The layout inset is deducted from it, and the lines are placed inside
+    /// what remains.
+    /// </param>
+    /// <returns>
+    /// Always <paramref name="finalSize" />.
+    /// </returns>
     protected override Size ArrangeOverride(Size finalSize)
     {
         double itemWidth     = ItemWidth;

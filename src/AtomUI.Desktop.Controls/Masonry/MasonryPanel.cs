@@ -11,11 +11,11 @@ using System.Collections.Specialized;
 namespace AtomUI.Desktop.Controls;
 
 /// <summary>
-/// Internal layout engine for <see cref="Masonry"/>. Derives from <see cref="Panel"/> and is
+/// Internal layout engine for <see cref="Masonry" />. Derives from <see cref="Panel" /> and is
 /// assembled as the <c>ItemsPanel</c> by the Masonry control theme. Not exposed to developers.
 /// </summary>
 /// <remarks>
-/// The layout properties below mirror those on <see cref="Masonry"/> and are populated via
+/// The layout properties below mirror those on <see cref="Masonry" /> and are populated via
 /// RelativeSource binding in the control theme. This keeps the engine decoupled from the
 /// owner control and lets it be assembled purely in XAML.
 /// </remarks>
@@ -121,8 +121,10 @@ internal class MasonryPanel : Panel
     private MasonryLayout? _measuredLayout;
     private double _measuredEffectiveWidth;
     private bool _hasMeasuredLayout;
-    // 上次 Arrange 的有效宽度，仅在 Measure 输入宽度不变时复用（见 MeasureOverride 注释）。
+    // The width passed to the last Measure. When it differs from the current one, the arranged width below is
+    // dropped, so that the layout is calculated from the new constraint (see MeasureOverride).
     private double _previousAvailableWidth = double.NaN;
+    // The effective width of the last Arrange, reused by Measure while the Measure input width stays unchanged.
     private double? _arrangedEffectiveWidth;
     private int[]? _lastColumns;
     private bool[]? _lastFullSpans;
@@ -133,31 +135,36 @@ internal class MasonryPanel : Panel
     private MediaBreakPoint? _breakPoint;
     private IMediaBreakAwareControl? _mediaOwner;
 
-    // antd motionEaseOut == cubic-bezier(0.215, 0.61, 0.355, 1) == easeOutCubic == Avalonia
-    // CubicEaseOut（与 DrawerContainer 默认动效缓动一致）。用于新 item 入场淡入。
+    // antd motionEaseOut == cubic-bezier(0.215, 0.61, 0.355, 1) == easeOutCubic == Avalonia CubicEaseOut, the
+    // same easing as the default motion of DrawerContainer. Used for the appear fade of new items.
     private static readonly CubicEaseOut MotionEasing = new();
 
     private readonly Dictionary<Control, Rect> _lastVisualRects = new(ReferenceEqualityComparer.Instance);
     private readonly Dictionary<Control, ItemMotionState> _itemMotions = new(ReferenceEqualityComparer.Instance);
     private Masonry? _motionOwner;
-    // 最近一次 EffectiveViewportChanged 报告的可见区域（面板坐标）；null 表示尚未得知，按全部可见处理。
+    // The viewport reported by the last EffectiveViewportChanged, in panel coordinates.
+    // null means it is not known yet, and everything is then treated as visible.
     private Rect? _motionViewport;
 
-    // 每次入场淡入运行一个独立状态；正常结束、取消、视口裁剪和 detached 都经同一路径释放预置句柄。
+    // Each appear fade runs on its own state. Normal completion, cancellation, viewport culling and detaching all
+    // release the preset value handle through the same path.
     private sealed class ItemMotionState
     {
         public readonly CancellationTokenSource Cancellation = new();
         public IDisposable? Preset;
     }
 
-    /// <summary>被移除子项及其最后视觉矩形（面板坐标空间）。</summary>
+    /// <summary>
+    /// A removed child and its last visual rectangle, in panel coordinates.
+    /// </summary>
     internal readonly record struct MasonryRemovedItem(Control Container, Rect Rect);
 
     /// <summary>
-    /// 在 base 同步 VisualChildren 之前处理动效语义：
-    /// Add 先释放 ghost 托管（否则容器仍有 ghost host 视觉父级，base 的
-    /// VisualChildren 插入会抛"already has a visual parent"）；
-    /// Remove/Replace 在 base 之后收集被移除子项并上报 Masonry 托管淡出。
+    /// Handles the motion semantics around the synchronization of the visual children by the base member.
+    /// Add releases the ghost hosting first: a container still hosted by a ghost host already has a visual parent,
+    /// and inserting it into the visual children throws "already has a visual parent".
+    /// Remove and Replace collect the removed children after the base call and report them to
+    /// <see cref="Masonry" /> for the fade-out.
     /// </summary>
     protected override void ChildrenChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
@@ -239,7 +246,8 @@ internal class MasonryPanel : Panel
         _motionOwner = this.FindAncestorOfType<Masonry>();
         if (_motionOwner is not null)
         {
-            // 单个面板级订阅（非逐项）：用于把 item 动效限制在可见区域附近。
+            // One panel-level subscription instead of one per item: it limits item motion to
+            // the area near the viewport.
             EffectiveViewportChanged += HandleEffectiveViewportChanged;
         }
         if (MediaQueryHost.FindOwner(this) is { } mediaOwner)
@@ -305,10 +313,13 @@ internal class MasonryPanel : Panel
 
     protected override Size MeasureOverride(Size availableSize)
     {
-        // Arrange 宽度可能与 Measure 约束不同（布局取整向上取整、或无限宽度 Measure 后按视口 Arrange）。
-        // Arrange 按最终列宽重测子项会改变宽度相关子项的 DesiredSize 并使本面板 Measure 失效；若下一轮仍按
-        // 原约束测量，子项尺寸来回翻转，形成永久布局循环。因此输入宽度不变时，按上次排列宽度测量子项；
-        // 回报的 DesiredSize 宽度仍按约束解析，避免无限宽度宿主把旧排列宽度当作内容 extent 保留。
+        // The Arrange width can differ from the Measure constraint: layout rounds sizes up, or a host measures with
+        // an infinite width and then arranges at the viewport. Arrange re-measures children at the final column
+        // width, which changes the DesiredSize of width-dependent children and invalidates the measure of this
+        // panel. If the next pass measured them with the original constraint again, their sizes would flip back
+        // and forth in a permanent layout loop. So while the input width is unchanged, children are measured at
+        // the last arranged width. The reported DesiredSize width is still resolved from the constraint, so that
+        // a host measuring with an infinite width does not keep the old arranged width as the content extent.
         if (!_previousAvailableWidth.Equals(availableSize.Width))
         {
             _arrangedEffectiveWidth = null;
@@ -360,10 +371,13 @@ internal class MasonryPanel : Panel
         return isRtl ? rect.WithX(width - rect.Right) : rect;
     }
 
-    // 入场时机来自 Arrange 运行时状态（item 是否首次排列、是否接近可见区域），ControlTheme 无法表达，故在面板代码
-    // 驱动；时长值由 ControlTheme 从 token Setter 提供（见 MasonryTheme.axaml）。
-    // 重新布局（内容高度、宽度、列数、增删 item 引起的位置变化）不做任何 item 动画，既有 item 直接就位：
-    // 拖拽缩放与图片陆续加载会连续重新布局，逐项位置动画会让 item 持续落后于布局位置并占用 UI 线程。
+    // When an item animates depends on Arrange-time state (whether this is its first arrange and whether it is
+    // near the visible area), which a ControlTheme cannot express, so the panel drives the fade in code. The
+    // Masonry control theme supplies the duration from a token setter.
+    // A re-layout (positions changed by content height, width, column count or items added or removed) plays no
+    // item animation: existing items go straight to their new positions. Drag-resizing and images that load one
+    // after another re-layout continuously, and a per-item position animation would keep every item behind its
+    // layout position and occupy the UI thread.
     private void ApplyItemMotion(Control child, Rect visualRect)
     {
         if (_motionOwner is null)
@@ -388,7 +402,8 @@ internal class MasonryPanel : Panel
             return;
         }
 
-        // 首次 Arrange 时可见区域尚未得知；得知后立即结束远离可见区域的入场淡入（直接显示）。
+        // The viewport is unknown at the first arrange. Once it is known, the appear fade of any item
+        // far from it ends at once and the item is shown.
         foreach (var (child, state) in _itemMotions.ToArray())
         {
             if (_lastVisualRects.TryGetValue(child, out var rect) && !IsInMotionRange(rect))
@@ -399,8 +414,9 @@ internal class MasonryPanel : Panel
     }
 
     /// <summary>
-    /// 判断视觉矩形是否位于动效范围：最近的有效视口向四周各扩展一个视口尺寸。
-    /// 视口未知或非有限时按可见处理；视口为空表示面板不可见，不做动效。
+    /// Determines whether a visual rectangle lies in the motion range: the last effective viewport, enlarged by
+    /// one viewport width on each side and one viewport height above and below. An unknown or non-finite viewport
+    /// counts as visible; an empty viewport means the panel is not visible, so nothing is in range.
     /// </summary>
     private bool IsInMotionRange(Rect visualRect)
     {
@@ -434,8 +450,9 @@ internal class MasonryPanel : Panel
     {
         try
         {
-            // 预置起始值（动画优先级），避免首帧闪烁。注意释放方式：AvaloniaObject.SetValue 对
-            // 非 LocalValue 优先级的 UnsetValue 是静默忽略的，必须 Dispose 返回的句柄才能回落基值。
+            // Presets the start value at animation priority to avoid a flicker in the first frame. How the value is
+            // released matters: AvaloniaObject.SetValue silently ignores UnsetValue at any priority other than
+            // LocalValue, so only disposing the returned handle lets the property fall back to its base value.
             state.Preset = child.SetValue(Visual.OpacityProperty, 0d, BindingPriority.Animation);
             var animation = new Animation
             {

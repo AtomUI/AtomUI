@@ -13,8 +13,8 @@ namespace AtomUI.Core.Tests.Theme;
 internal static class ThemeTestSnapshotFactory
 {
     /// <summary>
-    /// Compiles <paramref name="config"/> over the Ant Design language default with the given controls; the test
-    /// controls of this project bring their own rules (<see cref="TestControlTokenRules"/>).
+    /// Compiles <paramref name="config" /> over the Ant Design language default with the given controls; the test
+    /// controls of this project bring their own rules (<see cref="TestControlTokenRules" />).
     /// </summary>
     internal static ThemeSnapshot Compile(
         ThemeConfig? config = null,
@@ -37,7 +37,9 @@ internal static class ThemeTestSnapshotFactory
         return result.Snapshot!;
     }
 
-    /// <summary>A registry with the generated global tokens, Ant Design, the controls and the test rules.</summary>
+    /// <summary>
+    /// A registry with the generated global tokens, Ant Design, the controls and the test rules.
+    /// </summary>
     internal static ThemeSchemaRegistry CreateRegistry(
         IReadOnlyList<ControlTokenDescriptor> controls,
         IEnumerable<ControlTokenRuleDescriptor>? rules = null,
@@ -85,7 +87,9 @@ internal static class ThemeTestSnapshotFactory
     }
 }
 
-/// <summary>The Ant Design rules of the hand-written test controls of this project.</summary>
+/// <summary>
+/// The Ant Design rules of the hand-written test controls of this project.
+/// </summary>
 internal static class TestControlTokenRules
 {
     internal static IReadOnlyList<ControlTokenRuleDescriptor> All { get; } =
@@ -125,7 +129,9 @@ internal enum CompilerButtonTokenKind
     Height
 }
 
-/// <summary>A control token written by hand the way the generator writes one, with the freeze check.</summary>
+/// <summary>
+/// A control token written by hand the way the generator writes one, with the freeze check.
+/// </summary>
 internal sealed class CompilerButtonToken : AbstractControlDesignToken, IControlToken
 {
     internal const string ID = "Button";
@@ -146,7 +152,9 @@ internal sealed class CompilerButtonToken : AbstractControlDesignToken, IControl
     }
 }
 
-/// <summary>The test button's height follows the global control height.</summary>
+/// <summary>
+/// The test button's height follows the global control height.
+/// </summary>
 internal sealed class CompilerButtonTokenRule : IControlTokenRule<AntDesignToken, CompilerButtonToken>
 {
     public void Apply(in TokenEvaluationContext<AntDesignToken> context, ControlTokenTarget<CompilerButtonToken> target) =>

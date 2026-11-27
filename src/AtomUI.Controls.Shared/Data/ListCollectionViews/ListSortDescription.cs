@@ -8,26 +8,73 @@ using Avalonia.Collections;
 
 namespace AtomUI.Controls.Data;
 
+/// <summary>
+/// Sort level that a list collection view applies to its records: it compares either the value of a property of the
+/// record or the record itself, and puts the records in ascending or descending order. Create instances with
+/// <c>FromPath</c> or <see cref="FromComparer" />, or derive from this class to compare records in another way.
+/// </summary>
+/// <remarks>
+/// A description that sorts by a property path reads the value through the generated data member accessors of the
+/// record type, or through reflection where dynamic code is supported. Where neither is available, as in a NativeAOT
+/// application, sorting with the description throws an <see cref="InvalidOperationException" />.
+/// </remarks>
 public abstract class ListSortDescription : IListSortDescription
 {
+    /// <summary>
+    /// Path of the property whose value is compared, or <see langword="null" /> when the records themselves are
+    /// compared.
+    /// </summary>
     public virtual string? PropertyPath => null;
     
+    /// <inheritdoc />
     public virtual ListSortDirection Direction => ListSortDirection.Ascending;
     
+    /// <inheritdoc />
     public bool HasPropertyPath => !string.IsNullOrEmpty(PropertyPath);
     
+    /// <inheritdoc />
     public abstract IComparer<object> Comparer { get; }
 
+    /// <summary>
+    /// Orders an unsorted sequence of records by this level, in the order of <see cref="Direction" />. The view calls
+    /// it for the first sort description only. The default implementation orders the records with
+    /// <see cref="Comparer" />.
+    /// </summary>
+    /// <param name="seq">
+    /// The records to order.
+    /// </param>
+    /// <returns>
+    /// The ordered records, as a sequence that <see cref="ThenBy" /> can order further.
+    /// </returns>
     public virtual IOrderedEnumerable<object> OrderBy(IEnumerable<object> seq)
     {
         return seq.OrderBy(o => o, Comparer);
     }
 
+    /// <summary>
+    /// Adds this level to a sequence that the levels before it have already ordered: records that compare equal under
+    /// those levels are ordered by this level, in the order of <see cref="Direction" />. The view calls it for every
+    /// sort description after the first. The default implementation orders the records with <see cref="Comparer" />.
+    /// </summary>
+    /// <param name="seq">
+    /// The sequence ordered by the preceding sort levels.
+    /// </param>
+    /// <returns>
+    /// The sequence with this level added as the next sort level.
+    /// </returns>
     public virtual IOrderedEnumerable<object> ThenBy(IOrderedEnumerable<object> seq)
     {
         return seq.ThenBy(o => o, Comparer);
     }
 
+    /// <summary>
+    /// Returns a description that sorts by the same property path or comparer with the opposite
+    /// <see cref="Direction" />. This description is not changed.
+    /// </summary>
+    /// <returns>
+    /// The description with the opposite direction. The base implementation has nothing to switch and returns this
+    /// instance unchanged; a subclass that has a direction overrides it to return a new instance.
+    /// </returns>
     public virtual ListSortDescription SwitchSortDirection()
     {
         return this;
@@ -133,51 +180,92 @@ public abstract class ListSortDescription : IListSortDescription
         }
     }
     
+    /// <summary>
+    /// Creates a sort level that compares the value of a property of each record.
+    /// </summary>
+    /// <param name="propertyPath">
+    /// Path of the property to compare. An empty path compares the records themselves.
+    /// </param>
+    /// <param name="direction">
+    /// The order to put the records in.
+    /// </param>
+    /// <param name="culture">
+    /// The culture that orders string values. <see langword="null" /> uses <see cref="CultureInfo.CurrentCulture" />.
+    /// </param>
     public static ListSortDescription FromPath(string propertyPath, ListSortDirection direction = ListSortDirection.Ascending, CultureInfo? culture = null)
     {
         return new ListPathSortDescription(propertyPath, direction, null, culture);
     }
 
+    /// <summary>
+    /// Creates a sort level that compares the value of a property of each record with a caller-supplied comparer.
+    /// </summary>
+    /// <param name="propertyPath">
+    /// Path of the property to compare. An empty path compares the records themselves.
+    /// </param>
+    /// <param name="direction">
+    /// The order to put the records in.
+    /// </param>
+    /// <param name="comparer">
+    /// The comparer for two property values, in ascending order. It replaces the comparer of the value type, and it
+    /// receives <see langword="null" /> when the property of a record is <see langword="null" />.
+    /// </param>
     public static ListSortDescription FromPath(string propertyPath, ListSortDirection direction, IComparer comparer)
     {
         return new ListPathSortDescription(propertyPath, direction, comparer, null);
     }
 
+    /// <summary>
+    /// Creates a sort level that compares the records themselves with a caller-supplied comparer.
+    /// </summary>
+    /// <param name="comparer">
+    /// The comparer for two records, in ascending order. It receives the records themselves, not a property of them.
+    /// </param>
+    /// <param name="direction">
+    /// The order to put the records in. Descending negates the result of <paramref name="comparer" />.
+    /// </param>
     public static ListSortDescription FromComparer(IComparer comparer, ListSortDirection direction = ListSortDirection.Ascending)
     {
         return new ListComparerSortDescription(comparer, direction);
     }
 
     /// <summary>
-    /// Creates a comparer class that takes in a CultureInfo as a parameter,
-    /// which it will use when comparing strings.
+    /// Compares the values of a sort level that sorts by a property path: two strings with the compare info of the
+    /// culture, any other values with the default object comparer, and <see langword="null" /> as the smallest value.
     /// </summary>
     private class CultureSensitiveComparer : Comparer<object>
     {
         /// <summary>
-        /// Private accessor for the CultureInfo of our comparer
+        /// The culture whose compare info orders strings. It is never <see langword="null" />.
         /// </summary>
         private CultureInfo _culture;
 
         /// <summary>
-        /// Creates a comparer which will respect the CultureInfo
-        /// that is passed in when comparing strings.
+        /// Creates a comparer that orders strings with the compare info of <paramref name="culture" />.
         /// </summary>
-        /// <param name="culture">The CultureInfo to use in string comparisons</param>
+        /// <param name="culture">
+        /// The culture to use in string comparisons. <see langword="null" /> uses
+        /// <see cref="CultureInfo.InvariantCulture" />.
+        /// </param>
         public CultureSensitiveComparer(CultureInfo? culture)
         {
             _culture = culture ?? CultureInfo.InvariantCulture;
         }
 
         /// <summary>
-        /// Compares two objects and returns a value indicating whether one is less than, equal to or greater than the other.
+        /// Compares two values: <see langword="null" /> sorts first, two strings by the culture of this comparer, and
+        /// any other pair of values by the default object comparer.
         /// </summary>
-        /// <param name="x">first item to compare</param>
-        /// <param name="y">second item to compare</param>
-        /// <returns>Negative number if x is less than y, zero if equal, and a positive number if x is greater than y</returns>
-        /// <remarks>
-        /// Compares the 2 items using the specified CultureInfo for string and using the default object comparer for all other objects.
-        /// </remarks>
+        /// <param name="x">
+        /// The first value to compare.
+        /// </param>
+        /// <param name="y">
+        /// The second value to compare.
+        /// </param>
+        /// <returns>
+        /// A negative number if <paramref name="x" /> is less than <paramref name="y" />, zero if they are equal, and
+        /// a positive number if <paramref name="x" /> is greater than <paramref name="y" />.
+        /// </returns>
         public override int Compare(object? x, object? y)
         {
             if (x == null)
@@ -470,15 +558,38 @@ public abstract class ListSortDescription : IListSortDescription
     }
 }
 
+/// <summary>
+/// Sort level that compares the records themselves with a caller-supplied comparer. <see
+/// cref="ListSortDescription.FromComparer" /> creates it.
+/// </summary>
 public class ListComparerSortDescription : ListSortDescription
 {
     private readonly IComparer _innerComparer;
     private readonly ListSortDirection _direction;
     private readonly IComparer<object> _comparer;
 
+    /// <summary>
+    /// The comparer supplied to the constructor. It receives the records themselves and ignores
+    /// <see cref="Direction" />; <see cref="Comparer" /> applies the direction to its result.
+    /// </summary>
     public IComparer SourceComparer => _innerComparer;
+    /// <summary>
+    /// Compares two records with <see cref="SourceComparer" /> and negates the result when
+    /// <see cref="Direction" /> is <see cref="ListSortDirection.Descending" />.
+    /// </summary>
     public override IComparer<object> Comparer => _comparer;
+    /// <inheritdoc />
     public override ListSortDirection Direction => _direction;
+    /// <summary>
+    /// Creates a sort level that compares the records themselves with <paramref name="comparer" />.
+    /// </summary>
+    /// <param name="comparer">
+    /// The comparer for two records, in ascending order. It receives the records themselves, not a property of them,
+    /// and it is exposed unchanged as <see cref="SourceComparer" />.
+    /// </param>
+    /// <param name="direction">
+    /// The order to put the records in. Descending negates the result of <paramref name="comparer" />.
+    /// </param>
     public ListComparerSortDescription(IComparer comparer, ListSortDirection direction)
     {
         _innerComparer = comparer;
@@ -498,6 +609,10 @@ public class ListComparerSortDescription : ListSortDescription
         return result;
     }
     
+    /// <summary>
+    /// Returns a new description with the opposite direction that compares with the same
+    /// <see cref="SourceComparer" />. This description is not changed.
+    /// </summary>
     public override ListSortDescription SwitchSortDirection()
     {
         var newDirection = _direction == ListSortDirection.Ascending ? ListSortDirection.Descending : ListSortDirection.Ascending;
@@ -505,4 +620,8 @@ public class ListComparerSortDescription : ListSortDescription
     }
 }
 
+/// <summary>
+/// The sort levels of a collection view in the order in which the view applies them: the first entry orders the
+/// records, and each following entry orders the records that the entries before it left equal.
+/// </summary>
 public class SortDescriptionList : AvaloniaList<IListSortDescription> {}

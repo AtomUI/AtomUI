@@ -4,7 +4,9 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls.Themes.AntDesign;
 
-/// <summary>The AntDesign view of <see cref="ResetButtonToken"/>.</summary>
+/// <summary>
+/// The AntDesign view of <see cref="ResetButtonToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class ResetButtonTokenRule : IControlTokenRule<AntDesignToken, ResetButtonToken>
 {

@@ -23,6 +23,10 @@ internal class DotBadgeIndicator : Control
     internal static readonly StyledProperty<BadgeShadowTokenResourceKeys?> ShadowTokenResourceKeysProperty =
         AvaloniaProperty.Register<DotBadgeIndicator, BadgeShadowTokenResourceKeys?>(nameof(ShadowTokenResourceKeys));
 
+    /// <summary>
+    /// Brush that fills the round dot; <see langword="null" /> leaves the dot unfilled. The theme of the dot badge
+    /// adorner binds it to the dot color of the adorner, which follows the status of the dot badge.
+    /// </summary>
     internal IBrush? BadgeDotColor
     {
         get => GetValue(BadgeDotColorProperty);
@@ -41,6 +45,12 @@ internal class DotBadgeIndicator : Control
         set => SetValue(BadgeShadowSizeProperty, value);
     }
 
+    /// <summary>
+    /// Resource keys of the color and the spread of the drop shadow of the dot. While the indicator is attached, it
+    /// observes the keys and rebuilds the shadow when a value changes; <see cref="BadgeShadowColor" /> and
+    /// <see cref="BadgeShadowSize" /> set explicitly take precedence. <see langword="null" /> observes nothing. The
+    /// theme of the indicator sets the keys that the dot badge adorner provides.
+    /// </summary>
     internal BadgeShadowTokenResourceKeys? ShadowTokenResourceKeys
     {
         get => GetValue(ShadowTokenResourceKeysProperty);

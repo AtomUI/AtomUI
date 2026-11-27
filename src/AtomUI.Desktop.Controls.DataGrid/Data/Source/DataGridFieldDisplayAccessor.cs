@@ -24,10 +24,22 @@ public sealed class DataGridFieldDisplayAccessor
         PropertyChangedName = ValidatePropertyChangedName(propertyChangedName);
     }
 
+    /// <summary>
+    /// The type of data item the accessor reads and writes. It has to equal the item type of the schema that
+    /// holds the field.
+    /// </summary>
     public Type ItemType { get; }
 
+    /// <summary>
+    /// The type of value the getter returns and the setter accepts. It has to equal the value type of the field
+    /// schema the accessor is attached to.
+    /// </summary>
     public Type ValueType { get; }
 
+    /// <summary>
+    /// <see langword="true" /> when a setter was supplied. A write to a read-only accessor throws
+    /// <see cref="InvalidOperationException" />.
+    /// </summary>
     public bool CanWrite => _setter is not null;
 
     /// <summary>
@@ -35,6 +47,26 @@ public sealed class DataGridFieldDisplayAccessor
     /// </summary>
     public string? PropertyChangedName { get; }
 
+    /// <summary>
+    /// Creates an accessor from typed delegates, so the field is read and written without reflection.
+    /// </summary>
+    /// <param name="getter">
+    /// Reads the value of the field from an item.
+    /// </param>
+    /// <param name="setter">
+    /// Writes an edited value back. <see langword="null" /> creates a read-only accessor, and a
+    /// <see langword="null" /> value arrives as the default value of <typeparamref name="TValue" />.
+    /// </param>
+    /// <param name="propertyChangedName">
+    /// The name of the item property whose <c>INotifyPropertyChanged</c> notification refreshes this field, or
+    /// <see langword="null" /> to refresh on every change.
+    /// </param>
+    /// <exception cref="ArgumentNullException">
+    /// <paramref name="getter" /> is <see langword="null" />.
+    /// </exception>
+    /// <exception cref="ArgumentException">
+    /// <paramref name="propertyChangedName" /> is empty, not trimmed or contains a control character.
+    /// </exception>
     public static DataGridFieldDisplayAccessor Create<TItem, TValue>(
         Func<TItem, TValue> getter,
         Action<TItem, TValue>? setter = null,
@@ -51,9 +83,29 @@ public sealed class DataGridFieldDisplayAccessor
             propertyChangedName);
     }
 
+    /// <summary>
+    /// Wraps a data member accessor and takes the <c>Path</c> of <paramref name="accessor" /> as the name of the
+    /// property whose change notification refreshes the field.
+    /// </summary>
+    /// <exception cref="ArgumentNullException">
+    /// <paramref name="accessor" /> is <see langword="null" />.
+    /// </exception>
     public static DataGridFieldDisplayAccessor FromDataMember<TItem>(IDataMemberAccessor accessor) =>
         FromDataMember<TItem>(accessor, accessor?.Path);
 
+    /// <summary>
+    /// Wraps a data member accessor, so the field is read and written through that accessor.
+    /// </summary>
+    /// <param name="accessor">
+    /// Supplies the value type, the getter and, when it can write, the setter.
+    /// </param>
+    /// <param name="propertyChangedName">
+    /// The name of the item property whose <c>INotifyPropertyChanged</c> notification refreshes this field, or
+    /// <see langword="null" /> to refresh on every change.
+    /// </param>
+    /// <exception cref="ArgumentNullException">
+    /// <paramref name="accessor" /> is <see langword="null" />.
+    /// </exception>
     public static DataGridFieldDisplayAccessor FromDataMember<TItem>(
         IDataMemberAccessor accessor,
         string? propertyChangedName)

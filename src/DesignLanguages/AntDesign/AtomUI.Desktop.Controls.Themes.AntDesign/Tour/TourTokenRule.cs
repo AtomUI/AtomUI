@@ -4,7 +4,9 @@ using AtomUI.Theme.Languages;
 
 namespace AtomUI.Desktop.Controls.Themes.AntDesign;
 
-/// <summary>The AntDesign view of <see cref="TourToken"/>.</summary>
+/// <summary>
+/// The AntDesign view of <see cref="TourToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class TourTokenRule : IControlTokenRule<AntDesignToken, TourToken>
 {

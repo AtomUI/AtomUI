@@ -12,8 +12,9 @@
             <ControlTemplate>
                 <Panel>
                     <!-- Ant Design card tabs draw the focus outline just inside the card (offset -lineWidthFocus). -->
-                    <!-- item 的 Margin 交由布局系统应用一次即可；模板内再 TemplateBinding 会双重应用，
-                         使卡片框缩进 item Bounds 内。 -->
+                    <!-- The Margin of the item is applied once by the layout system; a TemplateBinding inside the
+                    template applies it a second time, which insets the card frame into the item Bounds.
+                    -->
                     <atom:PixelAlignedBorder Name="Frame"
                                              TemplatedControl.IsTemplateFocusTarget="True"
                                              atom:FocusOutlineAdorner.IsInset="True"
@@ -96,7 +97,7 @@
             </Style>
         </Style>
 
-        <!-- 分为上、右、下、左 -->
+        <!-- Top, right, bottom, left -->
         <Style Selector="^[TabStripPlacement=Top]">
             <Style Selector="^ /template/ atom|IconPresenter#ItemIconPresenter">
                 <Setter Property="VerticalAlignment" Value="Center" />

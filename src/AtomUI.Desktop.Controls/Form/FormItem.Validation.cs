@@ -7,6 +7,22 @@ namespace AtomUI.Desktop.Controls;
 
 public partial class FormItem
 {
+    /// <summary>
+    /// Validates the current value of the item and updates the validation state with the outcome.
+    /// </summary>
+    /// <param name="cancellationToken">
+    /// Cancels the validation.
+    /// </param>
+    /// <returns>
+    /// A task that completes when the validators have finished.
+    /// </returns>
+    /// <remarks>
+    /// The call is forwarded to <c>AbstractFormItem.ValidateValueAsync</c>, which owns the contract.
+    /// <c>ValidateChanged</c> is raised before the task completes. A validation that is already running is canceled
+    /// and its outcome is discarded. The outcome of this run is discarded as well when the token is canceled or a
+    /// newer validation starts; the validation state then stays as it is. The method validates whatever
+    /// <c>ValidateTrigger</c> is.
+    /// </remarks>
     public new Task ValidateValueAsync(CancellationToken cancellationToken) => base.ValidateValueAsync(cancellationToken);
 
     private void BuildMessageItems()

@@ -3,29 +3,69 @@ using Avalonia.Media;
 
 namespace AtomUI.Media;
 
+/// <summary>
+/// The WCAG 2 conformance level that decides how much contrast two colors need to be readable together.
+/// </summary>
 public enum WCAG2Level
 {
+    /// <summary>
+    /// The lower level: the contrast ratio has to be at least 4.5 for small text and 3 for large text.
+    /// </summary>
     AA,
+    /// <summary>
+    /// The higher level: the contrast ratio has to be at least 7 for small text and 4.5 for large text.
+    /// </summary>
     AAA
 }
 
+/// <summary>
+/// The size class of the text a readability check is made for. Large text is accepted with less contrast.
+/// </summary>
 public enum WCAG2Size
 {
+    /// <summary>
+    /// Large text, which is allowed a lower contrast ratio: 3 at level AA and 4.5 at level AAA.
+    /// </summary>
     Large,
+    /// <summary>
+    /// Text that is not large, the default: 4.5 at level AA and 7 at level AAA.
+    /// </summary>
     Small
 }
 
+/// <summary>
+/// The contrast requirement of a readability check: a WCAG 2 conformance level and the size class of the text.
+/// </summary>
 public class WCAG2Parms
 {
+    /// <summary>
+    /// The conformance level the contrast ratio has to meet. The default is <see cref="WCAG2Level.AA" />.
+    /// </summary>
     public WCAG2Level Level { get; set; } = WCAG2Level.AA;
+    /// <summary>
+    /// The size class of the text being checked. The default is <see cref="WCAG2Size.Small" />.
+    /// </summary>
     public WCAG2Size Size { get; set; } = WCAG2Size.Small;
 }
 
+/// <summary>
+/// The parameters of <c>MostReadable</c>: a contrast requirement plus a switch that allows a fallback
+/// color when no candidate meets it.
+/// </summary>
 public class WCAG2FallbackParms : WCAG2Parms
 {
+    /// <summary>
+    /// Controls what is returned when the most readable candidate still fails the contrast check.
+    /// <see langword="true" /> returns white or black instead, whichever contrasts more with the base color.
+    /// <see langword="false" />, the default, returns the most readable candidate regardless.
+    /// </summary>
     public bool IncludeFallbackColors { get; set; }
 }
 
+/// <summary>
+/// Color helpers for theme tokens and controls that draw themselves: building colors from normalized channels,
+/// compositing, contrast checks and parsing CSS color expressions.
+/// </summary>
 public static class ColorUtils
 {
     private static readonly Color[] s_readabilityFallbackColors =
@@ -34,6 +74,25 @@ public static class ColorUtils
         Color.Parse("#000")
     ];
 
+    /// <summary>
+    /// Creates a color from four channels given as fractions from 0 to 1.
+    /// </summary>
+    /// <param name="alpha">
+    /// The opacity: 0 is fully transparent and 1 is fully opaque.
+    /// </param>
+    /// <param name="red">
+    /// The red channel.
+    /// </param>
+    /// <param name="green">
+    /// The green channel.
+    /// </param>
+    /// <param name="blue">
+    /// The blue channel.
+    /// </param>
+    /// <returns>
+    /// The color, with each channel multiplied by 255 and rounded to the nearest byte. Values outside the range 0 to
+    /// 1 are not clamped.
+    /// </returns>
     public static Color FromRgbF(double alpha, double red, double green, double blue)
     {
         return Color.FromArgb((byte)Math.Round(alpha * 255d),
@@ -42,46 +101,142 @@ public static class ColorUtils
             (byte)Math.Round(blue * 255d));
     }
 
+    /// <summary>
+    /// Creates an opaque color from three channels given as fractions from 0 to 1. Same as
+    /// <see cref="FromRgbF(double, double, double, double)" /> with an alpha of 1.
+    /// </summary>
     public static Color FromRgbF(double red, double green, double blue)
     {
         return FromRgbF(1d, red, green, blue);
     }
 
+    /// <summary>
+    /// Returns white with an alpha of 0, a fully transparent color.
+    /// </summary>
     public static Color TransparentColor()
     {
         return Color.FromArgb(0, 255, 255, 255);
     }
 
+    /// <summary>
+    /// Parses a color string and returns the color with its HSL saturation lowered by <paramref name="amount" />
+    /// percentage points.
+    /// </summary>
+    /// <param name="color">
+    /// The color to adjust, in any format that <see cref="Color.Parse(string)" /> accepts.
+    /// </param>
+    /// <param name="amount">
+    /// The change in percentage points, clamped to 0 to 100.
+    /// </param>
+    /// <returns>
+    /// The adjusted color. It is opaque, whatever alpha the input had.
+    /// </returns>
     public static Color Desaturate(string color, int amount = 10)
     {
         return Color.Parse(color).Desaturate(amount);
     }
 
+    /// <summary>
+    /// Parses a color string and returns the color with its HSL saturation raised by <paramref name="amount" />
+    /// percentage points.
+    /// </summary>
+    /// <param name="color">
+    /// The color to adjust, in any format that <see cref="Color.Parse(string)" /> accepts.
+    /// </param>
+    /// <param name="amount">
+    /// The change in percentage points, clamped to 0 to 100.
+    /// </param>
+    /// <returns>
+    /// The adjusted color. It is opaque, whatever alpha the input had.
+    /// </returns>
     public static Color Saturate(string color, int amount = 10)
     {
         return Color.Parse(color).Saturate(amount);
     }
 
+    /// <summary>
+    /// Parses a color string and returns the color with its HSL lightness raised by <paramref name="amount" />
+    /// percentage points.
+    /// </summary>
+    /// <param name="color">
+    /// The color to adjust, in any format that <see cref="Color.Parse(string)" /> accepts.
+    /// </param>
+    /// <param name="amount">
+    /// The change in percentage points, clamped to 0 to 100.
+    /// </param>
+    /// <returns>
+    /// The adjusted color. It is opaque, whatever alpha the input had.
+    /// </returns>
     public static Color Lighten(string color, int amount = 10)
     {
         return Color.Parse(color).Lighten(amount);
     }
 
+    /// <summary>
+    /// Parses a color string and returns the color with each RGB channel raised by <paramref name="amount" /> percent
+    /// of the 0 to 255 range.
+    /// </summary>
+    /// <param name="color">
+    /// The color to adjust, in any format that <see cref="Color.Parse(string)" /> accepts.
+    /// </param>
+    /// <param name="amount">
+    /// The change in percent of the full channel range, clamped to 0 to 100.
+    /// </param>
+    /// <returns>
+    /// The adjusted color. It is opaque, whatever alpha the input had.
+    /// </returns>
     public static Color Brighten(string color, int amount = 10)
     {
         return Color.Parse(color).Brighten(amount);
     }
 
+    /// <summary>
+    /// Parses a color string and returns the color with its HSL lightness lowered by <paramref name="amount" />
+    /// percentage points.
+    /// </summary>
+    /// <param name="color">
+    /// The color to adjust, in any format that <see cref="Color.Parse(string)" /> accepts.
+    /// </param>
+    /// <param name="amount">
+    /// The change in percentage points, clamped to 0 to 100.
+    /// </param>
+    /// <returns>
+    /// The adjusted color. It is opaque, whatever alpha the input had.
+    /// </returns>
     public static Color Darken(string color, int amount = 10)
     {
         return Color.Parse(color).Darken(amount);
     }
 
+    /// <summary>
+    /// Parses a color string and returns the color with its HSL hue rotated by <paramref name="amount" /> degrees.
+    /// </summary>
+    /// <param name="color">
+    /// The color to adjust, in any format that <see cref="Color.Parse(string)" /> accepts.
+    /// </param>
+    /// <param name="amount">
+    /// The rotation in degrees. It is not clamped, so negative values lower the hue.
+    /// </param>
+    /// <returns>
+    /// The adjusted color. It is opaque, whatever alpha the input had.
+    /// </returns>
     public static Color Spin(string color, int amount = 10)
     {
         return Color.Parse(color).Spin(amount);
     }
 
+    /// <summary>
+    /// Composites a front color over a background color and returns the visible result as a single color.
+    /// </summary>
+    /// <param name="frontColor">
+    /// The color drawn on top. Its alpha decides how much of the background shows through it.
+    /// </param>
+    /// <param name="backgroundColor">
+    /// The color behind the front color.
+    /// </param>
+    /// <returns>
+    /// A color with the channels of the composite and an alpha that combines the opacity of both colors.
+    /// </returns>
     public static Color OnBackground(in Color frontColor, in Color backgroundColor)
     {
         var fr = frontColor.GetRedF();
@@ -114,6 +269,19 @@ public static class ColorUtils
         return MathUtils.GreaterThanOrClose(color, 0.0d) && MathUtils.LessThanOrClose(color, 255.0d);
     }
     
+    /// <summary>
+    /// Computes the relative luminance of a color on a scale from 0, black, to 1, white. The alpha channel is ignored.
+    /// </summary>
+    /// <param name="color">
+    /// The color to measure.
+    /// </param>
+    /// <returns>
+    /// The relative luminance in the range 0 to 1.
+    /// </returns>
+    /// <remarks>
+    /// This is an approximation of the WCAG 2 relative luminance. <see cref="Readability" /> uses the exact WCAG
+    /// curve of <see cref="ColorExtensions.GetLuminance(Color)" /> instead.
+    /// </remarks>
     public static double GetRelativeLuminance(Color color)
     {
         // The equation for relative luminance is given by
@@ -134,12 +302,35 @@ public static class ColorUtils
         return (0.2126 * rg + 0.7152 * gg + 0.0722 * bg);
     }
     
+    /// <summary>
+    /// Determines whether a color is perceived as bright, that is its relative luminance is greater than 0.5.
+    /// </summary>
+    /// <param name="color">
+    /// The color to test.
+    /// </param>
+    /// <returns>
+    /// <see langword="true" /> when the relative luminance is greater than 0.5; otherwise <see langword="false" />.
+    /// </returns>
     public static bool IsBright(Color color)
     {
         var lum = GetRelativeLuminance(color);
         return lum > 0.5;
     }
     
+    /// <summary>
+    /// Determines whether a color is perceived as bright after it is composited over a background color, which
+    /// matters when the color is translucent.
+    /// </summary>
+    /// <param name="color">
+    /// The color to test.
+    /// </param>
+    /// <param name="bgColor">
+    /// The background the color is composited over with <see cref="OnBackground" />.
+    /// </param>
+    /// <returns>
+    /// <see langword="true" /> when the composited color has a relative luminance greater than 0.5; otherwise
+    /// <see langword="false" />.
+    /// </returns>
     public static bool IsBright(Color color, Color bgColor)
     {
         var resultColor = OnBackground(color, bgColor);
@@ -147,6 +338,20 @@ public static class ColorUtils
         return lum > 0.5;
     }
 
+    /// <summary>
+    /// Converts an opaque color into a semi-transparent color that reproduces it when drawn over a background color,
+    /// using the lowest alpha that can do so.
+    /// </summary>
+    /// <param name="frontColor">
+    /// The color to reproduce.
+    /// </param>
+    /// <param name="backgroundColor">
+    /// The background the returned color will be drawn over.
+    /// </param>
+    /// <returns>
+    /// A color whose alpha starts at 0.01 and increases in steps of 0.01 until its rounded channels lie in the range
+    /// 0 to 255. <paramref name="frontColor" /> itself when it already has an alpha below 1 or when no step works.
+    /// </returns>
     public static Color CalculateAlphaColor(in Color frontColor, in Color backgroundColor)
     {
         var fR          = frontColor.R;
@@ -173,11 +378,23 @@ public static class ColorUtils
             }
         }
 
-        // fallback
-        /* istanbul ignore next */
+        // No alpha below 1 can reproduce the front color on this background, as with black on white,
+        // so the front color is kept opaque.
         return Color.FromArgb(255, fR, fG, fB);
     }
 
+    /// <summary>
+    /// Parses a color written as a hexadecimal string or in <c>rgb()</c> or <c>rgba()</c> notation.
+    /// </summary>
+    /// <param name="colorExpr">
+    /// The expression to parse, in one of the forms <see cref="TryParseCssRgbColor" /> accepts.
+    /// </param>
+    /// <returns>
+    /// The parsed color.
+    /// </returns>
+    /// <exception cref="FormatException">
+    /// The expression is not a well-formed color.
+    /// </exception>
     public static Color ParseCssRgbColor(string colorExpr)
     {
         if (TryParseCssRgbColor(colorExpr, out var color))
@@ -188,6 +405,25 @@ public static class ColorUtils
         throw new FormatException($"Invalid color string: '{colorExpr}'.");
     }
 
+    /// <summary>
+    /// Tries to parse a color written as a hexadecimal string or in <c>rgb()</c> or <c>rgba()</c> notation.
+    /// </summary>
+    /// <param name="colorExpr">
+    /// The expression to parse. The <c>rgb</c> and <c>rgba</c> keywords are matched case-insensitively.
+    /// </param>
+    /// <param name="color">
+    /// The parsed color when the method returns <see langword="true" />; otherwise <see langword="default" />.
+    /// </param>
+    /// <returns>
+    /// <see langword="true" /> when the expression was parsed. <see langword="false" /> when
+    /// <paramref name="colorExpr" /> is <see langword="null" />, empty or not one of these notations, or when its
+    /// values are not integers in the expected count.
+    /// </returns>
+    /// <remarks>
+    /// A hexadecimal string is passed to <see cref="Color.TryParse(ReadOnlySpan{char}, out Color)" />. An
+    /// <c>rgb()</c> expression needs three comma-separated integers and an <c>rgba()</c> expression four, the last
+    /// being an alpha from 0 to 255. Integers outside 0 to 255 are truncated to a byte instead of being rejected.
+    /// </remarks>
     public static bool TryParseCssRgbColor(string? colorExpr, out Color color)
     {
         color = default;
@@ -274,9 +510,15 @@ public static class ColorUtils
     /// <summary>
     /// Calculates the WCAG 2 contrast ratio between two colors.
     /// </summary>
-    /// <param name="color1">The first color.</param>
-    /// <param name="color2">The second color.</param>
-    /// <returns>The contrast ratio between <paramref name="color1"/> and <paramref name="color2"/>.</returns>
+    /// <param name="color1">
+    /// The first color.
+    /// </param>
+    /// <param name="color2">
+    /// The second color.
+    /// </param>
+    /// <returns>
+    /// The contrast ratio between <paramref name="color1" /> and <paramref name="color2" />.
+    /// </returns>
     /// <remarks>
     /// Based on the
     /// <see href="https://www.w3.org/TR/2008/REC-WCAG20-20081211/#contrast-ratiodef">WCAG 2 contrast ratio definition</see>.
@@ -287,15 +529,24 @@ public static class ColorUtils
                (Math.Min(color1.GetLuminance(), color2.GetLuminance()) + 0.05);
     }
 
-    /// Ensure that foreground and background color combinations meet WCAG2 guidelines.
-    /// The third argument is an object.
-    /// the 'level' property states 'AA' or 'AAA' - if missing or invalid, it defaults to 'AA';
-    /// the 'size' property states 'large' or 'small' - if missing or invalid, it defaults to 'small'.
-    /// If the entire object is absent, isReadable defaults to {level:"AA",size:"small"}.
-    /// 
-    /// Example
-    /// new Color().IsReadable('#000', '#111') => false
-    /// new Color().IsReadable('#000', '#111', { level: 'AA', size: 'large' }) => false
+    /// <summary>
+    /// Determines whether two colors contrast enough to be read together under WCAG 2.
+    /// </summary>
+    /// <param name="color1">
+    /// The first color of the pair.
+    /// </param>
+    /// <param name="color2">
+    /// The second color of the pair. The order of the two colors does not matter.
+    /// </param>
+    /// <param name="wcag2">
+    /// The conformance level and text size that set the minimum contrast ratio. <see langword="null" /> selects level
+    /// AA with small text.
+    /// </param>
+    /// <returns>
+    /// <see langword="true" /> when the ratio from <see cref="Readability" /> is at least the threshold of the level
+    /// and size: 4.5 for AA and 7 for AAA with small text, 3 for AA and 4.5 for AAA with large text. Otherwise
+    /// <see langword="false" />.
+    /// </returns>
     public static bool IsReadable(Color color1, Color color2, WCAG2Parms? wcag2 = null)
     {
         wcag2 ??= new WCAG2Parms();
@@ -323,19 +574,31 @@ public static class ColorUtils
         return false;
     }
 
-    /// Given a base color and a list of possible foreground or background
-    /// colors for that base, returns the most readable color.
-    /// Optionally returns Black or White if the most readable color is unreadable.
-    /// 
-    /// @param baseColor - the base color.
-    /// @param colorList - array of colors to pick the most readable one from.
-    /// @param args - and object with extra arguments
-    /// 
-    /// Example
-    /// new Color().mostReadable('#123', ['#124", "#125'], { includeFallbackColors: false }).toHexString(); // "#112255"
-    /// new Color().mostReadable('#123', ['#124", "#125'],{ includeFallbackColors: true }).toHexString();  // "#ffffff"
-    /// new Color().mostReadable('#a8015a', ["#faf3f3"], { includeFallbackColors:true, level: 'AAA', size: 'large' }).toHexString(); // "#faf3f3"
-    /// new Color().mostReadable('#a8015a', ["#faf3f3"], { includeFallbackColors:true, level: 'AAA', size: 'small' }).toHexString(); // "#ffffff"
+    /// <summary>
+    /// Returns the color from a list that contrasts most with a base color.
+    /// </summary>
+    /// <param name="baseColor">
+    /// The color the candidates are compared with.
+    /// </param>
+    /// <param name="colorList">
+    /// The colors to choose from. The first one wins when several have the same contrast ratio.
+    /// </param>
+    /// <param name="args">
+    /// The contrast requirement for the result and the fallback switch. <see langword="null" /> selects level AA with
+    /// small text and no fallback.
+    /// </param>
+    /// <returns>
+    /// The candidate with the highest <see cref="Readability" /> ratio against <paramref name="baseColor" />. When
+    /// <c>args.IncludeFallbackColors</c> is <see langword="true" /> and that candidate is not readable, whichever of
+    /// white and black contrasts more with <paramref name="baseColor" /> is returned instead.
+    /// </returns>
+    /// <exception cref="InvalidOperationException">
+    /// <paramref name="colorList" /> is empty.
+    /// </exception>
+    /// <remarks>
+    /// The fallback is returned even when it is not readable either, and taking it sets
+    /// <c>args.IncludeFallbackColors</c> to <see langword="false" /> on the object that was passed in.
+    /// </remarks>
     public static Color? MostReadable(Color baseColor, List<Color> colorList, WCAG2FallbackParms? args = null)
     {
         args ??= new WCAG2FallbackParms
@@ -373,6 +636,26 @@ public static class ColorUtils
         return MostReadableCore(baseColor, s_readabilityFallbackColors, args);
     }
     
+    /// <summary>
+    /// Converts a color given as normalized RGBA channels to HSV. The channels are expected in the range 0 to 1 and
+    /// are not clamped.
+    /// </summary>
+    /// <param name="r">
+    /// The red channel.
+    /// </param>
+    /// <param name="g">
+    /// The green channel.
+    /// </param>
+    /// <param name="b">
+    /// The blue channel.
+    /// </param>
+    /// <param name="a">
+    /// The alpha channel, which is copied to the result.
+    /// </param>
+    /// <returns>
+    /// The color as an <see cref="HsvColor" />: hue in degrees from 0 up to 360, saturation and value from 0 to 1.
+    /// A gray color gets a hue and a saturation of 0.
+    /// </returns>
     public static HsvColor ToHsv(
         double r,
         double g,
@@ -391,7 +674,7 @@ public static class ColorUtils
         double max = r >= g ? (r >= b ? r : b) : (g >= b ? g : b);
         double min = r <= g ? (r <= b ? r : b) : (g <= b ? g : b);
 
-        // The value, a number between 0 and 1, is the largest of R, G, and B (divided by 255).
+        // The value, a number between 0 and 1, is the largest of R, G, and B.
         // Conceptually speaking, it represents how much color is present.
         // If at least one of R, G, B is 255, then there exists as much color as there can be.
         // If RGB = (0, 0, 0), then there exists no color at all - a value of zero corresponds

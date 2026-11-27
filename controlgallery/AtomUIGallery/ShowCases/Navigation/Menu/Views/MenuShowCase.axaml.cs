@@ -17,7 +17,8 @@ public partial class MenuShowCase : GalleryReactiveUserControl<MenuViewModel>
 
     private NavMenuNode? _navMenuDefaultSelectedItem;
     private readonly List<AvaloniaPopup> _trackedSemanticPreviewPopups = [];
-    // 承载弹层部件的语义预览（Vertical NavMenu 与普通 Menu）：弹层内容跨视觉根，需要显式注册根。
+    // Semantic previews that host popup parts (vertical NavMenu and plain Menu): the popup content lives
+    // outside the visual root, so its root must be registered explicitly.
     private readonly List<SemanticPartPreview> _popupHostPreviews = [];
 
     public MenuShowCase()
@@ -41,14 +42,18 @@ public partial class MenuShowCase : GalleryReactiveUserControl<MenuViewModel>
         });
     }
 
-    // 语义预览的 NavMenu 子菜单弹层由菜单项模板创建、跨视觉根渲染。TemplateExtensions.GetTemplateDescendants
-    // 只沿着 TemplatedParent 为 owner 的模板后代下钻，遇到运行时生成的菜单项容器（TemplatedParent 为 null）
-    // 就停止，因此高亮会话无法自动发现该 Popup；这里按仓库既定的 AdditionalRoots 模式（同 DropdownButton /
-    // InfoFlyout）把已打开弹层的 Child 显式注册给 Preview。
+    // The NavMenu submenu popup of the semantic preview is created by the menu item template and rendered
+    // outside the owner's visual root. TemplateExtensions.GetTemplateDescendants only walks down template
+    // descendants whose TemplatedParent is the owner and stops at the runtime-generated menu item containers
+    // (TemplatedParent is null), so the highlight session cannot discover that popup by itself. Following the
+    // AdditionalRoots pattern also used by DropdownButton and InfoFlyout, the Child of each open popup is
+    // registered with the preview explicitly.
     //
-    // 弹层是否保持打开由 NavMenu 的公开钉住属性负责（预览在 AXAML 里声明 IsPopupPinnedOpen="True"），
-    // 该属性会让 NavMenu 打开并钉住首个可展开项、同时拦截普通关闭；这里只负责在弹层打开后把弹层根
-    // 注册给预览，并在弹层因生命周期原因（如预览滚出可视区）关闭后重新注册。
+    // Keeping the popup open is the job of the public NavMenu pin property (the preview declares
+    // IsPopupPinnedOpen="True" in AXAML): it makes NavMenu open and pin the first expandable item and blocks
+    // ordinary closing. This code only registers the popup root with the preview once the popup is open, and
+    // registers it again after the popup closes for lifetime reasons, such as the preview scrolling out of
+    // the viewport.
     private void HandleVerticalSemanticPreviewLoaded(object? sender, RoutedEventArgs args)
     {
         TrackPopupHostPreview(sender);
@@ -70,9 +75,11 @@ public partial class MenuShowCase : GalleryReactiveUserControl<MenuViewModel>
         {
             _popupHostPreviews.Add(preview);
         }
-        // 弹层由 NavMenu 在容器生成后按钉住请求异步打开，打开时机晚于本回调，且 overlay 模式下
-        // 弹层内容挂在 overlay 层，无法从 owner 子树稳定推断。这里跟随布局在弹层真正打开后补注册
-        // 附加根；回调只做幂等注册、不写控件状态，因此不会与打开/关闭形成循环。
+        // NavMenu opens the popup asynchronously after the container is created, later than this callback, and in
+        // overlay mode the popup content hangs in the overlay layer, so it cannot be inferred reliably from the
+        // owner subtree. The additional root is registered on layout passes once the popup is really open. The
+        // callback only registers idempotently and never writes control state, so it cannot loop with opening and
+        // closing.
         preview.LayoutUpdated += HandleVerticalSemanticPreviewLayoutUpdated;
         RegisterSemanticPreviewPopupRoots();
     }
@@ -121,7 +128,8 @@ public partial class MenuShowCase : GalleryReactiveUserControl<MenuViewModel>
         RegisterSemanticPreviewPopupRoots();
     }
 
-    // 预览滚出可视区时 Popup 会按放置目标有效性规则做生命周期关闭，滚动回来后再重新注册弹层根。
+    // When the preview scrolls out of the viewport the popup closes for placement-target lifetime reasons;
+    // the popup root is registered again when it scrolls back.
     private void HandleSemanticPreviewPopupClosed(object? sender, EventArgs args)
     {
         Dispatcher.UIThread.Post(RegisterSemanticPreviewPopupRoots, DispatcherPriority.Loaded);
@@ -136,7 +144,8 @@ public partial class MenuShowCase : GalleryReactiveUserControl<MenuViewModel>
                 continue;
             }
 
-            // 已注册的弹层仍处于打开状态时无需重扫；这条早退让 LayoutUpdated 上的调用保持轻量。
+            // No rescan is needed while a registered popup is still open; this early return keeps the LayoutUpdated
+            // handler light.
             if (preview.AdditionalRoots.Count > 0 &&
                 _trackedSemanticPreviewPopups.Any(static popup => popup.IsOpen))
             {
@@ -224,8 +233,9 @@ public partial class MenuShowCase : GalleryReactiveUserControl<MenuViewModel>
                 new TreeNodePath("/NavigationOne")
             ];
             viewModel.InlineCollapsedSelectedPath = new TreeNodePath("/Option1");
-            // 语义夹具对齐上游语义示例的 openKeys / selectedKeys：默认展开子菜单并选中首项，
-            // 这样 subMenu.* 与 popup.root 部件在预览和 Examples 示例里都是已实例化状态。
+            // The semantic fixture mirrors openKeys and selectedKeys of the upstream semantic example: the submenu is
+            // expanded and its first item selected by default, so the subMenu.* and popup.root parts are instantiated
+            // in both the preview and the Examples.
             viewModel.SemanticPreviewOpenPaths    = [new TreeNodePath("/sub-menu")];
             viewModel.SemanticPreviewSelectedPath = new TreeNodePath("/nav-one");
             RefreshMenuSources(viewModel);

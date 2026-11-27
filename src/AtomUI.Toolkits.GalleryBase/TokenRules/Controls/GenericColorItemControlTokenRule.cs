@@ -4,7 +4,9 @@ using AtomUI.Toolkits.GalleryBase.Controls;
 
 namespace AtomUI.Toolkits.GalleryBase.TokenRules;
 
-/// <summary>The Generic view of <see cref="ColorItemControlToken"/>.</summary>
+/// <summary>
+/// The Generic view of <see cref="ColorItemControlToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class GenericColorItemControlTokenRule : IControlTokenRule<LanguageDesignToken, ColorItemControlToken>
 {

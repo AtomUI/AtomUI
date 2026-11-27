@@ -4,38 +4,49 @@ using Avalonia.Controls;
 namespace AtomUI.Desktop.Controls;
 
 /// <summary>
-/// 菜单项容器在 Semantic Part 契约中的语义层级。plain <see cref="Menu"/> 的顶层项与子菜单项使用互斥的
-/// marker 类，因此这个层级必须在容器 prepare 时由 owner 明确下发，而不是靠容器自身推断：同一个
-/// <see cref="MenuItem"/> 既可能出现在菜单栏第一层，也可能出现在任意深度的子菜单里，还可能被
-/// ContextMenu、MenuFlyout、DropdownButton 的弹层复用。
+/// The semantic level of a menu item container in the Semantic Part contract. The top-level items and the submenu
+/// items of a plain <see cref="Menu" /> use mutually exclusive marker classes, so the owner has to pass this level
+/// down when it prepares a container; a container cannot infer it. The same <see cref="MenuItem" /> can sit in the
+/// first level of a menu bar, in a submenu at any depth, or in the popup of a <see cref="ContextMenu" />, a
+/// <c>MenuFlyout</c> or a <c>DropdownButton</c>.
 /// </summary>
 internal enum MenuSemanticLevel
 {
     /// <summary>
-    /// 未纳入 plain Menu 语义作用域。MenuFlyout / ContextMenu / DropdownButton 弹层等复用方保持既有
-    /// <c>.semantic-item</c> 行为，不参与 plain Menu 的层级隔离。
+    /// The container is not in the scope of the plain <see cref="Menu" />. Reusers such as the popups of MenuFlyout,
+    /// <see cref="ContextMenu" /> and DropdownButton keep the existing <c>.semantic-item</c> behavior and take no part
+    /// in the level separation of the plain <see cref="Menu" />.
     /// </summary>
     None = 0,
 
-    /// <summary>plain Menu 菜单栏第一层。</summary>
+    /// <summary>
+    /// An item in the first level of the menu bar of a plain <see cref="Menu" />.
+    /// </summary>
     TopLevel = 1,
 
-    /// <summary>plain Menu 子菜单内部（含任意深度嵌套与子菜单内分组）。</summary>
+    /// <summary>
+    /// An item inside a submenu of a plain <see cref="Menu" />, at any nesting depth, including a group in that
+    /// submenu.
+    /// </summary>
     SubMenu = 2
 }
 
 /// <summary>
-/// 把 <see cref="MenuSemanticLevel"/> 落到容器 marker 类上。层级互斥：写入当前层级前先移除另一层级的类，
-/// 保证容器在层级之间转移或被回收复用时既不残留旧层级，也不重复添加。
+/// Writes a <see cref="MenuSemanticLevel" /> onto a container as marker classes. The levels are mutually
+/// exclusive: the class of the other level is removed before the class of the current level is added, so a
+/// container that moves between levels or is recycled keeps no stale level and never carries the class twice.
 /// </summary>
 internal static class MenuSemanticLevelScope
 {
-    // 分组是 route 的中间跳点，不是公开 Part，因此没有生成的常量（与 NavMenu 分组跳点同法）。
+    // A group is only an intermediate hop of the selector routes, not a public Part, so it has no generated constant.
+    // This follows the same practice as the group hop of NavMenu.
     private const string TopLevelGroupClass = "semantic-scope-group";
     private const string SubMenuGroupClass  = "semantic-sub-menu-group";
 
     /// <summary>
-    /// 应用菜单项容器的互斥 marker；None 恢复复用方的默认 semantic-item 语义。
+    /// Applies the item marker of <paramref name="level" /> to a menu item container and removes the marker of the
+    /// other level. <see cref="MenuSemanticLevel.None" /> restores the default <c>semantic-item</c> semantics that
+    /// reusers rely on.
     /// </summary>
     public static void ApplyItemLevel(Control container, MenuSemanticLevel level)
     {
@@ -52,7 +63,10 @@ internal static class MenuSemanticLevelScope
         }
     }
 
-    /// <summary>应用分组层级；None 释放 plain Menu 的两种分组 marker。</summary>
+    /// <summary>
+    /// Applies the group marker of <paramref name="level" /> to a group container and removes the other group marker.
+    /// <see cref="MenuSemanticLevel.None" /> removes both group markers of the plain <see cref="Menu" />.
+    /// </summary>
     public static void ApplyGroupLevel(Control container, MenuSemanticLevel level)
     {
         switch (level)

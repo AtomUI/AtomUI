@@ -4,7 +4,9 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls.Themes.Shadcn;
 
-/// <summary>The shadcn view of <see cref="TabControlToken"/>.</summary>
+/// <summary>
+/// The shadcn view of <see cref="TabControlToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class TabControlTokenRule : IControlTokenRule<ShadcnToken, TabControlToken>
 {

@@ -66,7 +66,7 @@
                 <Setter Property="VerticalAlignment" Value="Center"/>
             </Style>
             
-            <!-- tabs 是否居中 -->
+            <!-- Whether the tabs are centered -->
             <Style Selector="^[TabAlignmentCenter=True]">
                 <Style Selector="^ /template/ Panel#AlignWrapper > Border">
                     <Setter Property="HorizontalAlignment" Value="Center" />
@@ -100,7 +100,7 @@
                 <Setter Property="VerticalAlignment" Value="Center"/>
             </Style>
             
-            <!-- tabs 是否居中 -->
+            <!-- Whether the tabs are centered -->
             <Style Selector="^[TabAlignmentCenter=True]">
                 <Style Selector="^ /template/ Panel#AlignWrapper > Border">
                     <Setter Property="VerticalAlignment" Value="Center" />
@@ -134,7 +134,7 @@
                 <Setter Property="VerticalAlignment" Value="Center"/>
             </Style>
             
-            <!-- tabs 是否居中 -->
+            <!-- Whether the tabs are centered -->
             <Style Selector="^[TabAlignmentCenter=True]">
                 <Style Selector="^ /template/ Panel#AlignWrapper > Border">
                     <Setter Property="HorizontalAlignment" Value="Center" />
@@ -168,7 +168,7 @@
                 <Setter Property="HorizontalAlignment" Value="Center"/>
             </Style>
             
-            <!-- tabs 是否居中 -->
+            <!-- Whether the tabs are centered -->
             <Style Selector="^[TabAlignmentCenter=True]">
                 <Style Selector="^ /template/ Panel#AlignWrapper > Border">
                     <Setter Property="VerticalAlignment" Value="Center" />

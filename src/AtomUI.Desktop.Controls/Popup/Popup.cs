@@ -26,75 +26,141 @@ using AvaloniaPopup = Avalonia.Controls.Primitives.Popup;
 
 // A Token-owner transparent container: popup content (drop-down options, popup frames) inherits the host's Token
 // owner; the Popup's own visuals read PopupTokenResource explicitly.
+/// <summary>
+/// A popup with open and close motions, a shadow that follows its host kind, and anchor placement that reports
+/// when it flips. The content is shown in its own window or in the overlay layer of the parent window, and
+/// inherits the Token owner of the control that hosts it.
+/// </summary>
 [TokenOwnerTransparent]
 public class Popup : AvaloniaPopup, IMotionAwareControl
 {
     #region 公共属性定义
 
+    /// <summary>
+    /// Identifies the <see cref="PopupRootShadow" /> property.
+    /// </summary>
     public static readonly StyledProperty<BoxShadows> PopupRootShadowProperty =
         AvaloniaProperty.Register<Popup, BoxShadows>(nameof(PopupRootShadow));
 
+    /// <summary>
+    /// Identifies the <see cref="OverlayHostShadow" /> property.
+    /// </summary>
     public static readonly StyledProperty<BoxShadows> OverlayHostShadowProperty =
         AvaloniaProperty.Register<Popup, BoxShadows>(nameof(OverlayHostShadow));
 
+    /// <summary>
+    /// Identifies the <see cref="SurfaceBackground" /> property.
+    /// </summary>
     public static readonly StyledProperty<IBrush?> SurfaceBackgroundProperty =
         AvaloniaProperty.Register<Popup, IBrush?>(nameof(SurfaceBackground), defaultValue: null);
 
+    /// <summary>
+    /// Identifies the <see cref="MotionDuration" /> property.
+    /// </summary>
     public static readonly StyledProperty<TimeSpan> MotionDurationProperty =
         MotionAwareControlProperty.MotionDurationProperty.AddOwner<Popup>();
 
+    /// <summary>
+    /// Identifies the <see cref="IsHorizontalFlipped" /> property.
+    /// </summary>
     public static readonly DirectProperty<Popup, bool> IsHorizontalFlippedProperty =
         AvaloniaProperty.RegisterDirect<Popup, bool>(nameof(IsHorizontalFlipped),
             o => o.IsHorizontalFlipped,
             (o, v) => o.IsHorizontalFlipped = v);
 
+    /// <summary>
+    /// Identifies the <see cref="IsVerticalFlipped" /> property.
+    /// </summary>
     public static readonly DirectProperty<Popup, bool> IsVerticalFlippedProperty =
         AvaloniaProperty.RegisterDirect<Popup, bool>(nameof(IsVerticalFlipped),
             o => o.IsVerticalFlipped,
             (o, v) => o.IsVerticalFlipped = v);
 
+    /// <summary>
+    /// Identifies the <see cref="IsMotionEnabled" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<Popup>();
 
+    /// <summary>
+    /// Identifies the <see cref="IsWaveSpiritEnabled" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsWaveSpiritEnabledProperty =
         WaveSpiritAwareControlProperty.IsWaveSpiritEnabledProperty.AddOwner<Popup>();
 
+    /// <summary>
+    /// Identifies the <see cref="OpenMotion" /> property.
+    /// </summary>
     public static readonly StyledProperty<AbstractMotion?> OpenMotionProperty =
         AvaloniaProperty.Register<Popup, AbstractMotion?>(nameof(OpenMotion));
 
+    /// <summary>
+    /// Identifies the <see cref="CloseMotion" /> property.
+    /// </summary>
     public static readonly StyledProperty<AbstractMotion?> CloseMotionProperty =
         AvaloniaProperty.Register<Popup, AbstractMotion?>(nameof(CloseMotion));
 
+    /// <summary>
+    /// Identifies the <see cref="RequestedPlacement" /> property.
+    /// </summary>
     public static readonly StyledProperty<PlacementMode?> RequestedPlacementProperty =
         AvaloniaProperty.Register<Popup, PlacementMode?>(nameof(RequestedPlacement));
 
+    /// <summary>
+    /// Identifies the <see cref="MarginToAnchor" /> property.
+    /// </summary>
     public static readonly StyledProperty<double> MarginToAnchorProperty =
         AvaloniaProperty.Register<Popup, double>(nameof(MarginToAnchor));
 
+    /// <summary>
+    /// Identifies the <see cref="IsPointAtCenter" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsPointAtCenterProperty =
         AvaloniaProperty.Register<Popup, bool>(nameof(IsPointAtCenter));
 
+    /// <summary>
+    /// Identifies the <see cref="CustomPlacementCallback" /> property.
+    /// </summary>
     public static readonly StyledProperty<CustomPlacementCallback?> CustomPlacementCallbackProperty =
         AvaloniaProperty.Register<Popup, CustomPlacementCallback?>(nameof(CustomPlacementCallback));
 
+    /// <summary>
+    /// Shadow painted around the frame of the popup surface while the popup is hosted in its own window; the
+    /// overlay layer host uses <see cref="OverlayHostShadow" /> instead. The placement pass also takes its
+    /// thickness into account when it offsets the popup from the placement target. The Popup theme supplies the
+    /// Popup token value.
+    /// </summary>
     public BoxShadows PopupRootShadow
     {
         get => GetValue(PopupRootShadowProperty);
         set => SetValue(PopupRootShadowProperty, value);
     }
 
+    /// <summary>
+    /// Shadow used in place of <see cref="PopupRootShadow" /> while the popup is hosted in the overlay layer of
+    /// its parent window. It feeds the same frame painting and placement offset.
+    /// </summary>
     public BoxShadows OverlayHostShadow
     {
         get => GetValue(OverlayHostShadowProperty);
         set => SetValue(OverlayHostShadowProperty, value);
     }
 
+    /// <summary>
+    /// Background that the frame of the popup surface paints as a rounded rectangle together with the shadow. The
+    /// value is relayed to the shadow-aware container of the content. <see langword="null" />, the default, paints
+    /// the surface transparent.
+    /// </summary>
     public IBrush? SurfaceBackground
     {
         get => GetValue(SurfaceBackgroundProperty);
         set => SetValue(SurfaceBackgroundProperty, value);
     }
 
+    /// <summary>
+    /// Duration of the <see cref="OpenMotion" /> and the <see cref="CloseMotion" /> playback. The Popup theme
+    /// supplies the Popup token value; clearing a local value falls back to it.
+    /// </summary>
     public TimeSpan MotionDuration
     {
         get => GetValue(MotionDurationProperty);
@@ -103,6 +169,11 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
 
     private bool _isHorizontalFlipped;
 
+    /// <summary>
+    /// Whether the last placement pass showed the popup on the other side of its target along the X axis. It is
+    /// updated before <see cref="PositionFlipped" /> is raised, and a centered popup reports
+    /// <see langword="false" />.
+    /// </summary>
     public bool IsHorizontalFlipped
     {
         get => _isHorizontalFlipped;
@@ -111,54 +182,104 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
 
     private bool _isVerticalFlipped;
 
+    /// <summary>
+    /// Whether the last placement pass showed the popup on the other side of its target along the Y axis. It is
+    /// updated before <see cref="PositionFlipped" /> is raised, and a centered popup reports
+    /// <see langword="false" />.
+    /// </summary>
     public bool IsVerticalFlipped
     {
         get => _isVerticalFlipped;
         private set => SetAndRaise(IsVerticalFlippedProperty, ref _isVerticalFlipped, value);
     }
 
+    /// <summary>
+    /// Enables the playback of <see cref="OpenMotion" /> and <see cref="CloseMotion" />. Playback additionally
+    /// requires <c>Motion.IsAnimationEnabled</c> for the motion target. Setting it to <see langword="false" />
+    /// while a motion is in progress cancels the playback and completes a close that waits for its exit motion.
+    /// The Popup theme supplies the Popup token value.
+    /// </summary>
     public bool IsMotionEnabled
     {
         get => GetValue(IsMotionEnabledProperty);
         set => SetValue(IsMotionEnabledProperty, value);
     }
 
+    /// <summary>
+    /// Switches the wave spirit effect. <see cref="Popup" /> has no wave spirit of its own and does not read this
+    /// value; it only exposes the property. The default is <see langword="false" /> and the Popup theme sets no
+    /// value.
+    /// </summary>
     public bool IsWaveSpiritEnabled
     {
         get => GetValue(IsWaveSpiritEnabledProperty);
         set => SetValue(IsWaveSpiritEnabledProperty, value);
     }
 
+    /// <summary>
+    /// Motion played on the popup surface when the popup opens, or <see langword="null" /> to show it without an
+    /// entry animation. It starts after the <c>Opened</c> event once the surface is ready, and plays for
+    /// <see cref="MotionDuration" /> only while <see cref="IsMotionEnabled" /> is true. Owning controls set it in
+    /// their ControlTheme, typically from <c>PopupMotionDefaults</c>.
+    /// </summary>
     public AbstractMotion? OpenMotion
     {
         get => GetValue(OpenMotionProperty);
         set => SetValue(OpenMotionProperty, value);
     }
 
+    /// <summary>
+    /// Motion played on the popup surface before the popup closes, or <see langword="null" /> to close without an
+    /// exit animation. While it plays the close is put off; the popup closes once the motion has ended. It is
+    /// skipped when the entry motion has not presented the popup yet or the placement target can no longer be
+    /// located. Owning controls set it in their ControlTheme, typically from <c>PopupMotionDefaults</c>.
+    /// </summary>
     public AbstractMotion? CloseMotion
     {
         get => GetValue(CloseMotionProperty);
         set => SetValue(CloseMotionProperty, value);
     }
 
+    /// <summary>
+    /// Placement of the popup relative to its placement target, resolved by this class through Avalonia's custom
+    /// placement callback. Setting <c>Placement</c> to a value other than <c>Custom</c> is redirected here and
+    /// leaves <c>Placement</c> at <c>Custom</c>. <c>Center</c> centers the popup in the window and <c>Pointer</c>
+    /// anchors it at the last pointer position. <see langword="null" />, the default, clears the custom placement
+    /// callback and leaves <c>Placement</c> untouched.
+    /// </summary>
     public PlacementMode? RequestedPlacement
     {
         get => GetValue(RequestedPlacementProperty);
         set => SetValue(RequestedPlacementProperty, value);
     }
 
+    /// <summary>
+    /// Gap in device-independent pixels kept between the popup and its placement target. A centered popup ignores
+    /// it. The default is <c>0</c>; the Popup theme supplies the Popup token value.
+    /// </summary>
     public double MarginToAnchor
     {
         get => GetValue(MarginToAnchorProperty);
         set => SetValue(MarginToAnchorProperty, value);
     }
 
+    /// <summary>
+    /// Moves the popup so that its arrow points at the center of the placement target. It takes effect only when
+    /// the content shows an arrow and the placement allows one; it is ignored for the <c>Pointer</c> and
+    /// <c>Center</c> placements. The default is <see langword="false" />.
+    /// </summary>
     public bool IsPointAtCenter
     {
         get => GetValue(IsPointAtCenterProperty);
         set => SetValue(IsPointAtCenterProperty, value);
     }
 
+    /// <summary>
+    /// Callback that lets the owner of the popup adjust the placement that was computed for
+    /// <see cref="RequestedPlacement" />. It runs after <see cref="PositionFlipped" /> was raised and also for a
+    /// centered popup, which reports both flip values as <see langword="false" />. <see langword="null" />, the
+    /// default, keeps the computed placement unchanged.
+    /// </summary>
     public CustomPlacementCallback? CustomPlacementCallback
     {
         get => GetValue(CustomPlacementCallbackProperty);
@@ -169,6 +290,12 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
 
     #region 公共事件定义
 
+    /// <summary>
+    /// Raised when the placement pass of the popup completes, with the flip result for both axes, after
+    /// <see cref="IsHorizontalFlipped" /> and <see cref="IsVerticalFlipped" /> were updated and before
+    /// <see cref="CustomPlacementCallback" /> runs. A centered popup raises it with both values of
+    /// <see cref="PopupFlippedEventArgs" /> set to <see langword="false" />.
+    /// </summary>
     public event EventHandler<PopupFlippedEventArgs>? PositionFlipped;
 
     #endregion
@@ -220,7 +347,8 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
     }
 
     /// <summary>
-    /// 打开（含等待首帧准备）或关闭动效进行中。
+    /// Whether the open motion (including the wait for the first frame to be prepared) or the close motion is in
+    /// progress.
     /// </summary>
     internal bool IsPlayingMotion => _isOpenMotionActive || IsPlayingCloseMotion;
 
@@ -258,11 +386,13 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
 
     private RelativePoint? _activeDefaultOrigin;
 
-    // 窗口型 Popup 阴影区域的输入穿透，随一次打开会话挂接与释放
+    // Lets input pass through the shadow area of a popup hosted in its own window. It is attached and
+    // released with each open session.
     private IPopupShadowHitTest? _shadowHitTest;
 
-    // 避免 popup 内的 wheel 事件冒泡出去触发 PlacementTarget 所在祖先 ScrollViewer 的意外滚动。
-    // 订阅对象要记录下来,保证 open/close 成对摘挂。
+    // Keeps wheel events raised inside the popup from bubbling out and scrolling an ancestor ScrollViewer of
+    // the placement target unintentionally.
+    // The subscribed element is recorded so that the subscription made on open is removed again on close.
     private InputElement? _wheelGuardSubscribedOn;
 
     private int _ignoreRequestedPlacementChange;
@@ -306,6 +436,13 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
 
     #region 控件 API
 
+    /// <summary>
+    /// Called when a property of this popup changes. After the base implementation has run it brings placement,
+    /// frame shadow, light dismiss, pinned-open state, motion playback and motion host size in step with the new
+    /// value, and cancels a pending close when the popup opens again. When the templated parent is cleared it
+    /// closes the popup and detaches the content that the discarded template created.
+    /// Overrides must call the base implementation, otherwise the popup stops reacting to its own properties.
+    /// </summary>
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
@@ -447,6 +584,10 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
         }
     }
 
+    /// <summary>
+    /// Called when the popup is attached to a logical tree. It selects the frame shadow for the host kind in use
+    /// and, while the popup is pinned open, queues the open. Overrides must call the base member to keep both.
+    /// </summary>
     protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
     {
         base.OnAttachedToLogicalTree(e);
@@ -459,6 +600,10 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
         }
     }
 
+    /// <summary>
+    /// Called when the popup is detached from a logical tree. It invalidates a queued open of the pinned-open mode
+    /// and releases the subscriptions to its placement target. Overrides must call the base member to keep both.
+    /// </summary>
     protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
     {
         ++_pinnedOpenGeneration;
@@ -606,17 +751,19 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
 
             if (isUseOverlayHost)
             {
-                // Overlay 模式：popup 渲染在覆盖整个窗口的 OverlayLayer 中，坐标系为窗口客户区逻辑坐标。
-                // 将 AnchorRectangle 设为整个客户区，使 Anchor=None / Gravity=None 的定位器
-                // 自动将 popup 居中于窗口。
+                // Overlay mode: the popup is rendered in the OverlayLayer that covers the whole window, in the
+                // client-area logical coordinates of the window. Setting AnchorRectangle to the whole client area
+                // lets the positioner with Anchor=None / Gravity=None center the popup in the window.
                 placement.AnchorRectangle = new Rect(default, topLevel.ClientSize);
             }
             else
             {
-                // Popup Root 模式：popup 是独立的 OS 窗口。
-                // ManagedPopupPositioner 会将 AnchorRectangle（窗口客户区逻辑坐标）自动加上
-                // parentGeometry.TopLeft 转换为屏幕坐标，flip 约束边界为 screen.WorkingArea。
-                // 设为整个窗口客户区，popup 最终居中于父窗口所在屏幕区域内。
+                // Popup Root mode: the popup is its own OS window.
+                // ManagedPopupPositioner adds parentGeometry.TopLeft to the AnchorRectangle (window client-area
+                // logical coordinates) to convert it to screen coordinates, and uses screen.WorkingArea as the flip
+                // constraint bound.
+                // With the whole window client area as the anchor, the popup ends up centered on the screen that holds
+                // the parent window.
                 placement.AnchorRectangle = new Rect(default, topLevel.ClientSize);
             }
 
@@ -656,8 +803,9 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
                 }
             }
 
-            // 箭头隐藏或部件不可用时保持空 bounds：窗口型 Popup 在朝向 anchor 一侧保留完整阴影，
-            // ApplyCustomPlacement 按完整阴影厚度回退（见 PopupUtils.GetAnchorSideResidualShadow）
+            // Keep empty bounds while the arrow is hidden or the part is unavailable: a popup in its own window
+            // keeps the full shadow on the side that faces the anchor, and ApplyCustomPlacement falls back to the
+            // full shadow thickness (see PopupUtils.GetAnchorSideResidualShadow).
             var arrowIndicatorLayoutBounds = default(Rect);
             if (Child is IArrowAwareShadowMaskInfoProvider provider)
             {
@@ -698,8 +846,9 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
             return;
         }
 
-        // Center 走到这里：AnchorRectangle 已设为整个窗口客户区，Anchor/Gravity=None 定位器自动居中。
-        // 居中不存在翻转，直接设置 Offset 并通知 (false, false)。
+        // Center reaches this point: AnchorRectangle is already the whole window client area, and the positioner
+        // with Anchor/Gravity=None centers the popup automatically.
+        // Centering never flips, so only the Offset is set and the flip result is reported as (false, false).
         placement.Anchor  = anchor;
         placement.Gravity = gravity;
         placement.Offset  = new Point(hOffset, vOffset);
@@ -1330,15 +1479,18 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
     private void AttachShadowHitTest()
     {
         DetachShadowHitTest();
-        // 打开后 Child 挂在宿主下：窗口型 Popup 的 TopLevel 即 PopupRoot，Overlay Popup 则是所属窗口
+        // Once open, Child is parented under the host: for a popup in its own window the TopLevel is the PopupRoot,
+        // for an overlay popup it is the owning window.
         if (Child is null || TopLevel.GetTopLevel(Child) is not PopupRoot popupRoot)
         {
             return;
         }
 
-        // 逐点命中（Windows）直接使用 Avalonia 的命中测试：frame renderer 的圆角矩形与箭头几何可命中，
-        // 绘制列表命中不包含 BoxShadow，阴影区域因此不命中。禁用的内容仍属于内容形状。
-        // 预先提交输入区域的平台（X11、Wayland）无法逐点查询，提供同一圆角矩形与箭头几何，由 AtomUI.Native 光栅化。
+        // Point hit testing (Windows) uses Avalonia's hit test directly: the rounded rectangle and the arrow
+        // geometry of the frame renderer can be hit, while a hit against the render list does not include
+        // BoxShadow, so the shadow area is not hit. Disabled content still counts as part of the content shape.
+        // Platforms that submit the input region in advance (X11, Wayland) cannot query point by point, so the same
+        // rounded rectangle and arrow geometry are provided and AtomUI.Native rasterizes them.
         _shadowHitTest = NativePopupShadowHitTest.TryAttach(
             popupRoot,
             () => IsPlayingMotion,
@@ -1347,11 +1499,15 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
                            ?.GetContentShape(popupRoot));
     }
 
-    // 窗口型 Popup 的 Child 在 PopupRoot 首次布局时挂入视觉树，早于原生窗口映射（WindowBase.Show 先布局再 PlatformImpl.Show）。
-    // 这是 Opened 之前唯一能拿到尚未映射的 PopupRoot 的时机，Avalonia 未提供其他公开回调。
+    // The Child of a popup in its own window is attached to the visual tree during the first layout of the
+    // PopupRoot, before the native window is mapped (WindowBase.Show lays out first and then calls
+    // PlatformImpl.Show).
+    // This is the only moment before Opened that yields a PopupRoot that is not mapped yet; Avalonia offers no
+    // other public callback for it.
     private void HandleChildAttachedToVisualTree(object? sender, VisualTreeAttachmentEventArgs e)
     {
-        // Avalonia 12 的视觉根是包裹 TopLevel 的 TopLevelHost，按所属 TopLevel 判定
+        // In Avalonia 12 the visual root is the TopLevelHost that wraps the TopLevel, so this check uses the owning
+        // TopLevel.
         if (_shadowHitTest is null && sender is Visual child && TopLevel.GetTopLevel(child) is PopupRoot popupRoot)
         {
             NativePopupShadowHitTest.SuspendInputBeforeShow(popupRoot);
@@ -1510,9 +1666,11 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
             return;
         }
 
-        // IsVisible 恢复的同帧里放置目标尚未重新布局（TransformToVisual 未就绪 / 尺寸为零），
-        // 立即判无效会错过这次恢复信号——之后不再有属性变化触发 reconcile，弹层就再也打不开。
-        // 无法呈现时延后一帧重试一次，重试仍无效才按目标失效关闭。
+        // In the frame in which IsVisible is restored, the placement target has not been laid out again yet
+        // (TransformToVisual is not ready / the size is zero). Judging it invalid right away would miss this
+        // restore signal: no later property change triggers a reconcile, and the popup could never open again.
+        // When it cannot be presented, retry once after one frame; close as for an invalid target only if the
+        // retry still fails.
         if (!_isPinnedOpenReconcileRetried)
         {
             _isPinnedOpenReconcileRetried = true;
@@ -1591,8 +1749,10 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
 
     private static void HandleChildPointerWheelBubbled(object? sender, PointerWheelEventArgs e)
     {
-        // AddHandler 未指定 handledEventsToo,内部 ScrollViewer/列表若已把事件标 Handled,到此不会被调用。
-        // 走到这里意味着 popup 内没有消费者,在 popup 边界处吞掉,防止泄漏到外层 ScrollViewer 引发意外滚动。
+        // AddHandler did not ask for handledEventsToo, so an inner ScrollViewer or list that already marked the
+        // event Handled keeps this handler from being called.
+        // Reaching this point means nothing inside the popup consumed the event: swallow it at the popup boundary
+        // so that it does not leak to an outer ScrollViewer and cause unintended scrolling.
         e.Handled = true;
     }
 
@@ -1679,11 +1839,30 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
     #endregion
 }
 
+/// <summary>
+/// Reports the flip result of a placement pass of a <see cref="Popup" />, raised with the
+/// <see cref="Popup.PositionFlipped" /> event.
+/// </summary>
 public class PopupFlippedEventArgs : EventArgs
 {
+    /// <summary>
+    /// Whether the popup is shown on the other side of its target along the X axis.
+    /// </summary>
     public bool HorizontalFlipped { get; set; }
+    /// <summary>
+    /// Whether the popup is shown on the other side of its target along the Y axis.
+    /// </summary>
     public bool VerticalFlipped { get; set; }
 
+    /// <summary>
+    /// Initializes the instance with the flip results of both axes.
+    /// </summary>
+    /// <param name="horizontalFlipped">
+    /// Whether the popup is shown on the other side of its target along the X axis.
+    /// </param>
+    /// <param name="verticalFlipped">
+    /// Whether the popup is shown on the other side of its target along the Y axis.
+    /// </param>
     public PopupFlippedEventArgs(bool horizontalFlipped, bool verticalFlipped)
     {
         HorizontalFlipped = horizontalFlipped;

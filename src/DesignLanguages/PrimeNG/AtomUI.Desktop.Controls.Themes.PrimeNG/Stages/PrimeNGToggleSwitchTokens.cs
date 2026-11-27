@@ -10,8 +10,8 @@ namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 /// Lara: an unchecked track of surface 300 / 400 (hover), dark 700 / 600, a white handle (dark surface 400 / 300) and a
 /// white checked handle (dark surface 900); the checked track is the primary with <c>primary.hover.color</c> under the
 /// pointer (AtomUI's default). Nora: a field-like switch, the track the field background (surface 0 / 950) with a
-/// one-line field border (surface 500, checked the primary), the handle the field border colour, the checked handle
-/// the contrast colour, and a checked track that stays the primary under the pointer. The checked handle stays visible
+/// one-line field border (surface 500, checked the primary), the handle the field border color, the checked handle
+/// the contrast color, and a checked track that stays the primary under the pointer. The checked handle stays visible
 /// on a near-white primary track (noir dark).
 /// </summary>
 internal static class PrimeNGToggleSwitchTokens
@@ -32,7 +32,7 @@ internal static class PrimeNGToggleSwitchTokens
         token.TrackMinWidth = lara ? 42 : 36;
         token.HandleSize    = lara ? new Size(18, 18) : new Size(14, 14);
         // The handle sits TrackPadding from the track's top and side, so the track must be the handle plus twice the
-        // padding to centre it: the 4px gap for Aura and Nora (22 = 14 + 8); Lara's 24px track around an 18px handle
+        // padding to center it: the 4px gap for Aura and Nora (22 = 14 + 8); Lara's 24px track around an 18px handle
         // centres with a 3px gap (PrimeUIX keeps 4px at the side and centres vertically, a 1px difference).
         token.TrackPadding  = lara ? 3 : 4;
         token.HandleShadow  = default;
@@ -46,7 +46,7 @@ internal static class PrimeNGToggleSwitchTokens
         token.InnerMaxMargin   = handle + token.TrackPadding + 4;
         token.InnerMinMarginSM = token.HandleSizeSM.Width / 2 - 1;
         token.InnerMaxMarginSM = token.HandleSizeSM.Width + 4 + 2;
-        // On / off text: the contrast colour on the checked primary track (AtomUI's default), the body text on the
+        // On / off text: the contrast color on the checked primary track (AtomUI's default), the body text on the
         // unchecked track (light surface 300 / dark surface 700, Nora the field background).
         token.UncheckedContentColor = effectiveGlobal.ColorText;
         token.ContentIconSize   = token.TrackHeightSM;
@@ -57,11 +57,13 @@ internal static class PrimeNGToggleSwitchTokens
         token.HandleHoverBg        = rule.HandleHover;
         token.HandleCheckedBg      = checkedHandle;
         token.HandleCheckedHoverBg = checkedHandle;
+        // Nora: the checked track stays the primary under the pointer.
         if (rule.CheckedHoverKeepsPrimary)
         {
             token.TrackCheckedHoverBg = effectiveGlobal.ColorPrimary;
         }
 
+        // Nora: a field-like track with a one-line field border, which takes the primary when checked.
         if (rule.TrackBorder is { } border)
         {
             token.TrackBorderColor        = border;

@@ -2,7 +2,10 @@ using System.Diagnostics.Tracing;
 
 namespace AtomUI;
 
-/// <summary>启动分段打点。关闭时不映射枚举或构造事件负载。NativeAOT 默认裁掉 EventSource。</summary>
+/// <summary>
+/// Emits the startup phases and state changes as EventSource events. While the source is disabled, enum values
+/// are not mapped to names and event payloads are not built. NativeAOT trims EventSource away by default.
+/// </summary>
 [EventSource(Name = "AtomUI-Startup")]
 internal sealed class StartupEventSource : EventSource
 {

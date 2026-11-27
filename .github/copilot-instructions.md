@@ -270,17 +270,19 @@ Each Seed color (e.g., `ColorPrimary = #1677ff`) is expanded into a 10-color gra
 
 ### Component Token Conventions
 
+Comment wording and layout follow the [AtomUI source comment standard](../docs/engineering/development/code-comment-guidelines.md): English, one sentence per summary, block tags on separate lines.
+
 ```csharp
 [ControlDesignToken]
 public sealed partial class ToolTipToken : AbstractControlDesignToken
 {
     /// <summary>
-    /// ToolTip 默认的背景色
+    /// Background of the default ToolTip.
     /// </summary>
     public partial Color ToolTipBackground { get; set; }
 
     /// <summary>
-    /// ToolTip 默认的内间距
+    /// Padding between the ToolTip border and its content.
     /// </summary>
     public partial Thickness ContentPadding { get; set; }
 

@@ -3,7 +3,9 @@ using AtomUI.Theme.Languages;
 
 namespace AtomUI.Desktop.Controls.Themes.AntDesign;
 
-/// <summary>The AntDesign view of <see cref="ColorPickerViewToken"/>.</summary>
+/// <summary>
+/// The AntDesign view of <see cref="ColorPickerViewToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class ColorPickerViewTokenRule : IControlTokenRule<AntDesignToken, ColorPickerViewToken>
 {

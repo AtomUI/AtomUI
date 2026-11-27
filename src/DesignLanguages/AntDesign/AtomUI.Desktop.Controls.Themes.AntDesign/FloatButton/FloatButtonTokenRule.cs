@@ -4,7 +4,9 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls.Themes.AntDesign;
 
-/// <summary>The AntDesign view of <see cref="FloatButtonToken"/>.</summary>
+/// <summary>
+/// The AntDesign view of <see cref="FloatButtonToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class FloatButtonTokenRule : IControlTokenRule<AntDesignToken, FloatButtonToken>
 {

@@ -20,69 +20,142 @@ namespace AtomUI.Desktop.Controls;
 
 // A Token-owner transparent part: a CollapseItem is an item of Collapse only and has no Own Tokens, so its theme reads the
 // Collapse TokenResource and Controls[Collapse] reaches the item headers, bodies, separators and motion.
+/// <summary>
+/// The panel of a <see cref="Collapse" />: a header with an expand icon, the header content and an optional add-on,
+/// above the content that is shown while the panel is expanded.
+/// A collapse uses an item of this type as the panel of its data entry and creates one for every other entry.
+/// </summary>
 [TokenOwnerTransparent]
 [PseudoClasses(StdPseudoClass.Pressed, StdPseudoClass.Selected)]
 public class CollapseItem : AbstractCollapseItem, ISelectable
 {
     #region 公共属性定义
 
+    /// <summary>
+    /// Identifies the <see cref="IsSelected" /> property.
+    /// </summary>
     public new static readonly StyledProperty<bool> IsSelectedProperty =
         AbstractCollapseItem.IsSelectedProperty.AddOwner<CollapseItem>();
 
+    /// <summary>
+    /// Identifies the <see cref="IsShowExpandIcon" /> property.
+    /// </summary>
     public new static readonly StyledProperty<bool> IsShowExpandIconProperty =
         AbstractCollapseItem.IsShowExpandIconProperty.AddOwner<CollapseItem>();
 
+    /// <summary>
+    /// Identifies the <see cref="ExpandIcon" /> property.
+    /// </summary>
     public new static readonly StyledProperty<PathIcon?> ExpandIconProperty =
         AbstractCollapseItem.ExpandIconProperty.AddOwner<CollapseItem>();
 
+    /// <summary>
+    /// Identifies the <see cref="AddOnContent" /> property.
+    /// </summary>
     public new static readonly StyledProperty<object?> AddOnContentProperty =
         AbstractCollapseItem.AddOnContentProperty.AddOwner<CollapseItem>();
 
+    /// <summary>
+    /// Identifies the <see cref="AddOnContentTemplate" /> property.
+    /// </summary>
     public new static readonly StyledProperty<IDataTemplate?> AddOnContentTemplateProperty =
         AbstractCollapseItem.AddOnContentTemplateProperty.AddOwner<CollapseItem>();
     
+    /// <summary>
+    /// Identifies the <see cref="HeaderPadding" /> property.
+    /// </summary>
     public static readonly StyledProperty<Thickness> HeaderPaddingProperty =
         AvaloniaProperty.Register<CollapseItem, Thickness>(nameof(HeaderPadding));
 
+    /// <summary>
+    /// Identifies the <see cref="ContentPadding" /> property.
+    /// </summary>
     public static readonly StyledProperty<Thickness> ContentPaddingProperty =
         AvaloniaProperty.Register<CollapseItem, Thickness>(nameof(ContentPadding));
 
+    /// <summary>
+    /// Gets or sets whether the panel is expanded. It is the base property registered on
+    /// <see cref="CollapseItem" />, so it exposes the same value as <see cref="AbstractCollapseItem.IsSelected" />.
+    /// While <see langword="true" />, the theme shows the panel content, rotates the expand icon by 90 degrees,
+    /// shows the header text in the active color and sets the <c>:selected</c> pseudo-class. A collapse sets the
+    /// value from the <c>IsSelected</c> of its data entry.
+    /// A click on the expand button is passed to the owning <see cref="Collapse" />, which updates its selection;
+    /// an item that belongs to no collapse toggles the value itself.
+    /// </summary>
     public new bool IsSelected
     {
         get => GetValue(IsSelectedProperty);
         set => SetValue(IsSelectedProperty, value);
     }
 
+    /// <summary>
+    /// Gets or sets whether the expand icon is shown in the header. It is the base property registered on
+    /// <see cref="CollapseItem" /> and exposes the same value as
+    /// <see cref="AbstractCollapseItem.IsShowExpandIcon" />. A collapse sets the value from the
+    /// <c>IsShowExpandIcon</c> of its data entry.
+    /// </summary>
     public new bool IsShowExpandIcon
     {
         get => GetValue(IsShowExpandIconProperty);
         set => SetValue(IsShowExpandIconProperty, value);
     }
 
+    /// <summary>
+    /// Gets or sets the icon shown beside the header text. It is the base property registered on
+    /// <see cref="CollapseItem" /> and exposes the same value as <see cref="AbstractCollapseItem.ExpandIcon" />.
+    /// The icon is visible only while <see cref="IsShowExpandIcon" /> is <see langword="true" />, and the theme
+    /// rotates it by 90 degrees while the panel is expanded.
+    /// When the icon is <see langword="null" /> as the item attaches to the visual tree, the item installs a
+    /// right-pointing arrow at template priority, which a value set by a style or on the item replaces. A null
+    /// icon is replaced again on every attach, so hide the icon with <see cref="IsShowExpandIcon" /> instead.
+    /// </summary>
     public new PathIcon? ExpandIcon
     {
         get => GetValue(ExpandIconProperty);
         set => SetValue(ExpandIconProperty, value);
     }
 
+    /// <summary>
+    /// Gets or sets extra content shown in the header after the header content; <see langword="null" /> shows
+    /// nothing. It is the base property registered on <see cref="CollapseItem" /> and exposes the same value as
+    /// <see cref="AbstractCollapseItem.AddOnContent" />.
+    /// </summary>
     public new object? AddOnContent
     {
         get => GetValue(AddOnContentProperty);
         set => SetValue(AddOnContentProperty, value);
     }
 
+    /// <summary>
+    /// Gets or sets the template used to display <see cref="AddOnContent" />. When <see langword="null" />, the
+    /// add-on content is displayed with the data template found for its type. It is the base property registered
+    /// on <see cref="CollapseItem" /> and exposes the same value as
+    /// <see cref="AbstractCollapseItem.AddOnContentTemplate" />.
+    /// </summary>
     public new IDataTemplate? AddOnContentTemplate
     {
         get => GetValue(AddOnContentTemplateProperty);
         set => SetValue(AddOnContentTemplateProperty, value);
     }
     
+    /// <summary>
+    /// Insets the header area, which holds the expand button, the header text and the add-on, from the edge of
+    /// the header. A value set here takes precedence over the <c>ItemHeaderPadding</c> of the owning
+    /// <see cref="Collapse" />. When the value is cleared, the item falls back to that collapse padding, or to
+    /// the header padding token of its size when the collapse sets none.
+    /// </summary>
     public Thickness HeaderPadding
     {
         get => GetValue(HeaderPaddingProperty);
         set => SetValue(HeaderPaddingProperty, value);
     }
 
+    /// <summary>
+    /// Insets the panel content from the edge of the content area below the header. A value set here takes
+    /// precedence over the <c>ItemContentPadding</c> of the owning <see cref="Collapse" />. When the value is
+    /// cleared, the item falls back to that collapse padding, or to the content padding token of its size when
+    /// the collapse sets none.
+    /// </summary>
     public Thickness ContentPadding
     {
         get => GetValue(ContentPaddingProperty);
@@ -301,11 +374,19 @@ public class CollapseItem : AbstractCollapseItem, ISelectable
         AddHandler(PointerPressedEvent, HandlePreviewPointerPressed, RoutingStrategies.Tunnel, true);
     }
 
+    /// <summary>
+    /// Returns a <see cref="ListItemAutomationPeer" />, so UI Automation exposes the panel as a list item.
+    /// </summary>
     protected override AutomationPeer OnCreateAutomationPeer()
     {
         return new ListItemAutomationPeer(this);
     }
 
+    /// <summary>
+    /// Resolves the header and the expand button of the new template, refreshes the effective paddings and
+    /// subscribes to the click of the expand button; the button of the previous template is unsubscribed first.
+    /// A derived override must call the base member, or the expand button does not toggle the panel.
+    /// </summary>
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
@@ -324,6 +405,10 @@ public class CollapseItem : AbstractCollapseItem, ISelectable
         }
     }
 
+    /// <summary>
+    /// Installs the default expand icon and subscribes the item to the padding tokens while it is attached. A
+    /// derived override must call the base member, or the item shows no expand icon and reads no padding token.
+    /// </summary>
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
@@ -331,6 +416,11 @@ public class CollapseItem : AbstractCollapseItem, ISelectable
         UpdatePaddingTokenSubscription();
     }
 
+    /// <summary>
+    /// Disposes the padding token subscription so that a detached item holds no resource subscriptions; the
+    /// subscription is created again when the item attaches. A derived override must call the base member to
+    /// release the subscription.
+    /// </summary>
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         _paddingTokens?.Dispose();
@@ -338,6 +428,11 @@ public class CollapseItem : AbstractCollapseItem, ISelectable
         base.OnDetachedFromVisualTree(e);
     }
 
+    /// <summary>
+    /// Lifts the suppression of the toggle keys when the item itself receives focus by keyboard or programmatic
+    /// navigation. Focus that follows a pointer press leaves the suppression as the press set it: lifted for a
+    /// press on the header, and kept for a press anywhere else.
+    /// </summary>
     protected override void OnGotFocus(FocusChangedEventArgs e)
     {
         base.OnGotFocus(e);
@@ -347,6 +442,11 @@ public class CollapseItem : AbstractCollapseItem, ISelectable
         }
     }
 
+    /// <summary>
+    /// In header trigger mode, passes a key to the owning <see cref="Collapse" /> so that it updates its selection
+    /// from the key, unless toggle keys are suppressed after a press on the panel content. The key is marked
+    /// handled when the collapse used it.
+    /// </summary>
     protected override void OnKeyDown(KeyEventArgs e)
     {
         base.OnKeyDown(e);
@@ -358,6 +458,11 @@ public class CollapseItem : AbstractCollapseItem, ISelectable
         }
     }
 
+    /// <summary>
+    /// Keeps the paddings in step with property changes: switching the token subscription on or off re-creates it
+    /// while the item is attached, a change of the size refreshes the token paddings, and a change of the item's
+    /// or the owning collapse's padding recomputes the effective paddings.
+    /// </summary>
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);

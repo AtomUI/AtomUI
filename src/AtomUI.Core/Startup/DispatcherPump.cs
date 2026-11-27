@@ -5,9 +5,20 @@ namespace AtomUI;
 internal static class DispatcherPump
 {
     /// <summary>
-    /// 主循环开始前驱动 Dispatcher，直到 <paramref name="task"/> 完成或超时。超时由线程池计时器
-    /// （CancelAfter）取消：DispatcherTimer 依赖主循环，此阶段不可用。返回任务是否已完成。
+    /// Pumps the dispatcher until <paramref name="task" /> completes or <paramref name="timeout" /> elapses.
+    /// It serves the stage before the main loop has started, where a DispatcherTimer cannot be used because it
+    /// depends on that loop, so the timeout is enforced by a thread-pool timer.
     /// </summary>
+    /// <param name="task">
+    /// The task to wait for.
+    /// </param>
+    /// <param name="timeout">
+    /// The maximum time to pump, or <see cref="Timeout.InfiniteTimeSpan" /> to pump until the task has completed.
+    /// </param>
+    /// <returns>
+    /// <see langword="true" /> when the task has completed; <see langword="false" /> when the timeout ended the
+    /// loop first.
+    /// </returns>
     internal static bool PumpUntil(Task task, TimeSpan timeout)
     {
         if (task.IsCompleted)
@@ -27,7 +38,8 @@ internal static class DispatcherPump
             }
             catch (ObjectDisposedException)
             {
-                // 超时退出后任务才完成：取消源已释放，无需再唤醒。
+                // The task completed only after the timeout had ended the loop: the cancellation source is disposed and
+                // nothing needs to be woken any more.
             }
         }, cancellation, CancellationToken.None, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
         Dispatcher.UIThread.MainLoop(cancellation.Token);

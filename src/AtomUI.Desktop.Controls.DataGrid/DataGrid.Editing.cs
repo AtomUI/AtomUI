@@ -12,15 +12,22 @@ using Avalonia.Threading;
 
 namespace AtomUI.Desktop.Controls;
 
-// 编辑：单元格/行的进入、提交、取消与编辑元素焦点；编辑器只读取绑定值，提交统一经 IDataGridEditableSource 写回
+// Editing: entering, committing and canceling cell and row edits, and the focus of editing elements.
+// Editors only read the bound value; every commit is written back through IDataGridEditableSource.
 public partial class DataGrid
 {
     /// <summary>
     /// Cancels editing mode for the specified DataGridEditingUnit and restores its original value.
     /// </summary>
-    /// <param name="editingUnit">Specifies whether to cancel edit for a Cell or Row.</param>
-    /// <param name="raiseEvents">Specifies whether or not to raise editing events</param>
-    /// <returns>True if operation was successful. False otherwise.</returns>
+    /// <param name="editingUnit">
+    /// Specifies whether to cancel edit for a Cell or Row.
+    /// </param>
+    /// <param name="raiseEvents">
+    /// Specifies whether or not to raise editing events
+    /// </param>
+    /// <returns>
+    /// True if operation was successful. False otherwise.
+    /// </returns>
     internal bool CancelEdit(DataGridEditingUnit editingUnit, bool raiseEvents)
     {
         if (!EndCellEdit(
@@ -103,7 +110,7 @@ public partial class DataGrid
     }
 
     /// <summary>
-    /// Saves or discards the whole-row edit started by <see cref="BeginWholeRowEdit"/>.
+    /// Saves or discards the whole-row edit started by <see cref="BeginWholeRowEdit" />.
     /// </summary>
     internal bool EndWholeRowEdit(DataGridRow dataGridRow, DataGridEditAction editAction)
     {
@@ -356,7 +363,7 @@ public partial class DataGrid
     /// <summary>
     /// Commits edited values after the current input has been handled, so a source that reloads
     /// synchronously never rebuilds rows while currency or editing state is still changing.
-    /// Failures are reported through <see cref="EditCommitFailed"/> because the editors have already closed.
+    /// Failures are reported through <see cref="EditCommitFailed" /> because the editors have already closed.
     /// </summary>
     private void CommitEditedValues(
         DataGridRowKey rowKey,
@@ -404,8 +411,12 @@ public partial class DataGrid
     /// Handles the current editing element's LostFocus event by performing any actions that
     /// were cached by the WaitForLostFocus method.
     /// </summary>
-    /// <param name="sender">Editing element</param>
-    /// <param name="e">RoutedEventArgs</param>
+    /// <param name="sender">
+    /// Editing element
+    /// </param>
+    /// <param name="e">
+    /// RoutedEventArgs
+    /// </param>
     private void HandleEditingElementLostFocus(object? sender, RoutedEventArgs e)
     {
         if (sender is Control editingElement)
@@ -441,9 +452,9 @@ public partial class DataGrid
         }
     }
 
-    //TODO Validation
-    //TODO Binding
-    //TODO TabStop
+    // TODO Validation: verify this member handles it and complete it where missing. Remove this TODO when that is done.
+    // TODO Binding: verify this member handles it and complete it where missing. Remove this TODO when that is done.
+    // TODO TabStop: verify this member handles it and complete it where missing. Remove this TODO when that is done.
     private bool EndCellEdit(DataGridEditAction editAction, bool exitEditingMode, bool keepFocus, bool raiseEvents)
     {
         if (_editingColumnIndex == -1)
@@ -482,7 +493,7 @@ public partial class DataGrid
             NotifyCellEditEnding(e);
             if (e.Cancel)
             {
-                // CellEditEnding has been cancelled
+                // CellEditEnding has been canceled
                 return false;
             }
 
@@ -578,7 +589,7 @@ public partial class DataGrid
         return !(exitEditingMode && currentColumnIndex == _editingColumnIndex);
     }
 
-    //TODO Validation
+    // TODO Validation: verify this member handles it and complete it where missing. Remove this TODO when that is done.
     private bool EndRowEdit(DataGridEditAction editAction, bool exitEditingMode, bool raiseEvents)
     {
         if (EditingRow == null)
@@ -604,7 +615,7 @@ public partial class DataGrid
             NotifyRowEditEnding(e);
             if (e.Cancel)
             {
-                // RowEditEnding has been cancelled
+                // RowEditEnding has been canceled
                 return false;
             }
 
@@ -660,7 +671,7 @@ public partial class DataGrid
     /// Exits editing mode without trying to commit or revert the editing, and
     /// without repopulating the edited row's cell.
     /// </summary>
-    //TODO TabStop
+    // TODO TabStop: verify this member handles it and complete it where missing. Remove this TODO when that is done.
     private void ExitEdit(bool keepFocus)
     {
         if (EditingRow == null)
@@ -702,7 +713,7 @@ public partial class DataGrid
         }
     }
 
-    //TODO TabStop
+    // TODO TabStop: verify this member handles it and complete it where missing. Remove this TODO when that is done.
     private bool FocusEditingCell(bool setFocus)
     {
         Debug.Assert(CurrentColumnIndex >= 0);
@@ -812,7 +823,7 @@ public partial class DataGrid
         }
     }
 
-    //TODO Validation UI
+    // TODO Validation UI: verify it is handled and complete it where missing. Remove this TODO when that is done.
     private void ResetValidationStatus()
     {
         // Clear the invalid status of the Cell, Row and DataGrid

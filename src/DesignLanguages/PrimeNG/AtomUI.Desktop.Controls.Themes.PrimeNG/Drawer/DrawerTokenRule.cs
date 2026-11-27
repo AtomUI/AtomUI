@@ -6,7 +6,9 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 
-/// <summary>The PrimeNG view of <see cref="DrawerToken"/>.</summary>
+/// <summary>
+/// The PrimeNG view of <see cref="DrawerToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class DrawerTokenRule : IControlTokenRule<PrimeNGToken, DrawerToken>
 {
@@ -14,9 +16,13 @@ internal sealed class DrawerTokenRule : IControlTokenRule<PrimeNGToken, DrawerTo
     {
         var token  = target.Own;
         var global = target.Global;
-        // PrimeNG: the control-global overrides, read by the formulas below.
+        // PrimeNG: the control-global overrides (FontSizeLG, FontWeightStrong, MotionDurationSlow), read by the
+        // Drawer theme (FontSize, FontWeight, MotionDuration) and not by the formulas below.
         PrimeNGDrawerTokens.EvaluateGlobal(in context, global);
 
+        // Ant Design formula kept as is; the PrimeNG drawer stage (PrimeNGDrawerTokens.EvaluateOwn) replaces
+        // the four shadows with the modal shadow, the header, content and footer paddings and the edge border.
+        // The sizes 378 / 520 / 736, the close icon spacing and the push offset stay.
         token.BoxShadowDrawerLeft = new BoxShadows(new BoxShadow()
         {
             OffsetX = 6,

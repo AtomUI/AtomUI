@@ -145,7 +145,7 @@ internal class NavMenuItem : HeaderedSelectingItemsControl,
     }
 
     /// <summary>
-    /// Whether the item is a danger (destructive) action, drawn with the menu's danger item colours.
+    /// Whether the item is a danger (destructive) action, drawn with the menu's danger item colors.
     /// </summary>
     public bool IsDanger
     {
@@ -437,7 +437,8 @@ internal class NavMenuItem : HeaderedSelectingItemsControl,
         set => SetValue(ShouldUseOverlayPopupProperty, value);
     }
     
-    // 是否在选择路径中
+    // Whether the item lies on the path to the selected item, that is, whether it is one of its ancestors.
+    // The selected item itself does not carry the flag.
     internal bool IsInSelectedPath
     {
         get => GetValue(IsInSelectedPathProperty);
@@ -674,7 +675,9 @@ internal class NavMenuItem : HeaderedSelectingItemsControl,
         {
             if (ReferenceEquals(menuItem.SemanticParentItem, this))
             {
-                // TODO 我们在这里对模式做一个区分, Inline 暂时不互斥关闭，后面有时间看是否加一个互斥的标记
+                // Inline mode is skipped here, so opening one submenu leaves its sibling submenus open.
+                // TODO Add an opt-in flag that closes the sibling submenus of an inline menu as well. Remove
+                // this TODO when that flag exists or when inline menus are decided to stay non-exclusive.
                 if (Mode != NavMenuMode.Inline)
                 {
                     foreach (var child in NavMenuSemanticNavigator.EnumerateDirectItems(this))

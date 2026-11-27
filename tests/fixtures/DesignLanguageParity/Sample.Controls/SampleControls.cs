@@ -7,15 +7,21 @@ using Avalonia.Metadata;
 
 namespace Sample.Controls;
 
-/// <summary>A badge whose surface comes from <see cref="SampleBadgeToken"/>.</summary>
+/// <summary>
+/// A badge whose surface comes from <see cref="SampleBadgeToken" />.
+/// </summary>
 public class SampleBadge : TemplatedControl;
 
-/// <summary>A tag whose surface comes from <see cref="SampleTagToken"/>.</summary>
+/// <summary>
+/// A tag whose surface comes from <see cref="SampleTagToken" />.
+/// </summary>
 public class SampleTag : TemplatedControl;
 
 public static class SampleControlsBuilderExtensions
 {
-    /// <summary>Enables the sample control package. Its values come from the value package of the enabled language.</summary>
+    /// <summary>
+    /// Enables the sample control package. Its values come from the value package of the enabled language.
+    /// </summary>
     public static IAtomUIBuilder UseSampleControls(this IAtomUIBuilder builder)
     {
         ArgumentNullException.ThrowIfNull(builder);

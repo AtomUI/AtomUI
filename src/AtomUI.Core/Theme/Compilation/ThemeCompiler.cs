@@ -12,10 +12,10 @@ using AtomUI.Theme.Schema;
 namespace AtomUI.Theme.Compilation;
 
 /// <summary>
-/// The single-pass pipeline of spec 6.2 for one evaluation unit (a scope): the language and variant, the seeds, the
-/// language tokens, the global tokens, the core's final normalization and, lazily, every control's view. Explicit values
-/// are inputs: seeds are written before the language derives anything, explicit language, Map, Alias and control
-/// tokens are written and frozen before the step that would otherwise compute them (spec 6.3).
+/// The single-pass pipeline for one evaluation unit (a scope): the language and variant, the seeds, the
+/// language tokens, the global tokens, the core's final normalization and, lazily, every control's view. Explicit
+/// values are inputs: seeds are written before the language derives anything, explicit language, Map, Alias and
+/// control tokens are written and frozen before the step that would otherwise compute them.
 /// </summary>
 internal sealed class ThemeCompiler
 {
@@ -46,7 +46,9 @@ internal sealed class ThemeCompiler
             Array.Empty<NormalizedControlThemeConfig>(), value));
     }
 
-    /// <summary>The layer of a scope with <c>Inherit = false</c>: nothing but the language it keeps from its parent.</summary>
+    /// <summary>
+    /// The layer of a scope with <c>Inherit = false</c>: nothing but the language it keeps from its parent.
+    /// </summary>
     internal static NormalizedThemeConfig CreateLibraryDefaults(ThemeSchemaRegistry registry)
     {
         ArgumentNullException.ThrowIfNull(registry);
@@ -157,7 +159,7 @@ internal sealed class ThemeCompiler
 
     /// <summary>
     /// The value inputs of one evaluation unit: the definition layer matched for the unit's variant under the unit's
-    /// explicit values (spec 7.7), the language tokens bound to the unit's language, and the per-control configuration.
+    /// explicit values, the language tokens bound to the unit's language, and the per-control configuration.
     /// </summary>
     internal sealed class UnitInputs
     {
@@ -179,10 +181,14 @@ internal sealed class ThemeCompiler
         internal NormalizedThemeConfig Config { get; }
         internal DefinitionLayer? Layer { get; }
 
-        /// <summary>The unit's explicit global tokens, definition layer included, ordered by slot.</summary>
+        /// <summary>
+        /// The unit's explicit global tokens, definition layer included, ordered by slot.
+        /// </summary>
         internal NormalizedTokenValue[] GlobalTokens { get; }
 
-        /// <summary>The unit's explicit language tokens, bound to <see cref="Language"/>, ordered by slot.</summary>
+        /// <summary>
+        /// The unit's explicit language tokens, bound to <see cref="Language" />, ordered by slot.
+        /// </summary>
         internal NormalizedTokenValue[] LanguageTokens { get; }
 
         internal static UnitInputs Create(NormalizedThemeConfig config, DesignLanguageDescriptor language,
@@ -202,7 +208,7 @@ internal sealed class ThemeCompiler
             {
                 if (!language.TryGetLanguageToken(token.Name, out var descriptor))
                 {
-                    // Review Focus 3: an override written for another language is ignored, with a diagnostic.
+                    // An override written for another language is ignored, with a diagnostic.
                     AddWarning(diagnostics, UnknownLanguageTokenCode,
                         $"'{token.Name}' is not a language Token of '{language.Id}'; the override is ignored.");
                     continue;
@@ -225,7 +231,9 @@ internal sealed class ThemeCompiler
             return new UnitInputs(language, variant, config, layer, globalTokens, languageArray);
         }
 
-        /// <summary>The unit's controls: the definition layer's control entries under the explicit ones, by identity.</summary>
+        /// <summary>
+        /// The unit's controls: the definition layer's control entries under the explicit ones, by identity.
+        /// </summary>
         internal NormalizedControlThemeConfig[] Controls => _controls ??= BuildControls();
 
         private NormalizedControlThemeConfig[] BuildControls()
@@ -328,7 +336,9 @@ internal sealed class ThemeCompiler
             TokenValueTable.Freeze(language, unit.Language.LanguageTokens), resources, FreezePresetPalettes(builder));
     }
 
-    /// <summary>Steps 2 to 5 of the pipeline for one evaluation unit: seeds, language tokens, global tokens, normalization.</summary>
+    /// <summary>
+    /// Steps 2 to 5 of the pipeline for one evaluation unit: seeds, language tokens, global tokens, normalization.
+    /// </summary>
     internal static (DesignToken Global, LanguageDesignToken Language) CompileUnitGlobal(UnitInputs unit)
     {
         var language = unit.Language;
@@ -352,7 +362,8 @@ internal sealed class ThemeCompiler
             throw new ThemeDerivationException(language.Id, null, "language", exception);
         }
 
-        // 4. Global tokens: explicit Map and Alias values are frozen first; seeds stay inputs the derivation may refine.
+        // 4. Global tokens: explicit Map and Alias values are frozen first; seeds stay inputs the derivation may
+        // refine.
         FreezeValues(token, unit.GlobalTokens, TokenStage.Map);
         FreezeValues(token, unit.GlobalTokens, TokenStage.Alias);
         try
@@ -392,7 +403,8 @@ internal sealed class ThemeCompiler
                parent.EffectiveConfig.LanguageTokens.SequenceEqual(input.EffectiveConfig.LanguageTokens);
     }
 
-    // 先按有序游标解析配置和复用状态，仅在首次查询时计算控件值与差量。
+    // Resolves configurations and reuse state through ordered cursors; control values and deltas are computed
+    // only on first query.
     private static LazyControlSnapshots CompileControls(
         ThemeCompileInput input,
         UnitInputs unit,
@@ -546,10 +558,10 @@ internal sealed class ThemeCompiler
     }
 
     /// <summary>
-    /// Spec 12.3: the global slots a child unit changed relative to its parent, when the parent's control results may be
-    /// reused by read set. <see langword="null"/> when they may not: no parent, a different registry, variant, language or
-    /// definition, a changed seed, palette or language token (then every value may differ), or a reused global layer
-    /// (the ordinary reuse applies).
+    /// The global slots a child unit changed relative to its parent, when the parent's control results
+    /// may be reused by read set. <see langword="null" /> when they may not: no parent, a different registry,
+    /// variant, language or definition, a changed seed, palette or language token (then every value may differ),
+    /// or a reused global layer (the ordinary reuse applies).
     /// </summary>
     private static GlobalTokenReadSet? FindReadSetReuse(ThemeCompileInput input, GlobalCompileOutcome global)
     {
@@ -645,7 +657,8 @@ internal sealed class ThemeCompiler
         DesignVariant variant,
         bool? controlChanged)
     {
-        // slot 仅在当前 schema 内有效；演化重排后不能按旧数组下标复用其他控件的差量。
+        // A slot is valid only within its schema; after an evolution reorders the controls, an old array index
+        // must not reuse another control's delta.
         if (parent is null || parent.RegistryRevision != registry.Revision)
         {
             return false;
@@ -684,7 +697,7 @@ internal sealed class ThemeCompiler
     /// Step 6 for one control: its view. The view's global tokens start as the scope's; the control's explicit global
     /// overrides are written and frozen, its explicit control tokens likewise, then the control token rule writes the
     /// control token and any global token that differs for this control. A control that fixes an axis or overrides a
-    /// seed first gets its own global evaluation (spec 6.4).
+    /// seed first gets its own global evaluation.
     /// </summary>
     internal static ControlThemeSnapshot CompileControl(
         ControlTokenDescriptor descriptor,
@@ -718,8 +731,9 @@ internal sealed class ThemeCompiler
 
         // The control's explicit global overrides are what the control sees; normalized before they are frozen, as a
         // scope's are. A seed override made the control its own evaluation unit, so its Map and Alias tokens were
-        // derived from the seed; the seed itself is written again because the language's global derivation may refine
-        // or replace a seed input (a shadcn style's control height), and a control-level value is final for the control.
+        // derived from the seed; the seed itself is written again because the language's global derivation may
+        // refine or replace a seed input (a shadcn style's control height), and a control-level value is final for
+        // the control.
         var overrides = config?.GlobalTokens;
         if (overrides is { Count: > 0 })
         {
@@ -730,7 +744,7 @@ internal sealed class ThemeCompiler
             controlGlobal.NormalizeFinalBehavior();
             effectiveGlobalMatchesRoot = false;
 
-            // Every explicit value of the control is frozen against its token rule, seeds included (spec 6.3, 6.4).
+            // Every explicit value of the control is frozen against its token rule, seeds included.
             FreezeOverrides(controlGlobal, overrides);
         }
 
@@ -956,7 +970,9 @@ internal sealed class ThemeCompiler
         return true;
     }
 
-    /// <summary><paramref name="upper"/>'s values over <paramref name="lower"/>'s, by slot; both are ordered by slot.</summary>
+    /// <summary>
+    /// <paramref name="upper" />'s values over <paramref name="lower" />'s, by slot; both are ordered by slot.
+    /// </summary>
     internal static NormalizedTokenValue[] Overlay(
         IReadOnlyList<NormalizedTokenValue>? lower,
         IReadOnlyList<NormalizedTokenValue> upper)
@@ -1103,7 +1119,9 @@ internal sealed class ThemeCompiler
         return builder;
     }
 
-    /// <summary>Recreates a language token object from its frozen values (a scope that reuses its parent's global values).</summary>
+    /// <summary>
+    /// Recreates a language token object from its frozen values (a scope that reuses its parent's global values).
+    /// </summary>
     internal static LanguageDesignToken CreateLanguageBuilder(DesignLanguageDescriptor language, TokenValueTable values)
     {
         var builder = language.CreateLanguageToken();
@@ -1120,7 +1138,7 @@ internal sealed class ThemeCompiler
 
     /// <summary>
     /// Projects and freezes the resource value of every descriptor. A value that equals the one
-    /// <paramref name="previousResources"/> holds for the same key keeps that previous instance, so an unchanged
+    /// <paramref name="previousResources" /> holds for the same key keeps that previous instance, so an unchanged
     /// Token keeps reference identity across publishes (Avalonia short-circuits an equal republish by
     /// <c>EqualityComparer&lt;T&gt;.Default</c>, and a same-reference value also skips the equality call) while a
     /// changed Token gets its new frozen value. Mutable values (a <c>SolidColorBrush</c> Token) compare by reference
@@ -1244,7 +1262,9 @@ internal sealed class ThemeCompiler
     }
 }
 
-/// <summary>Theme token evaluation failed. Identifies the language, the control (if any) and the step.</summary>
+/// <summary>
+/// Theme token evaluation failed. Identifies the language, the control (if any) and the step.
+/// </summary>
 public sealed class ThemeDerivationException : Exception
 {
     internal ThemeDerivationException(string language, ControlTokenIdentity? control, string step, Exception innerException)
@@ -1256,7 +1276,14 @@ public sealed class ThemeDerivationException : Exception
         Control  = control;
     }
 
+    /// <summary>
+    /// The identity of the design language whose token evaluation failed.
+    /// </summary>
     public string Language { get; }
 
+    /// <summary>
+    /// The control whose token rule failed, or <see langword="null" /> when a language or global derivation
+    /// step failed.
+    /// </summary>
     public ControlTokenIdentity? Control { get; }
 }

@@ -5,7 +5,9 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls.Themes.Shadcn;
 
-/// <summary>The shadcn view of <see cref="FloatButtonToken"/>.</summary>
+/// <summary>
+/// The shadcn view of <see cref="FloatButtonToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class FloatButtonTokenRule : IControlTokenRule<ShadcnToken, FloatButtonToken>
 {
@@ -29,7 +31,7 @@ internal sealed class FloatButtonTokenRule : IControlTokenRule<ShadcnToken, Floa
         token.DefaultBg             = global.ColorBgElevated;
         token.DefaultHoverBg        = global.ColorBgTextHover;
         // Ant Design has no pressed reaction for the default (white) type: the frame stays transparent so the
-        // elevated layer below shows through, exactly as before this token existed.
+        // elevated layer below shows through, exactly as before this token existed. shadcn replaces it below.
         token.DefaultActiveBg       = Colors.Transparent;
         token.DefaultIconColor      = global.ColorText;
         token.PrimaryColor          = global.ColorTextLightSolid;
@@ -51,6 +53,8 @@ internal sealed class FloatButtonTokenRule : IControlTokenRule<ShadcnToken, Floa
 
         var floatStyle = context.Variant.Style;
         var vega = floatStyle == ShadcnStyles.Vega;
+        // shadcn has no floating action button: the button's outline variant stands in, so the description and the
+        // shadow follow it; Vega alone keeps the outline button's shadow-xs.
         token.HasOutline                   = true;
         token.OutlineOnlyShadow            = vega;
         token.CapsuleDescription           = floatStyle == ShadcnStyles.Luma || floatStyle == ShadcnStyles.Maia;

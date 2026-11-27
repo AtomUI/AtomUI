@@ -5,8 +5,8 @@ using Avalonia.Media;
 namespace AtomUI.Controls.Commons;
 
 /// <summary>
-/// The five theme colours a preset image is derived from, as resolved from the control's brushes
-/// (before they are composited onto <see cref="Background"/>).
+/// The five theme colors a preset image is derived from, as resolved from the control's brushes
+/// (before they are composited onto <see cref="Background" />).
 /// </summary>
 internal readonly record struct PresetImageColors(
     Color Border,
@@ -17,8 +17,8 @@ internal readonly record struct PresetImageColors(
 
 internal static class BuiltInImageBuilder
 {
-    // Keyed by (preset, colours): every Empty under the same theme shares one built svg string.
-    // Colours are part of the key, so a theme switch simply produces new entries.
+    // Keyed by (preset, colors): every Empty under the same theme shares one built svg string.
+    // Colors are part of the key, so a theme switch simply produces new entries.
     private const int MaxCachedPresetImages = 32;
 
     private static readonly ConcurrentDictionary<(PresetEmptyImage Preset, PresetImageColors Colors), string> s_presetImages = new();
@@ -34,7 +34,7 @@ internal static class BuiltInImageBuilder
         var built = BuildPresetImage(preset, colors);
         if (s_presetImages.Count >= MaxCachedPresetImages)
         {
-            // Bounded in case colours are animated or user-generated.
+            // Bounded in case colors are animated or user-generated.
             s_presetImages.Clear();
         }
         return s_presetImages.GetOrAdd(key, built);

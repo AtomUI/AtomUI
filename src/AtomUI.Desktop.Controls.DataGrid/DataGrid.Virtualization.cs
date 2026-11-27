@@ -120,9 +120,11 @@ public partial class DataGrid
 
     private double RangeMaximumOffset => Math.Max(0, GetRangeExtent() - CellsEstimatedHeight);
 
-    // 视口变高或内容总高缩水都会降低滚动上界，RangeBase 会自行把滚动条 Value 夹到新上界，
-    // 但偏移不会跟随；上界在滚动条布局中统一计算，偏移也在这里统一收敛，
-    // 否则末行之后会留出与上界降幅等高的空白。只收敛越界部分，不改变界内的滚动意图。
+    // A taller viewport or a smaller total content height lowers the scroll maximum. RangeBase clamps the
+    // scroll bar Value to the new maximum on its own, but the offset does not follow. The maximum is computed
+    // in the scroll bar layout, so the offset is reconciled here; otherwise blank space as high as the drop
+    // of the maximum remains after the last row. Only the part beyond the maximum is clamped, so a scroll
+    // intent within the range is kept.
     private void ClampRangeOffsetToMaximum()
     {
         if (!IsRangePresentationActive || SlotCount == 0)
@@ -136,11 +138,14 @@ public partial class DataGrid
         }
     }
 
-    // 纵向位置的唯一落点：把目标偏移落到已提交视口，使显示的行、_verticalOffset、
-    // _rangeDesiredOffset 与滚动条保持同一真相。
-    // - 目标在显示首行之后：沿用以显示首行为基准的 NegVerticalOffset，由测量阶段向前归一化；
-    // - 目标在显示首行之前但仍在已提交窗口内：从包含目标的槽位重建显示行；
-    // - 目标在已提交窗口之前：先按窗口起点显示，再以目标请求包含它的视口。
+    // The single place where the vertical position lands: it applies the target offset to the committed viewport,
+    // so that the displayed rows, _verticalOffset, _rangeDesiredOffset and the scroll bar share one truth.
+    // - Target after the first displayed row: NegVerticalOffset, which is relative to the first displayed row,
+    // is kept and the measure pass normalizes it forward.
+    // - Target before the first displayed row but still inside the committed window: the displayed rows are
+    // rebuilt from the slot that contains the target.
+    // - Target before the committed window: the window start is displayed first, then a viewport that contains
+    // the target is requested with the target.
     private void ReconcileCommittedRangeOffset(double offset)
     {
         var committedFirst = _rangePresentationIndex!.Snapshot.CommittedViewport.FirstVisibleIndex;
@@ -162,7 +167,8 @@ public partial class DataGrid
             var firstSlot = Math.Max(committedFirst, _rangeHeightIndex!.FindSlotAtOffset(target, SlotCount));
             NegVerticalOffset = Math.Max(0, target - GetRangeOffset(firstSlot));
             SetVerticalOffset(target);
-            // 显示行只能按相邻槽位向上扩展；新首行与当前显示不相邻时先回收全部显示行再从新首行重建
+            // Displayed rows can only extend upwards through adjacent slots. When the new first row is not adjacent
+            // to the rows on display, all of them are recycled first and the rows are rebuilt from the new first row.
             if (displayedFirst - firstSlot > 1)
             {
                 ResetDisplayedRows();
@@ -174,15 +180,17 @@ public partial class DataGrid
         ApplyRangeVerticalOffset(target, displayedFirst >= committedFirst ? displayedFirst : committedFirst);
     }
 
-    // 滚动意图（方向与目标偏移）只属于发起它的那次滚动及当时的高度空间。
-    // 高度整体重建、加载失败或回滚、数据换代后旧目标已无意义，继续生效会把偏移推到未加载区域。
+    // A scroll intent (direction and target offset) belongs only to the scroll that raised it and to the height
+    // space of that moment. After a full rebuild of the heights, a failed or rolled back load, or a new generation
+    // of data, the old target is meaningless, and keeping it would push the offset into an unloaded area.
     private void ClearRangeScrollIntent()
     {
         _rangeMeasurementScrollDirection = 0;
         _rangeMeasurementScrollTarget = 0;
     }
 
-    // 未完成的滚动请求作废：期望偏移退回到当前已显示的位置，挂起的视口请求与滚动意图一并清除。
+    // Abandons an unfinished scroll request: the desired offset falls back to the position currently
+    // displayed, and the pending viewport request and the scroll intent are cleared with it.
     private void AbandonPendingRangeScroll()
     {
         _rangeDesiredOffset = _verticalOffset;
@@ -416,9 +424,11 @@ public partial class DataGrid
             heightIndex = new SparseHeightDeltaIndex(defaultHeight);
             if (isNewDataGeneration)
             {
-                // 滚动意图与期望偏移都属于被替换代际的高度空间；无论后续走完整提交还是复用重叠视口，
-                // 都要先作废意图，并把期望偏移按其相对已提交首行的位置换算到新高度空间
-                // （快照过期重启后视口仍按槽位加载，不换算会落到未加载的槽位上）。
+                // The scroll intent and the desired offset belong to the height space of the replaced generation.
+                // Whether a full commit or the reuse of an overlapping viewport follows, the intent is dropped first
+                // and the desired offset is converted to the new height space by its position relative to the
+                // committed first row (after a restart from an expired snapshot the viewport is still loaded by slot,
+                // and without the conversion it would land on unloaded slots).
                 ClearRangeScrollIntent();
                 if (!viewportAnchor.HasValue && _rangeHeightIndex is { } previousHeights)
                 {
@@ -548,7 +558,8 @@ public partial class DataGrid
             {
                 _committingRangePresentation = false;
             }
-            // 插入元素时实测的行高与估值重建可能改变偏移的含义，按最终高度再落一次偏移
+            // Measured row heights and the rebuild of the estimates while elements are inserted can change what the
+            // offset means, so the offset is applied once more against the final heights.
             ReconcileCommittedRangeOffset(viewportAnchor.HasValue
                 ? nextIndex.RestoreAnchor(viewportAnchor.Value)
                 : _rangeDesiredOffset);
@@ -626,8 +637,9 @@ public partial class DataGrid
     {
         var nextFirst = snapshot.CommittedViewport.FirstVisibleIndex;
         var nextLast = checked(nextFirst + snapshot.CommittedViewport.VisibleCount - 1);
-        // 提交期间不做实测重锚；在已显示内容上方插入的行实测高度会推动内容，
-        // 因此记录插入前的内容锚点，插入后把它的位移叠加到目标偏移上，保持目标相对内容不变。
+        // No measured re-anchoring takes place during a commit. Rows inserted above the displayed content push the
+        // content down once their measured heights are known, so the content anchor is captured before the insertion
+        // and its displacement is added to the target offset afterwards, which keeps the target on the same content.
         var contentAnchor = viewportAnchor.HasValue || DisplayData.FirstScrollingSlot < 0
             ? null
             : CaptureFirstCompleteRangeAnchor();
@@ -853,8 +865,9 @@ public partial class DataGrid
         {
             return;
         }
-        // 提交过程中插入元素也会触发重建，此时显示行尚未完整、不能据显示捕获锚点；
-        // 只把期望偏移按其所在槽位的相对位置换算到新高度空间，由提交结束时统一落点
+        // Inserting elements during a commit also triggers a rebuild. The displayed rows are incomplete at that
+        // moment, so no anchor is captured from them; the desired offset is only converted to the new height space
+        // by its relative position inside its slot, and the offset is applied when the commit ends.
         var committing = _committingRangePresentation;
         var anchor = committing ? null : CaptureFirstCompleteRangeAnchor();
         var desiredSlot = SlotCount > 0 ? _rangeHeightIndex.FindSlotAtOffset(_rangeDesiredOffset, SlotCount) : 0;
@@ -865,7 +878,8 @@ public partial class DataGrid
         }
         _rangeHeightIndex.RebaseDefaultHeight(
             GetRangeDefaultHeight(_rangePresentationIndex.Snapshot));
-        // 整体重建后高度空间已变，旧滚动目标不能再参与锚点恢复
+        // After a full rebuild the height space has changed, so an old scroll target can no longer take part
+        // in the anchor restoration.
         ClearRangeScrollIntent();
         if (committing)
         {
@@ -949,7 +963,8 @@ public partial class DataGrid
         {
             return;
         }
-        // 详情高度批量写入后高度空间已变，旧滚动目标不能再参与锚点恢复
+        // After the details heights are written in bulk the height space has changed, so an old scroll target
+        // can no longer take part in the anchor restoration.
         ClearRangeScrollIntent();
         ReconcileCommittedRangeOffset(_rangePresentationIndex.RestoreAnchor(anchor.Value));
     }

@@ -3,6 +3,8 @@ using Avalonia.Controls;
 
 namespace AtomUI.Desktop.Controls;
 
+// The square block behind the centered content that shows the shimmer. Repeatable, one per placeholder block;
+// SkeletonNodeContentStyle applies to each.
 [SemanticPart(
     "content",
     SelectorClass = "semantic-content",

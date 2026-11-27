@@ -4,7 +4,9 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls.Themes.AntDesign;
 
-/// <summary>The AntDesign view of <see cref="TextBoxToken"/>.</summary>
+/// <summary>
+/// The AntDesign view of <see cref="TextBoxToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class TextBoxTokenRule : IControlTokenRule<AntDesignToken, TextBoxToken>
 {

@@ -4,7 +4,10 @@ using Avalonia.Styling;
 
 namespace AtomUI.Theme.Resources;
 
-/// <summary>Application-owned resource layer. Manifest lookup does not create package providers.</summary>
+/// <summary>
+/// Application-owned resource layer. The manifest lookup only narrows the candidate assets; a package
+/// provider is materialized when a lookup first probes that asset.
+/// </summary>
 internal sealed class StartupResourceProvider : IResourceProvider
 {
     private ResourceIndex _resources;

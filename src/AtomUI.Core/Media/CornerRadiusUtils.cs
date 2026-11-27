@@ -3,12 +3,29 @@ using Avalonia;
 namespace AtomUI.Media;
 
 /// <summary>
-/// CSS border-radius semantics for corner radii: a corner never exceeds half the shorter side of its rectangle.
-/// Avalonia draws an oversized <see cref="CornerRadius"/> asymmetrically instead of scaling it down like the
-/// browser does, so every self-drawn rounded rect whose radius comes from a theme token should clamp first.
+/// Two ways to fit a corner radius to its rectangle: <see cref="ClampToSize" /> limits each corner to half the
+/// shorter side, and <see cref="ScaleToSize" /> scales every radius down by one factor when adjacent corners
+/// overlap, as CSS border-radius does. Avalonia draws an oversized <see cref="CornerRadius" /> asymmetrically
+/// instead of scaling it down like the browser does, so every self-drawn rounded rect whose radius comes from a
+/// theme token should pass through one of them first.
 /// </summary>
 public static class CornerRadiusUtils
 {
+    /// <summary>
+    /// Limits every corner of a radius to half the shorter side of the rectangle it belongs to.
+    /// </summary>
+    /// <param name="radius">
+    /// The radius to clamp.
+    /// </param>
+    /// <param name="width">
+    /// The width of the rectangle.
+    /// </param>
+    /// <param name="height">
+    /// The height of the rectangle.
+    /// </param>
+    /// <returns>
+    /// The clamped radius, or <see langword="default" /> when the width or the height is not positive.
+    /// </returns>
     public static CornerRadius ClampToSize(CornerRadius radius, double width, double height)
     {
         var limit = Math.Min(width, height) / 2;
@@ -31,6 +48,10 @@ public static class CornerRadiusUtils
     /// <see cref="ClampToSize" />, a corner whose neighbour is small enough for both to share the
     /// edge keeps its full radius.
     /// </summary>
+    /// <returns>
+    /// The scaled radius, the input itself when no adjacent corners overlap, or
+    /// <see langword="default" /> when the width or the height is not positive.
+    /// </returns>
     public static CornerRadius ScaleToSize(CornerRadius radius, double width, double height)
     {
         if (width <= 0 || height <= 0)

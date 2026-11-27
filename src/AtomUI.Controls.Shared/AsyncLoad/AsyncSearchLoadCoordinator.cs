@@ -1,10 +1,21 @@
 namespace AtomUI.Controls.AsyncLoad;
 
 /// <summary>
-/// 搜索类场景的异步加载协调器。新请求到来时取消前一次，按 <see cref="DebounceInterval"/> 延迟启动，按 <see cref="Timeout"/> 硬超时。
-///
-/// Coordinator 自身是有状态的，一个控件持一个实例即可。控件销毁前应调用 <see cref="Cancel"/>。
+/// Coordinates asynchronous loading for search scenarios, where each new request replaces the previous one: a
+/// request waits for <see cref="DebounceInterval" /> before it starts the loader, and <see cref="Timeout" />
+/// limits how long the loader runs.
+/// <para>
+/// An instance tracks one sequence of requests, so a control keeps its own instance for its lifetime and calls
+/// <see cref="Cancel" /> before the control is destroyed.
+/// </para>
 /// </summary>
+/// <typeparam name="TContext">
+/// The input of a request, such as the filter text. It is passed to the loader and may be
+/// <see langword="null" />.
+/// </typeparam>
+/// <typeparam name="TResult">
+/// The type of the data that the loader returns.
+/// </typeparam>
 public sealed class AsyncSearchLoadCoordinator<TContext, TResult>
     where TResult : class
 {
@@ -13,10 +24,44 @@ public sealed class AsyncSearchLoadCoordinator<TContext, TResult>
     private long _generation;
     private long _cancelledGeneration = -1;
 
+    /// <summary>
+    /// Gets or sets how long a request waits before it starts the loader. The default, zero, starts the loader
+    /// without waiting.
+    /// </summary>
     public TimeSpan DebounceInterval { get; set; } = TimeSpan.Zero;
 
+    /// <summary>
+    /// Gets or sets the maximum duration of the loader of a request. The limit starts when the debounce ends. A
+    /// positive value cancels the token of the loader when it elapses; zero, a negative value and the default
+    /// infinite timeout disable the limit.
+    /// </summary>
     public TimeSpan Timeout { get; set; } = System.Threading.Timeout.InfiniteTimeSpan;
 
+    /// <summary>
+    /// Starts a request for <paramref name="context" /> and cancels the request that came before it.
+    /// </summary>
+    /// <param name="context">
+    /// The input of the request, which is passed to <paramref name="loader" />.
+    /// </param>
+    /// <param name="loader">
+    /// The function that loads the data. It runs after the debounce with a token that is canceled when this request
+    /// is replaced by a newer one, when <see cref="Cancel" /> is called, when <paramref name="external" /> is
+    /// canceled or when <see cref="Timeout" /> elapses.
+    /// </param>
+    /// <param name="external">
+    /// A token that is linked to the token of the loader. A request that stops because of its cancellation reports
+    /// <see cref="AsyncLoadStatus.Cancelled" />.
+    /// </param>
+    /// <returns>
+    /// A task that completes with the outcome of the request. A loader that returns <see langword="null" /> or
+    /// throws an exception that is not a cancellation produces <see cref="AsyncLoadStatus.Faulted" />.
+    /// </returns>
+    /// <remarks>
+    /// A replaced request reports <see cref="AsyncLoadStatus.Skipped" />, and a canceled or timed out one reports
+    /// that status, only when the debounce wait or the loader stops with <see cref="OperationCanceledException" />.
+    /// A loader that ignores its token and returns a value makes the request report
+    /// <see cref="AsyncLoadStatus.Success" />, although a newer request has replaced it in the meantime.
+    /// </remarks>
     public async Task<AsyncLoadOutcome<TResult>> LoadAsync(
         TContext context,
         Func<TContext, CancellationToken, Task<TResult>> loader,
@@ -100,6 +145,10 @@ public sealed class AsyncSearchLoadCoordinator<TContext, TResult>
         }
     }
 
+    /// <summary>
+    /// Cancels the request that is currently waiting or loading. A request that stops because of this call reports
+    /// <see cref="AsyncLoadStatus.Cancelled" />.
+    /// </summary>
     public void Cancel()
     {
         lock (_sync)
@@ -139,7 +188,7 @@ public sealed class AsyncSearchLoadCoordinator<TContext, TResult>
             return AsyncLoadOutcome<TResult>.Skip();
         }
 
-        // 只剩 timeout 一种可能
+        // External cancellation, Cancel and a newer request are ruled out, so only the timeout remains.
         return AsyncLoadOutcome<TResult>.Timeout();
     }
 }

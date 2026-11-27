@@ -5,40 +5,46 @@ using Avalonia.Styling;
 
 namespace AtomUI.Theme.Derivation;
 
+/// <summary>
+/// Generates the ten-color palette of a base color, unblended or blended with a background for the dark theme
+/// variant. Design languages derive their color map tokens from the palettes, and <see cref="PresetPalettes" />
+/// is built from them.
+/// </summary>
 public static class PaletteGenerator
 {
    /// <summary>
-   /// 色相阶梯
+   /// Hue step between two neighboring palette colors, in degrees.
    /// </summary>
    public const int HUE_STEP = 2;
 
    /// <summary>
-   /// 饱和度阶梯，浅色部分
+   /// Saturation step between two neighboring light palette colors. It is also added once to the saturation of the
+   /// darkest palette color, instead of a further <see cref="SATURATION_STEP2" /> step.
    /// </summary>
    public const float SATURATION_STEP1 = 0.16f;
 
    /// <summary>
-   /// 饱和度阶梯，深色部分
+   /// Saturation step between two neighboring dark palette colors.
    /// </summary>
    public const float SATURATION_STEP2 = 0.05f;
 
    /// <summary>
-   /// 亮度阶梯，浅色部分
+   /// Brightness step between two neighboring light palette colors.
    /// </summary>
    public const float BRIGHTNESS_STEP1 = 0.05f;
 
    /// <summary>
-   /// 亮度阶梯，深色部分
+   /// Brightness step between two neighboring dark palette colors.
    /// </summary>
    public const float BRIGHTNESS_STEP2 = 0.15f;
 
    /// <summary>
-   /// 浅色数量，主色上
+   /// Number of light palette colors generated above the base color.
    /// </summary>
    public const int LIGHT_COLOR_COUNT = 5;
 
    /// <summary>
-   /// 深色数量，主色下
+   /// Number of dark palette colors generated below the base color.
    /// </summary>
    public const int DARK_COLOR_COUNT = 4;
 
@@ -63,6 +69,23 @@ public static class PaletteGenerator
         ];
     }
 
+    /// <summary>
+    /// Generates the ten-color palette of a base color: five lighter colors, the base color and four darker ones.
+    /// </summary>
+    /// <param name="color">
+    /// The base color of the palette.
+    /// </param>
+    /// <param name="option">
+    /// Optional. For <see cref="ThemeVariant.Dark" /> the palette is rebuilt instead: ten colors picked from the
+    /// unblended palette are each blended with the background, with a weight on the picked color that rises from 0.15
+    /// for the first returned color to 0.98 for the last. The background is
+    /// <see cref="PaletteGenerateOption.BackgroundColor" /> or <c>#141414</c> when that is <see langword="null" />.
+    /// Any other variant, or a <see langword="null" /> option, returns the unblended palette.
+    /// </param>
+    /// <returns>
+    /// The ten palette colors, from palette index 1 to 10. Without blending they are ordered from the lightest to the
+    /// darkest color.
+    /// </returns>
     public static IReadOnlyList<Color> GeneratePalette(Color color, PaletteGenerateOption? option = null)
     {
         var patterns = new List<Color>(LIGHT_COLOR_COUNT + 1 + DARK_COLOR_COUNT);
@@ -116,7 +139,8 @@ public static class PaletteGenerator
     private static double GetHsvHue(HsvColor hsvColor, int index, bool isLight)
     {
         double hue;
-        // 根据色相不同，色相转向不同
+        // For a base hue from 60 to 240 the light colors go to a lower hue and the dark ones to a higher hue;
+        // for any other base hue it is the other way round.
         if (Math.Round(hsvColor.H) >= 60d && Math.Round(hsvColor.H) <= 240d)
         {
             hue = isLight ? Math.Round(hsvColor.H) - HUE_STEP * index : Math.Round(hsvColor.H) + HUE_STEP * index;
@@ -140,7 +164,7 @@ public static class PaletteGenerator
 
     private static double GetHsvSaturation(HsvColor hsvColor, int index, bool isLight)
     {
-        // grey color don't change saturation
+        // gray color don't change saturation
         if (MathUtils.IsZero(hsvColor.H) && MathUtils.IsZero(hsvColor.S))
         {
             return hsvColor.S;
@@ -160,9 +184,9 @@ public static class PaletteGenerator
             saturation = hsvColor.S + SATURATION_STEP2 * index;
         }
 
-        // 边界值修正
+        // Keep the saturation within its valid range.
         saturation = Math.Min(saturation, 1d);
-        // 第一格的 s 限制在 0.06-0.1 之间
+        // The saturation of the lightest color is limited to the range 0.06 to 0.1.
         if (isLight && index == LIGHT_COLOR_COUNT && saturation > 0.1d)
         {
             saturation = 0.1d;
@@ -210,8 +234,17 @@ internal struct RgbF
     public double B { get; set; }
 }
 
+/// <summary>
+/// Options for <see cref="PaletteGenerator.GeneratePalette" />.
+/// </summary>
 public class PaletteGenerateOption
 {
+    /// <summary>
+    /// The theme variant to generate the palette for. Only <see cref="ThemeVariant.Dark" /> changes the result.
+    /// </summary>
     public ThemeVariant ThemeVariant { get; set; } = ThemeVariant.Light;
+    /// <summary>
+    /// The background that a dark palette is blended with. <see langword="null" /> uses <c>#141414</c>.
+    /// </summary>
     public Color? BackgroundColor { get; set; }
 }

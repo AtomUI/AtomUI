@@ -11,7 +11,8 @@ public partial class SplitButtonShowCase : GalleryReactiveUserControl<SplitButto
     public const string LanguageId = nameof(SplitButtonShowCase);
 
     private readonly List<AvaloniaPopup> _trackedSemanticPreviewPopups = [];
-    // 承载弹层部件的语义预览：弹层内容跨视觉根，需要显式注册根。
+    // Semantic previews that host popup parts: the popup content lives outside the visual root,
+    // so its root must be registered explicitly.
     private readonly List<SemanticPartPreview> _popupHostPreviews = [];
 
     public SplitButtonShowCase()
@@ -19,14 +20,16 @@ public partial class SplitButtonShowCase : GalleryReactiveUserControl<SplitButto
         InitializeComponent();
     }
 
-    // SplitButton 的弹层是 Flyout 代码创建、跨视觉根的 Popup，SemanticPartHighlightSession
-    // 只自动发现 owner 模板内 Popup，因此把已打开弹层的根注册进 SemanticPartPreview.AdditionalRoots，
-    // 让 popup.root / itemTitle / item / itemContent / itemIcon 能被语义高亮会话解析到。
+    // The SplitButton popup is created in code by the flyout and lives outside the owner's visual root.
+    // SemanticPartHighlightSession only discovers popups inside the owner template, so the root of each open
+    // popup is registered in SemanticPartPreview.AdditionalRoots. That lets the highlight session resolve
+    // popup.root, itemTitle, item, itemContent and itemIcon.
     //
-    // 注册采用同 MenuShowCase（bf00b29b9）的弹性模式：弹层由 SplitButton 的钉住属性异步打开，
-    // 打开时机晚于 Loaded，且预览滚动会让 Popup 按放置目标有效性规则做生命周期关闭、滚回后重开。
-    // 因此跟随 LayoutUpdated 持续补注册，并订阅 Opened/Closed 在弹层状态变化后重扫；
-    // 回调只做幂等注册、不写控件状态，不会与打开/关闭形成循环。
+    // Registration follows the flexible mode of MenuShowCase: the popup is opened asynchronously by the
+    // SplitButton pin property, later than Loaded, and scrolling the preview makes the popup close for
+    // placement-target lifetime reasons and reopen when it scrolls back. Registration therefore retraces on
+    // LayoutUpdated, and Opened and Closed trigger a rescan after the popup state changes. The callbacks only
+    // register idempotently and never write control state, so they cannot loop with opening and closing.
     private void HandleSemanticPreviewLoaded(object? sender, RoutedEventArgs args)
     {
         if (sender is not SemanticPartPreview preview)
@@ -73,8 +76,9 @@ public partial class SplitButtonShowCase : GalleryReactiveUserControl<SplitButto
         RegisterSemanticPreviewPopupRoots();
     }
 
-    // 预览滚出可视区时 Popup 会按放置目标有效性规则做生命周期关闭，滚回后重新打开；
-    // 关闭后延迟一拍重扫，重开的弹层根（含嵌套子菜单 Popup）才能重新接进高亮会话。
+    // When the preview scrolls out of the viewport the popup closes for placement-target lifetime reasons and
+    // reopens when it scrolls back. The rescan waits one pass after a close so that the reopened popup root,
+    // including nested submenu popups, rejoins the highlight session.
     private void HandleSemanticPreviewPopupClosed(object? sender, EventArgs args)
     {
         Dispatcher.UIThread.Post(RegisterSemanticPreviewPopupRoots, DispatcherPriority.Loaded);
@@ -90,10 +94,11 @@ public partial class SplitButtonShowCase : GalleryReactiveUserControl<SplitButto
                 continue;
             }
 
-            // 主弹层 Popup 由 Flyout 代码创建、不在 owner 视觉树内，只能经 Flyout 拿到；
-            // 嵌套子菜单 Popup 位于 MenuFlyoutPresenter 的 MenuItem 模板内，从弹层根向下扫描。
-            // 子菜单可能在主弹层打开后的下一帧才打开，因此 Track 不要求已打开（订阅 Opened
-            // 等待晚开的 Popup），注册只对已打开者幂等追加。
+            // The main popup is created in code by the flyout and is not in the owner visual tree, so it is reachable
+            // only through the flyout. Nested submenu popups live in the MenuItem template of MenuFlyoutPresenter and
+            // are found by scanning down from the popup root. A submenu may open a frame after the main popup, so
+            // Track does not require it to be open (it subscribes to Opened to wait for a late popup); registration
+            // appends idempotently for popups that are already open.
             if (flyout.Popup is { } popup)
             {
                 TrackSemanticPreviewPopup(popup);

@@ -45,7 +45,8 @@ internal static class LanguageSnapshotBuilder
             if (canReuse && previous!.Registry is { } previousRegistry &&
                 previousRegistry.HasSameCatalog(catalog, bundles, out var previousSlot))
             {
-                // 行是不可变数组；按身份映射旧 slot，只共享该行，不保留整张旧快照。
+                // Each row is an immutable array. Map the old slot by the catalog's identity and share only that row,
+                // so the whole previous snapshot is not retained.
                 entries[catalogSlot] = deferCatalogs
                     ? previous.GetMaterializedCatalogEntries(previousSlot)!
                     : previous.GetCatalogEntries(previousSlot);

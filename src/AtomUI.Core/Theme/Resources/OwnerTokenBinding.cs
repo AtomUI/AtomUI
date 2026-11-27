@@ -8,31 +8,31 @@ using Avalonia.Data.Core.Plugins;
 namespace AtomUI.Theme.Resources;
 
 /// <summary>
-/// Per-target binding source behind <see cref="OwnerTokenResourceExtension"/>.
+/// Per-target binding source behind <see cref="OwnerTokenResourceExtension" />.
 /// </summary>
 /// <remarks>
 /// <para>
-/// Avalonia 12 keeps <see cref="BindingBase"/> instancing internal, so the extension returns a public
-/// <see cref="CompiledBinding"/> rooted at the target (<c>$self</c>) whose single path element is this
+/// Avalonia 12 keeps <see cref="BindingBase" /> instancing internal, so the extension returns a public
+/// <see cref="CompiledBinding" /> rooted at the target (<c>$self</c>) whose single path element is this
 /// accessor. Avalonia creates one accessor per binding instance, i.e. per target element, exactly as it
 /// does for compiled XAML bindings.
 /// </para>
 /// <para>
 /// The accessor mirrors <c>DynamicResourceExpression</c>/<c>ResourceObservable</c>: it re-reads the
-/// resource on <see cref="StyledElement.ResourcesChanged"/> and
-/// <see cref="StyledElement.ActualThemeVariantChanged"/>, and additionally switches the resource key when
-/// the inherited <see cref="ThemeScope.TokenOwnerProperty"/> changes (observed through
-/// <see cref="TokenOwnerListeners"/>, not through the target's <c>PropertyChanged</c>). The key is the owner's
-/// unbound Effective Global key, or the plain <see cref="SharedTokenKind"/> without an owner.
+/// resource on <see cref="StyledElement.ResourcesChanged" /> and
+/// <see cref="StyledElement.ActualThemeVariantChanged" />, and additionally switches the resource key when
+/// the inherited <see cref="ThemeScope.TokenOwnerProperty" /> changes (observed through
+/// <see cref="TokenOwnerListeners" />, not through the target's <c>PropertyChanged</c>). The key is the owner's
+/// unbound Effective Global key, or the plain <see cref="SharedTokenKind" /> without an owner.
 /// </para>
 /// <para>
 /// A <c>ResourcesChanged</c> raised by a theme publish is checked against the publish's
-/// <see cref="ThemePublishDelta"/> first: when neither the owner's effective value of the Token nor (without a
+/// <see cref="ThemePublishDelta" /> first: when neither the owner's effective value of the Token nor (without a
 /// registered owner) the global value changed, nothing is resolved. Every other notification (attach, a local
 /// resource change, a variant switch, an owner change, a publish whose delta is unknown) resolves fully.
 /// </para>
 /// <para>
-/// On every full refresh the owner is checked against the registry of the target's <see cref="ThemeContext"/>
+/// On every full refresh the owner is checked against the registry of the target's <see cref="ThemeContext" />
 /// (cached per snapshot on the context); an owner that registry does not register uses the plain key, because a
 /// primitive must not fail because of its host. A later snapshot that registers the owner is picked up on its
 /// publish. Without a resolvable context the owner key is used and the provider decides, like any other resource
@@ -69,7 +69,9 @@ internal sealed class OwnerTokenBinding : IPropertyAccessor, ITokenOwnerListener
 
     public object? Value => _value;
 
-    /// <summary>How often the accessor resolved its resource; contract tests pin the publish early-exit with it.</summary>
+    /// <summary>
+    /// How often the accessor resolved its resource; contract tests pin the publish early-exit with it.
+    /// </summary>
     internal int ResolveCount { get; private set; }
 
     internal static BindingBase Create(SharedTokenKind kind, BindingPriority priority)
@@ -166,7 +168,9 @@ internal sealed class OwnerTokenBinding : IPropertyAccessor, ITokenOwnerListener
         Refresh();
     }
 
-    /// <summary>Re-resolves the owner value and publishes it only if it differs from the published one.</summary>
+    /// <summary>
+    /// Re-resolves the owner value and publishes it only if it differs from the published one.
+    /// </summary>
     /// <remarks>
     /// A theme publish refreshes every owner binding in the tree while most tokens keep their value; the resolved
     /// values are immutable or per-consumer frozen copies that compare by value, so an equal result is the same value
@@ -192,7 +196,9 @@ internal sealed class OwnerTokenBinding : IPropertyAccessor, ITokenOwnerListener
         Publish(value);
     }
 
-    /// <summary>Creates a standalone accessor for <paramref name="target"/>; contract tests drive it directly.</summary>
+    /// <summary>
+    /// Creates a standalone accessor for <paramref name="target" />; contract tests drive it directly.
+    /// </summary>
     internal static OwnerTokenBinding CreateAccessor(object target, SharedTokenKind kind) =>
         new(new WeakReference<object?>(target), kind);
 

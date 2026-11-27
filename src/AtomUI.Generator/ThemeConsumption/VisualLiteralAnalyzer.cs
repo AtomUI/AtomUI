@@ -8,7 +8,7 @@ using Microsoft.CodeAnalysis.Diagnostics;
 namespace AtomUI.Generator.ThemeConsumption;
 
 /// <summary>
-/// ATOMUIGEN044: control code must not hard-code visual values (control-token-guidelines rule 1).
+/// ATOMUIGEN044: control code must not hard-code visual values.
 /// <para>
 /// Reported: <c>Color.FromRgb/FromArgb/FromUInt32/Parse</c> with literal arguments, <c>Brushes.X</c> and
 /// <c>Colors.X</c> (except <c>Transparent</c>), <c>new SolidColorBrush(&lt;literal&gt;)</c>,
@@ -31,11 +31,19 @@ namespace AtomUI.Generator.ThemeConsumption;
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class VisualLiteralAnalyzer : DiagnosticAnalyzer
 {
+    /// <summary>
+    /// The single descriptor <c>ControlCodeVisualLiteral</c> that this analyzer reports.
+    /// </summary>
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } =
     [
         AtomUIDiagnosticDescriptors.ControlCodeVisualLiteral
     ];
 
+    /// <summary>
+    /// Registers the actions that report ATOMUIGEN044 in the control code of the compilation: the analyses of
+    /// invocations, object creations and member accesses. Generated code is not analyzed. Nothing is registered when
+    /// <c>ControlCodeScope.TryCreate</c> returns <see langword="null" />.
+    /// </summary>
     public override void Initialize(AnalysisContext context)
     {
         context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
@@ -190,7 +198,9 @@ public sealed class VisualLiteralAnalyzer : DiagnosticAnalyzer
         }
     }
 
-    /// <summary>Non-zero numeric literal, <c>new Thickness/CornerRadius(literals)</c> or a box-shadow literal.</summary>
+    /// <summary>
+    /// Non-zero numeric literal, <c>new Thickness/CornerRadius(literals)</c> or a box-shadow literal.
+    /// </summary>
     private static bool IsVisualValueForVisualName(SyntaxNodeAnalysisContext context, VisualValueRecognizer recognizer, ExpressionSyntax value)
     {
         return VisualValueRecognizer.IsNonZeroNumericLiteral(context.SemanticModel, value, context.CancellationToken) ||

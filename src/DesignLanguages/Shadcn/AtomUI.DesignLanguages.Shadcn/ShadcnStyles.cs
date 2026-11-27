@@ -4,43 +4,61 @@ using Avalonia.Media;
 namespace AtomUI.DesignLanguages.Shadcn;
 
 /// <summary>
-/// The eight shadcn styles (ui.shadcn.com/create). <see cref="Nova"/> is the default; the others follow the official
+/// The eight shadcn styles (ui.shadcn.com/create). <see cref="Nova" /> is the default; the others follow the official
 /// order. A style is the language's appearance family: its geometry, type, focus ring, card and overlay shapes.
 /// </summary>
 public static class ShadcnStyles
 {
-    /// <summary>Vega: 36-high controls, radius 8, xs shadowed cards, a 16-padding popover.</summary>
+    /// <summary>
+    /// Vega: 36-high controls, radius 8, xs shadowed cards, a 16-padding popover.
+    /// </summary>
     public static DesignStyle Vega { get; } = new("Vega");
 
-    /// <summary>Nova: the default style — 32-high controls, radius 10, shadowless cards.</summary>
+    /// <summary>
+    /// Nova: the default style — 32-high controls, radius 10, shadowless cards.
+    /// </summary>
     public static DesignStyle Nova { get; } = new("Nova");
 
-    /// <summary>Maia: pill buttons (radius 26), 2xl overlays, a 5% ring in light (10% in dark), an 80% mask.</summary>
+    /// <summary>
+    /// Maia: pill buttons (radius 26), 2xl overlays, a 5% ring in light (10% in dark), an 80% mask.
+    /// </summary>
     public static DesignStyle Maia { get; } = new("Maia");
 
-    /// <summary>Lyra: square everything (radius 0), 12px type, a one-line focus ring.</summary>
+    /// <summary>
+    /// Lyra: square everything (radius 0), 12px type, a one-line focus ring.
+    /// </summary>
     public static DesignStyle Lyra { get; } = new("Lyra");
 
-    /// <summary>Mira: compact 28-high controls, 12px type with roomy line height, a 30% two-line focus ring.</summary>
+    /// <summary>
+    /// Mira: compact 28-high controls, 12px type with roomy line height, a 30% two-line focus ring.
+    /// </summary>
     public static DesignStyle Mira { get; } = new("Mira");
 
-    /// <summary>Luma: pill buttons, lg overlays with a 5% light ring, xl dialogs and drawers, a 30% mask.</summary>
+    /// <summary>
+    /// Luma: pill buttons, lg overlays with a 5% light ring, xl dialogs and drawers, a 30% mask.
+    /// </summary>
     public static DesignStyle Luma { get; } = new("Luma");
 
-    /// <summary>Sera: editorial — 40-high controls, square, 12px semibold type, generous padding, md dialogs.</summary>
+    /// <summary>
+    /// Sera: editorial — 40-high controls, square, 12px semibold type, generous padding, md dialogs.
+    /// </summary>
     public static DesignStyle Sera { get; } = new("Sera");
 
-    /// <summary>Rhea: rounded 18, lg overlays with a 5% light ring, sm cards, xl dialogs and drawers.</summary>
+    /// <summary>
+    /// Rhea: rounded 18, lg overlays with a 5% light ring, sm cards, xl dialogs and drawers.
+    /// </summary>
     public static DesignStyle Rhea { get; } = new("Rhea");
 
-    /// <summary>The styles in the official order.</summary>
+    /// <summary>
+    /// The styles in the official order.
+    /// </summary>
     public static IReadOnlyList<DesignStyle> All { get; } = [Vega, Nova, Maia, Lyra, Mira, Luma, Sera, Rhea];
 }
 
 /// <summary>
 /// The overlay geometry of one shadcn style: the shadow level and alpha-white outline ring of each floating
 /// surface, the tooltip shape, the mask strength. Shadow fields are level names resolved by
-/// <see cref="ShadcnStyleTables.Shadow"/>.
+/// <see cref="ShadcnStyleTables.Shadow" />.
 /// </summary>
 internal sealed record ShadcnOverlayTable(
     string MenuShadow,
@@ -61,7 +79,7 @@ internal sealed record ShadcnOverlayTable(
 
 /// <summary>
 /// The geometry of one shadcn style: control heights, radii, paddings, type, focus ring, card shape and the
-/// <see cref="Overlay"/> table (design 5.5 and 5.6.1 of the alignment spec).
+/// <see cref="Overlay" /> table.
 /// </summary>
 internal sealed record ShadcnStyleTable(
     string Id,
@@ -91,7 +109,9 @@ internal sealed record ShadcnStyleTable(
     byte CardRingAlpha,
     ShadcnOverlayTable Overlay);
 
-/// <summary>The per-style tables of the official registry (appendix C of the alignment data).</summary>
+/// <summary>
+/// The per-style tables of the official registry.
+/// </summary>
 internal static class ShadcnStyleTables
 {
     public static ShadcnStyleTable Nova { get; } = new(
@@ -240,7 +260,12 @@ internal static class ShadcnStyleTables
 
     private static readonly IReadOnlyList<ShadcnStyleTable> s_all = [Vega, Nova, Maia, Lyra, Mira, Luma, Sera, Rhea];
 
-    /// <summary>The table of a declared style; the compiler has already rejected undeclared styles.</summary>
+    /// <summary>
+    /// The table of a declared style; the compiler has already rejected undeclared styles.
+    /// </summary>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// <paramref name="style" /> is not one of the declared styles.
+    /// </exception>
     public static ShadcnStyleTable Of(DesignStyle style)
     {
         foreach (var table in s_all)
@@ -254,7 +279,9 @@ internal static class ShadcnStyleTables
         throw new ArgumentOutOfRangeException(nameof(style), style.Id, "Not a shadcn style.");
     }
 
-    /// <summary>Resolves a shadow level name to the official Tailwind v4 shadow definition (design 5.6.1).</summary>
+    /// <summary>
+    /// Resolves a shadow level name to the official Tailwind v4 shadow definition.
+    /// </summary>
     public static BoxShadows Shadow(string level) => level switch
     {
         "none" => default,

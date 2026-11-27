@@ -5,6 +5,17 @@ using Avalonia.Media;
 
 namespace AtomUI.Controls.Commons;
 
+/// <summary>
+/// The resource keys of the ring of a badge indicator, its color and its spread; <c>CountBadgeAdorner</c> and
+/// <c>DotBadgeAdorner</c> in AtomUI.Desktop.Controls expose their keys through it.
+/// </summary>
+/// <remarks>
+/// <c>Observe</c> watches both keys on an element and reports each change. <c>TryRead</c> turns them into a single
+/// <c>BoxShadow</c> and returns <see langword="true" /> when a color was resolved: from a <c>Color</c>, from a brush
+/// cast to <c>ISolidColorBrush</c>, or from a string that parses as a color. It returns <see langword="false" />
+/// with an empty shadow when the value is null or of another type. A brush or spread that has a value on the
+/// element takes precedence over the observed value.
+/// </remarks>
 internal sealed record BadgeShadowTokenResourceKeys(object ColorKey, object SpreadKey)
 {
     internal OwnerTokenSet Observe(StyledElement element, Action changed)

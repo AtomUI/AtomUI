@@ -49,7 +49,7 @@ public class CustomizeThemeViewModel : ReactiveObject, IRoutableViewModel, IActi
             (nameof(DesignToken.BorderRadius), "0"));
         PurpleThemeConfig = BuildGlobalConfig("#7D3C98");
         DarkThemeConfig = new ThemeConfigBuilder().WithAppearance(ThemeAppearance.Dark).Build();
-        // A seed override re-derives the control's global tokens; a Map override replaces only that value (spec 7.5).
+        // A seed override re-derives the control's global tokens; a Map override replaces only that value.
         ControlAlgorithmEnabledConfig = BuildControlConfig(nameof(DesignToken.ColorPrimary));
         ControlAlgorithmDisabledConfig = BuildControlConfig(nameof(DesignToken.ColorPrimaryHover));
         NestedBlueThemeConfig = BuildGlobalConfig("#1677ff");

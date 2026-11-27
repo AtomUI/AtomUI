@@ -120,35 +120,83 @@ public partial class DataGrid
     private DataGridColumnDraggingOverIndicator? _dataGridDraggingOverIndicator;
     private DataGridColumn? _popupPinnedOpenFilterColumn;
     private double? _columnViewportWidth;
-    // 已接入本表格的列分组根项：Reset 事件不携带旧项，退订与解除挂接必须依据这份记录
+    // Column group roots attached to this grid. A Reset event carries no old items, so detaching them and
+    // unsubscribing relies on this record.
     private readonly List<IDataGridColumnGroupItem> _attachedColumnGroupRoots = [];
 
+    /// <summary>
+    /// Raises the <see cref="ColumnDisplayIndexChanged" /> event after the display index of a column changed.
+    /// </summary>
+    /// <param name="e">
+    /// The column whose display index changed.
+    /// </param>
+    /// <remarks>
+    /// Called by the grid once the new display index is in place. An override must call the base method for
+    /// subscribers to receive the event.
+    /// </remarks>
     protected virtual void NotifyColumnDisplayIndexChanged(DataGridColumnEventArgs e)
     {
         ColumnDisplayIndexChanged?.Invoke(this, e);
     }
 
+    /// <summary>
+    /// Updates the header separators for the new column order and raises the <see cref="ColumnReordered" /> event.
+    /// </summary>
+    /// <param name="e">
+    /// The column that was dropped.
+    /// </param>
+    /// <remarks>
+    /// Called after the dropped column received its target display index. An override must call the base
+    /// method to update the separators and notify subscribers.
+    /// </remarks>
     protected internal virtual void NotifyColumnReordered(DataGridColumnEventArgs e)
     {
         EnsureVerticalGridLines();
         ColumnReordered?.Invoke(this, e);
     }
 
+    /// <summary>
+    /// Raises the <see cref="ColumnReordering" /> event when a column drag starts, before any column moves.
+    /// </summary>
+    /// <param name="e">
+    /// The column that is being dragged and its drag indicator. A handler cancels the reorder by setting
+    /// <c>Cancel</c>.
+    /// </param>
     protected internal virtual void NotifyColumnReordering(DataGridColumnReorderingEventArgs e)
     {
         ColumnReordering?.Invoke(this, e);
     }
     
+    /// <summary>
+    /// Raises the <see cref="RowReordered" /> event after a dropped row was moved in the source.
+    /// </summary>
+    /// <param name="e">
+    /// The row that was dropped.
+    /// </param>
     protected internal virtual void NotifyRowReordered(DataGridRowEventArgs e)
     {
         RowReordered?.Invoke(this, e);
     }
 
+    /// <summary>
+    /// Raises the <see cref="RowReordering" /> event when a row drag starts, before the row moves.
+    /// </summary>
+    /// <param name="e">
+    /// The row that is being dragged. A handler cancels the reorder by setting <c>Cancel</c>.
+    /// </param>
     protected internal virtual void NotifyRowReordering(DataGridRowReorderingEventArgs e)
     {
         RowReordering?.Invoke(this, e);
     }
     
+    /// <summary>
+    /// Updates the built-in drop indicator from the dragged column and the column it is dragged over, then
+    /// raises the <see cref="ColumnDraggingOver" /> event.
+    /// </summary>
+    /// <param name="e">
+    /// The dragged column and the column it is dragged over. The indicator is shown only when both are set
+    /// and differ; it is hidden otherwise.
+    /// </param>
     protected internal virtual void NotifyColumnDraggingOver(DataGridColumnDraggingOverEventArgs e)
     {
         if (_dataGridDraggingOverIndicator != null)
@@ -170,16 +218,46 @@ public partial class DataGrid
         ColumnDraggingOver?.Invoke(this, e);
     }
 
+    /// <summary>
+    /// Raises the <see cref="Sorting" /> event before a sort request is applied to the query.
+    /// </summary>
+    /// <param name="e">
+    /// The column to sort. A handler that applies the sort itself sets <c>Handled</c> to stop the default.
+    /// </param>
     protected internal virtual void NotifyColumnSorting(DataGridColumnEventArgs e)
     {
         Sorting?.Invoke(this, e);
     }
 
+    /// <summary>
+    /// Raises the <see cref="Filtering" /> event before a filter request is applied to the query.
+    /// </summary>
+    /// <param name="e">
+    /// The column to filter. A handler that applies the filter itself sets <c>Handled</c> to stop the default.
+    /// </param>
     protected internal virtual void NotifyColumnFiltering(DataGridColumnEventArgs e)
     {
         Filtering?.Invoke(this, e);
     }
 
+    /// <summary>
+    /// Sorts by the column at <paramref name="columnIndex" />: in <paramref name="direction" /> when one is
+    /// given, otherwise with the gesture of a plain click on the column header. A given direction replaces
+    /// the current sort levels.
+    /// </summary>
+    /// <param name="columnIndex">
+    /// Position of the column in the grid's internal column collection, which also contains the filler column.
+    /// </param>
+    /// <param name="direction">
+    /// The sort direction, which must be one the column supports.
+    /// </param>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// <paramref name="columnIndex" /> is out of range or selects the filler column.
+    /// </exception>
+    /// <remarks>
+    /// Nothing happens when the column cannot be sorted, when it does not support <paramref name="direction" />,
+    /// or when a handler of the <see cref="Sorting" /> event marks it handled.
+    /// </remarks>
     public void Sort(int columnIndex, ListSortDirection? direction = null)
     {
         if (columnIndex < 0 || columnIndex >= ColumnsInternal.Count)
@@ -196,6 +274,21 @@ public partial class DataGrid
         column.Sort(direction);
     }
 
+    /// <summary>
+    /// Removes the sort level of the column at <paramref name="columnIndex" /> and leaves the other sort
+    /// levels in place.
+    /// </summary>
+    /// <param name="columnIndex">
+    /// Position of the column in the grid's internal column collection, which also contains the filler column.
+    /// </param>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// <paramref name="columnIndex" /> is out of range or selects the filler column.
+    /// </exception>
+    /// <remarks>
+    /// While a cell's editing element has the focus, the call is deferred until that element loses focus.
+    /// Nothing is cleared when the row edit cannot be committed or the column cannot be sorted. A handler of
+    /// the <see cref="Sorting" /> event can mark it handled to keep the sort.
+    /// </remarks>
     public void ClearSort(int columnIndex)
     {
         if (columnIndex < 0 || columnIndex >= ColumnsInternal.Count)
@@ -212,6 +305,13 @@ public partial class DataGrid
         column.ClearSort();
     }
 
+    /// <summary>
+    /// Removes every sort level from the query after the current row edit is committed.
+    /// </summary>
+    /// <remarks>
+    /// While a cell's editing element has the focus, the call is deferred until that element loses focus.
+    /// Nothing is cleared when the row edit cannot be committed or a row is still being edited.
+    /// </remarks>
     public void ClearSort()
     {
         if (WaitForLostFocus(ClearSort))
@@ -234,6 +334,23 @@ public partial class DataGrid
         ClearSorts();
     }
 
+    /// <summary>
+    /// Filters by the field of the column at <paramref name="columnIndex" /> using <paramref name="filterValues" />
+    /// with the field's first filter operator. An empty list removes the filter of the column.
+    /// </summary>
+    /// <param name="columnIndex">
+    /// Position of the column in the grid's internal column collection, which also contains the filler column.
+    /// </param>
+    /// <param name="filterValues">
+    /// The values to filter by.
+    /// </param>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// <paramref name="columnIndex" /> is out of range or selects the filler column.
+    /// </exception>
+    /// <remarks>
+    /// Nothing happens when the column cannot be filtered or its field declares no filter operator. A number
+    /// of values the filter operator does not accept throws a <c>DataGridSourceContractException</c>.
+    /// </remarks>
     public void Filter(int columnIndex, List<object> filterValues)
     {
         if (columnIndex < 0 || columnIndex >= ColumnsInternal.Count)
@@ -250,6 +367,19 @@ public partial class DataGrid
         column.Filter(filterValues);
     }
 
+    /// <summary>
+    /// Removes the filter of the column at <paramref name="columnIndex" /> and leaves the filters of the other
+    /// columns in place.
+    /// </summary>
+    /// <param name="columnIndex">
+    /// Position of the column in the grid's internal column collection, which also contains the filler column.
+    /// </param>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// <paramref name="columnIndex" /> is out of range or selects the filler column.
+    /// </exception>
+    /// <remarks>
+    /// Nothing happens when the column cannot be filtered.
+    /// </remarks>
     public void ClearFilter(int columnIndex)
     {
         if (columnIndex < 0 || columnIndex >= ColumnsInternal.Count)
@@ -266,6 +396,14 @@ public partial class DataGrid
         column.ClearFilter();
     }
 
+    /// <summary>
+    /// Removes every filter from the query after the current row edit is committed.
+    /// </summary>
+    /// <remarks>
+    /// While a cell's editing element has the focus, the call is deferred until that element loses focus.
+    /// Nothing is cleared when the row edit cannot be committed, a row is still being edited, or the query has
+    /// no filter.
+    /// </remarks>
     public void ClearFilters()
     {
         if (WaitForLostFocus(ClearFilters))
@@ -293,10 +431,18 @@ public partial class DataGrid
     /// width is adjusted by the given amount, if possible.  If the total desired adjustment amount
     /// could not be met, the remaining amount of adjustment is returned.
     /// </summary>
-    /// <param name="displayIndex">Starting column DisplayIndex.</param>
-    /// <param name="amount">Adjustment amount (positive for increase, negative for decrease).</param>
-    /// <param name="userInitiated">Whether or not this adjustment was initiated by a user action.</param>
-    /// <returns>The remaining amount of adjustment.</returns>
+    /// <param name="displayIndex">
+    /// Starting column DisplayIndex.
+    /// </param>
+    /// <param name="amount">
+    /// Adjustment amount (positive for increase, negative for decrease).
+    /// </param>
+    /// <param name="userInitiated">
+    /// Whether or not this adjustment was initiated by a user action.
+    /// </param>
+    /// <returns>
+    /// The remaining amount of adjustment.
+    /// </returns>
     internal double AdjustColumnWidths(int displayIndex, double amount, bool userInitiated)
     {
         if (!MathUtils.IsZero(amount))
@@ -369,8 +515,12 @@ public partial class DataGrid
     /// <summary>
     /// Grows an auto-column's width to the desired width.
     /// </summary>
-    /// <param name="column">Auto-column to adjust.</param>
-    /// <param name="desiredWidth">The new desired width of the column.</param>
+    /// <param name="column">
+    /// Auto-column to adjust.
+    /// </param>
+    /// <param name="desiredWidth">
+    /// The new desired width of the column.
+    /// </param>
     internal void AutoSizeColumn(DataGridColumn column, double desiredWidth)
     {
         Debug.Assert(column.Width.IsAuto || column.Width.IsSizeToCells || column.Width.IsSizeToHeader ||
@@ -425,10 +575,18 @@ public partial class DataGrid
     /// width is decreased by the given amount, if possible.  If the total desired adjustment amount
     /// could not be met, the remaining amount of adjustment is returned.
     /// </summary>
-    /// <param name="displayIndex">Starting column DisplayIndex.</param>
-    /// <param name="amount">Amount to decrease (in pixels).</param>
-    /// <param name="userInitiated">Whether or not this adjustment was initiated by a user action.</param>
-    /// <returns>The remaining amount of adjustment.</returns>
+    /// <param name="displayIndex">
+    /// Starting column DisplayIndex.
+    /// </param>
+    /// <param name="amount">
+    /// Amount to decrease (in pixels).
+    /// </param>
+    /// <param name="userInitiated">
+    /// Whether or not this adjustment was initiated by a user action.
+    /// </param>
+    /// <returns>
+    /// The remaining amount of adjustment.
+    /// </returns>
     internal double DecreaseColumnWidths(int displayIndex, double amount, bool userInitiated)
     {
         // 1. Take space from non-star columns with widths larger than desired widths (left to right).
@@ -498,10 +656,18 @@ public partial class DataGrid
     /// width is increased by the given amount, if possible.  If the total desired adjustment amount
     /// could not be met, the remaining amount of adjustment is returned.
     /// </summary>
-    /// <param name="displayIndex">Starting column DisplayIndex.</param>
-    /// <param name="amount">Amount of increase (in pixels).</param>
-    /// <param name="userInitiated">Whether or not this adjustment was initiated by a user action.</param>
-    /// <returns>The remaining amount of adjustment.</returns>
+    /// <param name="displayIndex">
+    /// Starting column DisplayIndex.
+    /// </param>
+    /// <param name="amount">
+    /// Amount of increase (in pixels).
+    /// </param>
+    /// <param name="userInitiated">
+    /// Whether or not this adjustment was initiated by a user action.
+    /// </param>
+    /// <returns>
+    /// The remaining amount of adjustment.
+    /// </returns>
     internal double IncreaseColumnWidths(int displayIndex, double amount, bool userInitiated)
     {
         // 1. Give space to non-star columns that are smaller than their desired widths (left to right).
@@ -537,7 +703,9 @@ public partial class DataGrid
     /// <summary>
     /// Invalidates the widths of all columns because the resizing behavior of an individual column has changed.
     /// </summary>
-    /// <param name="column">Column with CanUserResize property that has changed.</param>
+    /// <param name="column">
+    /// Column with CanUserResize property that has changed.
+    /// </param>
     internal void HandleColumnCanUserResizeChanged(DataGridColumn column)
     {
         if (column.IsVisible)
@@ -684,8 +852,12 @@ public partial class DataGrid
     /// <summary>
     /// Adjusts the specified column's width according to its new maximum value.
     /// </summary>
-    /// <param name="column">The column to adjust.</param>
-    /// <param name="oldValue">The old ActualMaxWidth of the column.</param>
+    /// <param name="column">
+    /// The column to adjust.
+    /// </param>
+    /// <param name="oldValue">
+    /// The old ActualMaxWidth of the column.
+    /// </param>
     internal void HandleColumnMaxWidthChanged(DataGridColumn column, double oldValue)
     {
         Debug.Assert(column != null);
@@ -720,8 +892,12 @@ public partial class DataGrid
     /// <summary>
     /// Adjusts the specified column's width according to its new minimum value.
     /// </summary>
-    /// <param name="column">The column to adjust.</param>
-    /// <param name="oldValue">The old ActualMinWidth of the column.</param>
+    /// <param name="column">
+    /// The column to adjust.
+    /// </param>
+    /// <param name="oldValue">
+    /// The old ActualMinWidth of the column.
+    /// </param>
     internal void HandleColumnMinWidthChanged(DataGridColumn column, double oldValue)
     {
         Debug.Assert(column != null);
@@ -1245,10 +1421,18 @@ public partial class DataGrid
     /// width is adjusted by the given amount, if possible.  If the total desired adjustment amount
     /// could not be met, the remaining amount of adjustment is returned.
     /// </summary>
-    /// <param name="displayIndex">Starting column DisplayIndex.</param>
-    /// <param name="adjustment">Adjustment amount (positive for increase, negative for decrease).</param>
-    /// <param name="userInitiated">Whether or not this adjustment was initiated by a user action.</param>
-    /// <returns>The remaining amount of adjustment.</returns>
+    /// <param name="displayIndex">
+    /// Starting column DisplayIndex.
+    /// </param>
+    /// <param name="adjustment">
+    /// Adjustment amount (positive for increase, negative for decrease).
+    /// </param>
+    /// <param name="userInitiated">
+    /// Whether or not this adjustment was initiated by a user action.
+    /// </param>
+    /// <returns>
+    /// The remaining amount of adjustment.
+    /// </returns>
     private double AdjustStarColumnWidths(int displayIndex, double adjustment, bool userInitiated)
     {
         double remainingAdjustment = adjustment;
@@ -1331,11 +1515,21 @@ public partial class DataGrid
     /// could not be met, the remaining amount of adjustment is returned.  The columns will stop adjusting
     /// once they hit their target widths.
     /// </summary>
-    /// <param name="displayIndex">Starting column DisplayIndex.</param>
-    /// <param name="remainingAdjustment">Adjustment amount (positive for increase, negative for decrease).</param>
-    /// <param name="userInitiated">Whether or not this adjustment was initiated by a user action.</param>
-    /// <param name="targetWidth">The target width of the column.</param>
-    /// <returns>The remaining amount of adjustment.</returns>
+    /// <param name="displayIndex">
+    /// Starting column DisplayIndex.
+    /// </param>
+    /// <param name="remainingAdjustment">
+    /// Adjustment amount (positive for increase, negative for decrease).
+    /// </param>
+    /// <param name="userInitiated">
+    /// Whether or not this adjustment was initiated by a user action.
+    /// </param>
+    /// <param name="targetWidth">
+    /// The target width of the column.
+    /// </param>
+    /// <returns>
+    /// The remaining amount of adjustment.
+    /// </returns>
     private double AdjustStarColumnWidths(int displayIndex, double remainingAdjustment, bool userInitiated,
                                           ColumnWidthTarget targetWidth)
     {
@@ -1473,8 +1667,9 @@ public partial class DataGrid
             }
 
             cx -= _negHorizontalOffset;
-            // 右冻结列已在上面的冻结列累加中计入，这里只走滚动列，否则右冻结列会被重复计宽，
-            // 导致区域变宽时 cx 虚高、无法回收多余的 HorizontalOffset。
+            // Right-frozen columns are already counted in the frozen-column loop above, so this loop walks the
+            // scrolling columns only. Counting them again would inflate cx when the area widens and keep the surplus
+            // HorizontalOffset from being reclaimed.
             while (cx < displayWidth && dataGridColumn != null)
             {
                 cx += GetEdgedColumnWidth(dataGridColumn);
@@ -1550,7 +1745,7 @@ public partial class DataGrid
                     visibleScrollingColumnsTmp++;
                     invalidate = true;
                     cx         = displayWidth;
-                    // 我们不需要那么高的精度
+                    // We do not need that much precision.
                     Debug.Assert(DataGridHelper.AreEqualAt3Decimals(_negHorizontalOffset,
                         GetNegHorizontalOffsetFromHorizontalOffset(_horizontalOffset)));
                 }
@@ -1793,10 +1988,18 @@ public partial class DataGrid
     /// adjustment amount could not be met, the remaining amount of adjustment is returned.  The adjustment
     /// stops when the column's target width has been met.
     /// </summary>
-    /// <param name="column">Column to adjust.</param>
-    /// <param name="targetWidth">The target width of the column (in pixels).</param>
-    /// <param name="amount">Amount to decrease (in pixels).</param>
-    /// <returns>The remaining amount of adjustment.</returns>
+    /// <param name="column">
+    /// Column to adjust.
+    /// </param>
+    /// <param name="targetWidth">
+    /// The target width of the column (in pixels).
+    /// </param>
+    /// <param name="amount">
+    /// Amount to decrease (in pixels).
+    /// </param>
+    /// <returns>
+    /// The remaining amount of adjustment.
+    /// </returns>
     private static double DecreaseNonStarColumnWidth(DataGridColumn column, double targetWidth, double amount)
     {
         Debug.Assert(amount < 0);
@@ -1821,12 +2024,24 @@ public partial class DataGrid
     /// could not be met, the remaining amount of adjustment is returned.  The adjustment stops when
     /// the column's target width has been met.
     /// </summary>
-    /// <param name="displayIndex">Starting column DisplayIndex.</param>
-    /// <param name="targetWidth">The target width of the column (in pixels).</param>
-    /// <param name="amount">Amount to decrease (in pixels).</param>
-    /// <param name="reverse">Whether or not to reverse the order in which the columns are traversed.</param>
-    /// <param name="affectNewColumns">Whether or not to adjust widths of columns that do not yet have their initial desired width.</param>
-    /// <returns>The remaining amount of adjustment.</returns>
+    /// <param name="displayIndex">
+    /// Starting column DisplayIndex.
+    /// </param>
+    /// <param name="targetWidth">
+    /// The target width of the column (in pixels).
+    /// </param>
+    /// <param name="amount">
+    /// Amount to decrease (in pixels).
+    /// </param>
+    /// <param name="reverse">
+    /// Whether or not to reverse the order in which the columns are traversed.
+    /// </param>
+    /// <param name="affectNewColumns">
+    /// Whether or not to adjust widths of columns that do not yet have their initial desired width.
+    /// </param>
+    /// <returns>
+    /// The remaining amount of adjustment.
+    /// </returns>
     private double DecreaseNonStarColumnWidths(int displayIndex, ColumnWidthTarget targetWidth,
                                                double amount, bool reverse, bool affectNewColumns)
     {
@@ -1943,10 +2158,18 @@ public partial class DataGrid
     /// adjustment amount could not be met, the remaining amount of adjustment is returned.  The adjustment
     /// stops when the column's target width has been met.
     /// </summary>
-    /// <param name="column">Column to adjust.</param>
-    /// <param name="targetWidth">The target width of the column (in pixels).</param>
-    /// <param name="amount">Amount to increase (in pixels).</param>
-    /// <returns>The remaining amount of adjustment.</returns>
+    /// <param name="column">
+    /// Column to adjust.
+    /// </param>
+    /// <param name="targetWidth">
+    /// The target width of the column (in pixels).
+    /// </param>
+    /// <param name="amount">
+    /// Amount to increase (in pixels).
+    /// </param>
+    /// <returns>
+    /// The remaining amount of adjustment.
+    /// </returns>
     private static double IncreaseNonStarColumnWidth(DataGridColumn column, double targetWidth, double amount)
     {
         Debug.Assert(amount > 0);
@@ -1971,12 +2194,24 @@ public partial class DataGrid
     /// could not be met, the remaining amount of adjustment is returned.  The adjustment stops when
     /// the column's target width has been met.
     /// </summary>
-    /// <param name="displayIndex">Starting column DisplayIndex.</param>
-    /// <param name="targetWidth">The target width of the column (in pixels).</param>
-    /// <param name="amount">Amount to increase (in pixels).</param>
-    /// <param name="reverse">Whether or not to reverse the order in which the columns are traversed.</param>
-    /// <param name="affectNewColumns">Whether or not to adjust widths of columns that do not yet have their initial desired width.</param>
-    /// <returns>The remaining amount of adjustment.</returns>
+    /// <param name="displayIndex">
+    /// Starting column DisplayIndex.
+    /// </param>
+    /// <param name="targetWidth">
+    /// The target width of the column (in pixels).
+    /// </param>
+    /// <param name="amount">
+    /// Amount to increase (in pixels).
+    /// </param>
+    /// <param name="reverse">
+    /// Whether or not to reverse the order in which the columns are traversed.
+    /// </param>
+    /// <param name="affectNewColumns">
+    /// Whether or not to adjust widths of columns that do not yet have their initial desired width.
+    /// </param>
+    /// <returns>
+    /// The remaining amount of adjustment.
+    /// </returns>
     private double IncreaseNonStarColumnWidths(int displayIndex, ColumnWidthTarget targetWidth,
                                                double amount, bool reverse, bool affectNewColumns)
     {
@@ -2020,7 +2255,8 @@ public partial class DataGrid
             dataGridColumn.HeaderCell.SupportedSortDirections = dataGridColumn.EffectiveSupportedSortDirections;
             dataGridColumn.HeaderCell.CanUserFilter     = dataGridColumn.CanUserFilter;
             dataGridColumn.HeaderCell.IsSorterTooltipVisible = dataGridColumn.IsSorterTooltipVisible;
-            // 分组表头模式下列头由分组视图项承载（重建分组视图时放置），普通表头区保持为空
+            // In group-header mode the column headers are hosted by the group view items, which are placed when the
+            // group view is rebuilt, so the regular header area stays empty.
             if (!IsGroupHeaderMode)
             {
                 _columnHeadersPresenter.Children.Insert(dataGridColumn.DisplayIndexWithFiller, dataGridColumn.HeaderCell);
@@ -2179,7 +2415,8 @@ public partial class DataGrid
                      (DisplayData.LastTotallyDisplayedScrollingCol != columnIndex &&
                       ColumnsInternal.DisplayInOrder(DisplayData.LastTotallyDisplayedScrollingCol, columnIndex)))
             {
-                // 滚动区的右边界要扣除右冻结列，否则目标列会停在右冻结列下方
+                // The right edge of the scrolling area excludes the right-frozen columns; otherwise the target column
+                // would stop underneath them.
                 double leftFrozenWidth  = ColumnsInternal.GetVisibleLeftFrozenEdgedColumnsWidth();
                 double scrollingRight   = CellsWidth - ColumnsInternal.GetVisibleRightFrozenEdgedColumnsWidth();
                 double xColumnLeftEdge  = GetColumnXFromIndex(columnIndex);
@@ -2511,7 +2748,9 @@ public partial class DataGrid
         {
             // Set the IsAutoGenerated flag here in case the user provides a custom autogenerated column
             e.Column.IsAutoGenerated = true;
-            // TODO 需要审查
+            // TODO AutoGeneratingColumn: review whether a column replaced by the user needs more handling than adding
+            // it to ColumnsInternal and counting it as autogenerated here, and complete what is missing.
+            // Remove this TODO when that review is done.
             ColumnsInternal.Add(e.Column);
             ColumnsInternal.AutogeneratedColumnCount++;
         }
@@ -2544,7 +2783,7 @@ public partial class DataGrid
         }
         else
         {
-            // Remove / Replace / Add：先解除旧项，再接入新项
+            // Remove / Replace / Add: detach the old items first, then attach the new ones.
             if (e.OldItems != null)
             {
                 foreach (var item in e.OldItems)
@@ -2571,7 +2810,9 @@ public partial class DataGrid
         RebuildColumnGroupView();
     }
 
-    // 分组表头视图在模板应用时构建；分组在运行时变化后需要重建，旧视图项释放对表格的绑定并交还列头
+    // The group header view is built when the template is applied and must be rebuilt after the groups
+    // change at run time. Releasing the old view items drops their bindings to the grid and hands the
+    // column headers back.
     private void RebuildColumnGroupView()
     {
         if (!_templatedApplied || _groupColumnHeadersPresenter is null)
@@ -2621,7 +2862,8 @@ public partial class DataGrid
         }
     }
 
-    // 分组树任意层级的增删（列或整个子分组）都经根项上报，按子树同步列并重建分组表头视图
+    // Additions and removals at any depth of the group tree, a column or a whole sub-group, are reported
+    // through the root item. Sync the columns of that subtree and rebuild the group header view.
     private void HandleColumnGroupItemChanged(object? sender, DataGridColumnGroupChangedArgs args)
     {
         if (args.ChangedType == NotifyColumnGroupChangedType.Add)

@@ -4,17 +4,27 @@ using Avalonia.Controls;
 namespace AtomUI.Toolkits.GalleryBase.Controls;
 
 /// <summary>
-/// 放大舞台的单子布局面板：Natural 按舞台宽度测量并以期望尺寸居中；
-/// Stretch 使用舞台的有限测量与排列槽。
-/// Width、Height、Min/Max 和 Margin 继续由子控件自身的 Arrange 处理。
-/// 不做任何拉伸或 RenderTransform 缩放——铺满是内容自适应重排，不是外部变换。
-/// （历史：捕获卡片宽度保真机制与缩放机制均已按用户决策移除，见实施计划记录五至八。）
+/// Lays out the single child of the zoom stage. <see cref="ShowCaseZoomContentLayout.Natural" /> measures
+/// the child with the width of the stage and centers it at its desired size;
+/// <see cref="ShowCaseZoomContentLayout.Stretch" /> measures it with the finite slot of the stage and gives it
+/// that slot to arrange in. The child's own Width, Height, Min/Max and Margin are still applied by the child's
+/// own arrange. The panel never stretches the child or scales it with a RenderTransform: filling the stage is
+/// a reflow of the content, not an external transform.
 /// </summary>
 public class ShowCaseZoomStagePanel : Panel
 {
+    /// <summary>
+    /// Identifies the <see cref="ZoomContentLayout" /> property.
+    /// </summary>
     public static readonly StyledProperty<ShowCaseZoomContentLayout> ZoomContentLayoutProperty =
         ShowCaseItem.ZoomContentLayoutProperty.AddOwner<ShowCaseZoomStagePanel>();
 
+    /// <summary>
+    /// Chooses how the single child of the panel fills the zoom stage. With
+    /// <see cref="ShowCaseZoomContentLayout.Natural" /> the child keeps its desired size and is centered; with
+    /// <see cref="ShowCaseZoomContentLayout.Stretch" /> it gets the whole slot of the stage. The zoom overlay
+    /// template forwards the <see cref="ShowCaseItem.ZoomContentLayout" /> value of the showcased item to it.
+    /// </summary>
     public ShowCaseZoomContentLayout ZoomContentLayout
     {
         get => GetValue(ZoomContentLayoutProperty);
@@ -26,6 +36,16 @@ public class ShowCaseZoomStagePanel : Panel
         AffectsMeasure<ShowCaseZoomStagePanel>(ZoomContentLayoutProperty);
     }
 
+    /// <summary>
+    /// Measures the child according to <see cref="ZoomContentLayout" />. It returns an empty size when there is no
+    /// child or when an axis of <paramref name="availableSize" /> is not positive.
+    /// </summary>
+    /// <param name="availableSize">
+    /// The slot that the stage offers to the panel.
+    /// </param>
+    /// <returns>
+    /// The offered size on each finite axis and the desired size of the child on each infinite axis.
+    /// </returns>
     protected override Size MeasureOverride(Size availableSize)
     {
         if (Children.Count == 0 || availableSize.Width <= 0 || availableSize.Height <= 0)
@@ -40,6 +60,18 @@ public class ShowCaseZoomStagePanel : Panel
             double.IsFinite(availableSize.Height) ? availableSize.Height : desired.Height);
     }
 
+    /// <summary>
+    /// Measures the child again with the final slot and arranges it centered.
+    /// <see cref="ShowCaseZoomContentLayout.Stretch" /> gives the child the whole slot; every other layout gives it
+    /// its desired size clipped to the slot. Nothing is arranged when there is no child or when an axis of
+    /// <paramref name="finalSize" /> is not positive.
+    /// </summary>
+    /// <param name="finalSize">
+    /// The slot that the stage has given to the panel.
+    /// </param>
+    /// <returns>
+    /// <paramref name="finalSize" />, unchanged.
+    /// </returns>
     protected override Size ArrangeOverride(Size finalSize)
     {
         if (Children.Count > 0 && finalSize.Width > 0 && finalSize.Height > 0)
@@ -48,7 +80,8 @@ public class ShowCaseZoomStagePanel : Panel
             MeasureContent(finalSize);
             var desired = child.DesiredSize;
 
-            // 布局策略是显式、可观察的契约，不从对齐属性的赋值来源或控件类型推断。
+            // The layout policy is an explicit, observable contract. It is not inferred from the origin of the
+            // ZoomContentLayout value or from the type of the child.
             var width = ZoomContentLayout == ShowCaseZoomContentLayout.Stretch
                 ? finalSize.Width : Math.Min(desired.Width, finalSize.Width);
             var height = ZoomContentLayout == ShowCaseZoomContentLayout.Stretch

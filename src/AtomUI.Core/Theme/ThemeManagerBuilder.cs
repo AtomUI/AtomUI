@@ -41,10 +41,14 @@ internal sealed class ThemeManagerBuilder : IThemeManagerBuilder
 
     internal ControlRegistrationState ControlRegistrationState { get; } = new();
     internal FontFamily? FontFamily { get; private set; }
-    /// <summary>The initial request given by identity, or <see langword="null"/>.</summary>
+    /// <summary>
+    /// The initial request given by identity, or <see langword="null" />.
+    /// </summary>
     internal ThemeRequest? InitialRequest { get; private set; }
 
-    /// <summary>The initial end-user selection, or <see langword="null"/>; resolved when the manager starts.</summary>
+    /// <summary>
+    /// The initial end-user selection, or <see langword="null" />; resolved when the manager starts.
+    /// </summary>
     internal ThemeSelection? InitialSelection { get; private set; }
     internal ThemeRequest? FollowSystemLightRequest { get; private set; }
     internal ThemeRequest? FollowSystemDarkRequest { get; private set; }
@@ -324,10 +328,17 @@ internal sealed class ThemeManagerBuilder : IThemeManagerBuilder
         _hasExplicitApplicationId = true;
     }
 
-    /// <summary>提前准备必须有可确定的应用标识；已有 Application 时也用于同步 Splash 准备。</summary>
+    /// <summary>
+    /// Whether the application identity is known, from the application type or an explicit application id, which
+    /// early preparation requires. When an application already exists, the synchronous Splash preparation is gated
+    /// by it as well.
+    /// </summary>
     internal bool CanPrepareBeforeApplication => _hasApplicationType || _hasExplicitApplicationId;
 
-    /// <summary>后台只运行已声明安全的主题来源和生成式纯数据程序。</summary>
+    /// <summary>
+    /// Whether preparation can run on a background thread. It does so only with theme definition resolvers that
+    /// declare themselves safe for the background and with the pure-data programs of generated theme packages.
+    /// </summary>
     internal bool CanPrepareInBackground => CanPrepareBeforeApplication &&
         _themeDefinitionResolvers.All(static registration =>
             registration.Resolver is IBackgroundThemeDefinitionResolver ||
@@ -541,7 +552,7 @@ internal sealed class ThemeManagerBuilder : IThemeManagerBuilder
         }
     }
 
-    // 有效来源包括 UseUserThemeDirectory 配置生成的 resolver。
+    // The effective sources include the resolver that the UseUserThemeDirectory configuration adds.
     internal IReadOnlyList<ThemeDefinitionRegistration> CreateThemeDefinitionRegistrations()
     {
         var themeDefinitionResolvers = new List<ThemeDefinitionRegistration>(_themeDefinitionResolvers);

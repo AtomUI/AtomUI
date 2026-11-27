@@ -188,8 +188,8 @@ public class SemanticPartTargetResolverTests
     [Fact]
     public void Resolves_Root_To_The_Popup_Root_Marker_When_The_Owner_Has_No_Locatable_Surface()
     {
-        // 弹层承载型控件（如 Tour）：owner 布局尺寸为零，root 没有可定位的宿主表面，
-        // 回退到 "popup.root" 部件的标记节点（弹层卡片根）。
+        // A popup-hosted control such as Tour has a zero-sized owner layout, so the root has no host surface to
+        // locate and falls back to the marker node of the "popup.root" part (the popup card root).
         var owner = new Grid
         {
             Width  = 180,
@@ -304,8 +304,9 @@ public class SemanticPartTargetResolverTests
     }
 
     /// <summary>
-    /// 弹层承载型控件的 descriptor 形态：root 之外声明 "popup.root" 部件，
-    /// 供 root 回退解析（owner 布局尺寸为零时定位弹层根）测试复用。
+    /// The descriptor shape of a popup-hosted control: besides the root it declares a "popup.root" part.
+    /// Reused by the tests of the root fallback resolution, which locates the popup root when the owner
+    /// layout is zero-sized.
     /// </summary>
     private static ControlSemanticDescriptor PopupCarrierDescriptor(Type controlType, string id)
     {

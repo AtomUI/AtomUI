@@ -81,10 +81,14 @@ internal static class ShadcnTailwindPalette
         _ => throw new ArgumentOutOfRangeException(nameof(stop), stop, "A Tailwind stop is one of 50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950.")
     };
 
-    /// <summary>The seven neutral families, in appendix A order.</summary>
+    /// <summary>
+    /// The seven neutral families.
+    /// </summary>
     public static IReadOnlyList<string> NeutralFamilies { get; } = ["neutral", "stone", "zinc", "mauve", "olive", "mist", "taupe"];
 
-    /// <summary>The seventeen theme families, in appendix B order.</summary>
+    /// <summary>
+    /// The seventeen theme families.
+    /// </summary>
     public static IReadOnlyList<string> ThemeFamilies { get; } =
     [
         "amber", "blue", "cyan", "emerald", "fuchsia", "green", "indigo", "lime", "orange", "pink", "purple",

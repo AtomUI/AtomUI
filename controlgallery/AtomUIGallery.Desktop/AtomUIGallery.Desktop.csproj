@@ -102,7 +102,8 @@
 
     <ItemGroup>
         <AvaloniaResource Remove="Assets/Images/AtomUIGallery.ico" />
-        <!-- 启动 Splash 的 Logo：UseSplash 只保存 avares:// 地址，显示 Splash 时才加载。 -->
+        <!-- Logo of the startup splash. UseSplash only stores the avares:// address; the image is loaded when the
+             splash is shown. -->
         <AvaloniaResource Include="Assets/Images/AppLogo.iconset/icon_128x128@2x.png" />
     </ItemGroup>
     

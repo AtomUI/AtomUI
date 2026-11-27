@@ -7,7 +7,9 @@ using Avalonia.Styling;
 
 namespace AtomUI.DesignLanguages.AntDesign.TokenEvaluation;
 
-/// <summary>The two seeds antd's map algorithms read from the original seed rather than from the token in progress.</summary>
+/// <summary>
+/// The two seeds antd's map algorithms read from the original seed rather than from the token in progress.
+/// </summary>
 internal readonly record struct AntDesignSeedBases(Color? ColorBgBase, Color? ColorTextBase);
 
 /// <summary>
@@ -228,7 +230,7 @@ internal sealed class AntDesignDefaultCalculator : AntDesignVariantCalculator
 
     private void SetupColorPalettes(DesignToken designToken)
     {
-        // 生成所有预置颜色的色系
+        // Generate the palettes of all preset colors.
         foreach (var presetColor in PresetPrimaryColor.AllColorTypes())
         {
             var colors   = PaletteGenerator.GeneratePalette(designToken.GetPresetPrimaryColor(presetColor.Type).Color());
@@ -337,7 +339,7 @@ internal sealed class AntDesignDarkCalculator : AntDesignVariantCalculator
 
     private void SetupColorPalettes(DesignToken designToken)
     {
-        // 生成所有预置颜色的色系
+        // Generate the palettes of all preset colors.
         foreach (var presetColor in PresetPrimaryColor.AllColorTypes())
         {
             var colors = PaletteGenerator.GeneratePalette(designToken.GetPresetPrimaryColor(presetColor.Type).Color(),

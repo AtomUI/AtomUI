@@ -5,6 +5,14 @@ using Avalonia.Styling;
 
 namespace AtomUI.Theme;
 
+/// <summary>
+/// Binds a <see cref="TopLevel" /> to one <see cref="ThemeContext" /> for the lifetime of the lease.
+/// <c>Attach</c> merges a <see cref="ThemeContextResourceBridge" /> of the context into the resources of the
+/// host, sets the theme scope context and the requested theme variant of the host, registers the lease with the
+/// context, and disposes a previous lease of the same host. <c>Dispose</c> removes the bridge and clears these
+/// three values while the lease is still stored on the host; a window host disposes the lease when it closes.
+/// AtomUI.Desktop.Controls uses it in <c>Window</c>.
+/// </summary>
 internal sealed class ThemeContextLease : IDisposable
 {
     private static readonly AttachedProperty<ThemeContextLease?> LeaseProperty =

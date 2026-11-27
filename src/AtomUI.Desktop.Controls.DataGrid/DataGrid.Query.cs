@@ -6,10 +6,33 @@ public partial class DataGrid
 {
     internal long QueryRevision { get; private set; }
 
+    /// <summary>
+    /// Loads the rows of the current query again from the source, anchored to the first fully displayed row so
+    /// that the view stays where it is. Does nothing while range presentation is not attached or no source is set.
+    /// </summary>
     public void Reload() => BeginRangeLoad(
         isInvalidation: false,
         CaptureFirstCompleteRangeAnchor());
 
+    /// <summary>
+    /// Sets the sort of one field in the current query, or removes it, and reports the change as a sort gesture.
+    /// Nothing happens when the resulting query equals the current one. Otherwise an open edit is committed first
+    /// and the change is dropped when that commit fails, then the new query is loaded from the first page.
+    /// </summary>
+    /// <param name="field">
+    /// The field to sort by.
+    /// </param>
+    /// <param name="direction">
+    /// The sort direction, which must be one that the field allows, or <see langword="null" /> to remove the
+    /// sort of the field.
+    /// </param>
+    /// <param name="mode">
+    /// <see cref="DataGridSortUpdateMode.Replace" /> makes the field the only sort.
+    /// <see cref="DataGridSortUpdateMode.AppendOrReplace" /> replaces the sort of the field, or appends it.
+    /// </param>
+    /// <exception cref="DataGridSourceContractException">
+    /// <c>ItemsSource</c> is set and its schema does not contain <paramref name="field" />.
+    /// </exception>
     public void SetSort(
         DataGridFieldId field,
         DataGridSortDirection? direction,
@@ -30,6 +53,10 @@ public partial class DataGrid
         SetQuery(updated, DataGridQueryChangeReason.SortGesture);
     }
 
+    /// <summary>
+    /// Removes all sorts from the current query and reports the change as a sort gesture.
+    /// The side effects are those of <see cref="SetSort" />.
+    /// </summary>
     public void ClearSorts() => SetQuery(
         Query.WithSorts(ImmutableArray<DataGridSort>.Empty),
         DataGridQueryChangeReason.SortGesture);
@@ -102,9 +129,23 @@ public partial class DataGrid
         SetQuery(Query.WithFilters(filters), DataGridQueryChangeReason.FilterGesture);
     }
 
+    /// <summary>
+    /// Collapses the group with the given key. An open edit is committed first, and the change is dropped when
+    /// that commit fails.
+    /// </summary>
+    /// <param name="key">
+    /// The <see cref="DataGridGroupKey" /> of the group to collapse.
+    /// </param>
     public void CollapseGroup(DataGridGroupKey key) =>
         SetGroupExpansion(GroupExpansion.Collapse(key), key);
 
+    /// <summary>
+    /// Expands the group with the given key. An open edit is committed first, and the change is dropped when
+    /// that commit fails.
+    /// </summary>
+    /// <param name="key">
+    /// The <see cref="DataGridGroupKey" /> of the group to expand.
+    /// </param>
     public void ExpandGroup(DataGridGroupKey key) =>
         SetGroupExpansion(GroupExpansion.Expand(key), key);
 

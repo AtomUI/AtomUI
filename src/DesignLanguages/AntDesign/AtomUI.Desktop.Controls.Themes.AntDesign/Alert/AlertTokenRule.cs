@@ -5,7 +5,9 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls.Themes.AntDesign;
 
-/// <summary>The AntDesign view of <see cref="AlertToken"/>.</summary>
+/// <summary>
+/// The AntDesign view of <see cref="AlertToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class AlertTokenRule : IControlTokenRule<AntDesignToken, AlertToken>
 {

@@ -6,12 +6,22 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 
-/// <summary>The PrimeNG values of the shared <see cref="AbstractButtonVariantToken"/> layer.</summary>
+/// <summary>
+/// The PrimeNG values of the shared <see cref="AbstractButtonVariantToken" /> layer.
+/// </summary>
 public static class ButtonVariantTokenCalculator
 {
+    /// <summary>
+    /// Writes the PrimeNG values into the shared button variant layer: the normal, hover and active colors of the
+    /// outlined and text variants, the link, ghost, solid, primary and danger colors, the link and danger accent
+    /// colors, and the shadows of the default, primary and danger buttons.
+    /// </summary>
     public static void Calculate(in TokenEvaluationContext<PrimeNGToken> context, DesignToken global, AbstractButtonVariantToken token)
     {
         var controlOutlineWidth = global.ControlOutlineWidth;
+        // Ant Design formula kept as is; the PrimeNG button stage (PrimeNGButtonFamilyTokens.EvaluateOwn)
+        // clears the three shadows and replaces the Default and Text variant colors and the link and danger
+        // accents; in dark also DangerColor and SolidTextColor.
         token.DefaultShadow = new BoxShadows(new BoxShadow
         {
             OffsetX = 0,

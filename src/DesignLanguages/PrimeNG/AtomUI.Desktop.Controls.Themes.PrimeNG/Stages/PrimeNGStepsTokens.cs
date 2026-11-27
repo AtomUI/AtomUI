@@ -6,11 +6,11 @@ namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 
 /// <summary>
 /// Steps under a solid highlight (Nora, or noir in any preset): the finished step's check sits on the solid primary
-/// background (<c>FinishIconBgColor</c> is <c>ControlItemBgActive</c>, the primary colour there), so it takes the
-/// contrast colour <c>ColorTextLightSolid</c> (PrimeUIX <c>steps.item.number.active.color</c>,
-/// <c>primary.contrast.color</c>: white / <c>surface.950</c>) instead of the primary colour, which it would not be visible on. It writes only while the
-/// selected background really is the solid primary (<see cref="PrimeNGListItemRecipe.UsesSolidHighlight"/>: Nora, and every
-/// preset under a noir primary); under Aura / Lara's pale highlight or a mixed chain whose Map colours come from Ant
+/// background (<c>FinishIconBgColor</c> is <c>ControlItemBgActive</c>, the primary color there), so it takes the
+/// contrast color <c>ColorTextLightSolid</c> (PrimeUIX <c>steps.item.number.active.color</c>,
+/// <c>primary.contrast.color</c>: white / <c>surface.950</c>) instead of the primary color, which it would not be visible on. It writes only while the
+/// selected background really is the solid primary (<see cref="PrimeNGListItemRecipe.UsesSolidHighlight" />: Nora, and every
+/// preset under a noir primary); under Aura / Lara's pale highlight or a mixed chain whose Map colors come from Ant
 /// Design the Ant Design value stays.
 /// </summary>
 internal static class PrimeNGStepsTokens
@@ -22,9 +22,9 @@ internal static class PrimeNGStepsTokens
     {
         // PrimeUIX steps / stepper: step.number.size 2rem round, number.font.size 1rem; waiting numbers are
         // number.background (content.background) with a content.border.color border and text.muted text; the
-        // separator is separator.background (content.border.color); the active title is the primary colour. Aura's
+        // separator is separator.background (content.border.color); the active title is the primary color. Aura's
         // active number is also an outlined disc (number.active.background content.background, primary text); Lara and
-        // Nora fill it with the primary colour.
+        // Nora fill it with the primary color.
         var border = context.Language.GetContentBorder(context.Variant);
         token.IconContainerSize         = 32;
         token.IconContainerCornerRadius = new Avalonia.CornerRadius(16);
@@ -44,6 +44,8 @@ internal static class PrimeNGStepsTokens
             token.ProcessIconBorderColor = border;
             token.ProcessIconColor       = effectiveGlobal.ColorPrimary;
         }
+        // Under the pale highlight of Aura / Lara the Ant Design value stays; only the solid primary needs the contrast
+        // color.
         if (!context.Language.GetListItemRecipe(effectiveGlobal).UsesSolidHighlight)
         {
             return;

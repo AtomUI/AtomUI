@@ -5,7 +5,9 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 
-/// <summary>The PrimeNG view of <see cref="NotificationCardToken"/>.</summary>
+/// <summary>
+/// The PrimeNG view of <see cref="NotificationCardToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class NotificationCardTokenRule : IControlTokenRule<PrimeNGToken, NotificationCardToken>
 {
@@ -13,7 +15,7 @@ internal sealed class NotificationCardTokenRule : IControlTokenRule<PrimeNGToken
     {
         var token  = target.Own;
         var global = target.Global;
-        // PrimeNG: the control-global overrides and the severity colours, read by the formulas below.
+        // PrimeNG: the control-global overrides and the severity colors, read by the formulas below.
         var statuses = PrimeNGNotificationCardTokens.EvaluateGlobal(in context, global);
         token.RestingShadows     = global.BoxShadows;
         token.InformationShadows = global.BoxShadows;
@@ -21,20 +23,21 @@ internal sealed class NotificationCardTokenRule : IControlTokenRule<PrimeNGToken
         token.WarningShadows     = global.BoxShadows;
         token.ErrorShadows       = global.BoxShadows;
 
-        // 间距直接取全局 Token 的同名值，不再做控件级缩放：
-        //   卡片内边距         = paddingMD(纵向) / paddingLG(横向)
-        //   图标与内容间距     = marginSM
-        //   标题与描述间距     = marginXS
-        //   操作组上边距       = marginSM
-        //   标题右侧留白       = paddingLG
-        //   关闭按钮偏移       = paddingMD(纵向) / paddingLG(横向)
-        // 之前这里对四个值统一乘了 2/3，让卡片比对照实现矮一截，属于本控件自创的缩放，已移除。
+        // Spacing takes the global Token of the same name directly, without a control-level scale:
+        //   card padding             = paddingMD (vertical) / paddingLG (horizontal)
+        //   icon to content gap      = marginSM
+        //   title to description gap = marginXS
+        //   action group top margin  = marginSM
+        //   space right of the title = paddingLG
+        //   close button offset      = paddingMD (vertical) / paddingLG (horizontal)
+        // An earlier version multiplied four of these values by 2/3, which made the card much shorter than the
+        // reference implementation; that scale was this control's own invention and has been removed.
         var paddingMD = global.UniformlyPaddingMD;
         var paddingLG = global.UniformlyPaddingLG;
         var marginXS  = global.UniformlyMarginXS;
         var marginSM  = global.UniformlyMarginSM;
 
-        // 卡片内边距上下对称：纵向 paddingMD、横向 paddingLG。
+        // The card padding is symmetric: paddingMD vertically and paddingLG horizontally.
         token.NotificationPadding = new Thickness(paddingLG, paddingMD, paddingLG, paddingMD);
         token.NotificationBg = global.ColorBgElevated;
         // The severity surfaces default to the plain card: only the icon carries the severity.
@@ -68,18 +71,22 @@ internal sealed class NotificationCardTokenRule : IControlTokenRule<PrimeNGToken
         token.ErrorDescriptionColor = global.ColorText;
         token.ErrorCloseIconColor   = global.ColorIcon;
         token.ErrorCloseIconHoverColor = global.ColorIconHover;
+        // Ant Design formula kept as is: the notification stage (PrimeNGNotificationCardTokens) writes the PrimeUIX
+        // toast values over the icon and close button sizes, the spacing, the shadows and the severity colors;
+        // the progress bar and the card margins keep the Ant Design formula.
         token.NotificationIconSize = global.FontSizeLG * global.RelativeLineHeightLG;
         token.NotificationCloseButtonSize = global.ControlHeightLG * 0.55;
 
-        // 标题与描述之间的纵向间距。
+        // Vertical gap between the title and the description.
         token.NotificationSectionSpacing = marginXS;
-        // 操作组与上方内容之间的间距。
+        // Gap between the action group and the content above it.
         token.NotificationActionsMargin = new Thickness(0, marginSM, 0, 0);
-        // 关闭按钮是贴卡片右上角的覆盖层：纵向离顶 paddingMD、横向离右 paddingLG。
+        // The close button overlays the card's top right corner: paddingMD from the top, paddingLG from the right.
         token.NotificationCloseButtonMargin = new Thickness(0, paddingMD, paddingLG, 0);
-        // 标题右侧留白，避免文本压到关闭按钮。
+        // Space on the right of the title, so that the text does not run into the close button.
         token.NotificationTitlePadding = new Thickness(0, 0, paddingLG, 0);
-        // 进度条贴卡片底边，左右各内缩一个圆角半径，避免盖住圆角。
+        // The progress bar sits on the card's bottom edge. It is inset by one corner radius on each side, so that the
+        // rounded corners stay free.
         token.NotificationProgressHeight = 2;
         token.NotificationProgressTrackBg = global.ColorFillQuaternary;
         token.NotificationProgressMargin = new Thickness(global.BorderRadiusLG.TopLeft, 0, global.BorderRadiusLG.TopRight, 0);
@@ -94,8 +101,9 @@ internal sealed class NotificationCardTokenRule : IControlTokenRule<PrimeNGToken
                 new() { Color = statuses.Primary, Offset      = 1 }
             }
         }.ToImmutable();
+        // antd fixes the notification width to 384.
         token.NotificationWidth = 384;
-        // 图标与右侧内容之间的横向间距。
+        // Horizontal gap between the icon and the content to its right.
         token.NotificationIconMargin         = new Thickness(0, 0, marginSM, 0);
         token.NotificationTopMargin = new Thickness(global.UniformlyMarginLG, global.UniformlyMarginLG, global.UniformlyMarginLG, 0);
         token.NotificationBottomMargin =

@@ -10,7 +10,8 @@ using Avalonia.Input;
 
 namespace AtomUI.Desktop.Controls;
 
-// 当前单元格：当前格设置与变更通知、点击/右键时的选择与当前格更新
+// Current cell: setting the current cell and notifying the change, and updating the selection and the
+// current cell on click and right click.
 public partial class DataGrid
 {
     private void FlushCurrentCellChanged()
@@ -90,7 +91,7 @@ public partial class DataGrid
         }
     }
 
-    //TODO: Ensure right button is checked for
+    // TODO right button: verify the right button is checked for here. Remove this TODO when that is done.
     internal bool UpdateStateOnMouseRightButtonDown(PointerPressedEventArgs pointerPressedEventArgs, int columnIndex,
                                                     int slot, bool allowEdit)
     {
@@ -98,7 +99,7 @@ public partial class DataGrid
         return UpdateStateOnMouseRightButtonDown(pointerPressedEventArgs, columnIndex, slot, allowEdit, shift, ctrl);
     }
 
-    //TODO: Ensure left button is checked for
+    // TODO left button: verify the left button is checked for here. Remove this TODO when that is done.
     internal bool UpdateStateOnMouseLeftButtonDown(PointerPressedEventArgs pointerPressedEventArgs, int columnIndex,
                                                    int slot, bool allowEdit)
     {
@@ -335,7 +336,7 @@ public partial class DataGrid
         }
     }
 
-    //TODO: Ensure right button is checked for
+    // TODO right button: verify the right button is checked for here. Remove this TODO when that is done.
     private bool UpdateStateOnMouseRightButtonDown(PointerPressedEventArgs pointerPressedEventArgs, int columnIndex,
                                                    int slot, bool allowEdit, bool shift, bool ctrl)
     {
@@ -362,7 +363,7 @@ public partial class DataGrid
         return true;
     }
 
-    //TODO: Ensure left button is checked for
+    // TODO left button: verify the left button is checked for here. Remove this TODO when that is done.
     private bool UpdateStateOnMouseLeftButtonDown(PointerPressedEventArgs pointerPressedEventArgs, int columnIndex,
                                                   int slot, bool allowEdit, bool shift, bool ctrl)
     {
@@ -491,7 +492,8 @@ public partial class DataGrid
             return DataGridSelectionAction.AddCurrentToSelection;
         }
 
-        // 再次点击当前单元格进入编辑或行仍在编辑时保留选择，避免编辑手势取消选中
+        // Keep the selection when a click on the current cell enters edit mode or the row is still being
+        // edited, so that the editing gesture does not clear the selection.
         return beginEdit || EditingRow != null
             ? DataGridSelectionAction.None
             : DataGridSelectionAction.RemoveCurrentFromSelection;

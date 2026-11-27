@@ -4,8 +4,9 @@ using Avalonia.Styling;
 namespace AtomUI.Theme.Resources;
 
 /// <summary>
-/// 静态主题资源惰性代理；局部 owner 桥保证字典绑定可用，首次装配不广播整棵资源树。
-/// 与 Avalonia 资源体系一致，本类型只在 UI 线程访问。
+/// A lazy proxy for a static theme resource. Its local owner bridge keeps the bindings of the inner
+/// dictionaries working, and the first load does not broadcast the whole resource tree to the host.
+/// As in the rest of the Avalonia resource system, this type is accessed on the UI thread only.
 /// </summary>
 internal sealed class DeferredControlThemeResourceProvider : IResourceProvider
 {
@@ -52,7 +53,8 @@ internal sealed class DeferredControlThemeResourceProvider : IResourceProvider
 
     public bool TryGetResource(object key, ThemeVariant? theme, out object? value)
     {
-        // 对齐 ResourceInclude：构造期沿全局资源表重入自身按 miss 处理。
+        // Same as ResourceInclude: a lookup that re-enters this provider through the global resource table while the
+        // inner provider is being created is treated as a miss.
         if (_isLoading)
         {
             value = null;
@@ -79,7 +81,8 @@ internal sealed class DeferredControlThemeResourceProvider : IResourceProvider
         }
         catch (Exception exception)
         {
-            // 原始挂载异常与回滚异常都保留，内部宿主状态必须先退出本次挂载。
+            // Keep the original attach exception and the exceptions thrown by the rollback. The stored owner is cleared
+            // first, so the provider has left this attach before the inner provider is detached.
             var failures = new List<Exception> { exception };
             _owner = null;
             ThemeResourceOwnerBridge.TryCleanup(() => DetachInnerOwner(_inner), failures);

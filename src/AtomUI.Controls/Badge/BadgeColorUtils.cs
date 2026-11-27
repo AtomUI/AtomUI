@@ -11,7 +11,7 @@ internal static class BadgeColorUtils
 {
     // Preset entries keep a fixed light-theme color for callers that have no theme snapshot (ribbon badge,
     // detached controls); with a snapshot the preset resolves from the palette so it follows dark mode.
-#pragma warning disable ATOMUIGEN044 // Ant Design preset seed colours: reference data for callers without a theme snapshot.
+#pragma warning disable ATOMUIGEN044 // Ant Design preset seed colors: reference data for callers without a theme snapshot.
     private static readonly (string Name, Color Color, PresetColorType Type)[] PresetColorEntries =
     {
         (nameof(PresetColorType.Red), Color.FromRgb(0xF5, 0x22, 0x2D), PresetColorType.Red),
@@ -46,13 +46,24 @@ internal static class BadgeColorUtils
 
     private static readonly ThemeTokenResolver s_themeTokenResolver = new();
 
-    /// <summary>Resolves against the theme snapshot that applies to <paramref name="owner" />.</summary>
+    /// <summary>
+    /// Resolves against the theme snapshot that applies to <paramref name="owner" />.
+    /// </summary>
+    /// <returns>
+    /// A solid brush, or <see langword="null" /> when <paramref name="colorStr" /> is empty or unknown, or when it is
+    /// a status name and no theme snapshot applies to <paramref name="owner" />.
+    /// </returns>
     internal static IBrush? CalculateColor(StyledElement owner, string? colorStr)
     {
         return CalculateColor(colorStr, ThemeScope.ResolveContext(owner)?.Snapshot);
     }
 
-    /// <summary>Resolves without a theme: presets use the fixed light palette, status names do not resolve.</summary>
+    /// <summary>
+    /// Resolves without a theme: presets use the fixed light palette, status names do not resolve.
+    /// </summary>
+    /// <returns>
+    /// A solid brush, or <see langword="null" /> when <paramref name="colorStr" /> is empty, a status name or unknown.
+    /// </returns>
     internal static IBrush? CalculateColor(string? colorStr)
     {
         return CalculateColor(colorStr, null);
@@ -83,7 +94,9 @@ internal static class BadgeColorUtils
         return null;
     }
 
-    /// <summary>True when the value is a preset or status name, whose result depends on the theme.</summary>
+    /// <summary>
+    /// True when the value is a preset or status name, whose result depends on the theme.
+    /// </summary>
     internal static bool IsThemeDependent(string? colorStr)
     {
         if (string.IsNullOrEmpty(colorStr))

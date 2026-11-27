@@ -166,7 +166,7 @@ internal class NotificationProgressBar : TemplatedControl
     {
         var offsetY = Bounds.Height - ProgressIndicatorThickness;
         var trackRect = new Rect(new Point(0, offsetY), new Size(Bounds.Width, ProgressIndicatorThickness));
-        // 先铺满底槽，再叠加彩色进度值。
+        // Paint the track across the full width first, then the progress segment on top of it.
         context.FillRectangle(ProgressTrackBrush!, trackRect);
 
         var indicatorWidth = 0d;

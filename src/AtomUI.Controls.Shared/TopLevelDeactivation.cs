@@ -2,6 +2,15 @@ using Avalonia.Controls;
 
 namespace AtomUI.Controls;
 
+/// <summary>
+/// Subscribes a handler to the deactivation of a window on the platforms that report window deactivation; the
+/// color picker in AtomUI.Desktop.Controls.ColorPicker uses it.
+/// </summary>
+/// <remarks>
+/// <c>Subscribe</c> returns <see langword="null" /> and attaches nothing when the runtime platform does not support
+/// window deactivation or the top level is not a <c>WindowBase</c>. Otherwise the returned subscription detaches
+/// the handler when it is disposed.
+/// </remarks>
 internal static class TopLevelDeactivation
 {
     internal static IDisposable? Subscribe(TopLevel? topLevel, EventHandler handler)

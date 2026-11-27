@@ -13,6 +13,7 @@ from affected.planner import Planner
 from affected.repository import Repository
 from affected.runner import run_verification, run_specialist_check
 from affected.staged_test_audit import audit_staged_tests
+from comments import audit_comments
 
 
 def print_plan(plan):
@@ -56,9 +57,9 @@ def parser():
             command.add_argument("--tests-only", action="store_true", help="Report only the test phase; preserve outstanding specialist obligations (CI test job)")
             command.add_argument("--timeout", type=int, default=1800, help="Seconds per build/test command")
             command.add_argument("--configuration", choices=("Debug", "Release"), default="Debug")
-    audit = sub.add_parser("audit", help="Check source ownership, suite mappings and all discovered test projects")
+    audit = sub.add_parser("audit", help="Check source ownership, suite mappings, discovered test projects and source comments")
     audit.add_argument("--json", action="store_true")
-    audit.add_argument("--staged", action="store_true", help="Check staged test changes before a local commit")
+    audit.add_argument("--staged", action="store_true", help="Check staged test and comment changes before a local commit")
     sub.add_parser("self-test", help="Run only the verification tool's regression tests")
     sub.add_parser("metrics", help="Show the last 100 compact verification timing records")
     check = sub.add_parser("check", help="Execute a specialist verifier and attach its evidence to current inputs")
@@ -102,7 +103,7 @@ def main(argv=None):
         print(history.read_text() if history.exists() else "No verification history yet.")
         return 0
     if args.command == "audit" and args.staged:
-        errors = audit_staged_tests(root)
+        errors = audit_staged_tests(root) + audit_comments(root, staged=True)
         if args.json:
             print(json.dumps({"errors": errors}, indent=2))
         else:
@@ -125,11 +126,12 @@ def main(argv=None):
     planner = Planner(repository, policy)
     audit = planner.audit()
     if args.command == "audit":
+        audit["comment_errors"] = audit_comments(root)
         print(json.dumps(audit, indent=2) if args.json else "Projects: {projects}; test files: {test_files}; classes: {classes}; source groups: {source_groups}".format(**audit))
         if not args.json:
-            for error in audit["errors"]:
+            for error in audit["errors"] + audit["comment_errors"]:
                 print("BLOCKED: " + error)
-        return 2 if audit["errors"] else 0
+        return 2 if audit["errors"] or audit["comment_errors"] else 0
     preview = args.command == "plan" and bool(args.path)
     focused = args.command == "run" and bool(args.path)
     base = repository.git("merge-base", "HEAD", args.base).strip() if args.base else "HEAD"

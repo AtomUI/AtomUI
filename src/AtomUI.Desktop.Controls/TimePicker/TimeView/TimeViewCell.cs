@@ -11,6 +11,9 @@ using AvaloniaListBoxItem = Avalonia.Controls.ListBoxItem;
 
 // Token-owner transparent cell: a TimeViewCell belongs to one picker's time view and has no Own Tokens; its theme reads the
 // owner's globals, so Controls[TimePicker] (or the hosting date picker) reaches the cells.
+/// <summary>
+/// One selectable option in a column of the time view shown in a picker popup.
+/// </summary>
 [TokenOwnerTransparent]
 [PseudoClasses(KeyboardActivePseudoClass)]
 public class TimeViewCell : AvaloniaListBoxItem
@@ -47,7 +50,9 @@ public class TimeViewCell : AvaloniaListBoxItem
         set => SetValue(CenterItemContentProperty, value);
     }
 
-    /// <summary>The selected value of the column that navigation keys from the picker input are stepping.</summary>
+    /// <summary>
+    /// The selected value of the column that navigation keys from the picker input are stepping.
+    /// </summary>
     internal bool IsKeyboardActive
     {
         get => PseudoClasses.Contains(KeyboardActivePseudoClass);
@@ -56,6 +61,10 @@ public class TimeViewCell : AvaloniaListBoxItem
 
     #endregion
 
+    /// <summary>
+    /// After calling the base implementation, adds the semantic part class that marks the cell as a
+    /// popup item, so that <c>TimePickerPopupItemStyle</c> applies to it.
+    /// </summary>
     protected override void OnInitialized()
     {
         base.OnInitialized();

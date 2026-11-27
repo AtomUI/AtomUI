@@ -9,22 +9,98 @@ using Microsoft.Build.Framework;
 
 namespace AtomUI.Build.Tasks;
 
-/// <summary>Connects verified linked inputs to SDK R2R/bundle outputs without repeating dependency analysis.</summary>
+/// <summary>
+/// Connects verified linked inputs to SDK R2R/bundle outputs without repeating dependency analysis.
+/// </summary>
 public sealed class ConditionalPublishTransformTask : RegistrationBuildTask
 {
+    /// <summary>
+    /// The step to run on the transform state: <c>capture-r2r</c>, <c>verify-r2r</c>, <c>capture-bundle</c>,
+    /// <c>verify-bundle</c> or <c>verify-published</c>. Each step requires a stage that an earlier step produced,
+    /// and any other value fails the task.
+    /// </summary>
     public string Operation { get; set; } = string.Empty;
+    /// <summary>
+    /// Path of the inputs file of the link invocation whose verified output this task transforms. The SHA-256 of
+    /// this file ties the transform state to that invocation: it must equal the <c>inputHash</c> in the verified
+    /// receipt and the hash stored in an existing state, otherwise the task fails.
+    /// </summary>
     public string InputsPath { get; set; } = string.Empty;
+    /// <summary>
+    /// Path of the receipt that verified linking wrote for the same invocation. When no state exists yet, the
+    /// receipt must report the stage <c>verified</c> and the hash of <see cref="InputsPath" />, and its
+    /// <c>outputs</c> entries (<c>path</c>, <c>relativePath</c>, <c>sha256</c>) become the files that the chain
+    /// starts from. The receipt's hash is kept in the state, so a receipt replaced between steps fails the task.
+    /// </summary>
     public string VerifiedReceiptPath { get; set; } = string.Empty;
+    /// <summary>
+    /// Path of the JSON file that carries the transform state from one step to the next. When the file is missing,
+    /// the state is built from the verified receipt. Every successful step rewrites the file, and a failed step
+    /// deletes it, so that the chain restarts from the verified link. The frozen R2R tools are stored in an
+    /// <c>r2r-tools</c> directory next to it.
+    /// </summary>
     public string StatePath { get; set; } = string.Empty;
+    /// <summary>
+    /// Directory that the SDK published to. Only <c>verify-published</c> reads it: the bundle must be the file of
+    /// that name in this directory, and every other tracked file that the bundle did not embed must be there under
+    /// its relative path with the verified hash.
+    /// </summary>
     public string PublishDirectory { get; set; } = string.Empty;
+    /// <summary>
+    /// Path of the single-file bundle that the SDK produced. <c>capture-bundle</c> records it, <c>verify-bundle</c>
+    /// reads the hashes of the embedded files from it, and <c>verify-published</c> requires that it lies in
+    /// <see cref="PublishDirectory" /> under the same file name and is unchanged.
+    /// </summary>
     public string BundlePath { get; set; } = string.Empty;
+    /// <summary>
+    /// Option text that a capture step records in the state: <c>capture-r2r</c> stores it as the state's options
+    /// and <c>capture-bundle</c> appends it with the <c>bundle:</c> prefix. The task does not interpret it.
+    /// </summary>
     public string Options { get; set; } = string.Empty;
+    /// <summary>
+    /// Files that the SDK feeds to the step. <c>capture-r2r</c> expects the assemblies to compile: each must be in
+    /// the verified linked set and carry the path of its R2R image in the <c>OutputR2RImage</c> metadata.
+    /// <c>capture-bundle</c> expects the files that go into the bundle, each with its bundle-relative path in the
+    /// <c>RelativePath</c> metadata. A verified file that is not among them, as with ExcludeFromSingleFile, is
+    /// checked against <see cref="PublishDirectory" /> by <c>verify-published</c> instead.
+    /// </summary>
     public ITaskItem[] Files { get; set; } = [];
+    /// <summary>
+    /// Reference assemblies of the R2R compilation. Only <c>capture-r2r</c> reads them: each must be in the
+    /// verified linked set with an unchanged hash, so that the references stay inside the closure that linking
+    /// verified.
+    /// </summary>
     public ITaskItem[] References { get; set; } = [];
+    /// <summary>
+    /// Tools that the chain must keep unchanged. <c>capture-r2r</c> copies each item under <c>r2r-tools</c> next to
+    /// the state file and tracks the copies: an item whose <c>Kind</c> metadata is <c>profile</c> is copied as a
+    /// single file, any other item is a file whose whole directory is copied. <c>capture-bundle</c> records the
+    /// items themselves by hash. The verification steps fail when a tracked copy or item changed.
+    /// </summary>
     public ITaskItem[] Tools { get; set; } = [];
+    /// <summary>
+    /// Outputs of a composite R2R compilation. Each needs a <c>RelativePath</c> metadata value that is relative and
+    /// has no <c>..</c> part. Only <c>capture-r2r</c> reads them, and only when the list is not empty: an output
+    /// whose relative path is that of a verified file becomes the R2R image of that file, any other is a generated
+    /// output that the following steps track by hash. When the list is empty, the R2R image of each compiled file
+    /// comes from its <c>OutputR2RImage</c> metadata instead.
+    /// </summary>
     public ITaskItem[] ExtraOutputs { get; set; } = [];
+    /// <summary>
+    /// The <see cref="Tools" /> items as <c>capture-r2r</c> froze them: each points to its copy under the
+    /// <c>r2r-tools</c> directory next to the state file, and the metadata values of a copied tool directory that
+    /// were fully qualified paths under its source directory point into the copy as well. It is empty for the
+    /// other steps.
+    /// </summary>
     [Output] public ITaskItem[] PreparedTools { get; set; } = [];
 
+    /// <summary>
+    /// Runs the step named by <see cref="Operation" /> on the transform state and writes the state back. Each step
+    /// first confirms that the files recorded in the state still have their hashes. The task returns
+    /// <see langword="true" /> when the step succeeded. When the state belongs to another invocation, a recorded
+    /// file changed or a check fails, it logs error ATOMUIREG007, deletes the state file and returns
+    /// <see langword="false" />.
+    /// </summary>
     public override bool Execute()
     {
         try

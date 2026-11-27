@@ -12,6 +12,14 @@ using Avalonia.VisualTree;
 
 namespace AtomUI.Controls.Commons;
 
+/// <summary>
+/// Base class of the ribbon badge indicator, a ribbon with a text label placed at a corner of another control;
+/// <c>RibbonBadgeAdorner</c> in AtomUI.Desktop.Controls derives from it.
+/// </summary>
+/// <remarks>
+/// The label is <c>PART_LabelPart</c>. <c>AbstractRibbonBadge</c> creates the indicator through
+/// <c>AbstractRibbonBadge.CreateBadgeAdorner</c>, which the concrete badge overrides.
+/// </remarks>
 [TemplatePart("PART_LabelPart",  typeof(TextBlock))]
 internal abstract class AbstractRibbonBadgeAdorner : TemplatedControl
 {
@@ -42,12 +50,19 @@ internal abstract class AbstractRibbonBadgeAdorner : TemplatedControl
             o => o.IsAdornerMode,
             (o, v) => o.IsAdornerMode = v);
     
+    /// <summary>
+    /// Background of the ribbon body. Only a solid brush is painted; <see langword="null" /> or a brush of another
+    /// type leaves the body without a fill. The theme sets it from the <c>ColorPrimary</c> token of the ribbon badge.
+    /// </summary>
     internal IBrush? RibbonColor
     {
         get => GetValue(RibbonColorProperty);
         set => SetValue(RibbonColorProperty, value);
     }
 
+    /// <summary>
+    /// Text shown on the ribbon. The theme binds the text block of the ribbon to it.
+    /// </summary>
     internal string? Text
     {
         get => GetValue(TextProperty);
@@ -74,6 +89,12 @@ internal abstract class AbstractRibbonBadgeAdorner : TemplatedControl
         set => SetValue(OffsetProperty, value);
     }
 
+    /// <summary>
+    /// While <see langword="true" />, the adorner observes the geometry tokens of the RibbonBadge design and takes
+    /// the offset of the fold of the ribbon, the transform of the fold and the amount it is darkened from them;
+    /// while <see langword="false" />, no tokens are observed and the fold is not transformed. The theme sets it to
+    /// <see langword="true" />.
+    /// </summary>
     internal bool UseRibbonGeometryTokenResources
     {
         get => GetValue(UseRibbonGeometryTokenResourcesProperty);

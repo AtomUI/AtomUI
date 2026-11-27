@@ -18,7 +18,11 @@ internal class VirtualizingStackPanel : AvaloniaVirtualizingStackPanel
         ScrollIntoView(index);
     }
 
-    /// <summary>Places an item at the viewport's start, leaving the specified leading space.</summary>
+    /// <summary>
+    /// Places an item at the viewport's start, leaving the specified leading space.
+    /// When the panel has no valid arrangement yet, the request is applied after the next layout pass.
+    /// A negative index or a non-finite offset is ignored.
+    /// </summary>
     internal void ScrollItemToStart(int index, double offset)
     {
         if (index < 0 || !double.IsFinite(offset))

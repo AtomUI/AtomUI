@@ -2,6 +2,16 @@ using Avalonia.Media;
 
 namespace AtomUI.Controls;
 
+/// <summary>
+/// A decoded image with its size information, held by the decoded cache and shared between image loads; codecs
+/// return it from <c>ImageCodec.DecodeAsync</c>, as <c>SvgImageCodec</c> in AtomUI.Controls does.
+/// </summary>
+/// <remarks>
+/// The image stays alive while the cache holds it (<c>AddCacheMembership</c>), while an operation retains it
+/// (<c>RetainOperation</c>) or while a result obtained from <c>AcquireResult</c> is not released. It is disposed
+/// when the last of them goes away, but only when the entry was created with <c>ownsImage</c> set to
+/// <see langword="true" />.
+/// </remarks>
 internal sealed class ImageDecodedCacheEntry
 {
     private readonly object _gate = new();

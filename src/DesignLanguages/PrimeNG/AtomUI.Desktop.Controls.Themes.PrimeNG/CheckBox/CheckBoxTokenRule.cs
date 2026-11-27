@@ -4,7 +4,9 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 
-/// <summary>The PrimeNG view of <see cref="CheckBoxToken"/>.</summary>
+/// <summary>
+/// The PrimeNG view of <see cref="CheckBoxToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class CheckBoxTokenRule : IControlTokenRule<PrimeNGToken, CheckBoxToken>
 {
@@ -12,7 +14,8 @@ internal sealed class CheckBoxTokenRule : IControlTokenRule<PrimeNGToken, CheckB
     {
         var token  = target.Own;
         var global = target.Global;
-        // PrimeNG: the control-global overrides, read by the formulas below.
+        // PrimeNG: the control-global overrides (ColorWhite), read by the CheckBox theme (CheckedMarkBrush) and
+        // not by the formulas below.
         PrimeNGCheckBoxTokens.EvaluateGlobal(in context, global);
         token.CheckIndicatorSize        = global.ControlInteractiveSize;
 

@@ -3,7 +3,9 @@ using AtomUI.Theme.Languages;
 
 namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 
-/// <summary>The PrimeNG view of <see cref="TreeViewToken"/>.</summary>
+/// <summary>
+/// The PrimeNG view of <see cref="TreeViewToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class TreeViewTokenRule : IControlTokenRule<PrimeNGToken, TreeViewToken>
 {
@@ -11,7 +13,8 @@ internal sealed class TreeViewTokenRule : IControlTokenRule<PrimeNGToken, TreeVi
     {
         var token  = target.Own;
         var global = target.Global;
-        // PrimeNG: the control-global overrides, read by the formulas below.
+        // PrimeNG: the control-global overrides (MotionDurationSlow), read by the TreeView theme (MotionDuration)
+        // and not by the formulas below.
         PrimeNGTreeViewTokens.EvaluateGlobal(in context, global);
         TreeViewTokenCalculator.Calculate(in context, global, token);
         token.DirectoryNodeSelectedBg = global.ColorPrimary;

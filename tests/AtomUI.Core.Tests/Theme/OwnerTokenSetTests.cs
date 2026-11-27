@@ -12,8 +12,8 @@ using Xunit;
 namespace AtomUI.Core.Tests.Theme;
 
 /// <summary>
-/// <see cref="OwnerTokenSet"/> resolves each entry exactly like an <see cref="OwnerTokenBinding"/> on the same target, with
-/// one set of subscriptions, and only resolves entries that have been read.
+/// <see cref="OwnerTokenSet" /> resolves each entry exactly like an <see cref="OwnerTokenBinding" /> on the same
+/// target, with one set of subscriptions, and only resolves entries that have been read.
 /// </summary>
 [Collection(ThemeConfigProviderTestCollection.Name)]
 public class OwnerTokenSetTests

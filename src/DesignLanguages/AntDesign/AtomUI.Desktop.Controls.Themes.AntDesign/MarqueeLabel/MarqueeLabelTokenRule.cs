@@ -3,7 +3,9 @@ using AtomUI.Theme.Languages;
 
 namespace AtomUI.Desktop.Controls.Themes.AntDesign;
 
-/// <summary>The AntDesign view of <see cref="MarqueeLabelToken"/>.</summary>
+/// <summary>
+/// The AntDesign view of <see cref="MarqueeLabelToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class MarqueeLabelTokenRule : IControlTokenRule<AntDesignToken, MarqueeLabelToken>
 {

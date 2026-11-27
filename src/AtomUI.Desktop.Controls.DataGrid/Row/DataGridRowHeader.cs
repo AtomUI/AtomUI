@@ -19,19 +19,35 @@ using AtomUI.Theme;
 namespace AtomUI.Desktop.Controls;
 
 // Visual container follows the DataGrid owner, including TokenTransitions in its template.
+/// <summary>
+/// The row indicator cell at the start of a <see cref="DataGridRow" /> or of a group header row. It mirrors
+/// the invalid, selected, editing and current state of the owning row, or the current state of the owning
+/// group header, as pseudo-classes.
+/// </summary>
 [TokenOwnerTransparent]
 [PseudoClasses(StdPseudoClass.Invalid, StdPseudoClass.Selected, StdPseudoClass.Editing, StdPseudoClass.Current)]
 public class DataGridRowHeader : ContentControl
 {
     #region 公共属性定义
 
+    /// <summary>
+    /// Identifies the <see cref="SeparatorBrush" /> property.
+    /// </summary>
     public static readonly StyledProperty<IBrush?> SeparatorBrushProperty =
         AvaloniaProperty.Register<DataGridRowHeader, IBrush?>(nameof(SeparatorBrush));
     
+    /// <summary>
+    /// Identifies the <see cref="IsSeparatorsVisible" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsSeparatorsVisibleProperty =
         AvaloniaProperty.Register<DataGridRowHeader, bool>(
             nameof(IsSeparatorsVisible));
 
+    /// <summary>
+    /// Brush of the separator line under the header, the segment of the row's bottom grid line that runs under
+    /// it. The line is drawn only while <see cref="IsSeparatorsVisible" /> is <see langword="true" />. When the
+    /// value is cleared, the theme supplies the <c>TableBorderColor</c> token.
+    /// </summary>
     public IBrush? SeparatorBrush
     {
         get => GetValue(SeparatorBrushProperty);
@@ -39,7 +55,9 @@ public class DataGridRowHeader : ContentControl
     }
     
     /// <summary>
-    /// Gets or sets a value indicating whether the row header separator lines are visible.
+    /// Controls whether the separator line under the header is drawn. The header assigns this value itself,
+    /// from the owning grid's rule for the bottom grid line of its slot, whenever its owner changes, a template
+    /// is applied or the grid lines are refreshed, so a value set elsewhere is replaced at that point.
     /// </summary>
     public bool IsSeparatorsVisible
     {
@@ -119,7 +137,8 @@ public class DataGridRowHeader : ContentControl
     }
     
     /// <summary>
-    /// Builds the visual tree for the row header when a new template is applied. 
+    /// Resolves the root layout and the separator line from the new template, then applies the state that
+    /// depends on the owner: the pseudo-classes and the thickness and visibility of the separator line.
     /// </summary>
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
@@ -165,13 +184,18 @@ public class DataGridRowHeader : ContentControl
     }
 
     /// <summary>
-    /// Measures the children of a <see cref="T:AtomUI.Desktop.Controls.DataGridRowHeader" /> to prepare for arranging them during the <see cref="M:System.Windows.FrameworkElement.ArrangeOverride(System.Windows.Size)" /> pass.
+    /// Measures the header of a row with the row header width and the row height of the owning grid in place
+    /// of the available size, where the grid fixes them, and returns a width of at least the current row header
+    /// width of the grid.
     /// </summary>
     /// <param name="availableSize">
-    /// The available size that this element can give to child elements. Indicates an upper limit that child elements should not exceed.
+    /// The available size that the header can give to its children. Its width is used only while the grid does
+    /// not fix its row header width, and its height only while the grid does not fix its row height.
     /// </param>
     /// <returns>
-    /// The size that the <see cref="T:AtomUI.Desktop.Controls.DataGridRowHeader" /> determines it needs during layout, based on its calculations of child object allocated sizes.
+    /// The measured size, with the width replaced by the actual row header width of the grid when that width
+    /// is fixed or the measured header is narrower; the size measured by the base class when the header does
+    /// not belong to a row of a grid.
     /// </returns>
     protected override Size MeasureOverride(Size availableSize)
     {
@@ -214,6 +238,10 @@ public class DataGridRowHeader : ContentControl
         }
     }
 
+    /// <summary>
+    /// Sets <c>IsMouseOver</c> of the owning row, so that the row shows its hover state while the pointer is
+    /// over the header. Calls the base member afterwards.
+    /// </summary>
     protected override void OnPointerEntered(PointerEventArgs e)
     {
         if (OwningRow != null)
@@ -223,6 +251,10 @@ public class DataGridRowHeader : ContentControl
 
         base.OnPointerEntered(e);
     }
+    /// <summary>
+    /// Clears <c>IsMouseOver</c> of the owning row when the pointer leaves the header. Calls the base member
+    /// afterwards.
+    /// </summary>
     protected override void OnPointerExited(PointerEventArgs e)
     {
         if (OwningRow != null)
@@ -243,7 +275,6 @@ public class DataGridRowHeader : ContentControl
         if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed)
         {
             if (!e.Handled)
-                //if (!e.Handled && OwningGrid.IsTabStop)
             {
                 OwningGrid.Focus();
             }

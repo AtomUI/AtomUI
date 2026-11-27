@@ -6,7 +6,9 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 
-/// <summary>The PrimeNG view of <see cref="MenuToken"/>.</summary>
+/// <summary>
+/// The PrimeNG view of <see cref="MenuToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class MenuTokenRule : IControlTokenRule<PrimeNGToken, MenuToken>
 {
@@ -14,7 +16,7 @@ internal sealed class MenuTokenRule : IControlTokenRule<PrimeNGToken, MenuToken>
     {
         var token  = target.Own;
         var global = target.Global;
-        // PrimeNG: the control-global overrides, read by the formulas below.
+        // PrimeNG: no control-global overrides; EvaluateGlobal writes nothing.
         PrimeNGMenuTokens.EvaluateGlobal(in context, global);
         MenuPopupTokenCalculator.Calculate(in context, global, token);
         token.ItemColor = global.ColorText;

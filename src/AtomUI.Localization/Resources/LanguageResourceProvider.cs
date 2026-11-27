@@ -4,6 +4,17 @@ using Avalonia.Styling;
 
 namespace AtomUI.Localization;
 
+/// <summary>
+/// Resource provider that serves the text of the current language to the Avalonia resource system. AtomUI.Core
+/// exposes it as the resource provider of the application scope.
+/// </summary>
+/// <remarks>
+/// A key is an enum value: its enum type selects the catalog and its value the unit inside it. A lookup returns
+/// the text of that unit in the current language, or <see langword="false" /> with a <see langword="null" />
+/// value when the enum type is not a registered catalog or the value is not a unit of it. The key
+/// <c>LanguageResourceKeys.FlowDirection</c> is an exception: it yields <see cref="FlowDirection.RightToLeft" />
+/// or <see cref="FlowDirection.LeftToRight" /> from the text direction of the current language.
+/// </remarks>
 internal sealed class LanguageResourceProvider : ResourceProvider
 {
     private readonly LanguageContext _context;

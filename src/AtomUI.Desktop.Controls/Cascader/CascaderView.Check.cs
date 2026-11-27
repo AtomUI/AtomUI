@@ -67,6 +67,10 @@ public partial class CascaderView
         }
     }
     
+    /// <summary>
+    /// Checks the option attached to <paramref name="item" /> with its subtree and adds the checked options to
+    /// <see cref="SelectedOptions" />. Does nothing when the item is not checkable or has no attached option.
+    /// </summary>
     public void CheckedSubTree(CascaderViewItem item)
     {
         if (!item.IsEffectiveCheckable() || item.AttachedOption == null)
@@ -77,6 +81,16 @@ public partial class CascaderView
         CheckedSubTree(item.AttachedOption);
     }
     
+    /// <summary>
+    /// Checks the option, its checkable descendants and every ancestor whose children are then all checked, and adds
+    /// those options to <see cref="SelectedOptions" />.
+    /// </summary>
+    /// <remarks>
+    /// Does nothing when the option is not checkable. The check state is written to the option data and to the item
+    /// containers that are realized. <see cref="SelectedOptions" /> is replaced by a new list only when an option
+    /// that was not selected before became checked; that change raises <see cref="SelectedOptionsChanged" /> without
+    /// syncing the item states again.
+    /// </remarks>
     public void CheckedSubTree(ICascaderOption viewOption)
     {
         var container = GetCascaderViewItem(viewOption);
@@ -162,6 +176,10 @@ public partial class CascaderView
         return selfLevelList?.ContainerFromItem(option) as CascaderViewItem;
     }
 
+    /// <summary>
+    /// Unchecks the option attached to <paramref name="item" /> with its subtree and removes the unchecked options
+    /// from <see cref="SelectedOptions" />. Does nothing when the item is not checkable or has no attached option.
+    /// </summary>
     public void UnCheckedSubTree(CascaderViewItem item)
     {
         if (!item.IsEffectiveCheckable() || item.AttachedOption == null)
@@ -171,6 +189,16 @@ public partial class CascaderView
         UnCheckedSubTree(item.AttachedOption);
     }
     
+    /// <summary>
+    /// Unchecks the option and its checkable descendants, updates the check state of their ancestors, and removes the
+    /// options that are no longer checked from <see cref="SelectedOptions" />.
+    /// </summary>
+    /// <remarks>
+    /// Does nothing when the option is not checkable. The check state is written to the option data and to the item
+    /// containers that are realized. <see cref="SelectedOptions" /> is replaced by a new list only when a selected
+    /// option became unchecked; that change raises <see cref="SelectedOptionsChanged" /> without syncing the item
+    /// states again.
+    /// </remarks>
     public void UnCheckedSubTree(ICascaderOption viewOption)
     {
         var container = GetCascaderViewItem(viewOption);
@@ -207,6 +235,11 @@ public partial class CascaderView
         }
     }
     
+    /// <summary>
+    /// Unchecks the option and its checkable descendants, updates the check state of their ancestors on the option
+    /// data and on the realized item containers, and returns those options without changing
+    /// <see cref="SelectedOptions" />.
+    /// </summary>
     public ISet<ICascaderOption> DoUnCheckedSubTree(ICascaderOption viewOption)
     {
         var unSelectedOptions = new HashSet<ICascaderOption>();

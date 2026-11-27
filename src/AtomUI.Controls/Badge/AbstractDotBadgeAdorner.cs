@@ -8,6 +8,15 @@ using Avalonia.Media;
 
 namespace AtomUI.Controls.Commons;
 
+/// <summary>
+/// Base class of the dot badge indicator, a small status dot with optional text placed at a corner of another
+/// control; <c>DotBadgeAdorner</c> in AtomUI.Desktop.Controls derives from it.
+/// </summary>
+/// <remarks>
+/// The indicator surface is <c>PART_IndicatorSurface</c>. <c>AbstractDotBadge</c> creates the indicator through
+/// <c>CreateDotBadgeAdorner</c>, which the concrete badge overrides, and sets <c>IsAdornerMode</c> to tell whether
+/// the indicator lies in an adorner layer.
+/// </remarks>
 [TemplatePart("PART_IndicatorSurface", typeof(Control))]
 internal abstract class AbstractDotBadgeAdorner : TemplatedControl
 {
@@ -95,6 +104,11 @@ internal abstract class AbstractDotBadgeAdorner : TemplatedControl
     internal static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<AbstractDotBadgeAdorner>();
     
+    /// <summary>
+    /// Duration of the motion that shows the dot on its target and hides it before the dot is detached. The motion
+    /// runs only while <see cref="IsMotionEnabled" /> is <see langword="true" />. The theme takes the value from
+    /// the <c>MotionDurationMid</c> token of the dot badge. <see cref="ShowWithoutMotion" /> skips the motion.
+    /// </summary>
     internal TimeSpan MotionDuration
     {
         get => GetValue(MotionDurationProperty);

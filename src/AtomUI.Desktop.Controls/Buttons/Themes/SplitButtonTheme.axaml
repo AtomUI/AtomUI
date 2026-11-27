@@ -60,8 +60,10 @@
         <Setter Property="ClipToBounds" Value="False" />
         <Setter Property="BorderThickness" Value="{atom:SplitButtonTokenResource BorderThickness}"/>
 
-        <!-- 接缝分隔色经自有槽位下发：Ant 基线沿用上游 solid 组合规则的 primary / danger hover 档；
-             设计语言可改为与填充同色（PrimeNG：filled 的 borderColor 等于填充色，接缝不可见）。 -->
+        <!-- The seam separator color is delivered through an own slot: the Ant baseline follows the primary / danger
+        hover steps of the upstream solid combination rule. A design language may set it to the fill color instead
+        (PrimeNG: the borderColor of filled equals the fill color, so the seam is invisible).
+        -->
         <Style Selector="^[IsPrimaryButtonType=True][IsDanger=False]">
             <Setter Property="SplitSeparatorBrush" Value="{atom:SplitButtonTokenResource SolidSeparatorColor}"/>
         </Style>

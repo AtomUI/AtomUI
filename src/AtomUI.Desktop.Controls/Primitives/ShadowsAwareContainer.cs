@@ -232,8 +232,10 @@ internal class ShadowsAwareContainer : Decorator
     }
 
     /// <summary>
-    /// 内容形状（frame renderer 绘制的圆角矩形 + 箭头，不含阴影），<paramref name="relativeTo"/> 坐标系下的 DIP 几何；
-    /// 无法计算时返回 <c>null</c>。只在无动效变换时使用：圆角按未缩放处理，变换只取外包矩形。
+    /// Content shape (rounded rectangle and arrow drawn by the frame renderer, without the shadow), as DIP
+    /// geometry in the coordinate system of <paramref name="relativeTo" />, or <c>null</c> when it cannot be
+    /// computed. Use it only while no motion transform is applied: the corner radius is treated as unscaled, and
+    /// the transform contributes only the bounding rectangle.
     /// </summary>
     internal PopupContentShape? GetContentShape(Visual relativeTo)
     {
@@ -250,8 +252,9 @@ internal class ShadowsAwareContainer : Decorator
 
         var arrowBounds = default(Rect);
         var arrowSide   = PopupArrowSide.None;
-        // ArrowIndicatorLayoutBounds 相对模板内的箭头定位面板（底部/右侧箭头时不与 ArrowDecoratedBox 原点重合），
-        // 因此直接按箭头布局部件自身变换到目标坐标系
+        // ArrowIndicatorLayoutBounds is relative to the arrow positioning panel in the template (for bottom and right
+        // arrows its origin differs from the ArrowDecoratedBox origin), so the arrow layout part itself is transformed
+        // into the target coordinate system.
         if (_frameRenderer is not null &&
             IsArrowVisible &&
             _arrowDecoratedBox?.ArrowIndicatorLayoutPart is { } arrowLayout &&
@@ -384,10 +387,11 @@ internal class ShadowsAwareContainer : Decorator
             if (arrowDecoratedBox is not null)
             {
                 _arrowDecoratedBox = arrowDecoratedBox;
-                // 强制实例化 ArrowDecoratedBox 自身的模板，保证容器 Border 已就绪；
-                // 阴影圆角必须跟随真正可见的内容装饰器（容器 Border）：语义部件样式可能只覆盖
-                // 容器 Border 的圆角，此时 ArrowDecoratedBox 自身的 CornerRadius 与可见形状不一致，
-                // 直接绑定会导致角落出现白底空隙。
+                // Force the instantiation of the ArrowDecoratedBox template so that the container Border is ready.
+                // The shadow corner radius must follow the content decorator that is actually visible (the container
+                // Border): a semantic part style may override only the container Border's corner radius, and then the
+                // CornerRadius of the ArrowDecoratedBox itself differs from the visible shape, and binding to it
+                // directly leaves gaps that show the white background at the corners.
                 arrowDecoratedBox.ApplyTemplate();
                 if (arrowDecoratedBox.ContentDecorator is { } contentDecorator)
                 {
@@ -421,8 +425,9 @@ internal class ShadowsAwareContainer : Decorator
             }
             else
             {
-                // 箭头部件尚未就绪（模板未应用或主题未提供 PART_ArrowDecorator）：先按无箭头降级；
-                // 模板后续（重新）应用时重新探测，部件就绪即恢复箭头绑定
+                // The arrow part is not ready yet (the template is not applied, or the theme does not provide
+                // PART_ArrowDecorator): degrade to no arrow first. It is probed again when the template is (re)applied
+                // later, and the arrow bindings are restored once the part is ready.
                 SetCurrentValue(IsArrowVisibleProperty, false);
                 SetCurrentValue(CornerRadiusProperty, default);
                 SetCurrentValue(SurfaceBorderThicknessProperty, default(Thickness));

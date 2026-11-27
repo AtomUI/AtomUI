@@ -13,6 +13,11 @@ using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
 
+/// <summary>
+/// A tab strip whose tabs are line items, with an indicator bar that marks the selected tab.
+/// The bar is positioned in code from the bounds of the selected tab's container, so it follows
+/// arrangement, scrolling and the offset of a tab reorder preview.
+/// </summary>
 public partial class TabStrip : BaseTabStrip, ITransitionInitializationOwner
 {
     #region 内部属性定义
@@ -59,6 +64,10 @@ public partial class TabStrip : BaseTabStrip, ITransitionInitializationOwner
         SelectionChanged += HandleSelectionChanged;
     }
 
+    /// <summary>
+    /// Updates the indicator from the arranged bounds of the selected tab's container.
+    /// Call the base method first, because it arranges the tab containers that the indicator is placed on.
+    /// </summary>
     protected override Size ArrangeOverride(Size finalSize)
     {
         var size = base.ArrangeOverride(finalSize);
@@ -70,6 +79,10 @@ public partial class TabStrip : BaseTabStrip, ITransitionInitializationOwner
         return size;
     }
 
+    /// <summary>
+    /// Creates a line-shaped <see cref="TabStripItem" /> and adds <c>TabStripSemanticParts.ItemClass</c> to its
+    /// classes. The item, its index and the recycle key do not affect the container.
+    /// </summary>
     protected override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey)
     {
         var tabStripItem = new TabStripItem
@@ -80,6 +93,10 @@ public partial class TabStrip : BaseTabStrip, ITransitionInitializationOwner
         return tabStripItem;
     }
 
+    /// <summary>
+    /// Calls the base implementation, then keeps a <see cref="TabStripItem" /> container line-shaped and adds
+    /// <c>TabStripSemanticParts.ItemClass</c> to its classes.
+    /// </summary>
     protected override void PrepareContainerForItemOverride(Control container, object? item, int index)
     {
         base.PrepareContainerForItemOverride(container, item, index);
@@ -90,12 +107,22 @@ public partial class TabStrip : BaseTabStrip, ITransitionInitializationOwner
         }
     }
 
+    /// <summary>
+    /// Resets the transition initialization session before the base class handles the template change, so
+    /// that the indicator state of the new template is written without a transition animation.
+    /// </summary>
     protected override void OnTemplateChanged(AvaloniaPropertyChangedEventArgs e)
     {
         _transitionInitialization?.Reset();
         base.OnTemplateChanged(e);
     }
 
+    /// <summary>
+    /// Locates the <c>PART_SelectedItemIndicator</c> border, the <c>PART_ItemsPresenter</c> and the
+    /// <c>PART_TabsContainer</c> scroller, moves the scroll offset subscription to that scroller, and positions
+    /// the indicator. The transition initialization session is reset first, so that the first placement of the
+    /// indicator is not animated.
+    /// </summary>
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         _transitionInitialization.Reset();
@@ -119,6 +146,10 @@ public partial class TabStrip : BaseTabStrip, ITransitionInitializationOwner
         SetupSelectedIndicator();
     }
 
+    /// <summary>
+    /// Resets the transition initialization session, subscribes to the bounds of the selected tab's container
+    /// and positions the indicator. The bounds subscription was disposed on detach.
+    /// </summary>
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         _transitionInitialization.Reset();
@@ -127,6 +158,14 @@ public partial class TabStrip : BaseTabStrip, ITransitionInitializationOwner
         SetupSelectedIndicator();
     }
 
+    /// <summary>
+    /// Keeps the indicator in sync: a change of <see cref="AbstractTabStrip.IsIndicatorLengthAnimated" /> or
+    /// <see cref="AbstractTabStrip.IsSelectedItemCentered" /> registers the custom indicator parts with the base
+    /// class again, or clears them, and invalidates the arrangement; a change of
+    /// <see cref="AbstractTabStrip.IndicatorMode" />, <see cref="AbstractTabStrip.IndicatorFixedLength" />,
+    /// <see cref="AbstractTabStrip.IsIndicatorLengthAnimated" /> or <see cref="SelectedIndicatorThickness" />
+    /// repositions the indicator. Call the base method as well.
+    /// </summary>
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
@@ -156,12 +195,20 @@ public partial class TabStrip : BaseTabStrip, ITransitionInitializationOwner
         }
     }
 
+    /// <summary>
+    /// Updates the indicator when the control has been loaded. This call also completes the transition
+    /// initialization session, which only completes on a loaded control.
+    /// </summary>
     protected override void OnLoaded(RoutedEventArgs e)
     {
         base.OnLoaded(e);
         SetupSelectedIndicator();
     }
 
+    /// <summary>
+    /// Resets the transition initialization session and disposes the subscription to the bounds of the
+    /// selected tab's container. The subscription is created again on the next attach.
+    /// </summary>
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         _transitionInitialization.Reset();

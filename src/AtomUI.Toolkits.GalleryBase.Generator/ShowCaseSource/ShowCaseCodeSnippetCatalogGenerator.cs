@@ -9,6 +9,30 @@ using Microsoft.CodeAnalysis.Text;
 
 namespace AtomUI.Toolkits.GalleryBase.Generator.ShowCaseSource;
 
+/// <summary>
+/// Source generator that builds the Gallery showcase snippet catalog (<c>ShowCaseCodeSnippetCatalog.g.cs</c>)
+/// from the showcase AXAML files and the C# files that belong to them.
+/// </summary>
+/// <remarks>
+///     <para>
+///     The inputs are the additional files of the compiling project. The generator uses a file only when its
+///     path ends with <c>.axaml</c> (showcase view) or <c>.axaml.cs</c> (code-behind), or when it is a
+///     <c>.cs</c> file in a <c>viewmodels</c> directory. The path is the <c>GallerySourceOriginalPath</c>
+///     metadata of the additional file when that is set, otherwise the path of the file itself.
+///     </para>
+///     <para>
+///     Each <c>ShowCaseItem</c> with content yields one catalog group. It holds the AXAML snippet of the item
+///     and, when the corresponding source file is found, a code-behind snippet with the event handlers the item
+///     references and a view model snippet with the members the item binds to or the code-behind snippet refers
+///     to. A <c>ShowCasePanel</c> without a <c>Name</c> or <c>x:Name</c> attribute is skipped and reported as
+///     warning ATOMUIGEN101. An AXAML file that is not well-formed or declares no <c>x:Class</c> contributes
+///     nothing.
+///     </para>
+///     <para>
+///     The catalog is generated in the namespace <c>{RootNamespace}.Generated</c>, formed from the
+///     <c>build_property.RootNamespace</c> option, or in <c>Gallery.Generated</c> when that option is not set.
+///     </para>
+/// </remarks>
 [Generator]
 public sealed class ShowCaseCodeSnippetCatalogGenerator : IIncrementalGenerator
 {
@@ -27,6 +51,15 @@ public sealed class ShowCaseCodeSnippetCatalogGenerator : IIncrementalGenerator
         true);
 #pragma warning restore RS2008
 
+    /// <summary>
+    /// Registers the pipeline that collects the showcase source files from the additional files and, in a source
+    /// output step, adds the snippet catalog to the compilation.
+    /// </summary>
+    /// <param name="context">
+    /// The context supplied by the compiler host. It provides the additional files with their metadata and the
+    /// <c>build_property.RootNamespace</c> and <c>build_property.ProjectDir</c> global options, which select the
+    /// catalog namespace and the base directory of the stored source paths.
+    /// </param>
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
         var sourceFiles = context.AdditionalTextsProvider
@@ -928,9 +961,9 @@ public sealed class ShowCaseCodeSnippetCatalogGenerator : IIncrementalGenerator
     }
 
     // Page-level localization and API/Design-Token table helpers are shared infrastructure,
-    // not part of any single item's behavior. The doc (§8.3/§8.4) requires the closure to
-    // stop at members like Lang/FallbackLang/EnsureApiRows/EnsureDesignTokenRows instead of
-    // dragging their large switch/row-initialization bodies into every snippet.
+    // not part of any single item's behavior. The reference closure therefore stops at members such as
+    // Lang, FallbackLang, EnsureApiRows and EnsureDesignTokenRows, instead of dragging their large switch and
+    // row-initialization bodies into every snippet.
     private static bool IsPageLevelDataMember(MemberDeclarationSyntax member)
     {
         if (member is not MethodDeclarationSyntax method)

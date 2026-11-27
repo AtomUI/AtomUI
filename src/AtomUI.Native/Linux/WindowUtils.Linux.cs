@@ -145,10 +145,11 @@ internal static class WindowUtilsLinux
     }
 
     /// <summary>
-    /// 获取 Linux 系统默认的标题栏高度。
-    /// 使用 Avalonia 的 WindowDecorationMargin 属性获取标题栏高度。
+    /// Gets the default title bar height of the Linux system, from Avalonia's WindowDecorationMargin.
     /// </summary>
-    /// <returns>非 Linux 或无窗口句柄时返回 <c>null</c>。</returns>
+    /// <returns>
+    /// <c>null</c> when not on Linux, when the window has no handle, or when the top margin is not positive.
+    /// </returns>
     public static double? GetSystemTitleBarHeightLinux(Window window)
     {
         if (!OperatingSystem.IsLinux())
@@ -156,17 +157,18 @@ internal static class WindowUtilsLinux
             return null;
         }
 
-        // 使用 Avalonia 提供的 WindowDecorationMargin 属性
-        // Top 值就是标题栏高度
+        // Use the WindowDecorationMargin property that Avalonia provides.
+        // Its Top value is the title bar height.
         var margin = window.WindowDecorationMargin;
         return margin.Top > 0 ? margin.Top : null;
     }
     
     /// <summary>
-    /// 基于 XCB SHAPE 扩展的 X11 窗体输入区域操作。
-    /// 将（视觉透明的）阴影缓冲区从输入区中裁掉，使阴影区域的鼠标事件穿透到下层窗口。
-    /// 所有坐标均为 <b>device pixel</b>（X11 原生坐标），非 DIP。
-    /// 内部连接由 <see cref="XcbConnectionHolder"/> 提供。
+    /// Sets the input region of an X11 window to a rectangle, through the XCB SHAPE extension.
+    /// It cuts the shadow buffer zone, which is visually transparent, out of the input area, so that mouse events
+    /// on the shadow pass through to the windows below.
+    /// All coordinates are <b>device pixels</b> (native X11 coordinates), not DIPs.
+    /// The connection comes from <see cref="XcbConnectionHolder" />.
     /// </summary>
     public static void SetInputRectangle(IntPtr handle, int x, int y, int width, int height)
     {
@@ -179,8 +181,8 @@ internal static class WindowUtilsLinux
     }
 
     /// <summary>
-    /// 将窗体的输入区域设置为多个矩形的并集（device pixel 坐标）。
-    /// 空列表表示空输入区域：整个窗口对鼠标透明。
+    /// Sets the input region of the window to the union of several rectangles, in device pixels.
+    /// An empty list means an empty input region: the whole window is transparent to the mouse.
     /// </summary>
     public static void SetInputRectangles(IntPtr handle, IReadOnlyList<PixelRect> rectangles)
     {
@@ -238,7 +240,8 @@ internal static class WindowUtilsLinux
     }
 
     /// <summary>
-    /// 清除输入形状，恢复 X 服务器默认输入区域（随窗口尺寸变化的整个窗口）。
+    /// Clears the input shape and restores the default input region of the X server: the whole window, which
+    /// follows the window size.
     /// </summary>
     public static void ClearInputShape(IntPtr handle)
     {
@@ -265,7 +268,7 @@ internal static class WindowUtilsLinux
     }
 
     /// <summary>
-    /// 将窗体的输入区域重置为整个客户区。
+    /// Resets the input region of the window to the whole client area.
     /// </summary>
     public static void ResetInputRegion(IntPtr handle, int width, int height)
     {

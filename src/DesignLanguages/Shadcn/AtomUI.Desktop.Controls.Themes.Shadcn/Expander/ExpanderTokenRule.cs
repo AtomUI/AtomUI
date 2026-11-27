@@ -5,7 +5,9 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls.Themes.Shadcn;
 
-/// <summary>The shadcn view of <see cref="ExpanderToken"/>.</summary>
+/// <summary>
+/// The shadcn view of <see cref="ExpanderToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class ExpanderTokenRule : IControlTokenRule<ShadcnToken, ExpanderToken>
 {
@@ -17,6 +19,7 @@ internal sealed class ExpanderTokenRule : IControlTokenRule<ShadcnToken, Expande
         token.HeaderBg                 = global.ColorFillAlter;
         token.HeaderColor              = global.ColorTextHeading;
         token.HeaderFontWeight         = FontWeight.Normal;
+        // Ant Design formula kept as is: no registry value is merged into the expander tokens.
         token.ContentPadding           = new Thickness(16, global.UniformlyPadding);
         token.ContentPaddingSM         = global.PaddingSM;
         token.ContentPaddingLG         = global.PaddingLG;

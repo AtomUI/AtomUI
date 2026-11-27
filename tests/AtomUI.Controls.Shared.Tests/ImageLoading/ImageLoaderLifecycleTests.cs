@@ -298,8 +298,9 @@ public class ImageLoaderLifecycleTests
 
         try
         {
-            // ClearCacheAsync(CancelInFlight) 拆除共享操作；调用方自身 token 并未取消。
-            // 该内部取消必须按取消（OperationCanceledException）交付，而不是源失败结果。
+            // ClearCacheAsync(CancelInFlight) tears the shared operation down while the caller's own token is not
+            // canceled. That internal cancellation must be delivered as cancellation
+            // (OperationCanceledException), not as the source's failure result.
             await loader.ClearCacheAsync(new ImageCacheClearRequest(), cancellationToken);
 
             await Should.ThrowAsync<OperationCanceledException>(

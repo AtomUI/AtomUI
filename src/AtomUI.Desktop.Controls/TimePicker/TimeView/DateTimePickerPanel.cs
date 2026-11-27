@@ -398,7 +398,9 @@ internal class DateTimePickerPanel : Panel
 
     private bool _isKeyboardActive;
 
-    /// <summary>The picker input steps this column with forwarded navigation keys; its selected cell is marked.</summary>
+    /// <summary>
+    /// The picker input steps this column with forwarded navigation keys; its selected cell is marked.
+    /// </summary>
     internal bool IsKeyboardActive
     {
         get => _isKeyboardActive;
@@ -421,7 +423,9 @@ internal class DateTimePickerPanel : Panel
         base.OnKeyDown(e);
     }
 
-    /// <summary>Steps the selected value for Up, Down, PageUp, PageDown, Home and End.</summary>
+    /// <summary>
+    /// Steps the selected value for Up, Down, PageUp, PageDown, Home and End.
+    /// </summary>
     internal bool StepByKey(Key key)
     {
         var next = key switch

@@ -4,7 +4,9 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 
-/// <summary>The PrimeNG view of <see cref="ProgressBarToken"/>.</summary>
+/// <summary>
+/// The PrimeNG view of <see cref="ProgressBarToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class ProgressBarTokenRule : IControlTokenRule<PrimeNGToken, ProgressBarToken>
 {
@@ -12,13 +14,17 @@ internal sealed class ProgressBarTokenRule : IControlTokenRule<PrimeNGToken, Pro
     {
         var token  = target.Own;
         var global = target.Global;
-        // PrimeNG: the control-global overrides, read by the formulas below.
+        // PrimeNG: no control-global overrides; EvaluateGlobal writes nothing.
         PrimeNGProgressBarTokens.EvaluateGlobal(in context, global);
         LineProgressTokenCalculator.Calculate(in context, global, token);
         token.LineBorderRadius      = new CornerRadius(100); // magic for capsule shape, should be a very large number
         token.LineStrokeThicknessLG = 8;   // antd progress line default
         token.LineStrokeThickness   = 6;
         token.LineStrokeThicknessSM = 4;
+        // Ant Design formula kept as is: the progress stage (PrimeNGProgressBarTokens) replaces the stroke heights,
+        // the line radius, the colors and the inner label color with the PrimeUIX bar, and hides the label of an
+        // empty bar (opacity 0, as PrimeNG 22 does) where Ant Design keeps it visible; the padding and the active
+        // motion keep the Ant Design formula.
         token.LineProgressPadding = global.UniformlyPaddingXXS / 2;
         token.InnerLabelColor = global.ColorTextLabel;
         token.InnerLabelEmptyOpacity = 1;

@@ -5,7 +5,9 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls.Themes.AntDesign;
 
-/// <summary>The AntDesign view of <see cref="ExpanderToken"/>.</summary>
+/// <summary>
+/// The AntDesign view of <see cref="ExpanderToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class ExpanderTokenRule : IControlTokenRule<AntDesignToken, ExpanderToken>
 {

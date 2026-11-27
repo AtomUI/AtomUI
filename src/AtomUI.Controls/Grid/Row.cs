@@ -5,59 +5,138 @@ using Avalonia.Controls;
 
 namespace AtomUI.Controls;
 
+/// <summary>
+/// A panel that lays its children out as columns on a 24-column grid, from left to right and, by default,
+/// wrapped onto further lines when they do not fit in the width of the row.
+/// </summary>
+/// <remarks>
+/// A child that is a <see cref="Col" /> is sized, ordered and shifted by the properties of that column, which are
+/// read for the current breakpoint. A column whose span is 0 at that breakpoint is left out of the lines. Any
+/// other visible child takes a slot as wide as its desired width, with order 0 and without offset, push or pull.
+/// While the available width is infinite, spans have no effect and all columns stay on one line.
+/// The breakpoint is that of the nearest <c>IMediaBreakAwareControl</c> among the row and its ancestors, or
+/// <c>MediaBreakPoint.Large</c> when there is none. A change of the breakpoint makes the row lay its children
+/// out again.
+/// </remarks>
 public class Row : Panel
 {
     private const int GridColumns = 24;
     private static readonly Comparison<RowChildInfo> s_compareRowChildInfo = CompareRowChildInfo;
 
+    /// <summary>
+    /// Identifies the <see cref="Gutter" /> property.
+    /// </summary>
     public static readonly StyledProperty<GridGutter> GutterProperty =
         AvaloniaProperty.Register<Row, GridGutter>(nameof(Gutter), new GridGutter());
 
+    /// <summary>
+    /// Identifies the <see cref="Justify" /> property.
+    /// </summary>
     public static readonly StyledProperty<RowJustify> JustifyProperty =
         AvaloniaProperty.Register<Row, RowJustify>(nameof(Justify), RowJustify.Start);
 
+    /// <summary>
+    /// Identifies the <see cref="JustifyInfo" /> property.
+    /// </summary>
     public static readonly StyledProperty<GridRowJustifyInfo?> JustifyInfoProperty =
         AvaloniaProperty.Register<Row, GridRowJustifyInfo?>(nameof(JustifyInfo));
 
+    /// <summary>
+    /// Identifies the <see cref="Align" /> property.
+    /// </summary>
     public static readonly StyledProperty<RowAlign> AlignProperty =
         AvaloniaProperty.Register<Row, RowAlign>(nameof(Align), RowAlign.Stretch);
 
+    /// <summary>
+    /// Identifies the <see cref="AlignInfo" /> property.
+    /// </summary>
     public static readonly StyledProperty<GridRowAlignInfo?> AlignInfoProperty =
         AvaloniaProperty.Register<Row, GridRowAlignInfo?>(nameof(AlignInfo));
 
+    /// <summary>
+    /// Identifies the <see cref="IsWrapped" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsWrappedProperty =
         AvaloniaProperty.Register<Row, bool>(nameof(IsWrapped), true);
 
+    /// <summary>
+    /// The spacing between the columns and between the lines, resolved for the current breakpoint. Half of the
+    /// horizontal gutter is put on both sides of every column, so two columns are one full gutter apart and the
+    /// content of a line that fills the row stays flush with the edges of the row. The vertical gutter is the gap
+    /// between two lines.
+    /// </summary>
+    /// <remarks>
+    /// The default leaves no spacing at any breakpoint.
+    /// </remarks>
     public GridGutter Gutter
     {
         get => GetValue(GutterProperty);
         set => SetValue(GutterProperty, value);
     }
 
+    /// <summary>
+    /// How a line of columns uses the width it leaves unused: packed at the start, at the end or in the middle, or
+    /// spread with gaps of equal width. <see cref="RowJustify.SpaceBetween" /> puts the gaps only between the
+    /// columns, <see cref="RowJustify.SpaceAround" /> puts half a gap at both ends, and
+    /// <see cref="RowJustify.SpaceEvenly" /> puts the same gap at both ends as between the columns.
+    /// </summary>
+    /// <remarks>
+    /// The default is <see cref="RowJustify.Start" />. The value has no effect while the available width is
+    /// infinite. <see cref="JustifyInfo" /> replaces it at the breakpoints that it covers.
+    /// </remarks>
     public RowJustify Justify
     {
         get => GetValue(JustifyProperty);
         set => SetValue(JustifyProperty, value);
     }
 
+    /// <summary>
+    /// The <see cref="Justify" /> value per breakpoint. A breakpoint uses the value of the largest breakpoint that
+    /// is configured and is not larger than it; <see cref="Justify" /> is used when there is none.
+    /// </summary>
+    /// <remarks>
+    /// The default is <see langword="null" />, which uses <see cref="Justify" /> at every breakpoint.
+    /// </remarks>
     public GridRowJustifyInfo? JustifyInfo
     {
         get => GetValue(JustifyInfoProperty);
         set => SetValue(JustifyInfoProperty, value);
     }
 
+    /// <summary>
+    /// How the columns of a line are placed in the height of that line: at the top, in the middle or at the bottom.
+    /// The default, <see cref="RowAlign.Stretch" />, makes every column as high as the tallest column of its line.
+    /// </summary>
+    /// <remarks>
+    /// <see cref="AlignInfo" /> replaces the value at the breakpoints that it covers.
+    /// </remarks>
     public RowAlign Align
     {
         get => GetValue(AlignProperty);
         set => SetValue(AlignProperty, value);
     }
 
+    /// <summary>
+    /// The <see cref="Align" /> value per breakpoint. A breakpoint uses the value of the largest breakpoint that
+    /// is configured and is not larger than it; <see cref="Align" /> is used when there is none.
+    /// </summary>
+    /// <remarks>
+    /// The default is <see langword="null" />, which uses <see cref="Align" /> at every breakpoint.
+    /// </remarks>
     public GridRowAlignInfo? AlignInfo
     {
         get => GetValue(AlignInfoProperty);
         set => SetValue(AlignInfoProperty, value);
     }
 
+    /// <summary>
+    /// Whether a column that does not fit in the width of its line starts a new line below the previous one, with
+    /// the vertical gutter between the two lines. The default is <see langword="true" />. With
+    /// <see langword="false" />, all columns stay on the first line even when they do not fit.
+    /// </summary>
+    /// <remarks>
+    /// The value has no effect while the available width is infinite, because all columns stay on one line then.
+    /// </remarks>
     public bool IsWrapped
     {
         get => GetValue(IsWrappedProperty);
@@ -76,6 +155,11 @@ public class Row : Panel
         AffectsMeasure<Row>(GutterProperty, JustifyProperty, JustifyInfoProperty, AlignProperty, AlignInfoProperty, IsWrappedProperty);
     }
 
+    /// <summary>
+    /// Called when the row is attached to a visual tree. It calls the base method first, then reads the current
+    /// breakpoint from the <c>IMediaBreakAwareControl</c> found for the row and subscribes to its changes, so that
+    /// the row lays its children out again when the breakpoint changes.
+    /// </summary>
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
@@ -87,6 +171,10 @@ public class Row : Panel
         }
     }
 
+    /// <summary>
+    /// Called when the row is detached from a visual tree. It calls the base method first, then ends the
+    /// subscription to the media breakpoint owner that was found on attach.
+    /// </summary>
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnDetachedFromVisualTree(e);
@@ -104,12 +192,20 @@ public class Row : Panel
         InvalidateMeasure();
     }
 
+    /// <summary>
+    /// Called when the children of the row change. It calls the base method first, then drops the cached order,
+    /// column layouts and line layout, so that the next layout pass works with the new children.
+    /// </summary>
     protected override void ChildrenChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
         base.ChildrenChanged(sender, e);
         InvalidateOrderedChildrenCache();
     }
 
+    /// <summary>
+    /// Called when the measure of the row is invalidated. It calls the base method first, then drops the cached
+    /// order, column layouts and line layout, so that the next measure pass computes them again.
+    /// </summary>
     protected override void OnMeasureInvalidated()
     {
         base.OnMeasureInvalidated();
@@ -128,6 +224,17 @@ public class Row : Panel
         _measureLayoutResult  = null;
     }
 
+    /// <summary>
+    /// Measures the children and divides them into lines. The result is kept for
+    /// <see cref="ArrangeOverride(Size)" /> when the final width equals the measured width.
+    /// </summary>
+    /// <param name="availableSize">
+    /// The size offered to the row. An infinite width puts all columns on one line and ignores their spans.
+    /// </param>
+    /// <returns>
+    /// With a finite width, the offered width and the total height of the lines with the vertical gutters between
+    /// them. With an infinite width, the width of the widest line and that height.
+    /// </returns>
     protected override Size MeasureOverride(Size availableSize)
     {
         var result = BuildLayout(availableSize, measureChildren: true);
@@ -136,6 +243,22 @@ public class Row : Panel
         return result.DesiredSize;
     }
 
+    /// <summary>
+    /// Places the lines one below the other and the columns of each line from left to right, with the justify
+    /// value, the alignment, and the offset, push and pull of each column applied. A column whose span is 0 at the
+    /// current breakpoint is arranged with empty bounds.
+    /// </summary>
+    /// <param name="finalSize">
+    /// The width the lines are laid out in and the height of the row.
+    /// </param>
+    /// <returns>
+    /// Always <paramref name="finalSize" />.
+    /// </returns>
+    /// <remarks>
+    /// The layout of the last measure pass is used when the width of <paramref name="finalSize" /> is close to the
+    /// measured width and nothing has been invalidated since. Otherwise the lines are computed again, without
+    /// measuring the children again.
+    /// </remarks>
     protected override Size ArrangeOverride(Size finalSize)
     {
         var result = GetArrangeLayout(finalSize);

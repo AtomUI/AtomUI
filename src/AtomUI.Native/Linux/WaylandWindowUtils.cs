@@ -53,11 +53,17 @@ internal static class WaylandWindowUtils
     }
 
     /// <summary>
-    /// 将 surface 的输入区域设置为多个矩形的并集（surface 逻辑坐标）。
-    /// 空列表表示空输入区域（整个 surface 对输入透明）；<c>null</c> 恢复协议默认的无限输入区域。
-    /// 输入区域是 double-buffered state，由调用方负责随后的 <c>wl_surface.commit</c>。
-    /// 只能在 Wayland worker 线程调用。
+    /// Sets the input region of the surface to the union of several rectangles, in surface logical coordinates.
+    /// An empty list means an empty input region (the whole surface is transparent to input); <c>null</c> restores
+    /// the unlimited input region that is the protocol default.
+    /// The input region is double-buffered state; the caller is responsible for the following
+    /// <c>wl_surface.commit</c>.
+    /// Must be called only on the Wayland worker thread.
     /// </summary>
+    /// <returns>
+    /// <c>true</c> when the input region was set. <c>false</c> when the surface or the compositor has been
+    /// disposed.
+    /// </returns>
     public static bool SetInputRectangles(
         WlSurface surface,
         WlCompositor compositor,

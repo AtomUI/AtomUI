@@ -5,9 +5,16 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls.Themes.AntDesign;
 
-/// <summary>The AntDesign values of the shared <see cref="AbstractAutoCompleteToken"/> layer.</summary>
+/// <summary>
+/// The AntDesign values of the shared <see cref="AbstractAutoCompleteToken" /> layer.
+/// </summary>
 public static class AutoCompleteTokenCalculator
 {
+    /// <summary>
+    /// Assigns the Ant Design values of the shared <see cref="AbstractAutoCompleteToken" /> layer to
+    /// <paramref name="token" />. The Token rules of AutoComplete, AutoCompleteSearchEdit and AutoCompleteTextArea
+    /// call it.
+    /// </summary>
     public static void Calculate(in TokenEvaluationContext<AntDesignToken> context, DesignToken global, AbstractAutoCompleteToken token)
     {
         token.OptionHeight        = global.ControlHeight;

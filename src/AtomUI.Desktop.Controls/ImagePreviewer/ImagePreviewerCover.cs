@@ -141,14 +141,20 @@ internal class ImagePreviewerCover : ContentControl, IMotionAwareControl
         set => SetAndRaise(IsCoverMaskVisibleProperty, ref _isCoverMaskVisible, value);
     }
 
-    /// <summary>owner 模板 PixelAlignedBorder 的 Padding（用于负 Margin 抵消），非布局用途。</summary>
+    /// <summary>
+    /// Padding of the PixelAlignedBorder in the owner template. It is not used for layout; it only feeds
+    /// the negative margin that offsets it.
+    /// </summary>
     internal Thickness OwnerPadding
     {
         get => GetValue(OwnerPaddingProperty);
         set => SetValue(OwnerPaddingProperty, value);
     }
 
-    /// <summary>owner 模板 PixelAlignedBorder 的 BorderThickness（用于负 Margin 抵消），非布局用途。</summary>
+    /// <summary>
+    /// Border thickness of the PixelAlignedBorder in the owner template. It is not used for layout; it
+    /// only feeds the negative margin that offsets it.
+    /// </summary>
     internal Thickness OwnerBorderThickness
     {
         get => GetValue(OwnerBorderThicknessProperty);
@@ -156,11 +162,15 @@ internal class ImagePreviewerCover : ContentControl, IMotionAwareControl
     }
 
     /// <summary>
-    /// owner 模板 PixelAlignedBorder 的 CornerRadius（遮罩与模板 presenter 圆角跟随），非布局用途。
-    /// 上游 cover 的 inset:0 覆盖层在 root 的 overflow:hidden + border-radius 下被裁成圆角；
-    /// AtomUI 的遮罩以负 Margin 越过 owner padding，无法被 owner 的圆角裁剪覆盖，
-    /// 因此直接把该值涂到 Mask 与模板 border/loading/error presenter 的 CornerRadius 上。
+    /// Corner radius of the PixelAlignedBorder in the owner template. It is not used for layout: the
+    /// mask and the template presenters take their corner radius from it.
     /// </summary>
+    /// <remarks>
+    /// The antd cover overlay (inset: 0) is clipped to rounded corners by the root's overflow: hidden
+    /// and border-radius. The AtomUI mask extends past the owner padding through a negative margin, so
+    /// the owner's rounded clip cannot cover it. The value is therefore applied directly to the
+    /// CornerRadius of the mask and of the border, loading and error presenters of the template.
+    /// </remarks>
     internal CornerRadius OwnerCornerRadius
     {
         get => GetValue(OwnerCornerRadiusProperty);
@@ -170,11 +180,14 @@ internal class ImagePreviewerCover : ContentControl, IMotionAwareControl
     private Thickness _ownerMaskMargin;
 
     /// <summary>
-    /// 遮罩层的负外边距：抵消 owner（ImagePreviewer/ImageGroupPreviewer 模板的
-    /// PixelAlignedBorder）的 Padding + BorderThickness，使遮罩铺满整个 root，
-    /// 对齐 ant `genImageCoverStyle` 的 `position:absolute; inset:0` cover。
-    /// 这是运行时几何（宿主 padding 是用户属性），ControlTheme 无法静态表达。
+    /// Negative margin of the mask layer. It cancels the Padding plus BorderThickness of the owner
+    /// template's PixelAlignedBorder (in the ImagePreviewer and ImageGroupPreviewer templates), so the
+    /// mask covers the whole root like the antd genImageCoverStyle cover (position: absolute; inset: 0).
     /// </summary>
+    /// <remarks>
+    /// This is run-time geometry: the owner padding is a user property, so a ControlTheme cannot express
+    /// it statically.
+    /// </remarks>
     internal Thickness OwnerMaskMargin
     {
         get => _ownerMaskMargin;
@@ -234,10 +247,11 @@ internal class ImagePreviewerCover : ContentControl, IMotionAwareControl
 
     static ImagePreviewerCover()
     {
-        // Avalonia TemplatedControl 默认 ClipToBounds=true（合成层裁剪），会把负 Margin
-        // 铺出 cover 边界的遮罩（对齐 ant genImageCoverStyle 的 absolute inset:0）裁回
-        // 内区，root 的 padding 环永远压不暗。裁剪职责归 owner 根的 PixelAlignedBorder
-        // （对齐上游 root 的 overflow:hidden + border-radius）。
+        // Avalonia's TemplatedControl defaults to ClipToBounds=true (composition-layer clipping). That
+        // would clip the mask, which extends beyond the cover bounds through its negative margin (the antd
+        // genImageCoverStyle absolute inset: 0), back to the inner area, so the root's padding ring would
+        // never be dimmed. Clipping belongs to the owner root's PixelAlignedBorder (the antd root's
+        // overflow: hidden and border-radius).
         ClipToBoundsProperty.OverrideDefaultValue<ImagePreviewerCover>(false);
     }
 
@@ -275,16 +289,18 @@ internal class ImagePreviewerCover : ContentControl, IMotionAwareControl
         PseudoClasses.Set(":failed", IsFailed);
         PseudoClasses.Set(":loading-skeleton", IsLoading && ImageSource is null && LoadingContent is null);
         SetAndRaise(HasErrorProperty, ref _hasError, IsFailed && ImageSource is null);
-        // mask 是悬停操作层（点击打开预览在任何加载态都有效），只由 IsShowCoverMask
-        // 决定，与加载/图片/失败状态解耦：透明度完全交给主题（基础 0，悬停 1），
-        // 避免 C# 强制值与悬停样式/过渡互相打断造成闪烁
+        // The mask is the hover operation layer (clicking opens the preview in any loading state). It is
+        // decided by IsShowCoverMask alone and stays independent of the loading, image and failure states.
+        // Its opacity is left entirely to the theme (0 at rest, 1 on hover): forcing a value in C# would
+        // fight the hover style and its transitions and cause flicker.
         SetCurrentValue(IsCoverMaskVisibleProperty, IsShowCoverMask);
     }
 
     private void UpdateOwnerMaskGeometry()
     {
-        // 遮罩需要铺满 owner root（含 padding 环），但 cover 本体被 owner 模板的
-        // PixelAlignedBorder 缩进了 Padding + BorderThickness；负 Margin 抵消该缩进。
+        // The mask must cover the whole owner root, including the padding ring, but the cover itself is
+        // inset by the Padding plus BorderThickness of the owner template's PixelAlignedBorder. The negative
+        // margin cancels that inset.
         var padding = OwnerPadding + OwnerBorderThickness;
         OwnerMaskMargin = new Thickness(-padding.Left, -padding.Top, -padding.Right, -padding.Bottom);
     }

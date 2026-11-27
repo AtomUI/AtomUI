@@ -13,131 +13,237 @@ using Avalonia.VisualTree;
 
 namespace AtomUI.Controls.Commons;
 
-/// <summary>Displays text with an optional action for expanding or collapsing overflow.</summary>
+/// <summary>
+/// Displays text with an optional action for expanding or collapsing overflow.
+/// </summary>
 public abstract class AbstractEllipsis : Control
 {
     #region 公共属性定义
 
+    /// <summary>
+    /// Identifies the <see cref="Text" /> property.
+    /// </summary>
     public static readonly StyledProperty<string?> TextProperty =
         AvaloniaProperty.Register<AbstractEllipsis, string?>(nameof(Text));
 
+    /// <summary>
+    /// Identifies the <see cref="Rows" /> property.
+    /// </summary>
     public static readonly StyledProperty<int> RowsProperty =
         AvaloniaProperty.Register<AbstractEllipsis, int>(nameof(Rows), 1);
 
+    /// <summary>
+    /// Identifies the <see cref="Direction" /> property.
+    /// </summary>
     public static readonly StyledProperty<EllipsisDirection> DirectionProperty =
         AvaloniaProperty.Register<AbstractEllipsis, EllipsisDirection>(nameof(Direction), EllipsisDirection.End);
 
+    /// <summary>
+    /// Identifies the <see cref="ExpandContent" /> property.
+    /// </summary>
     public static readonly StyledProperty<object?> ExpandContentProperty =
         AvaloniaProperty.Register<AbstractEllipsis, object?>(nameof(ExpandContent));
 
+    /// <summary>
+    /// Identifies the <see cref="CollapseContent" /> property.
+    /// </summary>
     public static readonly StyledProperty<object?> CollapseContentProperty =
         AvaloniaProperty.Register<AbstractEllipsis, object?>(nameof(CollapseContent));
 
+    /// <summary>
+    /// Identifies the <see cref="IsExpanded" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsExpandedProperty =
         AvaloniaProperty.Register<AbstractEllipsis, bool>(nameof(IsExpanded), defaultBindingMode: BindingMode.TwoWay);
 
+    /// <summary>
+    /// Identifies the <see cref="FontFamily" /> property.
+    /// </summary>
     public static readonly StyledProperty<FontFamily> FontFamilyProperty =
         TextElement.FontFamilyProperty.AddOwner<AbstractEllipsis>();
 
+    /// <summary>
+    /// Identifies the <see cref="FontSize" /> property.
+    /// </summary>
     public static readonly StyledProperty<double> FontSizeProperty =
         TextElement.FontSizeProperty.AddOwner<AbstractEllipsis>();
 
+    /// <summary>
+    /// Identifies the <see cref="FontStyle" /> property.
+    /// </summary>
     public static readonly StyledProperty<FontStyle> FontStyleProperty =
         TextElement.FontStyleProperty.AddOwner<AbstractEllipsis>();
 
+    /// <summary>
+    /// Identifies the <see cref="FontWeight" /> property.
+    /// </summary>
     public static readonly StyledProperty<FontWeight> FontWeightProperty =
         TextElement.FontWeightProperty.AddOwner<AbstractEllipsis>();
 
+    /// <summary>
+    /// Identifies the <see cref="FontStretch" /> property.
+    /// </summary>
     public static readonly StyledProperty<FontStretch> FontStretchProperty =
         TextElement.FontStretchProperty.AddOwner<AbstractEllipsis>();
 
+    /// <summary>
+    /// Identifies the <see cref="FontFeatures" /> property.
+    /// </summary>
     public static readonly StyledProperty<FontFeatureCollection?> FontFeaturesProperty =
         TextElement.FontFeaturesProperty.AddOwner<AbstractEllipsis>();
 
+    /// <summary>
+    /// Identifies the <see cref="LetterSpacing" /> property.
+    /// </summary>
     public static readonly StyledProperty<double> LetterSpacingProperty =
         TextElement.LetterSpacingProperty.AddOwner<AbstractEllipsis>();
 
+    /// <summary>
+    /// Identifies the <see cref="Foreground" /> property.
+    /// </summary>
     public static readonly StyledProperty<IBrush?> ForegroundProperty =
         TextElement.ForegroundProperty.AddOwner<AbstractEllipsis>();
 
+    /// <summary>
+    /// The text to lay out, truncate and draw. <see langword="null" /> or an empty string clears the layout,
+    /// removes the action and makes the desired size zero.
+    /// </summary>
     public string? Text
     {
         get => GetValue(TextProperty);
         set => SetValue(TextProperty, value);
     }
 
+    /// <summary>
+    /// Maximum number of lines the text may occupy. Text that needs more lines within the available width
+    /// overflows and is truncated with an ellipsis while <see cref="IsExpanded" /> is <see langword="false" />.
+    /// The default is 1, values below 1 are treated as 1 and <c>int.MaxValue</c> removes the line limit.
+    /// </summary>
     public int Rows
     {
         get => GetValue(RowsProperty);
         set => SetValue(RowsProperty, value);
     }
 
+    /// <summary>
+    /// Part of the text that the ellipsis replaces while the text is truncated. The default is
+    /// <see cref="EllipsisDirection.End" />.
+    /// </summary>
     public EllipsisDirection Direction
     {
         get => GetValue(DirectionProperty);
         set => SetValue(DirectionProperty, value);
     }
 
+    /// <summary>
+    /// Content of the action shown while the text overflows and <see cref="IsExpanded" /> is
+    /// <see langword="false" />. <see langword="null" /> shows no action, and a truncated text is reduced to the
+    /// ellipsis alone when the action is at least as wide as the available width.
+    /// </summary>
     public object? ExpandContent
     {
         get => GetValue(ExpandContentProperty);
         set => SetValue(ExpandContentProperty, value);
     }
 
+    /// <summary>
+    /// Content of the action shown while the text overflows and <see cref="IsExpanded" /> is
+    /// <see langword="true" />. <see langword="null" /> shows no action.
+    /// </summary>
     public object? CollapseContent
     {
         get => GetValue(CollapseContentProperty);
         set => SetValue(CollapseContentProperty, value);
     }
 
+    /// <summary>
+    /// Whether text that overflows is shown in full instead of being truncated. While expanded, the text may use
+    /// more lines than <see cref="Rows" /> and the action follows the last line, or takes a line of its own when
+    /// it does not fit there. A tap on the action toggles this value without removing a binding and marks the
+    /// original <c>Tapped</c> event as handled. It has no effect while the text fits, and bindings are two-way
+    /// by default.
+    /// </summary>
     public bool IsExpanded
     {
         get => GetValue(IsExpandedProperty);
         set => SetValue(IsExpandedProperty, value);
     }
 
+    /// <summary>
+    /// Font family of the text. Unset, the value is inherited from the parent controls. The action content
+    /// inherits the same value.
+    /// </summary>
     public FontFamily FontFamily
     {
         get => GetValue(FontFamilyProperty);
         set => SetValue(FontFamilyProperty, value);
     }
 
+    /// <summary>
+    /// Font size of the text in DIPs. Unset, the value is inherited from the parent controls. The action content
+    /// inherits the same value.
+    /// </summary>
     public double FontSize
     {
         get => GetValue(FontSizeProperty);
         set => SetValue(FontSizeProperty, value);
     }
 
+    /// <summary>
+    /// Font style of the text. Unset, the value is inherited from the parent controls. The action content
+    /// inherits the same value.
+    /// </summary>
     public FontStyle FontStyle
     {
         get => GetValue(FontStyleProperty);
         set => SetValue(FontStyleProperty, value);
     }
 
+    /// <summary>
+    /// Font weight of the text. Unset, the value is inherited from the parent controls. The action content
+    /// inherits the same value.
+    /// </summary>
     public FontWeight FontWeight
     {
         get => GetValue(FontWeightProperty);
         set => SetValue(FontWeightProperty, value);
     }
 
+    /// <summary>
+    /// Font stretch of the text. Unset, the value is inherited from the parent controls. The action content
+    /// inherits the same value.
+    /// </summary>
     public FontStretch FontStretch
     {
         get => GetValue(FontStretchProperty);
         set => SetValue(FontStretchProperty, value);
     }
 
+    /// <summary>
+    /// OpenType font features applied to the text. Unset, the value is inherited from the parent controls. The
+    /// action content inherits the same value.
+    /// </summary>
     public FontFeatureCollection? FontFeatures
     {
         get => GetValue(FontFeaturesProperty);
         set => SetValue(FontFeaturesProperty, value);
     }
 
+    /// <summary>
+    /// Letter spacing applied between the characters of the text. Unset, the value is inherited from the parent
+    /// controls. The action content inherits the same value.
+    /// </summary>
     public double LetterSpacing
     {
         get => GetValue(LetterSpacingProperty);
         set => SetValue(LetterSpacingProperty, value);
     }
 
+    /// <summary>
+    /// Brush of the text. The action presenter receives the brush returned by
+    /// <see cref="ResolveActionForeground" />, which is this value by default. Unset, the value is inherited from
+    /// the parent controls. A change repaints the already chosen text without re-running the truncation.
+    /// </summary>
     public IBrush? Foreground
     {
         get => GetValue(ForegroundProperty);
@@ -148,18 +254,33 @@ public abstract class AbstractEllipsis : Control
 
     #region 公共事件定义
 
+    /// <summary>
+    /// Identifies the <see cref="ExpandedChanged" /> routed event.
+    /// </summary>
     public static readonly RoutedEvent<RoutedEventArgs> ExpandedChangedEvent =
         RoutedEvent.Register<AbstractEllipsis, RoutedEventArgs>(nameof(ExpandedChanged), RoutingStrategies.Bubble);
 
+    /// <summary>
+    /// Identifies the <see cref="ContentTapped" /> routed event.
+    /// </summary>
     public static readonly RoutedEvent<TappedEventArgs> ContentTappedEvent =
         RoutedEvent.Register<AbstractEllipsis, TappedEventArgs>(nameof(ContentTapped), RoutingStrategies.Bubble);
 
+    /// <summary>
+    /// Raised after <see cref="IsExpanded" /> changed, including the change made by a tap on the action. The
+    /// text is laid out again after the event. The event cannot be canceled.
+    /// </summary>
     public event EventHandler<RoutedEventArgs>? ExpandedChanged
     {
         add => AddHandler(ExpandedChangedEvent, value);
         remove => RemoveHandler(ExpandedChangedEvent, value);
     }
 
+    /// <summary>
+    /// Raised when the control itself is tapped. A tap on the action does not raise it, because the action
+    /// handles the original <c>Tapped</c> event first. The event carries its own argument instance, so handling
+    /// it does not mark the original <c>Tapped</c> event as handled.
+    /// </summary>
     public event EventHandler<TappedEventArgs>? ContentTapped
     {
         add => AddHandler(ContentTappedEvent, value);
@@ -195,15 +316,29 @@ public abstract class AbstractEllipsis : Control
         TappedEvent.AddClassHandler<AbstractEllipsis>(static (control, e) => control.HandleContentTap(e));
     }
 
+    /// <summary>
+    /// Always <see langword="true" />: the control applies <see cref="Visual.FlowDirection" /> itself by passing it
+    /// to the text layout, right-aligning the lines for right-to-left text and mirroring the action position, so
+    /// Avalonia must not mirror the rendered content as well.
+    /// </summary>
     protected override bool BypassFlowDirectionPolicies => true;
 
-    /// <summary>Resolves the line height in DIPs. NaN uses the font metrics.</summary>
+    /// <summary>
+    /// Resolves the line height in DIPs. NaN uses the font metrics. Called once per measure; the value applies
+    /// to every text layout.
+    /// </summary>
     protected virtual double ResolveLineHeight() => double.NaN;
 
-    /// <summary>Resolves the foreground applied to the operation presenter.</summary>
+    /// <summary>
+    /// Resolves the foreground applied to the action presenter. Called when the action presenter is created and
+    /// whenever <see cref="Foreground" /> changes.
+    /// </summary>
     protected virtual IBrush? ResolveActionForeground() => Foreground;
 
-    /// <summary>Applies the current operation foreground without invalidating truncation.</summary>
+    /// <summary>
+    /// Applies the brush returned by <see cref="ResolveActionForeground" /> to the action presenter without
+    /// re-running the truncation. Does nothing while no action is shown.
+    /// </summary>
     protected void RefreshActionForeground()
     {
         if (_actionPresenter is { } presenter)
@@ -212,6 +347,10 @@ public abstract class AbstractEllipsis : Control
         }
     }
 
+    /// <summary>
+    /// Raises <see cref="ExpandedChanged" /> after <see cref="IsExpanded" /> changed and updates the action
+    /// foreground after <see cref="Foreground" /> changed. Call the base member to keep both reactions.
+    /// </summary>
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
@@ -225,6 +364,10 @@ public abstract class AbstractEllipsis : Control
         }
     }
 
+    /// <summary>
+    /// Releases the text layout and removes the action presenter on detach; the next measure rebuilds both.
+    /// Call the base member to keep this release.
+    /// </summary>
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         SetActionContent(null);
@@ -233,6 +376,19 @@ public abstract class AbstractEllipsis : Control
         base.OnDetachedFromVisualTree(e);
     }
 
+    /// <summary>
+    /// Lays out <see cref="Text" />, decides whether it overflows, creates or removes the action presenter and
+    /// truncates the text while it is collapsed. The truncation is computed again only when the layout inputs
+    /// or the width of the action changed.
+    /// </summary>
+    /// <param name="availableSize">
+    /// The width is shared by the text and the action and drives wrapping and truncation; an infinite width
+    /// never causes an overflow. The height is not used.
+    /// </param>
+    /// <returns>
+    /// The size of the laid out text plus the action, or zero when <see cref="Text" /> is
+    /// <see langword="null" /> or empty.
+    /// </returns>
     protected override Size MeasureOverride(Size availableSize)
     {
         if (string.IsNullOrEmpty(Text))
@@ -279,6 +435,11 @@ public abstract class AbstractEllipsis : Control
         return GetDesiredSize(actionSize);
     }
 
+    /// <summary>
+    /// Places the action presenter after the last text line, or on the line below it when the text is expanded
+    /// and the action does not fit there; the position is mirrored for right-to-left text. The text itself is
+    /// drawn in <see cref="Render(DrawingContext)" />. Returns the assigned size unchanged.
+    /// </summary>
     protected override Size ArrangeOverride(Size finalSize)
     {
         if (_actionPresenter is { } presenter && _textLayout is { } layout)
@@ -299,6 +460,11 @@ public abstract class AbstractEllipsis : Control
         return finalSize;
     }
 
+    /// <summary>
+    /// Draws the laid out text, right-aligning the lines for right-to-left text, over a transparent rectangle
+    /// that makes the whole control area hit-testable. Rebuilds the layout first when <see cref="Foreground" />
+    /// changed after the layout was created.
+    /// </summary>
     public override void Render(DrawingContext context)
     {
         if (_textLayout is null || _inputs is not { } inputs || DisplayedText is not { } text)

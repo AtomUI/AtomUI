@@ -6,7 +6,9 @@ using Avalonia.Media;
 
 namespace AtomUI.Toolkits.GalleryBase.TokenRules;
 
-/// <summary>The Generic view of <see cref="GalleryStickyTabsHostToken"/>.</summary>
+/// <summary>
+/// The Generic view of <see cref="GalleryStickyTabsHostToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class GenericGalleryStickyTabsHostTokenRule : IControlTokenRule<LanguageDesignToken, GalleryStickyTabsHostToken>
 {

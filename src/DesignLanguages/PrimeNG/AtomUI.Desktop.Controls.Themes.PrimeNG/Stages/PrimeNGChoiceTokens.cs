@@ -8,10 +8,10 @@ namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 
 /// <summary>
 /// Slider under the PrimeNG presets, PrimeUIX 3.1.1 <c>slider</c>: the range (AtomUI track) is
-/// <c>range.background</c> (the primary colour), the rail (AtomUI rail) <c>track.background</c> (Aura and Lara
+/// <c>range.background</c> (the primary color), the rail (AtomUI rail) <c>track.background</c> (Aura and Lara
 /// surface.200 / 700, Nora surface.300 / 600) at <c>track.size</c> 3, neither changing on hover; the handle is
 /// <c>handle.width</c> 20 (Lara and Nora 16) around a <c>handle.content</c> disc 4 smaller, drawn as a 2px ring in
-/// <c>handle.background</c> (Aura surface.200 / 700, Lara and Nora the primary colour) that neither grows nor gets an
+/// <c>handle.background</c> (Aura surface.200 / 700, Lara and Nora the primary color) that neither grows nor gets an
 /// outline on hover.
 /// </summary>
 internal static class PrimeNGSliderTokens
@@ -23,6 +23,8 @@ internal static class PrimeNGSliderTokens
     {
         var kind = context.Variant.Style;
         var dark = context.Variant.Appearance == ThemeAppearance.Dark;
+        // The rail (Aura and Lara surface.200 / 700, Nora surface.300 / 600) at track.size 3 and the range keep their
+        // color on hover.
         var rail = context.Language.GetSurfaceColor(kind == PrimeNGLanguage.Nora ? (dark ? 600 : 300) : (dark ? 700 : 200));
         token.RailBg       = rail;
         token.RailHoverBg  = rail;
@@ -30,6 +32,8 @@ internal static class PrimeNGSliderTokens
         token.TrackBg      = effectiveGlobal.ColorPrimary;
         token.TrackHoverBg = effectiveGlobal.ColorPrimary;
 
+        // handle.width 20 (Lara and Nora 16): a 2px ring in handle.background (Aura surface.200 / 700, Lara and Nora
+        // the primary color) around a disc 4 smaller.
         var ring = kind == PrimeNGLanguage.Aura
             ? context.Language.GetSurfaceColor(dark ? 700 : 200)
             : effectiveGlobal.ColorPrimary;
@@ -47,7 +51,7 @@ internal static class PrimeNGSliderTokens
         token.ThumbOutlineThickness           = new Thickness(effectiveGlobal.LineWidthFocus);
         token.ThumbOutlineColor               = effectiveGlobal.ColorFocusBorder;
         token.ThumbHoverOutlineThickness      = new Thickness(0);
-        // handle.content.background: Aura and Lara content.background (white), Nora the primary colour.
+        // handle.content.background: Aura and Lara content.background (white), Nora the primary color.
         token.ThumbBg = kind == PrimeNGLanguage.Nora ? effectiveGlobal.ColorPrimary : effectiveGlobal.ColorBgContainer;
         // The thumb's bounds hold the focus ring as well (as the Ant formula does): a ring drawn past them is cut flat
         // whenever only the thumb's rectangle repaints, which squares the handle while it is dragged.
@@ -60,7 +64,7 @@ internal static class PrimeNGSliderTokens
 /// <summary>
 /// Rate under the PrimeNG presets, PrimeUIX 3.1.1 <c>rating</c>: <c>icon.size</c> 1rem (Lara 1.125rem) with the
 /// other sizes in the same proportion, no hover enlargement, the on star <c>icon.active.color</c> (Aura and Lara the
-/// primary colour, Nora text.color) and the off star <c>icon.color</c> as text.muted (PrimeNG draws the off star as
+/// primary color, Nora text.color) and the off star <c>icon.color</c> as text.muted (PrimeNG draws the off star as
 /// an outline; AtomUI fills it, so Lara's primary and Nora's text-coloured off stars would look selected).
 /// </summary>
 internal static class PrimeNGRateTokens
@@ -71,6 +75,9 @@ internal static class PrimeNGRateTokens
     internal static void EvaluateOwn(in TokenEvaluationContext<PrimeNGToken> context, DesignToken effectiveGlobal, RateToken token)
     {
         var kind = context.Variant.Style;
+        // rating.icon.size 1rem (Lara 1.125rem) with the other sizes in proportion, no hover enlargement; the on
+        // star icon.active.color and the off star text.muted: AtomUI fills the off star, so Lara's primary and
+        // Nora's text-coloured off stars would look selected.
         var size = kind == PrimeNGLanguage.Lara ? 18 : 16;
         token.StarSize       = size;
         token.StarSizeSM     = size * 0.8;
@@ -115,12 +122,14 @@ internal static class PrimeNGListBoxTokens
         var recipes = context.Language.GetVisualRecipes(effectiveGlobal, context.Variant);
         var padding  = recipes.ListOptionPadding;
         var item     = context.Language.GetListItemRecipe(effectiveGlobal);
+        // listbox.option.padding 4px 10px (Lara 8px 14px) as the item padding, list.padding as the content padding,
+        // option.color for the text and option.focus.background for the hover.
         token.ItemPadding      = new Thickness(padding.Left, 0);
         token.ContentPadding   = context.Language.GetSelectOverlayRecipe(effectiveGlobal, context.Variant).Padding;
         token.ItemColor        = effectiveGlobal.ColorText;
         token.ItemHoverColor   = item.HoverForeground;
         token.ItemHoverBgColor = item.HoverBackground;
-        // The check mark of a selected item takes the selected text colour (PrimeUIX highlight.color): the primary check
+        // The check mark of a selected item takes the selected text color (PrimeUIX highlight.color): the primary check
         // vanishes on a solid primary highlight (noir, Nora), and on the pale highlight it is the primary 700 text.
         token.ItemSelectedIndicatorColor = token.ItemSelectedColor;
     }

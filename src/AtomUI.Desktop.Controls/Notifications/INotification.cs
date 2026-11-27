@@ -3,6 +3,10 @@ using Avalonia.Controls.Templates;
 
 namespace AtomUI.Desktop.Controls;
 
+/// <summary>
+/// Data of one notification to display through an <see cref="INotificationManager" />: text, severity, icon,
+/// actions, lifetime and callbacks.
+/// </summary>
 public interface INotification
 {
    /// <summary>
@@ -16,17 +20,18 @@ public interface INotification
    object? Content { get; }
 
    /// <summary>
-   /// 自定义图标
+   /// Icon shown in front of the text. When <see langword="null" />, the card shows the status icon of
+   /// <see cref="Type" />, if that type has one.
    /// </summary>
    PathIcon? Icon { get; }
 
    /// <summary>
-   /// 操作组内容，显示在通知卡片描述下方的操作区；默认无操作组。
+   /// Content of the action area below the description. <see langword="null" />, the default, hides the area.
    /// </summary>
    object? Actions => null;
 
    /// <summary>
-   /// 操作组内容的数据模板，用于自定义操作区呈现。
+   /// Data template used to present <see cref="Actions" />. <see langword="null" /> by default.
    /// </summary>
    IDataTemplate? ActionsTemplate => null;
 
@@ -42,7 +47,8 @@ public interface INotification
    TimeSpan Expiration { get; }
 
    /// <summary>
-   /// 显示一个进度条
+   /// Shows a remaining-time bar along the bottom edge of the card. It needs an <see cref="Expiration" /> other
+   /// than <see cref="TimeSpan.Zero" />; a notification that stays open shows no bar.
    /// </summary>
    bool ShowProgress { get; }
 

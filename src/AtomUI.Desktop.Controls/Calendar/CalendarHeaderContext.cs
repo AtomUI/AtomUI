@@ -3,11 +3,27 @@ using System.Windows.Input;
 namespace AtomUI.Desktop.Controls;
 
 /// <summary>
-/// 自定义 Header 模板（<see cref="Calendar.HeaderTemplate"/>）的数据上下文。
-/// 不暴露 Calendar 实例；模板只能通过命令提交用户意图。
+/// The data context of a custom header template, which is set through <see cref="Calendar.HeaderTemplate" />.
+/// It does not expose the <see cref="Calendar" /> instance: the template submits user intent only through
+/// <see cref="ChangeValueCommand" /> and <see cref="ChangeModeCommand" />.
 /// </summary>
 public class CalendarHeaderContext
 {
+    /// <summary>
+    /// Creates the context for the current state of the calendar and the two commands of its custom header.
+    /// </summary>
+    /// <param name="value">
+    /// The calendar value that the header shows.
+    /// </param>
+    /// <param name="mode">
+    /// The calendar mode that the header shows.
+    /// </param>
+    /// <param name="changeValueCommand">
+    /// The command that becomes <see cref="ChangeValueCommand" />.
+    /// </param>
+    /// <param name="changeModeCommand">
+    /// The command that becomes <see cref="ChangeModeCommand" />.
+    /// </param>
     public CalendarHeaderContext(DateTime value, CalendarMode mode, ICommand changeValueCommand, ICommand changeModeCommand)
     {
         Value = value;
@@ -16,15 +32,29 @@ public class CalendarHeaderContext
         ChangeModeCommand = changeModeCommand;
     }
 
-    /// <summary>当前 Value。</summary>
+    /// <summary>
+    /// The value of the calendar at the time the context was created.
+    /// </summary>
     public DateTime Value { get; }
 
-    /// <summary>当前 Mode。</summary>
+    /// <summary>
+    /// The mode of the calendar at the time the context was created.
+    /// </summary>
     public CalendarMode Mode { get; }
 
-    /// <summary>提交 <see cref="DateTime"/>，来源为 <see cref="CalendarSelectSource.Customize"/>。参数非 <see cref="DateTime"/> 时 CanExecute 为 false。</summary>
+    /// <summary>
+    /// Submits a date as the new value of the calendar.
+    /// Executing it with a <see cref="DateTime" /> commits a user selection. <see cref="Calendar.Selected" />
+    /// reports it with the source <see cref="CalendarSelectSource.Customize" />. The valid range and the disabled
+    /// dates of the calendar are not applied, so the custom header must enforce them itself.
+    /// <c>CanExecute</c> is <c>false</c> for any parameter that is not a <see cref="DateTime" />.
+    /// </summary>
     public ICommand ChangeValueCommand { get; }
 
-    /// <summary>提交 <see cref="CalendarMode"/>。参数非合法枚举时 CanExecute 为 false。</summary>
+    /// <summary>
+    /// Submits the new mode of the calendar. Executing it with <see cref="CalendarMode.Month" /> or
+    /// <see cref="CalendarMode.Year" /> switches the calendar to that mode; a switch to the current mode does
+    /// nothing. <c>CanExecute</c> is <c>false</c> for any other value.
+    /// </summary>
     public ICommand ChangeModeCommand { get; }
 }

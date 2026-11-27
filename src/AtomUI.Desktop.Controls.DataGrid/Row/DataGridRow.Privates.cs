@@ -224,13 +224,16 @@ public partial class DataGridRow
         }
     }
 
-    // 不含详情区的行自身高度：详情可见时据此估计普通行高度，否则折叠详情后的锚点恢复会使用过时的默认估值
+    // Height of the row itself, without the details area. While the details are visible it feeds the estimate of
+    // an ordinary row's height; without it, restoring the anchor after the details collapse would use a stale
+    // default estimate.
     internal double HeightWithoutDetails
     {
         get
         {
-            // 详情区在根容器中独占一行（模板可能用带内边距的外框包住呈现器），
-            // 减去该行元素的期望高度即得不含详情的行高
+            // The details area occupies a row of its own in the root container (the template may wrap the presenter
+            // in a frame with padding). Subtracting the desired height of that row's element gives the height of the
+            // row without its details.
             if (_detailsElement != null && _appliedDetailsVisibility == true && _appliedDetailsTemplate != null)
             {
                 Visual detailsArea = _detailsElement;
@@ -634,10 +637,12 @@ public partial class DataGridRow
         }
     }
 
-    //TODO Animation
-    // 行对表格属性的绑定会订阅表格的属性变更；行被永久丢弃（不再回收复用）时必须释放，
-    // 否则表格会一直持有已卸载的行、单元格及其内容。ClearValue 不会释放 LocalValue 绑定，
-    // 因此由行持有绑定句柄；复用路径重新取用行时重新绑定。
+    // TODO Animation: verify that this member handles animation and complete it where it is missing.
+    // Remove this TODO when that is done.
+    // The row's bindings to grid properties subscribe to the grid's property changes and must be released when a
+    // row is discarded for good (no longer recycled); otherwise the grid retains the unloaded row, its cells and
+    // their content. ClearValue does not release a LocalValue binding, so the row owns the binding handles and
+    // rebinds them when a recycled row is taken again.
     internal void BindOwningGridProperties(DataGrid owningGrid)
     {
         _owningGridBindings?.Dispose();
@@ -829,7 +834,8 @@ public partial class DataGridRow
         SetValueNoCallback(IsDetailsVisibleProperty, false);
     }
 
-    //TODO Animation
+    // TODO Animation: verify that this member handles animation and complete it where it is missing.
+    // Remove this TODO when that is done.
     internal void EnsureDetailsContentHeight()
     {
         if ((_detailsElement != null)
@@ -932,10 +938,13 @@ public partial class DataGridRow
         return fallbackHeight;
     }
 
-    //TODO Cleanup
+    // TODO Cleanup: verify that this field is reset wherever the row is recycled or discarded and complete it
+    // where it is missing.
+    // Remove this TODO when that is done.
     double? _previousDetailsHeight = null;
 
-    //TODO Animation
+    // TODO Animation: verify that this member handles animation and complete it where it is missing.
+    // Remove this TODO when that is done.
     private void NotifyHeightChanged(double newValue)
     {
         if (_previousDetailsHeight.HasValue)

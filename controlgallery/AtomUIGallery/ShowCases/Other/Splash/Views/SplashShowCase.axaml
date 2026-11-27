@@ -30,7 +30,9 @@
                                    ContentMargin="28,10,28,28">
                 <gallery:ShowCasePanel.Resources>
                     <ResourceDictionary>
-                        <!-- Splash 默认主题不是包主题资产（提交前由 SplashWindow 直接加载），页内预览需自行合并。 -->
+                        <!-- The default Splash theme is not a package theme asset (SplashWindow loads it directly
+                        before the commit), so the in-page preview has to merge it itself.
+                        -->
                         <ResourceDictionary.MergedDictionaries>
                             <atom:SplashDefaultTheme/>
                         </ResourceDictionary.MergedDictionaries>

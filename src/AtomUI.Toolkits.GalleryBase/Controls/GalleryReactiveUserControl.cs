@@ -6,9 +6,20 @@ using ReactiveUI;
 
 namespace AtomUI.Toolkits.GalleryBase.Controls;
 
+/// <summary>
+/// Base class of a showcase view whose logic lives in a view model. It keeps <c>DataContext</c> and
+/// <see cref="ViewModel" /> in step, runs the blocks registered through <see cref="WhenActivated" /> while the
+/// control is loaded, and activates the view model when it implements <see cref="IActivatableViewModel" />.
+/// </summary>
+/// <typeparam name="TViewModel">
+/// The type of the view model held by <see cref="ViewModel" />.
+/// </typeparam>
 public class GalleryReactiveUserControl<TViewModel> : UserControl, IViewFor<TViewModel>
     where TViewModel : class
 {
+    /// <summary>
+    /// Identifies the <see cref="ViewModel" /> property.
+    /// </summary>
     [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1002",
         Justification = "Generic avalonia property is expected here.")]
     public static readonly StyledProperty<TViewModel?> ViewModelProperty =
@@ -22,6 +33,16 @@ public class GalleryReactiveUserControl<TViewModel> : UserControl, IViewFor<TVie
     private bool _isUpdatingViewModelActivation;
     private bool _hasPendingViewModelActivationUpdate;
 
+    /// <summary>
+    /// The view model of the view.
+    /// <c>DataContext</c> and this property follow each other as long as they hold the same instance: a change of
+    /// either one sets the other to the new value. A <c>DataContext</c> change is followed only when its new value
+    /// is <see langword="null" /> or an instance of <typeparamref name="TViewModel" />; a value of any other type
+    /// leaves this property unchanged. From then on each property keeps its own value until they hold the same
+    /// instance again.
+    /// While the control is loaded, a change deactivates the previous view model and activates the new one when it
+    /// implements <see cref="IActivatableViewModel" />.
+    /// </summary>
     public TViewModel? ViewModel
     {
         get => GetValue(ViewModelProperty);
@@ -34,6 +55,21 @@ public class GalleryReactiveUserControl<TViewModel> : UserControl, IViewFor<TVie
         set => ViewModel = (TViewModel?)value;
     }
 
+    /// <summary>
+    /// Registers a block that sets up the bindings and subscriptions of the view for one activation.
+    /// </summary>
+    /// <param name="activationBlock">
+    /// The block to run. It receives the disposables of the current activation; they are disposed when the control
+    /// is unloaded.
+    /// </param>
+    /// <returns>
+    /// A disposable that removes the registration. While the control is activated, it also disposes what the block
+    /// added to the disposables.
+    /// </returns>
+    /// <remarks>
+    /// The block runs each time the control is loaded, and at once when the control is already activated. When the
+    /// block throws during such an immediate run, the registration is removed and the exception propagates.
+    /// </remarks>
     public IDisposable WhenActivated(Action<CompositeDisposable> activationBlock)
     {
         ArgumentNullException.ThrowIfNull(activationBlock);
@@ -56,6 +92,11 @@ public class GalleryReactiveUserControl<TViewModel> : UserControl, IViewFor<TVie
         return registration;
     }
 
+    /// <summary>
+    /// Keeps <c>DataContext</c> and <see cref="ViewModel" /> in step when either of them changes, and swaps the
+    /// activated view model when <see cref="ViewModel" /> changes while the control is activated. The base method is
+    /// called first.
+    /// </summary>
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
@@ -82,6 +123,12 @@ public class GalleryReactiveUserControl<TViewModel> : UserControl, IViewFor<TVie
         }
     }
 
+    /// <summary>
+    /// Activates the view when the control is loaded: it activates <see cref="ViewModel" /> when the view model
+    /// implements <see cref="IActivatableViewModel" />, then runs every block registered through
+    /// <see cref="WhenActivated" />. The base method is called first. When a block throws, the view is deactivated
+    /// again before the exception propagates.
+    /// </summary>
     protected override void OnLoaded(RoutedEventArgs e)
     {
         base.OnLoaded(e);
@@ -110,6 +157,11 @@ public class GalleryReactiveUserControl<TViewModel> : UserControl, IViewFor<TVie
         }
     }
 
+    /// <summary>
+    /// Deactivates an activated view when the control is unloaded: it deactivates <see cref="ViewModel" /> and
+    /// disposes what the activation blocks added. The registered blocks stay and run again on the next load. The
+    /// base method is called last.
+    /// </summary>
     protected override void OnUnloaded(RoutedEventArgs e)
     {
         if (_isViewActivated)

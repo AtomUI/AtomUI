@@ -4,18 +4,30 @@ using Avalonia.Media.Immutable;
 
 namespace AtomUI.Desktop.Controls;
 
+/// <summary>
+/// Design tokens of the ribbon of <see cref="RibbonBadge" />: its offset from the target, the shape and
+/// darkening of its folded corner, and the padding around its label.
+/// </summary>
 [ControlDesignToken]
 public sealed partial class RibbonBadgeToken : AbstractControlDesignToken
 {
-    /// <summary>Horizontal and vertical offsets of the ribbon from its adorned element.</summary>
+    /// <summary>
+    /// Horizontal and vertical offsets of the ribbon from its adorned element.
+    /// </summary>
     public partial Point Offset { get; set; }
 
-    /// <summary>Transform that shapes the folded corner of the ribbon.</summary>
+    /// <summary>
+    /// Transform that shapes the folded corner of the ribbon.
+    /// </summary>
     public partial ImmutableTransform? CornerTransform { get; set; }
 
-    /// <summary>Amount by which the ribbon's folded corner is darkened.</summary>
+    /// <summary>
+    /// Amount by which the ribbon's folded corner is darkened.
+    /// </summary>
     public partial int CornerDarkenAmount { get; set; }
 
-    /// <summary>Padding around the ribbon label.</summary>
+    /// <summary>
+    /// Padding around the ribbon label.
+    /// </summary>
     public partial Thickness TextPadding { get; set; }
 }

@@ -13,7 +13,7 @@ public partial class Window
     private int _contentCacheLeases;
 
     /// <summary>
-    /// Caches the window content as a bitmap while <paramref name="overlay"/> animates above it, so each overlay
+    /// Caches the window content as a bitmap while <paramref name="overlay" /> animates above it, so each overlay
     /// frame composites the cached content instead of re-rendering it. Returns null when the cache cannot reproduce
     /// direct rendering exactly, or when the overlay itself lies inside the cached content (every overlay frame would
     /// then invalidate the cache); callers keep the uncached path.

@@ -18,10 +18,10 @@ public partial class DropdownButtonShowCase : GalleryReactiveUserControl<Dropdow
         InitializeComponent();
     }
 
-    // DropdownButton 的弹层是 Flyout 代码创建、跨视觉根的 Popup，SemanticPartHighlightSession
-    // 只自动发现 owner 模板内 Popup，因此在这里把弹层根（MenuFlyoutPresenter）在打开时注册进
-    // SemanticPartPreview.AdditionalRoots，让 popup.root / itemTitle / item / itemContent /
-    // itemIcon 能被语义高亮会话解析到。
+    // The DropdownButton popup is created in code by the flyout and lives outside the owner's visual root.
+    // SemanticPartHighlightSession only discovers popups inside the owner template, so the popup root
+    // (MenuFlyoutPresenter) is registered in SemanticPartPreview.AdditionalRoots when it opens. That lets
+    // the highlight session resolve popup.root, itemTitle, item, itemContent and itemIcon.
     private void HandleSemanticPreviewLoaded(object? sender, RoutedEventArgs args)
     {
         if (sender is not SemanticPartPreview preview ||
@@ -57,10 +57,11 @@ public partial class DropdownButtonShowCase : GalleryReactiveUserControl<Dropdow
         DiscoverNestedPopups();
     }
 
-    // 子菜单弹层与外层弹层不在同一视觉子树，但子菜单 Popup 控件本身还在已注册根的
-    // 模板内；从每个已跟踪弹层的根向下发现并跟踪/注册，item 级部件才能覆盖子菜单里的
-    // 菜单项。声明式打开的子菜单在下一调度帧才 Open，因此发现时未打开也要先跟踪，
-    // 其 Opened 事件触发时再注册根。
+    // A submenu popup is not in the same visual subtree as the outer popup, but the submenu Popup control is
+    // still inside the template of a registered root. Discovery scans down from each tracked popup root and
+    // tracks or registers what it finds, so that item-level parts also cover the menu items inside submenus.
+    // A declaratively opened submenu opens on the next scheduler frame, so it is tracked even when it is not
+    // open yet, and its root is registered when its Opened event fires.
     private void DiscoverNestedPopups()
     {
         foreach (var popup in _trackedSemanticPreviewPopups.ToArray())

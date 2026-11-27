@@ -20,6 +20,10 @@ public sealed class ControlTokenRuleRegistrationGenerator : IIncrementalGenerato
     private const string DescriptorType = "global::AtomUI.Theme.Schema.ControlTokenRuleDescriptor";
     private const string PackageAttribute = "AtomUI.Theme.Languages.ControlValuePackageRegistrationAttribute";
 
+    /// <summary>
+    /// Registers the pipeline that collects every class marked with <c>[ControlTokenRule]</c> and builds the
+    /// registration class once per compilation.
+    /// </summary>
     public void Initialize(IncrementalGeneratorInitializationContext initContext)
     {
         var rules = initContext.SyntaxProvider.ForAttributeWithMetadataName(
@@ -105,7 +109,7 @@ public sealed class ControlTokenRuleRegistrationGenerator : IIncrementalGenerato
             seen.Add((languageName, tokenName), typeName);
             entries.Add((languageName, tokenName, ruleName, namedToken.ContainingAssembly.Name));
             analyzed.Add(new ControlTokenRuleSymbols(type, implemented[0], namedToken, language, location));
-            // A covered control package's token schema digest, recorded for the startup check (spec 3.3).
+            // A covered control package's token schema digest, recorded for the startup check.
             if (!SymbolEqualityComparer.Default.Equals(namedToken.ContainingAssembly, compilation.Assembly) &&
                 TokenSchemaDigestWriter.Read(namedToken.ContainingAssembly) is { } digest)
             {

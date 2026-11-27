@@ -6,7 +6,9 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls.Themes.AntDesign;
 
-/// <summary>The AntDesign view of <see cref="DataGridToken"/>.</summary>
+/// <summary>
+/// The AntDesign view of <see cref="DataGridToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class DataGridTokenRule : IControlTokenRule<AntDesignToken, DataGridToken>
 {
@@ -73,7 +75,7 @@ internal sealed class DataGridTokenRule : IControlTokenRule<AntDesignToken, Data
         token.ExpandIconHalfInner = global.ControlInteractiveSize / 2 - global.LineWidth;
         token.ExpandIconSize = (global.ControlInteractiveSize / 2 - global.LineWidth) * 2 +
                          global.LineWidth * 3;
-        token.RowReorderIndicatorSize   = global.SizeMD; // TODO 需要根据 SizeType 做一定的调整
+        token.RowReorderIndicatorSize   = global.SizeMD; // TODO SizeType: verify and adjust per size. Remove when done.
         token.ExpandIconScale = global.ControlInteractiveSize /
                           ((global.ControlInteractiveSize / 2 - global.LineWidth) * 2 +
                            global.LineWidth * 3);
@@ -81,7 +83,7 @@ internal sealed class DataGridTokenRule : IControlTokenRule<AntDesignToken, Data
         token.SortIndicatorLayoutMargin = new Thickness(global.UniformlyMarginXS, 0, 0, 0);
         token.FilterIndicatorPadding    = new Thickness(global.UniformlyPaddingXXS, global.UniformlyPaddingXS);
 
-        // 别名控件初始化
+        // Alias control: the Table* tokens repeat the values of the Cell, Header, Footer and Row tokens.
         token.TableFontSize = token.CellFontSize;
         token.TableBg       = global.ColorBgContainer;
         token.TableRadius   = token.HeaderBorderRadius;
@@ -113,8 +115,10 @@ internal sealed class DataGridTokenRule : IControlTokenRule<AntDesignToken, Data
         token.TableExpandColumnWidth    = global.ControlInteractiveSize + global.UniformlyPadding * 2;
         token.TableExpandedRowBg        = token.RowExpandedBg;
 
-        // Dropdown
-        // TODO 暂未使用
+        // Filter dropdown.
+        // TODO TableFilterDropdown: the filter flyout themes read Width, Bg and Padding. Verify whether the filter
+        // dropdown consumes Height, SearchWidth and the TableFilterButton* spacings and connect the ones it does
+        // not. Remove this TODO when that is done.
         token.TableFilterDropdownWidth               = 120;
         token.TableFilterDropdownHeight              = 264;
         token.TableFilterDropdownSearchWidth         = 140;
@@ -122,7 +126,8 @@ internal sealed class DataGridTokenRule : IControlTokenRule<AntDesignToken, Data
         token.TableFilterButtonContainerMargin       = new Thickness(0, global.UniformlyMarginXS, 0, 0);
         token.TableFilterButtonLayoutSeparatorMargin = new Thickness(0, global.UniformlyMarginXXS, 0, 0);
         token.TableFilterDropdownPadding             = global.PaddingXS;
-        // 对齐 AntD fixed.ts：冻结列分界阴影为 inset 10px 0 8px -8px（左）与 inset -10px 0 8px -8px（右）。
+        // Matches the Ant Design source (fixed.ts): the shadow at a frozen column boundary is inset 10px 0 8px -8px
+        // on the left and inset -10px 0 8px -8px on the right.
         token.LeftFrozenShadows = new BoxShadows(new BoxShadow
         {
             OffsetX = 10,

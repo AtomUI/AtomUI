@@ -6,12 +6,14 @@ using Xunit;
 
 namespace AtomUI.Core.Tests.Startup;
 
-// 契约：AtomUI 内核在 Application.Initialize() 之前提交——Prism 在 Initialize 中创建并显示 Shell，App.axaml 也会引用
-// AtomUI 资源，提交一旦推迟到 Initialize 之后，它们拿不到主题与本地化。仓库内其他测试应用都手写挂接，这里同时覆盖
-// 生成器为 partial 应用生成的 RegisterServices 挂接。
+// Contract: the AtomUI kernel is committed before Application.Initialize(). Prism creates and shows the
+// shell in Initialize and App.axaml references AtomUI resources; if the commit were deferred until after
+// Initialize they would get neither theme nor localization. The other test apps in the repository write
+// the hook by hand; this also covers the RegisterServices hook the generator produces for a partial app.
 public class StartupContractTests
 {
-    // headless 会话的 dispatch 完成回调内联执行：必须阻塞式 dispatch，否则会话线程会在 Dispose 中等待自身。
+    // The dispatch completion callback of a headless session runs inline, so the dispatch must block;
+    // otherwise the session thread would wait for itself in Dispose.
     [Fact]
     public async Task Generated_hook_commits_before_Initialize_and_reaches_Ready()
     {
@@ -58,7 +60,8 @@ public class StartupContractTests
                              })
                              .UseAtomUI(builder =>
                              {
-                                 // 普通配置可以间接创建 AvaloniaObject，平台必须先确定 Dispatcher 时钟。
+                                 // An ordinary configuration may create AvaloniaObject instances indirectly, so the
+                                 // platform must settle the Dispatcher clock first.
                                  platformReady.ShouldBeTrue();
                                  configureCount++;
                                  GC.KeepAlive(new AvaloniaObject());

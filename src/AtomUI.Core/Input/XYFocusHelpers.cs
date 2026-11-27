@@ -12,9 +12,15 @@ internal static class XYFocusHelpers
     /// <summary>
     /// Determines whether XY navigation is allowed for the specified input element and key device type.
     /// </summary>
-    /// <param name="visual">The input element to check.</param>
-    /// <param name="keyDeviceType">The type of key device (Keyboard, Gamepad, Remote, or null for programmatic).</param>
-    /// <returns>True if XY navigation is allowed; otherwise, false.</returns>
+    /// <param name="visual">
+    /// The input element to check.
+    /// </param>
+    /// <param name="keyDeviceType">
+    /// The type of key device (Keyboard, Gamepad, Remote, or null for programmatic).
+    /// </param>
+    /// <returns>
+    /// True if XY navigation is allowed; otherwise, false.
+    /// </returns>
     internal static bool IsAllowedXYNavigationMode(this InputElement visual, KeyDeviceType? keyDeviceType)
     {
         return IsAllowedXYNavigationMode(XYFocus.GetNavigationModes(visual), keyDeviceType);
@@ -23,9 +29,15 @@ internal static class XYFocusHelpers
     /// <summary>
     /// Determines whether XY navigation is allowed for the specified navigation modes and key device type.
     /// </summary>
-    /// <param name="modes">The XY focus navigation modes.</param>
-    /// <param name="keyDeviceType">The type of key device (Keyboard, Gamepad, Remote, or null for programmatic).</param>
-    /// <returns>True if XY navigation is allowed; otherwise, false.</returns>
+    /// <param name="modes">
+    /// The XY focus navigation modes.
+    /// </param>
+    /// <param name="keyDeviceType">
+    /// The type of key device (Keyboard, Gamepad, Remote, or null for programmatic).
+    /// </param>
+    /// <returns>
+    /// True if XY navigation is allowed; otherwise, false.
+    /// </returns>
     private static bool IsAllowedXYNavigationMode(XYFocusNavigationModes modes, KeyDeviceType? keyDeviceType)
     {
         return keyDeviceType switch
@@ -41,9 +53,17 @@ internal static class XYFocusHelpers
     /// <summary>
     /// Finds the root element for XY focus search starting from the specified visual.
     /// </summary>
-    /// <param name="visual">The starting input element.</param>
-    /// <param name="keyDeviceType">The type of key device.</param>
-    /// <returns>The root element for XY focus search, or null if not found.</returns>
+    /// <param name="visual">
+    /// The starting input element.
+    /// </param>
+    /// <param name="keyDeviceType">
+    /// The type of key device, or <see langword="null" /> for programmatic input.
+    /// </param>
+    /// <returns>
+    /// The last ancestor reached by walking up from <paramref name="visual" /> through ancestors that allow XY
+    /// navigation for <paramref name="keyDeviceType" />, or <paramref name="visual" /> itself when the nearest
+    /// ancestor does not allow it. The result is never <see langword="null" />.
+    /// </returns>
     internal static InputElement? FindXYSearchRoot(this InputElement visual, KeyDeviceType? keyDeviceType)
     {
         InputElement candidate = visual;

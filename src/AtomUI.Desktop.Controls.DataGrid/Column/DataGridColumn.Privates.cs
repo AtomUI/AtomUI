@@ -214,9 +214,15 @@ public abstract partial class DataGridColumn : IDataGridColumnGroupItemInternal
     /// <summary>
     /// Gets the value of a cell according to the specified binding.
     /// </summary>
-    /// <param name="item">The item associated with a cell.</param>
-    /// <param name="binding">The binding to get the value of.</param>
-    /// <returns>The resultant cell value.</returns>
+    /// <param name="item">
+    /// The item associated with a cell.
+    /// </param>
+    /// <param name="binding">
+    /// The binding to get the value of.
+    /// </param>
+    /// <returns>
+    /// The resultant cell value.
+    /// </returns>
     internal object? GetCellValue(object item, BindingBase? binding)
     {
         Debug.Assert(OwningGrid != null);
@@ -239,9 +245,15 @@ public abstract partial class DataGridColumn : IDataGridColumnGroupItemInternal
     /// on the rest of the star columns.  For pixel widths, the desired value is based on the pixel value.
     /// For auto widths, the desired value is initialized as the column's minimum width.
     /// </summary>
-    /// <param name="source"></param>
-    /// <param name="width">The DataGridLength to coerce.</param>
-    /// <returns>The resultant (coerced) DataGridLength.</returns>
+    /// <param name="source">
+    /// The column whose width is being coerced.
+    /// </param>
+    /// <param name="width">
+    /// The DataGridLength to coerce.
+    /// </param>
+    /// <returns>
+    /// The resultant (coerced) DataGridLength.
+    /// </returns>
     private static DataGridLength CoerceWidth(AvaloniaObject source, DataGridLength width)
     {
         var target = (DataGridColumn)source;
@@ -338,7 +350,6 @@ public abstract partial class DataGridColumn : IDataGridColumnGroupItemInternal
     /// rounding process, so we need to do it ourselves.  If we don't, then we'll end up with some
     /// pixel gaps and/or overlaps between columns.
     /// </summary>
-    /// <param name="leftEdge"></param>
     internal void ComputeLayoutRoundedWidth(double leftEdge)
     {
         if (OwningGrid != null && OwningGrid.UseLayoutRounding)
@@ -412,9 +423,15 @@ public abstract partial class DataGridColumn : IDataGridColumnGroupItemInternal
     /// can only decrease in size by the amount that the columns after it can increase in size.
     /// Likewise, the column can only increase in size if other columns can spare the width.
     /// </summary>
-    /// <param name="oldWidth">with before resize.</param>
-    /// <param name="newWidth">with after resize.</param>
-    /// <param name="userInitiated">Whether or not this resize was initiated by a user action.</param>
+    /// <param name="oldWidth">
+    /// with before resize.
+    /// </param>
+    /// <param name="newWidth">
+    /// with after resize.
+    /// </param>
+    /// <param name="userInitiated">
+    /// Whether or not this resize was initiated by a user action.
+    /// </param>
 
     //  double value, DataGridLengthUnitType unitType, double desiredValue, double displayValue
     internal void Resize(DataGridLength oldWidth, DataGridLength newWidth, bool userInitiated)
@@ -501,15 +518,19 @@ public abstract partial class DataGridColumn : IDataGridColumnGroupItemInternal
         newValue = Math.Min(double.MaxValue, newValue);
         newWidth = new DataGridLength(newValue, newUnitType, newDesiredValue, newDisplayValue);
         SetWidthInternalNoCallback(newWidth);
-        // TODO 不知道为什么如果这里不强制通知会造成 Header 的分割线渲染宽度丢失
-        // newWidth != oldWidth 命名加上了这个，不知道为啥
+        // TODO ColumnWidth: the header separator loses its rendered width unless the grid is notified here
+        // unconditionally, even though a newWidth != oldWidth condition was added; the reason is unknown. Verify
+        // that the unconditional notification is still required and record the cause. Remove this TODO when that
+        // is done.
         OwningGrid.HandleColumnWidthChanged(this);
     }
 
     /// <summary>
     /// Sets the column's Width to a new DataGridLength with a different DesiredValue.
     /// </summary>
-    /// <param name="desiredValue">The new DesiredValue.</param>
+    /// <param name="desiredValue">
+    /// The new DesiredValue.
+    /// </param>
     internal void SetWidthDesiredValue(double desiredValue)
     {
         SetWidthInternalNoCallback(new DataGridLength(Width.Value, Width.UnitType, desiredValue, Width.DisplayValue));
@@ -518,7 +539,9 @@ public abstract partial class DataGridColumn : IDataGridColumnGroupItemInternal
     /// <summary>
     /// Sets the column's Width to a new DataGridLength with a different DisplayValue.
     /// </summary>
-    /// <param name="displayValue">The new DisplayValue.</param>
+    /// <param name="displayValue">
+    /// The new DisplayValue.
+    /// </param>
     internal void SetWidthDisplayValue(double displayValue)
     {
         SetWidthInternalNoCallback(new DataGridLength(Width.Value, Width.UnitType, Width.DesiredValue, displayValue));
@@ -527,7 +550,9 @@ public abstract partial class DataGridColumn : IDataGridColumnGroupItemInternal
     /// <summary>
     /// Sets the column's Width directly, without any callback effects.
     /// </summary>
-    /// <param name="width">The new Width.</param>
+    /// <param name="width">
+    /// The new Width.
+    /// </param>
     internal void SetWidthInternalNoCallback(DataGridLength width)
     {
         var originalValue = _setWidthInternalNoCallback;
@@ -545,14 +570,17 @@ public abstract partial class DataGridColumn : IDataGridColumnGroupItemInternal
     /// <summary>
     /// Set the column's star value.  Whenever the star value changes, width inheritance is broken.
     /// </summary>
-    /// <param name="value">The new star value.</param>
+    /// <param name="value">
+    /// The new star value.
+    /// </param>
     internal void SetWidthStarValue(double value)
     {
         InheritsWidth = false;
         SetWidthInternalNoCallback(new DataGridLength(value, Width.UnitType, Width.DesiredValue, Width.DisplayValue));
     }
 
-    //TODO Binding
+    // TODO Binding: verify that this member handles the binding expression of the editing element, which it
+    // currently discards, and complete it where it is missing. Remove this TODO when that is done.
     internal Control? GenerateEditingElementInternal(DataGridCell cell, object dataItem)
     {
         if (_editingElement == null)
@@ -566,7 +594,8 @@ public abstract partial class DataGridColumn : IDataGridColumnGroupItemInternal
     /// <summary>
     /// Clears the cached editing element.
     /// </summary>
-    //TODO Binding
+    // TODO Binding: verify that this member handles the binding expression of the cached editing element before
+    // the element is dropped, and complete it where it is missing. Remove this TODO when that is done.
     internal void RemoveEditingElement()
     {
         _editingElement = null;

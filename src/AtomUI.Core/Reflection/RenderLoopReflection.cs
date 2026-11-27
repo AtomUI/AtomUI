@@ -5,11 +5,14 @@ using Avalonia.Rendering;
 namespace AtomUI.Reflection;
 
 /// <summary>
-/// 读取并替换 Avalonia <c>DefaultRenderLoop</c> 的计时器。Avalonia 没有公开替换渲染循环计时器的入口，
-/// 平台初始化时渲染循环连同计时器一起创建并交给合成器持有。
+/// Reads and replaces the timer of the Avalonia <c>DefaultRenderLoop</c>. Avalonia has no public entry point
+/// for replacing the timer of the render loop: during platform initialization the render loop is created
+/// together with its timer and handed to the compositor, which keeps it.
 /// </summary>
 /// <remarks>
-/// 所有成员在目标缺失时返回 false 而不是抛出：调用方把替换当作可选增强，Avalonia 内部布局变化时必须退回原有计时器。
+/// Every member reports a missing target through its return value, <see langword="false" /> or
+/// <see langword="null" />, instead of throwing: callers treat the replacement as an optional improvement
+/// and must fall back to the original timer when the internal layout of Avalonia changes.
 /// </remarks>
 internal static class RenderLoopReflection
 {
@@ -52,7 +55,11 @@ internal static class RenderLoopReflection
 
     #endregion
 
-    /// <summary>当前驱动渲染循环的计时器；渲染循环不是 <c>DefaultRenderLoop</c> 或其内部布局已变化时返回 false。</summary>
+    /// <summary>
+    /// Gets the timer that currently drives the render loop. Returns <see langword="false" /> with
+    /// <paramref name="timer" /> set to <see langword="null" /> when the loop is not a
+    /// <c>DefaultRenderLoop</c>, its internal layout has changed, or it holds no timer.
+    /// </summary>
     internal static bool TryGetTimer(IRenderLoop loop, [NotNullWhen(true)] out IRenderTimer? timer)
     {
         timer = null;
@@ -65,9 +72,16 @@ internal static class RenderLoopReflection
     }
 
     /// <summary>
-    /// 把渲染循环的计时器换成 <paramref name="replacement"/>，并把旧计时器上正在使用的 <c>Tick</c> 摘下交给它。
-    /// 渲染循环在平台服务就绪时已在运行，只换字段会让新旧计时器同时驱动。失败时渲染循环保持原状。
+    /// Replaces the timer of the render loop with <paramref name="replacement" /> and moves the <c>Tick</c>
+    /// handler that the old timer is using over to it. The render loop is already running when the platform
+    /// services are ready, so replacing only the field would let the old and the new timer drive it at the
+    /// same time. When the call fails, the render loop is left unchanged.
     /// </summary>
+    /// <returns>
+    /// <see langword="true" /> when the timer was replaced. <see langword="false" /> when the loop is not a
+    /// <c>DefaultRenderLoop</c>, its internal layout has changed, it holds no timer or no timer lock, or the
+    /// runtime rejected the write.
+    /// </returns>
     internal static bool TryReplaceTimer(IRenderLoop loop, IRenderTimer replacement)
     {
         if (DefaultRenderLoopFields.Value is not { } fields || loop.GetType() != fields.LoopType ||
@@ -83,7 +97,8 @@ internal static class RenderLoopReflection
             }
             try
             {
-                // 先写字段：运行时拒绝写入时（字段只读保护、裁剪后缺少元数据）旧计时器还没有被动过。
+                // The field is written first: when the runtime rejects the write (a read-only field, metadata
+                // removed by trimming), the old timer has not been touched yet.
                 fields.Timer.SetValue(loop, replacement);
             }
             catch (Exception)
@@ -101,6 +116,11 @@ internal static class RenderLoopReflection
     /// Installs a clock behind the render-thread proxy without replacing the rendering thread.
     /// The handover runs under the proxy's subscription lock and must not wait for the old clock to stop.
     /// </summary>
+    /// <returns>
+    /// The installed timer, or <see langword="null" /> when the render-thread proxy or its inner timer is
+    /// missing, when <paramref name="create" /> returns <see langword="null" />, or when the runtime rejects
+    /// the write. In that last case the replacement is disposed.
+    /// </returns>
     internal static IRenderTimer? TryInstallProxyClock(IRenderLoop loop, Func<IRenderTimer, IRenderTimer?> create,
                                                      Action<IRenderTimer> handover)
     {

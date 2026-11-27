@@ -491,7 +491,7 @@ public class ThemeAssetConsumptionAnalyzerTests
     {
         if (value == "#8112233")
         {
-            // Seven hex digits is not a colour literal.
+            // Seven hex digits is not a color literal.
             Analyze(Theme("atom:Button", $"""<Border {name}="{value}" />""")).ShouldBeEmpty();
             return;
         }

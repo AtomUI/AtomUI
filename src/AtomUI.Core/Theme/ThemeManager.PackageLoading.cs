@@ -10,6 +10,10 @@ using Avalonia.Controls;
 
 namespace AtomUI.Theme;
 
+// Part of ThemeManager: the loading of control packages. It brackets the loading with BeginPackageLoading, which
+// requires an initialized, idle manager, and EndPackageLoading, and it builds the PackageUpdate for the packages of
+// a ThemeManagerBuilder. While such an update is being read, the current snapshot, theme, catalog and semantic
+// parts are taken from it instead of the committed state. The type summary is on the main declaration.
 internal partial class ThemeManager
 {
     private bool _loadingPackages;

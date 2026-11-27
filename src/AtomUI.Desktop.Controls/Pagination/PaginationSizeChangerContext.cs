@@ -4,12 +4,15 @@ using Avalonia.Data;
 namespace AtomUI.Desktop.Controls;
 
 /// <summary>
-/// Provides the effective page-size state to a custom <see cref="Pagination.SizeChangerTemplate"/>.
+/// Provides the effective page-size state to a custom <see cref="Pagination.SizeChangerTemplate" />.
 /// </summary>
 public sealed class PaginationSizeChangerContext : AvaloniaObject
 {
     #region 公共属性定义
 
+    /// <summary>
+    /// Identifies the <see cref="PageSize" /> property.
+    /// </summary>
     public static readonly DirectProperty<PaginationSizeChangerContext, int> PageSizeProperty =
         AvaloniaProperty.RegisterDirect<PaginationSizeChangerContext, int>(
             nameof(PageSize),
@@ -18,6 +21,9 @@ public sealed class PaginationSizeChangerContext : AvaloniaObject
             AbstractPagination.DefaultPageSize,
             BindingMode.TwoWay);
 
+    /// <summary>
+    /// Identifies the <see cref="SizeType" /> property.
+    /// </summary>
     public static readonly DirectProperty<PaginationSizeChangerContext, CustomizableSizeType> SizeTypeProperty =
         AvaloniaProperty.RegisterDirect<PaginationSizeChangerContext, CustomizableSizeType>(
             nameof(SizeType),
@@ -26,7 +32,9 @@ public sealed class PaginationSizeChangerContext : AvaloniaObject
     private int _pageSize = AbstractPagination.DefaultPageSize;
 
     /// <summary>
-    /// Gets or requests the effective number of items displayed on each page.
+    /// Gets the number of items on a page, or requests a new one by setting it. Setting a value greater than zero
+    /// asks the owning <see cref="Pagination" /> to change its page size; the context shows the new value once the
+    /// owner has synchronized it. A value of zero or less is ignored.
     /// </summary>
     public int PageSize
     {
@@ -37,7 +45,7 @@ public sealed class PaginationSizeChangerContext : AvaloniaObject
     private CustomizableSizeType _sizeType;
 
     /// <summary>
-    /// Gets the size variant inherited from the owning <see cref="Pagination"/>.
+    /// Gets the size variant inherited from the owning <see cref="Pagination" />.
     /// </summary>
     public CustomizableSizeType SizeType => _sizeType;
 

@@ -4,7 +4,9 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls.Themes.AntDesign;
 
-/// <summary>The AntDesign view of <see cref="TimelineToken"/>.</summary>
+/// <summary>
+/// The AntDesign view of <see cref="TimelineToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class TimelineTokenRule : IControlTokenRule<AntDesignToken, TimelineToken>
 {

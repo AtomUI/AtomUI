@@ -5,9 +5,9 @@ using Avalonia.Media;
 namespace AtomUI.Controls;
 
 /// <summary>
-/// Draws a glyph repeatedly over an area. Shared by the desktop <see cref="Watermark"/> adorner and by
+/// Draws a glyph repeatedly over an area. Shared by the <see cref="Watermark" /> adorner and by
 /// controls that tile a glyph themselves. A tile is a cell with the glyph centered in it; the cell grows by
-/// the glyph's <see cref="WatermarkGlyph.HorizontalSpace"/> and <see cref="WatermarkGlyph.VerticalSpace"/>
+/// the glyph's <see cref="WatermarkGlyph.HorizontalSpace" /> and <see cref="WatermarkGlyph.VerticalSpace" />
 /// to give the grid step, and rotation, mirroring and cross offset are applied per cell.
 /// </summary>
 internal sealed class WatermarkTileRenderer

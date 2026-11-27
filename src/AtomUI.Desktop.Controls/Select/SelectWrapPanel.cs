@@ -20,7 +20,7 @@ internal class SelectWrapPanel : WrapPanel
             }
             else
             {
-                // 找最后一个
+                // Find the last tag: it is the child right before the search text box.
                 var indexOf    = Children.IndexOf(_searchTextBox);
                 Debug.Assert(indexOf != -1);
                 var lastIndex  = indexOf - 1;

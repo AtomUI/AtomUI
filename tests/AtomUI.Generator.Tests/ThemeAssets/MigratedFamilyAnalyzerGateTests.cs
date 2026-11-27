@@ -24,7 +24,9 @@ public class MigratedFamilyAnalyzerGateTests
     private const string DataGrid = "src/AtomUI.Desktop.Controls.DataGrid";
     private const string Extras = "src/AtomUI.Desktop.Controls.Extras";
 
-    /// <summary>Directories (relative to the package) of migrated families.</summary>
+    /// <summary>
+    /// Directories (relative to the package) of migrated families.
+    /// </summary>
     private static readonly string[] s_familyDirectories =
     [
         // Button family
@@ -57,7 +59,9 @@ public class MigratedFamilyAnalyzerGateTests
         "Primitives/ArrowDecoratedBox", "Primitives/FeedbackStack", "Flyouts"
     ];
 
-    /// <summary>Directories (relative to AtomUI.Controls) of migrated families whose theme assets live in that package.</summary>
+    /// <summary>
+    /// Directories (relative to AtomUI.Controls) of migrated families whose theme assets live in that package.
+    /// </summary>
     private static readonly string[] s_controlsFamilyDirectories =
     [
         // Data family: Avatar (its AvatarGroup lives in AtomUI.Desktop.Controls)
@@ -67,14 +71,18 @@ public class MigratedFamilyAnalyzerGateTests
         "TextSelectionHandle", "Embedding", "Splash"
     ];
 
-    /// <summary>Single theme assets (relative to the package) of migrated families whose directory holds other families.</summary>
+    /// <summary>
+    /// Single theme assets (relative to the package) of migrated families whose directory holds other families.
+    /// </summary>
     private static readonly string[] s_familyFiles =
     [
         // Identity-less WaveSpirit part; Flyouts is now entirely covered by the family directories.
         "Primitives/Themes/WaveSpiritDecoratorTheme.axaml"
     ];
 
-    /// <summary>Token identities declared in those directories.</summary>
+    /// <summary>
+    /// Token identities declared in those directories.
+    /// </summary>
     private static readonly string[] s_familyControls =
     [
         "Button", "HyperLinkButton", "IconButton", "ToggleIconButton", "DropdownButton", "SplitButton", "FloatButton",
@@ -112,7 +120,9 @@ public class MigratedFamilyAnalyzerGateTests
         "FlyoutHost", "TreeViewFlyoutPresenter"
     ];
 
-    /// <summary>Token identities of migrated families declared in AtomUI.Controls.</summary>
+    /// <summary>
+    /// Token identities of migrated families declared in AtomUI.Controls.
+    /// </summary>
     private static readonly string[] s_controlsFamilyControls = ["Avatar", "Icon", "IconPresenter", "AsyncImage"];
 
     public static IEnumerable<object[]> FamilyAssets() =>
@@ -376,7 +386,9 @@ public class MigratedFamilyAnalyzerGateTests
         unreferenced.ShouldBeEmpty("ATOMUIGEN042: consume, [ReservedToken], or delete these Own Tokens.");
     }
 
-    /// <summary>The Own Token entries of selected controls, or all controls, in a package's generated consumption map.</summary>
+    /// <summary>
+    /// The Own Token entries of selected controls, or all controls, in a package's generated consumption map.
+    /// </summary>
     private static IEnumerable<Match> OwnTokenEntries(string package, string[]? controls = null)
     {
         var map = File.ReadAllText(Path.Combine(RepositoryRoot, package,

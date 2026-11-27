@@ -3,6 +3,11 @@ using Avalonia.Controls.Primitives;
 
 namespace AtomUI.Desktop.Controls;
 
+/// <summary>
+/// Text box for plain input; NumericUpDown, pickers and select filters embed a derived text box.
+/// Its effective corner radius follows <c>CornerRadius</c>, adjusted to its position among adjacent items when
+/// the box is used in a compact space.
+/// </summary>
 public class TextBox : AbstractTextInput
 {
     #region 内部属性定义
@@ -27,6 +32,10 @@ public class TextBox : AbstractTextInput
     {
     }
 
+    /// <summary>
+    /// Calls the base implementation, then recalculates the effective corner radius when <c>CornerRadius</c>,
+    /// the compact space position or the compact space orientation changes.
+    /// </summary>
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
@@ -39,6 +48,9 @@ public class TextBox : AbstractTextInput
         }
     }
 
+    /// <summary>
+    /// Calls the base implementation, then recalculates the effective corner radius for the applied template.
+    /// </summary>
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);

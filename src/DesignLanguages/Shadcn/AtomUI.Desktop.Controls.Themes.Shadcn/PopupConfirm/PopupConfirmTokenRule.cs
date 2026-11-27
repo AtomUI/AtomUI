@@ -4,7 +4,9 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls.Themes.Shadcn;
 
-/// <summary>The shadcn view of <see cref="PopupConfirmToken"/>.</summary>
+/// <summary>
+/// The shadcn view of <see cref="PopupConfirmToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class PopupConfirmTokenRule : IControlTokenRule<ShadcnToken, PopupConfirmToken>
 {
@@ -12,6 +14,7 @@ internal sealed class PopupConfirmTokenRule : IControlTokenRule<ShadcnToken, Pop
     {
         var token  = target.Own;
         var global = target.Global;
+        // Ant Design formula kept as is: no registry value is merged into the popup confirm tokens.
         token.ButtonSpacing          = global.UniformlyMarginXS;
         token.IconMargin             = new Thickness(0, global.UniformlyMarginXS / 2, global.UniformlyMarginXS, 0);
         token.ContentContainerMargin = new Thickness(0, 0, 0, global.UniformlyMarginXS);

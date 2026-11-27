@@ -3,7 +3,9 @@ using AtomUI.Theme.Languages;
 
 namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 
-/// <summary>The PrimeNG view of <see cref="SpinToken"/>.</summary>
+/// <summary>
+/// The PrimeNG view of <see cref="SpinToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class SpinTokenRule : IControlTokenRule<PrimeNGToken, SpinToken>
 {
@@ -11,8 +13,10 @@ internal sealed class SpinTokenRule : IControlTokenRule<PrimeNGToken, SpinToken>
     {
         var token  = target.Own;
         var global = target.Global;
-        // PrimeNG: the control-global overrides, read by the formulas below.
+        // PrimeNG: no control-global overrides; EvaluateGlobal writes nothing.
         PrimeNGSpinTokens.EvaluateGlobal(in context, global);
+        // Ant Design formula kept as is; the PrimeNG stage replaces only IndicatorDuration, and only under Nora (its
+        // zero durations would stop the spinner). The sizes are the Ant formula over the PrimeNG global tokens.
         var controlHeightLG = global.ControlHeightLG;
         var controlHeight   = global.ControlHeight;
         var indicatorSize     = controlHeightLG / 2;

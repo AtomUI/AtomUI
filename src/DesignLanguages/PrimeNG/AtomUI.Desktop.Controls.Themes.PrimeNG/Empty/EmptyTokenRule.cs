@@ -4,7 +4,9 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 
-/// <summary>The PrimeNG view of <see cref="EmptyToken"/>.</summary>
+/// <summary>
+/// The PrimeNG view of <see cref="EmptyToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class EmptyTokenRule : IControlTokenRule<PrimeNGToken, EmptyToken>
 {
@@ -13,6 +15,8 @@ internal sealed class EmptyTokenRule : IControlTokenRule<PrimeNGToken, EmptyToke
         var token  = target.Own;
         var global = target.Global;
         var controlHeightLG = global.ControlHeightLG;
+        // Ant Design formula kept as is: PrimeUIX defines no values for this control, so the rule takes the Ant
+        // Design formula over the PrimeNG global tokens.
         token.EmptyImgHeight      = controlHeightLG * 2.5;
         token.EmptyImgHeightMD    = controlHeightLG * 1.85;
         token.EmptyImgHeightSM    = controlHeightLG * 0.875;

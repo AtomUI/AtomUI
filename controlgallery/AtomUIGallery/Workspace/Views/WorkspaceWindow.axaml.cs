@@ -45,7 +45,8 @@ public partial class WorkspaceWindow : ReactiveWindow<WorkspaceWindowViewModel>
 
     public WorkspaceWindow()
     {
-        // Splash 在提交前显示，主窗体出现时内核已就绪：窗口直接构建完整 shell，不再有加载占位。
+        // The splash is shown before the kernel is committed; when the main window appears the kernel is ready,
+        // so the window builds the full shell directly and has no loading placeholder.
         ViewModel = new WorkspaceWindowViewModel();
         InitializeComponent();
         BuildContent();

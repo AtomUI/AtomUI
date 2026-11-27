@@ -8,7 +8,7 @@ using Xunit;
 namespace AtomUI.Core.Tests.Theme;
 
 /// <summary>
-/// Reads every complete theme XML example of the theming documents with the real <see cref="ThemeDocumentReader"/>,
+/// Reads every complete theme XML example of the theming documents with the real <see cref="ThemeDocumentReader" />,
 /// so that a documented example cannot drift away from the v2 XSD and the reader.
 /// </summary>
 public class ThemeDocumentationExampleTests

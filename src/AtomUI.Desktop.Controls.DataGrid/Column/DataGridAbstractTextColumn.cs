@@ -7,6 +7,10 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
 
+/// <summary>
+/// The base class of columns whose cells show a text value. It provides the font and foreground settings
+/// of the column and copies them to the elements that are generated for its cells.
+/// </summary>
 public abstract class DataGridAbstractTextColumn :  DataGridBoundColumn
 {
     #region 公共属性定义
@@ -107,9 +111,16 @@ public abstract class DataGridAbstractTextColumn :  DataGridBoundColumn
     /// <summary>
     /// Gets a read-only <see cref="T:AtomUI.Desktop.Controls.TextBlock" /> element that is bound to the column's <see cref="P:AtomUI.Desktop.Controls.DataGridBoundColumn.Binding" /> property value.
     /// </summary>
-    /// <param name="cell">The cell that will contain the generated element.</param>
-    /// <param name="dataItem">The data item represented by the row that contains the intended cell.</param>
-    /// <returns>A new, read-only <see cref="T:AtomUI.Desktop.Controls.TextBlock" /> element that is bound to the column's <see cref="P:AtomUI.Desktop.Controls.DataGridBoundColumn.Binding" /> property value.</returns>
+    /// <param name="cell">
+    /// The cell that will contain the generated element.
+    /// </param>
+    /// <param name="dataItem">
+    /// The data item represented by the row that contains the intended cell.
+    /// </param>
+    /// <returns>
+    /// A new, read-only <see cref="T:AtomUI.Desktop.Controls.TextBlock" /> element that is bound to the column's
+    /// <see cref="P:AtomUI.Desktop.Controls.DataGridBoundColumn.Binding" /> property value.
+    /// </returns>
     protected override Control GenerateElement(DataGridCell cell, object dataItem)
     {
         var textBlockElement = new TextBlock
@@ -126,6 +137,10 @@ public abstract class DataGridAbstractTextColumn :  DataGridBoundColumn
         return textBlockElement;
     }
     
+    /// <summary>
+    /// Calls the base implementation, and reports a change of the font family, font size, font style, font
+    /// weight or foreground of this column through <c>NotifyPropertyChanged</c>.
+    /// </summary>
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
@@ -180,6 +195,13 @@ public abstract class DataGridAbstractTextColumn :  DataGridBoundColumn
         }
     }
 
+    /// <summary>
+    /// Copies the font family, font size, font style, font weight and foreground of this column to an element
+    /// that was generated for a cell.
+    /// </summary>
+    /// <param name="content">
+    /// The generated cell or editing element that receives the values.
+    /// </param>
     protected void SyncProperties(AvaloniaObject content)
     {
         DataGridHelper.SyncColumnProperty(this, content, FontFamilyProperty);

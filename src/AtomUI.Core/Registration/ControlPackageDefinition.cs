@@ -7,7 +7,9 @@ using Avalonia;
 
 namespace AtomUI.Registration;
 
-/// <summary>Generated, immutable package definition. Enabling it records declarations only.</summary>
+/// <summary>
+/// Generated, immutable package definition. Enabling it records declarations only.
+/// </summary>
 [EditorBrowsable(EditorBrowsableState.Never)]
 public sealed class ControlPackageDefinition
 {
@@ -18,12 +20,21 @@ public sealed class ControlPackageDefinition
     private readonly Action<IAtomUIBuilder>? _declare;
     private readonly Action? _warmSelection;
 
+    /// <summary>
+    /// Creates a package definition in which every asset of the manifest counts as part of the application,
+    /// and that does not warm fragment selection in the background.
+    /// </summary>
     public ControlPackageDefinition(string id, string data,
         Func<string, ControlRegistrationFragmentAttribute?> resolve, Func<string, bool> contains,
         Action<IAtomUIBuilder>? declare = null) : this(id, data, resolve, contains, declare, null)
     {
     }
 
+    /// <summary>
+    /// Creates a package definition that does not warm fragment selection in the background.
+    /// <paramref name="containsAsset" /> decides per asset ID whether the asset belongs to the application;
+    /// pass <see langword="null" /> to count every asset.
+    /// </summary>
     public ControlPackageDefinition(string id, string data,
         Func<string, ControlRegistrationFragmentAttribute?> resolve, Func<string, bool> contains,
         Action<IAtomUIBuilder>? declare, Func<string, bool>? containsAsset)
@@ -32,7 +43,7 @@ public sealed class ControlPackageDefinition
     }
 
     /// <summary>
-    /// Generated package entry. <paramref name="warmSelection"/> may only prepare immutable selection
+    /// Generated package entry. <paramref name="warmSelection" /> may only prepare immutable selection
     /// data on a worker thread; it must not activate fragments, resources or lifecycle hooks.
     /// It must be safe alongside synchronous selection after a preparation timeout.
     /// The five- and six-argument constructors do not opt into background selection warming.
@@ -63,6 +74,10 @@ public sealed class ControlPackageDefinition
         });
     }
 
+    /// <summary>
+    /// Identity of the package. It must equal the identity encoded in the manifest, which is checked when the
+    /// manifest is decoded, and the builder tracks the package by it.
+    /// </summary>
     public string Id { get; }
     internal string EncodedManifest { get; }
     internal StartupPackageData Data => _data.Value;
@@ -71,9 +86,29 @@ public sealed class ControlPackageDefinition
     internal ControlRegistrationFragmentAttribute? Resolve(string key) => _resolve(key);
     internal void WarmSelection() => _warmSelection?.Invoke();
 
+    /// <summary>
+    /// Enables the package on <paramref name="builder" />. It runs <paramref name="configure" />, enables the
+    /// dependencies declared with <c>DependsOn</c>, and records the package's declarations and lifecycle
+    /// hooks. Neither kind of hook runs during this call. The builder is returned for chaining.
+    /// </summary>
+    /// <exception cref="ArgumentException">
+    /// Thrown when <paramref name="builder" /> is not an <see cref="AtomUIBuilder" />.
+    /// </exception>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown when the package is already enabled or is being enabled. When called from inside a
+    /// <c>DependsOn</c> action, a package that is already enabled is skipped instead.
+    /// </exception>
     public IAtomUIBuilder Register(IAtomUIBuilder builder, Action<ControlPackageOptions>? configure = null) =>
         RegisterCore(builder, configure, false);
 
+    /// <summary>
+    /// Enables the package like <c>Register</c>, except that a package which is already enabled is left as it
+    /// is: the builder is returned without running <paramref name="configure" />, so the options given to the
+    /// first call apply.
+    /// </summary>
+    /// <exception cref="ArgumentException">
+    /// Thrown when <paramref name="builder" /> is not an <see cref="AtomUIBuilder" />.
+    /// </exception>
     public IAtomUIBuilder Ensure(IAtomUIBuilder builder, Action<ControlPackageOptions>? configure = null) =>
         RegisterCore(builder, configure, true);
 
@@ -119,7 +154,9 @@ public sealed class ControlPackageDefinition
     }
 }
 
-/// <summary>Package dependency declarations and the two supported runtime lifecycle hooks.</summary>
+/// <summary>
+/// Package dependency declarations and the two supported runtime lifecycle hooks.
+/// </summary>
 public sealed class ControlPackageOptions
 {
     private readonly List<Action<IAtomUIBuilder>> _dependencies = [];
@@ -130,6 +167,15 @@ public sealed class ControlPackageOptions
     internal IReadOnlyList<Action<ControlPackageContext>> Commit => _commit;
     internal IReadOnlyList<Action<ControlPackageContext>> FirstUse => _firstUse;
 
+    /// <summary>
+    /// Declares a package that must be enabled before this one. <paramref name="enable" /> is called with the
+    /// builder while this package is enabled, before its own declarations and in the order the dependencies
+    /// were added. Pass the builder extension that enables the dependency, for example
+    /// <c>builder.UseDesktopControls()</c>. A dependency that is already enabled is skipped.
+    /// </summary>
+    /// <returns>
+    /// This object, for chaining.
+    /// </returns>
     public ControlPackageOptions DependsOn(Action<IAtomUIBuilder> enable)
     {
         ArgumentNullException.ThrowIfNull(enable);
@@ -137,6 +183,16 @@ public sealed class ControlPackageOptions
         return this;
     }
 
+    /// <summary>
+    /// Adds an initializer that runs once, when the application commits the enabled packages. That is after
+    /// every package was enabled on the builder and before any first-use initializer. Use it for state that
+    /// must exist before any control or resource of the package is used, and pass disposables to
+    /// <see cref="ControlPackageContext.Own{T}(T)" /> to keep them for the package's lifetime. An exception the
+    /// initializer throws is rethrown by every later commit or first use of the package.
+    /// </summary>
+    /// <returns>
+    /// This object, for chaining.
+    /// </returns>
     public ControlPackageOptions OnCommit(Action<ControlPackageContext> initialize)
     {
         ArgumentNullException.ThrowIfNull(initialize);
@@ -144,6 +200,14 @@ public sealed class ControlPackageOptions
         return this;
     }
 
+    /// <summary>
+    /// Adds an initializer that runs once, the first time a control or a resource of the package is used.
+    /// Reading package metadata does not trigger it. It runs after the commit initializers, and an exception
+    /// it throws is rethrown by every later first use of the package.
+    /// </summary>
+    /// <returns>
+    /// This object, for chaining.
+    /// </returns>
     public ControlPackageOptions OnFirstUse(Action<ControlPackageContext> initialize)
     {
         ArgumentNullException.ThrowIfNull(initialize);
@@ -152,6 +216,10 @@ public sealed class ControlPackageOptions
     }
 }
 
+/// <summary>
+/// What the commit and first-use initializers of a package receive: the application, its theme manager,
+/// and a way to hand disposables to the package so that they are disposed when the package is released.
+/// </summary>
 public sealed class ControlPackageContext
 {
     private readonly Action<IDisposable>? _own;
@@ -162,10 +230,18 @@ public sealed class ControlPackageContext
         _own = own;
     }
 
+    /// <summary>
+    /// The application that is committing the package or using it for the first time.
+    /// </summary>
     public Application Application { get; }
+    /// <summary>
+    /// The theme manager of that application.
+    /// </summary>
     public IThemeManager ThemeManager { get; }
 
-    /// <summary>Transfers a service or subscription to the package's application lifetime.</summary>
+    /// <summary>
+    /// Transfers a service or subscription to the package's application lifetime.
+    /// </summary>
     public T Own<T>(T resource) where T : class, IDisposable
     {
         ArgumentNullException.ThrowIfNull(resource);

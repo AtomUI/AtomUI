@@ -23,8 +23,9 @@
                             Background="{gallery:SemanticPartPreviewTokenResource ColorBgContainer}"
                             BorderBrush="{gallery:SemanticPartPreviewTokenResource ColorBorderSecondary}"
                             BorderThickness="{TemplateBinding BorderThickness}">
-                        <!--  内容行用星号:Auto 行会以无穷高度测量布局面板,
-                              宿主 MaxHeight 钳制无法传导,固定高度内容会溢出视口  -->
+                        <!-- A star:Auto row would measure the layout panel with infinite height, the MaxHeight clamp of
+                        the host cannot reach it, and fixed-height content would overflow the viewport.
+                        -->
                         <Grid RowDefinitions="*,Auto">
                             <gallery:SemanticPartPreviewLayoutPanel Name="PART_Layout"
                                                                     Grid.Row="0"

@@ -4,32 +4,40 @@ using Avalonia.Threading;
 namespace AtomUI.Desktop.Controls;
 
 /// <summary>
-/// 拥有 NavMenu 钉住打开的请求状态，并把请求收敛到运行时生成的菜单项容器上。
+/// Owns the pinned-open request of a <see cref="NavMenu" /> and applies it to the menu item containers that are
+/// generated at run time.
 ///
-/// 钉住请求以 <see cref="INavMenuNode"/> 为键，而不是以 <see cref="NavMenuItem"/> 容器为键。旧实现只把请求
-/// 落在“当下已实现的容器”上：属性变更、attach、Mode 切换都发生在容器生成之前或容器重建之际，声明式写法
-/// （AXAML 里 <c>IsPopupPinnedOpen="True"</c>）在模板应用和容器生成之前就写入属性，那时没有任何可钉住容器，
-/// 请求当场丢失。把请求表达成节点路径后，它可以独立于容器生命周期存活，任何触发点只更新请求，
-/// 实现后的容器由同一份请求按路径补齐。
+/// The request is keyed by <see cref="INavMenuNode" />, not by the <see cref="NavMenuItem" /> container.
+/// Applying it only to the containers that are realized at a given moment loses requests: property changes,
+/// attach and mode switches all happen before containers are generated or while they are rebuilt. A declaration
+/// such as <c>IsPopupPinnedOpen="True"</c> in AXAML writes the property before the template is applied and
+/// before any container exists to pin. Expressed as a node path, the request outlives the container lifecycle:
+/// every trigger only updates the request, and a realized container is caught up from the same request by path.
 ///
-/// 容器 prepare 通过 <see cref="PrepareContainer"/> 与选择状态走同一容器时序契约；属性变更、attach、Mode
-/// 切换走 <see cref="Reconcile"/> 立即求值；条目图变化走 <see cref="QueueReconcile"/> 合并调度，在
-/// ItemsPresenter 收敛后再求值（集合变更回调里容器与节点映射可能尚未收敛）。
+/// Container preparation goes through <see cref="PrepareContainer" />, which follows the same container timing
+/// contract as the selection state. Property changes, attach and mode switches evaluate immediately through
+/// <see cref="Reconcile" />. Changes of the entry graph go through <see cref="QueueReconcile" />, which coalesces
+/// them and evaluates once the ItemsPresenter has settled, because the containers and the node mapping may not
+/// have settled inside a collection change callback.
 /// </summary>
 internal sealed class NavMenuPinnedOpenCoordinator
 {
-    // 需要保持打开的子菜单节点，root -> leaf 顺序。列表可能只包含节点而对应容器尚未生成。
+    // The nodes of the sub-menus to keep open, in root -> leaf order. The list may contain nodes whose container
+    // is not realized yet.
     private readonly List<INavMenuNode> _pinnedPath = [];
 
-    // 已经按 _pinnedPath 钉住的实现容器，用于在请求释放时精确回收，避免遗留钉住状态。
+    // The realized containers that are pinned for _pinnedPath. They are tracked so that a release unpins exactly
+    // these containers and leaves no pinned state behind.
     private readonly List<NavMenuItem> _pinnedItems = [];
 
     private int _reconcileGeneration;
     private bool _isApplying;
 
     /// <summary>
-    /// 把钉住请求收敛到当前菜单状态。请求关闭或处于 Inline 时释放；否则解析钉住路径并把钉住状态
-    /// 应用到已经实现的容器。该方法是幂等的，可在属性变更、attach 与 Mode 切换时重复调用。
+    /// Reconciles the pin-open request with the current state of the menu.
+    /// Releases the request when pinning is off or the menu is in <see cref="NavMenuMode.Inline" /> mode; otherwise
+    /// resolves the pinned path and applies the pinned state to the realized containers. The method is idempotent
+    /// and may be called again on property changes, attach and mode switches.
     /// </summary>
     public void Reconcile(NavMenu menu)
     {
@@ -49,8 +57,10 @@ internal sealed class NavMenuPinnedOpenCoordinator
     }
 
     /// <summary>
-    /// 合并调度一次收敛。用于条目集合变更：此刻容器与节点映射可能尚未收敛，立即求值会读到错误的
-    /// 容器归属。请求状态是持久的，因此延后求值不会丢请求；连续变化只在 Loaded 优先级收敛一次。
+    /// Schedules one reconcile of the menu and discards it when a later request or a release follows.
+    /// Call it for item collection changes: at that moment the containers and the node mapping may not have settled,
+    /// so an immediate evaluation could resolve a node to the wrong container. The request is kept as state, so the
+    /// deferred evaluation loses no request; consecutive changes are reconciled once, at DispatcherPriority.Loaded.
     /// </summary>
     public void QueueReconcile(NavMenu menu)
     {
@@ -67,10 +77,13 @@ internal sealed class NavMenuPinnedOpenCoordinator
     }
 
     /// <summary>
-    /// 容器 prepare 阶段的不变量：容器对应的节点位于钉住路径上时必须立即带上钉住状态。
-    /// 请求在容器存在之前就已确定，容器实现时按请求补齐，而不是等某个全局重扫恰好晚于容器生成。
-    /// 请求以节点为键持久保存，因此容器在 Mode 切换、条目重排后重建时同样在这里重新补齐。
-    /// <see cref="NavMenuItem"/> 会在自身 attach 时按钉住状态打开子菜单，这里不必考虑容器是否已 attach。
+    /// Applies the pinned state to a menu item container as soon as it is prepared, when the menu requests pinning
+    /// and the node of the container lies on the pinned path. An empty pinned path is resolved by a
+    /// <see cref="Reconcile" /> first.
+    /// The request is settled before any container exists, so each container is caught up when it is realized instead
+    /// of waiting for a global rescan that may run later. Because the request is stored by node, a container that is
+    /// rebuilt after a mode switch or an item reorder is caught up here again. <see cref="NavMenuItem" /> opens its
+    /// sub-menu on attach according to the pinned state, so the container need not be attached yet.
     /// </summary>
     public void PrepareContainer(NavMenu menu, NavMenuItem menuItem)
     {
@@ -91,9 +104,10 @@ internal sealed class NavMenuPinnedOpenCoordinator
     }
 
     /// <summary>
-    /// 展开某个子菜单后，把钉住路径扩展为“该节点及其祖先”的当前链，并释放不再位于该链上的旧钉住项。
-    /// 只有真实子菜单的展开才扩展路径：没有子项的 <see cref="NavMenuItem"/> 同样会派发
-    /// <c>SubmenuOpened</c>，但它不代表任何可钉住的子菜单，不能覆盖已有钉住路径。
+    /// Makes the pinned path the chain of a newly opened sub-menu node and its ancestors, and releases the pinned
+    /// items that are not on that chain. Call it after a sub-menu opens.
+    /// Only a real sub-menu replaces the path: a <see cref="NavMenuItem" /> without children raises
+    /// <c>SubmenuOpened</c> as well, but it represents no pinnable sub-menu and must not override the pinned path.
     /// </summary>
     public void ExtendToOpenedItem(NavMenu menu, NavMenuItem openedItem)
     {
@@ -107,8 +121,9 @@ internal sealed class NavMenuPinnedOpenCoordinator
         _pinnedPath.Clear();
         _pinnedPath.AddRange(BuildPathToNode(node));
 
-        // 钉住本身会打开子菜单，打开又同步派发 SubmenuOpened 回到这里；正在应用时只更新请求，
-        // 由外层应用循环用最新路径完成下发，避免递归重入破坏应用中的容器集合。
+        // Pinning opens the sub-menu, and opening synchronously raises SubmenuOpened, which comes back here.
+        // While applying, only the request is updated and the outer apply loop finishes the delivery with the latest
+        // path, so a recursive re-entry cannot corrupt the container set being applied.
         if (!_isApplying)
         {
             ApplyToRealizedContainers(menu, releaseObsolete: true);
@@ -116,10 +131,12 @@ internal sealed class NavMenuPinnedOpenCoordinator
     }
 
     /// <summary>
-    /// 容器被回收或移除时摘掉它的钉住记录。请求本身以节点为键保存在 <c>_pinnedPath</c> 中，
-    /// 不随容器回收消失：容器属性由 <c>ClearNodeContainerBindings</c> 在回收时清空，条目图收敛后
-    /// 再由 <see cref="Reconcile"/> 按路径补回。仅当容器对应的节点已经离开菜单条目图
-    /// （真正被移除，而不是回收复用）时才做生命周期关闭。
+    /// Drops the pinned records of a container that is recycled or removed, together with those of its descendants.
+    /// <c>CloseForLifecycle</c> is called only on a container that was pinned and whose node has left the menu entry
+    /// graph, that is when it was removed for good and not recycled for reuse.
+    /// The request itself is stored by node in <c>_pinnedPath</c> and survives the recycling: the container
+    /// properties are cleared by <c>ClearNodeContainerBindings</c> on recycle, and <see cref="Reconcile" /> restores
+    /// them from the path once the entry graph has settled.
     /// </summary>
     public void ForgetContainer(NavMenu menu, NavMenuItem menuItem)
     {
@@ -141,9 +158,11 @@ internal sealed class NavMenuPinnedOpenCoordinator
     }
 
     /// <summary>
-    /// 释放所有容器上的钉住状态并清空请求路径，但不关闭已经打开的交互状态。
-    /// 用于取消钉住、切到 Inline 和 detach：<c>IsPopupPinnedOpen=false</c> 只解除关闭拦截，
-    /// 已打开的子菜单保持打开，交由调用方按生命周期决定是否关闭。
+    /// Clears the pinned state of every tracked container and empties the request path, but does not close the
+    /// sub-menus that are already open. A reconcile queued by <see cref="QueueReconcile" /> is discarded.
+    /// Call it when pinning is canceled, when the menu switches to Inline and on detach: resetting
+    /// <c>IsPopupPinnedOpen</c> to false only removes the block that keeps a sub-menu from closing, so an open
+    /// sub-menu stays open until the caller decides by lifecycle whether to close it.
     /// </summary>
     public void Release()
     {
@@ -228,7 +247,8 @@ internal sealed class NavMenuPinnedOpenCoordinator
 
     private static List<INavMenuNode> ResolvePath(NavMenu menu)
     {
-        // 已展开链优先：钉住时若已有展开的子菜单，语义是钉住当前展开链，而不是强行改钉第一项。
+        // The open chain wins: when a sub-menu is already open at the time of pinning, the intent is to pin the
+        // currently open chain, not to force the first item.
         var openPath = ResolveOpenPath(menu);
         if (openPath.Count > 0)
         {

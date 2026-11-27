@@ -4,7 +4,9 @@ using AtomUI.Theme.Languages;
 
 namespace Sample.Controls.Themes.AntDesign;
 
-/// <summary>The Ant Design view of <see cref="SampleBadgeToken"/>.</summary>
+/// <summary>
+/// The Ant Design view of <see cref="SampleBadgeToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class AntDesignSampleBadgeTokenRule : IControlTokenRule<AntDesignToken, SampleBadgeToken>
 {
@@ -15,7 +17,9 @@ internal sealed class AntDesignSampleBadgeTokenRule : IControlTokenRule<AntDesig
     }
 }
 
-/// <summary>The Ant Design view of <see cref="SampleTagToken"/>.</summary>
+/// <summary>
+/// The Ant Design view of <see cref="SampleTagToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class AntDesignSampleTagTokenRule : IControlTokenRule<AntDesignToken, SampleTagToken>
 {
@@ -27,7 +31,9 @@ internal sealed class AntDesignSampleTagTokenRule : IControlTokenRule<AntDesignT
 
 public static class AntDesignSampleControlsExtensions
 {
-    /// <summary>Adds the Ant Design values of the sample controls; the application enables them with <c>UseSampleControls()</c>.</summary>
+    /// <summary>
+    /// Adds the Ant Design values of the sample controls; the application enables them with <c>UseSampleControls()</c>.
+    /// </summary>
     public static DesignLanguageBuilder<AntDesignLanguage> AddSampleControls(this DesignLanguageBuilder<AntDesignLanguage> language)
     {
         ArgumentNullException.ThrowIfNull(language);

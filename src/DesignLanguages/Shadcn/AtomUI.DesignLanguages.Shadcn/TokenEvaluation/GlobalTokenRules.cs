@@ -49,7 +49,7 @@ internal static class GlobalTokenRules
 
     private static void WriteColors(DesignToken token, ShadcnToken language)
     {
-        // Every base-colour variable lands on its AtomUI token: the Map part here, the Alias part in
+        // Every base-color variable lands on its AtomUI token: the Map part here, the Alias part in
         // AliasTokenRules.
         token.ColorBgLayout    = language.Background;
         token.ColorBgContainer = language.Background;
@@ -75,7 +75,7 @@ internal static class GlobalTokenRules
         var primary = language.ThemePrimary;
         var background = language.Background;
         token.ColorPrimary = primary;
-        // The brand family: hover:bg-primary/80 with the press being a translate, not a colour, so the hover and
+        // The brand family: hover:bg-primary/80 with the press being a translate, not a color, so the hover and
         // active pair are the same 80% composite; the pale surfaces and borders are AtomUI proposals (shadcn has no
         // such variables).
         token.ColorPrimaryHover       = ShadcnRecipes.CompositeOver(primary, 0.8, background);

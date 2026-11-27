@@ -25,6 +25,20 @@ using Avalonia.VisualTree;
 
 namespace AtomUI.Controls;
 
+/// <summary>
+/// Base class of the toggle switch: a two-state switch with a knob that slides inside a groove.
+/// </summary>
+/// <remarks>
+///     <para>
+///     The control measures and arranges the parts of its template itself and paints the groove itself.
+///     Besides the knob it looks up <c>PART_OnContentPresenter</c>, <c>PART_OffContentPresenter</c>,
+///     <c>PART_WaveSpirit</c> and <c>PART_MainContainer</c>.
+///     </para>
+///     <para>
+///     The width of the switch grows with its content but never falls below <see cref="TrackMinWidth" />;
+///     the height is <see cref="TrackHeight" />.
+///     </para>
+/// </remarks>
 [TemplatePart("PART_SwitchKnob", typeof(SwitchKnob))]
 public abstract class AbstractToggleSwitch : ToggleButton,
                                              IFocusOutlineShapeProvider,
@@ -36,92 +50,152 @@ public abstract class AbstractToggleSwitch : ToggleButton,
 {
     #region 公共属性定义
     
+    /// <summary>
+    /// Identifies the <see cref="GrooveBackground" /> property.
+    /// </summary>
     public static readonly StyledProperty<IBrush?> GrooveBackgroundProperty =
         AvaloniaProperty.Register<AbstractToggleSwitch, IBrush?>(
             nameof(GrooveBackground));
 
     /// <summary>
-    /// The brush of the groove's outline, drawn inside the groove; nothing is drawn while it is
-    /// <see langword="null"/> or <see cref="GrooveBorderThickness"/> is 0.
+    /// Identifies the <see cref="GrooveBorderBrush" /> property.
     /// </summary>
     public static readonly StyledProperty<IBrush?> GrooveBorderBrushProperty =
         AvaloniaProperty.Register<AbstractToggleSwitch, IBrush?>(nameof(GrooveBorderBrush));
 
     /// <summary>
-    /// The width of the groove's outline. The outline lies inside the groove, so it changes neither the layout nor the
-    /// knob position.
+    /// Identifies the <see cref="GrooveBorderThickness" /> property.
     /// </summary>
     public static readonly StyledProperty<double> GrooveBorderThicknessProperty =
         AvaloniaProperty.Register<AbstractToggleSwitch, double>(nameof(GrooveBorderThickness));
 
+    /// <summary>
+    /// Identifies the <see cref="OnContent" /> property.
+    /// </summary>
     public static readonly StyledProperty<object?> OnContentProperty =
         AvaloniaProperty.Register<AbstractToggleSwitch, object?>(nameof(OnContent));
     
+    /// <summary>
+    /// Identifies the <see cref="OnContentTemplate" /> property.
+    /// </summary>
     public static readonly StyledProperty<IDataTemplate?> OnContentTemplateProperty = 
         AvaloniaProperty.Register<AbstractToggleSwitch, IDataTemplate?>(nameof(OnContentTemplate));
     
+    /// <summary>
+    /// Identifies the <see cref="OffContent" /> property.
+    /// </summary>
     public static readonly StyledProperty<object?> OffContentProperty =
         AvaloniaProperty.Register<AbstractToggleSwitch, object?>(nameof(OffContent));
 
+    /// <summary>
+    /// Identifies the <see cref="OffContentTemplate" /> property.
+    /// </summary>
     public static readonly StyledProperty<IDataTemplate?> OffContentTemplateProperty = 
         AvaloniaProperty.Register<AbstractToggleSwitch, IDataTemplate?>(nameof(OffContentTemplate));
     
+    /// <summary>
+    /// Identifies the <see cref="SizeType" /> property.
+    /// </summary>
     public static readonly StyledProperty<CustomizableSizeType> SizeTypeProperty =
         CustomizableSizeTypeControlProperty.SizeTypeProperty.AddOwner<AbstractToggleSwitch>();
     
+    /// <summary>
+    /// Identifies the <see cref="IsLoading" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsLoadingProperty =
         AvaloniaProperty.Register<AbstractToggleSwitch, bool>(nameof(IsLoading));
 
+    /// <summary>
+    /// Identifies the <see cref="IsMotionEnabled" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<AbstractToggleSwitch>();
 
+    /// <summary>
+    /// Identifies the <see cref="IsWaveSpiritEnabled" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsWaveSpiritEnabledProperty =
         WaveSpiritAwareControlProperty.IsWaveSpiritEnabledProperty.AddOwner<AbstractToggleSwitch>();
 
     /// <summary>
-    /// 开关轨道高度
+    /// Identifies the <see cref="TrackHeight" /> property.
     /// </summary>
     public static readonly StyledProperty<double> TrackHeightProperty =
         AvaloniaProperty.Register<AbstractToggleSwitch, double>(nameof(TrackHeight));
 
     /// <summary>
-    /// 开关轨道最小宽度
+    /// Identifies the <see cref="TrackMinWidth" /> property.
     /// </summary>
     public static readonly StyledProperty<double> TrackMinWidthProperty =
         AvaloniaProperty.Register<AbstractToggleSwitch, double>(nameof(TrackMinWidth));
 
     /// <summary>
-    /// 开关轨道内边距，把手位置由该值决定，允许为负以实现把手溢出轨道
+    /// Identifies the <see cref="TrackPadding" /> property.
     /// </summary>
     public static readonly StyledProperty<double> TrackPaddingProperty =
         AvaloniaProperty.Register<AbstractToggleSwitch, double>(nameof(TrackPadding));
 
     /// <summary>
-    /// 开关把手大小
+    /// Identifies the <see cref="KnobSize" /> property.
     /// </summary>
     public static readonly StyledProperty<Size> KnobSizeProperty =
         AvaloniaProperty.Register<AbstractToggleSwitch, Size>(nameof(KnobSize));
     
+    /// <summary>
+    /// Gets or sets the brush that fills the groove of the switch.
+    /// </summary>
+    /// <remarks>
+    /// The theme sets it from the state of the switch, for example <c>TrackBg</c> while it is unchecked and
+    /// <c>SwitchColor</c> while it is checked, and animates a change while motion is enabled.
+    /// The click wave uses this brush as well.
+    /// </remarks>
     public IBrush? GrooveBackground
     {
         get => GetValue(GrooveBackgroundProperty);
         set => SetValue(GrooveBackgroundProperty, value);
     }
 
-    /// <inheritdoc cref="GrooveBorderBrushProperty"/>
+    /// <summary>
+    /// Gets or sets the brush of the groove's outline.
+    /// </summary>
+    /// <remarks>
+    /// The outline lies inside the groove. Nothing is drawn while this value is <see langword="null" /> or
+    /// <see cref="GrooveBorderThickness" /> is <c>0</c> or less. The theme sets the value from the
+    /// <c>TrackBorderColor</c> token, or from <c>TrackCheckedBorderColor</c> while the switch is checked.
+    /// </remarks>
     public IBrush? GrooveBorderBrush
     {
         get => GetValue(GrooveBorderBrushProperty);
         set => SetValue(GrooveBorderBrushProperty, value);
     }
 
-    /// <inheritdoc cref="GrooveBorderThicknessProperty"/>
+    /// <summary>
+    /// Gets or sets the width of the groove's outline in device-independent pixels.
+    /// </summary>
+    /// <remarks>
+    /// The outline lies inside the groove, so it changes neither the layout nor the knob position.
+    /// Nothing is drawn while the value is <c>0</c> or less or <see cref="GrooveBorderBrush" /> is
+    /// <see langword="null" />. The theme sets the value from the <c>TrackBorderThickness</c> token.
+    /// </remarks>
     public double GrooveBorderThickness
     {
         get => GetValue(GrooveBorderThicknessProperty);
         set => SetValue(GrooveBorderThicknessProperty, value);
     }
 
+    /// <summary>
+    /// Gets or sets the content shown inside the groove while the switch is checked.
+    /// </summary>
+    /// <remarks>
+    ///     <para>
+    ///     The default is <see langword="null" />, which shows nothing. The wider of <see cref="OnContent" /> and
+    ///     <see cref="OffContent" />, plus the inner margins, sets the width of the switch.
+    ///     </para>
+    ///     <para>
+    ///     A <c>PathIcon</c> follows the icon size of the <see cref="SizeType" /> and the
+    ///     <see cref="TemplatedControl.Foreground" /> of the switch.
+    ///     </para>
+    /// </remarks>
     [DependsOn(nameof(OnContentTemplate))]
     public object? OnContent
     {
@@ -129,12 +203,29 @@ public abstract class AbstractToggleSwitch : ToggleButton,
         set => SetValue(OnContentProperty, value);
     }
     
+    /// <summary>
+    /// Gets or sets the template that builds the <see cref="OnContent" />; <see langword="null" />, the default,
+    /// leaves the content presenter to present the content in its default form.
+    /// </summary>
     public IDataTemplate? OnContentTemplate
     {
         get => GetValue(OnContentTemplateProperty);
         set => SetValue(OnContentTemplateProperty, value);
     }
     
+    /// <summary>
+    /// Gets or sets the content shown inside the groove while the switch is unchecked.
+    /// </summary>
+    /// <remarks>
+    ///     <para>
+    ///     The default is <see langword="null" />, which shows nothing. The wider of <see cref="OnContent" /> and
+    ///     <see cref="OffContent" />, plus the inner margins, sets the width of the switch.
+    ///     </para>
+    ///     <para>
+    ///     A <c>PathIcon</c> follows the icon size of the <see cref="SizeType" /> and the
+    ///     <see cref="TemplatedControl.Foreground" /> of the switch.
+    ///     </para>
+    /// </remarks>
     [DependsOn(nameof(OffContentTemplate))]
     public object? OffContent
     {
@@ -142,54 +233,118 @@ public abstract class AbstractToggleSwitch : ToggleButton,
         set => SetValue(OffContentProperty, value);
     }
     
+    /// <summary>
+    /// Gets or sets the template that builds the <see cref="OffContent" />; <see langword="null" />, the default,
+    /// leaves the content presenter to present the content in its default form.
+    /// </summary>
     public IDataTemplate? OffContentTemplate
     {
         get => GetValue(OffContentTemplateProperty);
         set => SetValue(OffContentTemplateProperty, value);
     }
 
+    /// <summary>
+    /// Gets or sets the size of the switch. The default is <see cref="CustomizableSizeType.Middle" />.
+    /// </summary>
+    /// <remarks>
+    /// The theme takes the knob size, track height, minimum track width, font size and icon size from the size:
+    /// <c>Small</c> uses the small tokens and every other value the regular ones. The inner content margins
+    /// follow the same split.
+    /// </remarks>
     public CustomizableSizeType SizeType
     {
         get => GetValue(SizeTypeProperty);
         set => SetValue(SizeTypeProperty, value);
     }
     
+    /// <summary>
+    /// Gets or sets whether the switch is loading.
+    /// </summary>
+    /// <remarks>
+    /// While loading, an arc rotates on the knob, the switch ignores pointer input and the theme dims it.
+    /// The arc rotates only while <see cref="IsMotionEnabled" /> is <see langword="true" />.
+    /// </remarks>
     public bool IsLoading
     {
         get => GetValue(IsLoadingProperty);
         set => SetValue(IsLoadingProperty, value);
     }
 
+    /// <summary>
+    /// Gets or sets whether state changes animate.
+    /// </summary>
+    /// <remarks>
+    /// While <see langword="true" />, the theme animates the knob position, the content slide, the groove
+    /// background and the opacity, and the click wave and the loading arc are allowed to play.
+    /// The theme sets the value from the <c>EnableMotion</c> token.
+    /// </remarks>
     public bool IsMotionEnabled
     {
         get => GetValue(IsMotionEnabledProperty);
         set => SetValue(IsMotionEnabledProperty, value);
     }
 
+    /// <summary>
+    /// Gets or sets whether a click wave spreads from the groove when the checked state changes.
+    /// </summary>
+    /// <remarks>
+    /// The wave plays only while <see cref="IsMotionEnabled" /> is also <see langword="true" />.
+    /// The theme sets the value from the <c>EnableWaveSpirit</c> token.
+    /// </remarks>
     public bool IsWaveSpiritEnabled
     {
         get => GetValue(IsWaveSpiritEnabledProperty);
         set => SetValue(IsWaveSpiritEnabledProperty, value);
     }
 
+    /// <summary>
+    /// Gets or sets the height of the groove in device-independent pixels; it is also the height of the switch.
+    /// </summary>
+    /// <remarks>
+    /// The theme sets the value from the track height token of the <see cref="SizeType" />.
+    /// </remarks>
     public double TrackHeight
     {
         get => GetValue(TrackHeightProperty);
         set => SetValue(TrackHeightProperty, value);
     }
 
+    /// <summary>
+    /// Gets or sets the smallest width of the groove in device-independent pixels.
+    /// </summary>
+    /// <remarks>
+    /// The width of the switch is the wider content plus the inner margins, but never less than this value; without
+    /// content it is this value. The value is also the lower bound of an explicit
+    /// <see cref="Avalonia.Layout.Layoutable.Width" />. The theme sets the value from the minimum track width token of
+    /// the <see cref="SizeType" />.
+    /// </remarks>
     public double TrackMinWidth
     {
         get => GetValue(TrackMinWidthProperty);
         set => SetValue(TrackMinWidthProperty, value);
     }
 
+    /// <summary>
+    /// Gets or sets the inset of the knob from the groove edge that it rests on, in device-independent pixels.
+    /// </summary>
+    /// <remarks>
+    /// The knob rests on the left edge while the switch is unchecked and on the right edge while it is checked;
+    /// the value is also the inset from the top edge. A negative value moves the knob outside the groove.
+    /// The theme sets the value from the <c>TrackPadding</c> token.
+    /// </remarks>
     public double TrackPadding
     {
         get => GetValue(TrackPaddingProperty);
         set => SetValue(TrackPaddingProperty, value);
     }
 
+    /// <summary>
+    /// Gets or sets the size of the knob in device-independent pixels.
+    /// </summary>
+    /// <remarks>
+    /// The theme sets the value from the handle size token of the <see cref="SizeType" />. While the switch is
+    /// pressed, the knob can be drawn wider than this size; the layout does not change.
+    /// </remarks>
     public Size KnobSize
     {
         get => GetValue(KnobSizeProperty);
@@ -239,12 +394,34 @@ public abstract class AbstractToggleSwitch : ToggleButton,
         set => SetValue(InnerMinMarginProperty, value);
     }
 
+    /// <summary>
+    /// Gets or sets whether the switch reads the Tokens that bound the inner content margins. The default is
+    /// <see langword="false" />; the theme sets <see langword="true" />.
+    /// </summary>
+    /// <remarks>
+    /// While <see langword="true" /> and attached to the visual tree, the switch subscribes to the keys of
+    /// <see cref="ContentMarginKeys" />. Their values feed <see cref="InnerMinMargin" /> and
+    /// <see cref="InnerMaxMargin" /> where those are not set explicitly: the small keys for the <c>Small</c>
+    /// <see cref="SizeType" />, the normal keys for every other size. <see langword="false" /> releases the
+    /// subscription and resets the margins that are not set explicitly to <c>0</c>. The base class provides no
+    /// keys, so only a derived class that overrides <see cref="ContentMarginKeys" /> reads Tokens here.
+    /// </remarks>
     internal bool UseContentMarginTokenResources
     {
         get => GetValue(UseContentMarginTokenResourcesProperty);
         set => SetValue(UseContentMarginTokenResourcesProperty, value);
     }
 
+    /// <summary>
+    /// Gets or sets whether the knob is drawn 30 percent wider than <see cref="KnobSize" /> while the switch
+    /// is pressed. The default is <see langword="true" />; the theme sets the value from the
+    /// <c>EnableHandlePressStretch</c> token.
+    /// </summary>
+    /// <remarks>
+    /// The stretch changes neither the layout nor the size the knob is arranged with. It is reported through
+    /// <see cref="KnobWidthExtension" />, and the content of the switch shifts away from the knob. A change while
+    /// the switch is pressed recalculates the knob and the content offsets.
+    /// </remarks>
     internal bool EnableHandlePressStretch
     {
         get => GetValue(EnableHandlePressStretchProperty);
@@ -254,8 +431,23 @@ public abstract class AbstractToggleSwitch : ToggleButton,
     private OwnerTokenSet? _contentMarginTokens;
     private (double Min, double Max) _contentMargins;
 
+    /// <summary>
+    /// Resource keys of the Tokens that bound the content margin of the switch; <c>ToggleSwitch</c> in
+    /// AtomUI.Desktop.Controls returns the keys of its Tokens.
+    /// </summary>
+    /// <remarks>
+    /// The margin is read as a minimum and a maximum, each for the normal and for the small size. The keys
+    /// are subscribed only while <c>UseContentMarginTokenResources</c> is <see langword="true" />. The base
+    /// class returns <see langword="null" />, so no Tokens are read.
+    /// </remarks>
     private protected virtual (object NormalMin, object NormalMax, object SmallMin, object SmallMax)? ContentMarginKeys => null;
 
+    /// <summary>
+    /// Gets or sets the width and height in device-independent pixels of a <see cref="PathIcon" /> that is
+    /// assigned as <see cref="OnContent" /> or <see cref="OffContent" />. The theme sets the value from the
+    /// <c>ContentIconSizeSM</c> token for the <c>Small</c> <see cref="SizeType" /> and from the
+    /// <c>ContentIconSize</c> token for every other size.
+    /// </summary>
     internal double IconSize
     {
         get => GetValue(IconSizeProperty);
@@ -264,24 +456,73 @@ public abstract class AbstractToggleSwitch : ToggleButton,
 
     // The knob target is the base value its transition animates to. SetCurrentValue would write it into the active
     // animation layer during a transition, and the end of that transition would drop it.
+    /// <summary>
+    /// Gets the transform of the knob: a translation to the top-left corner of the knob rectangle, which lies
+    /// <see cref="TrackPadding" /> from the left edge of the switch while the switch is unchecked, from the
+    /// right edge while it is checked, and from the top edge. The theme binds <c>RenderTransform</c> of
+    /// <c>PART_SwitchKnob</c> to it and animates it while <see cref="IsMotionEnabled" /> is
+    /// <see langword="true" />.
+    /// </summary>
+    /// <remarks>
+    /// Only the control sets the value: when the switch is arranged, when the checked state changes and, for a
+    /// knob of the template, when the pressed state changes. A custom template that leaves the
+    /// <c>RenderTransform</c> of <c>PART_SwitchKnob</c> unset gets the same binding from
+    /// <see cref="OnApplyTemplate" />.
+    /// </remarks>
     internal ITransform? KnobRenderTransform
     {
         get => GetValue(KnobRenderTransformProperty);
         private set => SetValue(KnobRenderTransformProperty, value);
     }
 
+    /// <summary>
+    /// Gets how much wider in device-independent pixels the knob is drawn than <see cref="KnobSize" />: 30
+    /// percent of the knob width while the switch is pressed and <see cref="EnableHandlePressStretch" /> is
+    /// <see langword="true" />, otherwise <c>0</c>. The theme binds <c>KnobWidthExtension</c> of
+    /// <c>PART_SwitchKnob</c> to it and animates it while <see cref="IsMotionEnabled" /> is
+    /// <see langword="true" />.
+    /// </summary>
+    /// <remarks>
+    /// The layout is not affected: the knob is measured and arranged with <see cref="KnobSize" />.
+    /// </remarks>
     internal double KnobWidthExtension
     {
         get => GetValue(KnobWidthExtensionProperty);
         private set => SetValue(KnobWidthExtensionProperty, value);
     }
 
+    /// <summary>
+    /// Gets or sets the offset in device-independent pixels from the top-left corner of the switch at which the
+    /// <see cref="OnContent" /> is laid out. While the switch is checked, the content starts
+    /// <see cref="InnerMinMargin" /> from the left edge and is centered vertically; the stretched knob of a
+    /// press shifts it further left. While the switch is unchecked, the content lies left of the groove and is
+    /// not visible.
+    /// </summary>
+    /// <remarks>
+    /// The control sets the value when the switch is arranged and when the checked or pressed state changes.
+    /// The theme binds <c>OnContentOffset</c> of <c>PART_MainContainer</c> (<c>ToggleSwitchContentPanel</c>) to
+    /// it, which applies it to <c>PART_OnContentPresenter</c>; while <see cref="IsMotionEnabled" /> is
+    /// <see langword="true" /> the theme animates the change.
+    /// </remarks>
     internal Point OnContentOffset
     {
         get => GetValue(OnContentOffsetProperty);
         set => SetValue(OnContentOffsetProperty, value);
     }
 
+    /// <summary>
+    /// Gets or sets the offset in device-independent pixels from the top-left corner of the switch at which the
+    /// <see cref="OffContent" /> is laid out. While the switch is unchecked, the content starts
+    /// <see cref="InnerMaxMargin" /> from the left edge and is centered vertically; the stretched knob of a
+    /// press shifts it further right. While the switch is checked, the content lies right of the groove and is
+    /// not visible.
+    /// </summary>
+    /// <remarks>
+    /// The control sets the value when the switch is arranged and when the checked or pressed state changes.
+    /// The theme binds <c>OffContentOffset</c> of <c>PART_MainContainer</c> (<c>ToggleSwitchContentPanel</c>)
+    /// to it, which applies it to <c>PART_OffContentPresenter</c>; while <see cref="IsMotionEnabled" /> is
+    /// <see langword="true" /> the theme animates the change.
+    /// </remarks>
     internal Point OffContentOffset
     {
         get => GetValue(OffContentOffsetProperty);
@@ -332,6 +573,10 @@ public abstract class AbstractToggleSwitch : ToggleButton,
         _transitionInitialization = new TransitionInitializationSession(this);
     }
 
+    /// <summary>
+    /// Completes the transition initialization when the switch is already arranged.
+    /// Until then, state changes are not animated.
+    /// </summary>
     protected override void OnLoaded(RoutedEventArgs e)
     {
         base.OnLoaded(e);
@@ -341,6 +586,10 @@ public abstract class AbstractToggleSwitch : ToggleButton,
         }
     }
 
+    /// <summary>
+    /// Resets the transition initialization and starts the token subscription that provides the inner content
+    /// margins.
+    /// </summary>
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         _transitionInitialization.Reset();
@@ -348,6 +597,10 @@ public abstract class AbstractToggleSwitch : ToggleButton,
         UpdateContentMarginTokenSubscription();
     }
 
+    /// <summary>
+    /// Releases the content margin token subscription and a pending click wave, and resets the transition
+    /// initialization.
+    /// </summary>
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         _contentMarginTokens?.Dispose();
@@ -358,12 +611,22 @@ public abstract class AbstractToggleSwitch : ToggleButton,
         base.OnDetachedFromVisualTree(e);
     }
 
+    /// <summary>
+    /// Resets the transition initialization when the template changes.
+    /// </summary>
     protected override void OnTemplateChanged(AvaloniaPropertyChangedEventArgs e)
     {
         _transitionInitialization?.Reset();
         base.OnTemplateChanged(e);
     }
 
+    /// <summary>
+    /// Looks up the template parts and applies the loading state to the knob.
+    /// </summary>
+    /// <remarks>
+    /// A custom template can omit the bindings that the default theme declares for the knob. This method adds
+    /// template bindings for the render transform and the width extension of the knob when they are not set.
+    /// </remarks>
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         _transitionInitialization.Reset();
@@ -395,6 +658,11 @@ public abstract class AbstractToggleSwitch : ToggleButton,
         HandleLoadingState(IsLoading);
     }
 
+    /// <summary>
+    /// Keeps the switch in step with property changes: it starts or stops loading, binds icon content to the
+    /// switch, updates the knob size, recalculates the offsets when the checked state or the pressed state
+    /// changes, and plays the click wave when the checked state changes.
+    /// </summary>
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
@@ -467,6 +735,14 @@ public abstract class AbstractToggleSwitch : ToggleButton,
         }
     }
 
+    /// <summary>
+    /// Measures both content presenters and the knob and returns the size of the groove.
+    /// </summary>
+    /// <remarks>
+    /// The height is <see cref="TrackHeight" />. The width is the wider content plus the inner margins, and
+    /// <see cref="TrackMinWidth" /> without content; the result is never narrower than <see cref="TrackMinWidth" />. An
+    /// explicit <see cref="Avalonia.Layout.Layoutable.Width" /> takes the place of the content width.
+    /// </remarks>
     protected override Size MeasureOverride(Size availableSize)
     {
         base.MeasureOverride(availableSize);
@@ -488,11 +764,12 @@ public abstract class AbstractToggleSwitch : ToggleButton,
         _offContentInkOffsetY = CalculateContentInkOffsetY(_offContentPresenter);
 
         var switchHeight  = TrackHeight;
-        // 无内容时内边距不参与宽度计算，宽度收敛到 TrackMinWidth
+        // Without content the inner margins do not add to the width, so the width falls back to TrackMinWidth.
         var switchWidth   = extraInfoWidth > 0
             ? extraInfoWidth + InnerMinMargin + InnerMaxMargin
             : extraInfoWidth;
-        // 显式宽度优先于内容测量宽度，保证把手与轨道几何跟随最终的排列宽度
+        // An explicit Width takes the place of the measured content width, so that the knob and the groove follow the
+        // width that is finally arranged.
         switchWidth = !double.IsNaN(Width)
             ? Math.Max(Width, TrackMinWidth)
             : Math.Max(switchWidth, TrackMinWidth);
@@ -505,14 +782,24 @@ public abstract class AbstractToggleSwitch : ToggleButton,
         return targetSize;
     }
 
+    /// <summary>
+    /// Arranges the parts of the template, computes the knob position and the content offsets from the final
+    /// size, and completes the transition initialization.
+    /// </summary>
+    /// <remarks>
+    /// With the default <c>ToggleSwitchContentPanel</c> the panel arranges the content presenters.
+    /// Only when the template provides a plain <c>Canvas</c> does the switch arrange them itself.
+    /// </remarks>
     protected override Size ArrangeOverride(Size finalSize)
     {
-        // Arrange 的内容盒已应用 Width/Min/Max，且不包含外部 Margin；把手与轨道
-        // 必须使用这一最终几何，而不是测量阶段尚未应用约束的目标尺寸。
+        // The arrange size already has Width, MinWidth and MaxWidth applied and excludes the outer margin. The knob
+        // and the groove must use this final geometry, not the target size that the measure pass computed before those
+        // constraints were applied.
         CalculateElementsOffset(finalSize);
         _mainLayout?.Arrange(new Rect(finalSize));
-        // 应用提供的既有模板仍可使用标准 Canvas；其布局不能由库的 ControlTheme
-        // 声明式接管。只在这条兼容路径由 owner 排列，默认专用画布保持唯一排列 owner。
+        // A template that an application already uses may still provide a plain Canvas, whose layout the library
+        // ControlTheme cannot take over declaratively. Only on this compatibility path does the switch arrange the
+        // presenters; with the default dedicated canvas the canvas stays the only one that arranges them.
         if (_mainLayout is not ToggleSwitchContentPanel)
         {
             if (_offContentPresenter is { } offPresenter)
@@ -539,6 +826,10 @@ public abstract class AbstractToggleSwitch : ToggleButton,
     CornerRadius IFocusOutlineShapeProvider.FocusOutlineCornerRadius =>
         new CornerRadius(Math.Min(Bounds.Width, Bounds.Height) / 2);
 
+    /// <summary>
+    /// Paints the groove as a pill over the whole control, with the outline inside it when a border brush and a
+    /// positive border thickness are set.
+    /// </summary>
     public sealed override void Render(DrawingContext context)
     {
         var rect      = new Rect(new Point(0, 0), Bounds.Size);
@@ -554,6 +845,16 @@ public abstract class AbstractToggleSwitch : ToggleButton,
         context.DrawPilledRect(GrooveBackground, _grooveBorderPen, rect.Deflate(thickness / 2));
     }
 
+    /// <summary>
+    /// Returns whether a point lies inside the groove of the switch.
+    /// The result is always <see langword="false" /> while the switch is disabled or loading.
+    /// </summary>
+    /// <param name="point">
+    /// The point to test, relative to the top-left corner of the switch.
+    /// </param>
+    /// <returns>
+    /// <see langword="true" /> when the point lies inside the groove; otherwise <see langword="false" />.
+    /// </returns>
     public bool HitTest(Point point)
     {
         if (!IsEnabled || IsLoading)
@@ -565,6 +866,9 @@ public abstract class AbstractToggleSwitch : ToggleButton,
         return grooveRect.Contains(point);
     }
 
+    /// <summary>
+    /// Ignores the pointer press while the switch is loading; otherwise it runs the Avalonia handling.
+    /// </summary>
     protected override void OnPointerPressed(PointerPressedEventArgs e)
     {
         if (!IsLoading)
@@ -573,6 +877,9 @@ public abstract class AbstractToggleSwitch : ToggleButton,
         }
     }
 
+    /// <summary>
+    /// Ignores the pointer release while the switch is loading; otherwise it runs the Avalonia handling.
+    /// </summary>
     protected override void OnPointerReleased(PointerReleasedEventArgs e)
     {
         if (!IsLoading)
@@ -595,26 +902,63 @@ public abstract class AbstractToggleSwitch : ToggleButton,
     void IFormItemAware.ClearFormValue() => NotifyClearFormValue();
     void IFormItemAware.NotifyValidateStatus(FormValidateStatus status) => NotifyValidateStatus(status);
 
+    /// <summary>
+    /// Called after <see cref="ToggleButton.IsChecked" /> has changed.
+    /// </summary>
+    /// <param name="value">
+    /// The new checked state.
+    /// </param>
+    /// <remarks>
+    /// The default implementation raises the <c>ValueChanged</c> event of the form item that hosts the switch.
+    /// An override that keeps the form item informed must call the base method.
+    /// </remarks>
     protected virtual void NotifyFormValueChanged(object? value)
     {
         _formValueChanged?.Invoke(this, EventArgs.Empty);
     }
 
+    /// <summary>
+    /// Called when the <c>FormItem</c> that hosts the switch sets or resets its value.
+    /// The default implementation assigns <paramref name="value" /> to <see cref="ToggleButton.IsChecked" /> while
+    /// keeping an existing binding on it.
+    /// </summary>
+    /// <param name="value">
+    /// The checked state to apply; <see langword="null" /> clears the checked state. A form value that is not a
+    /// <see cref="bool" /> arrives here as <see langword="null" />.
+    /// </param>
     protected virtual void NotifySetFormValue(bool? value)
     {
         SetCurrentValue(IsCheckedProperty, value);
     }
 
+    /// <summary>
+    /// Called when the <c>FormItem</c> that hosts the switch reads its value.
+    /// </summary>
+    /// <returns>
+    /// The value of <see cref="ToggleButton.IsChecked" />.
+    /// </returns>
     protected virtual object? NotifyGetFormValue()
     {
         return IsChecked;
     }
 
+    /// <summary>
+    /// Called when the <c>FormItem</c> that hosts the switch resets and has no initial value.
+    /// The default implementation sets <see cref="ToggleButton.IsChecked" /> to <see langword="null" /> while
+    /// keeping an existing binding on it.
+    /// </summary>
     protected virtual void NotifyClearFormValue()
     {
         SetCurrentValue(IsCheckedProperty, null);
     }
 
+    /// <summary>
+    /// Called when the validation status of the <c>FormItem</c> that hosts the switch changes, for example
+    /// after a validation run. The default implementation does nothing.
+    /// </summary>
+    /// <param name="status">
+    /// The status that the form item now shows.
+    /// </param>
     protected virtual void NotifyValidateStatus(FormValidateStatus status)
     {
     }
@@ -852,11 +1196,13 @@ public abstract class AbstractToggleSwitch : ToggleButton,
             return 0;
         }
 
-        // 默认字符串标签按可见字形居中；字体行盒包含给下伸字形预留的空间，
-        // 直接居中行盒会让 On / Off 等标签偏上。自定义模板继续拥有自己的布局。
-        // 真实字形、fallback 和 shaping offset 是运行时排版结果，ControlTheme 无法表达。
-        // 复用已有排版，仅在 Measure 提取轮廓边界并缓存数值，动画的每帧 Arrange 不生成 Geometry。
-        // GlyphRun.InkBounds 是保守包围盒，GlyphMetrics 可能只有 advance；均不能替代可见轮廓。
+        // A plain string label is centered on its visible glyphs: the line box of the font reserves room for
+        // descenders, so centering the line box puts labels such as On / Off too high. A custom template keeps its
+        // own layout. The real glyphs, the fallback fonts and the shaping offsets are results of the run-time text
+        // layout, which a ControlTheme cannot express. The existing text layout is reused and only the ink bounds are
+        // extracted in the measure pass; the arrange pass of every animation frame builds no Geometry.
+        // GlyphRun.InkBounds is a conservative bounding box and GlyphMetrics may provide only the advance, so neither
+        // can replace the visible outline.
         var layout = textBlock.TextLayout;
         var inkTop = double.PositiveInfinity;
         var inkBottom = double.NegativeInfinity;
@@ -897,8 +1243,8 @@ public abstract class AbstractToggleSwitch : ToggleButton,
             return glyphRun.BuildGeometry().Bounds;
         }
 
-        // Avalonia 12 的 Skia 轮廓构建未应用 GlyphOffset，实际绘制却会应用。
-        // 有垂直 shaping offset 时逐字形设置基线，使轮廓边界与绘制位置一致。
+        // In Avalonia 12 the Skia outline is built without the GlyphOffset, while drawing applies it. With a vertical
+        // shaping offset the baseline is therefore set per glyph, so that the outline bounds match the drawn position.
         var bounds = default(Rect);
         foreach (var glyph in glyphRun.GlyphInfos)
         {

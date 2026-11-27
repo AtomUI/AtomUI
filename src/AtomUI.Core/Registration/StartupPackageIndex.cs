@@ -6,7 +6,11 @@ using AtomUI.Theme.Schema;
 
 namespace AtomUI.Registration;
 
-/// <summary>Application-owned indexes; metadata queries never activate registration proxies.</summary>
+/// <summary>
+/// Application-owned indexes; the first query that needs the descriptor, the semantic or an asset of a control
+/// activates its registration proxy, and a semantic lookup also triggers the first use of the control's package
+/// unless <c>notifyFirstUse</c> is <see langword="false" />.
+/// </summary>
 internal sealed class StartupPackageIndex
 {
     private static readonly ConditionalWeakTable<Type, TypeResourceKeys> s_typeKeys = new();

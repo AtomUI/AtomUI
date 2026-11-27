@@ -8,7 +8,8 @@ internal class TreeViewSelectTreeViewItem : TreeViewItem
 {
     public TreeViewSelectTreeViewItem()
     {
-        // 容器运行时创建，标记在创建时注入，覆盖任意嵌套层级与容器回收。
+        // The containers are created at runtime, so the class marker is injected in the constructor. That covers every
+        // nesting level and container recycling.
         Classes.Add(TreeSelectSemanticParts.PopupListItemClass);
     }
 

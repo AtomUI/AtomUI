@@ -11,7 +11,8 @@ namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 /// <c>inputnumber.button</c> — a transparent resting fill, <c>surface.100</c> / <c>800</c> on hover,
 /// <c>surface.200</c> / <c>700</c> while pressed, icon <c>surface.400</c> / <c>500</c> / <c>600</c> (dark
 /// <c>300</c> / <c>200</c>) and no divider (the stacked buttons carry <c>border: 0 none</c>); the icon and the column
-/// width are tuned to the field (see <see cref="PrimeNGSpinnerHandle"/>). Both hosts share the handle theme, so both token identities are written.
+/// width are tuned to the field (see <see cref="PrimeNGSpinnerHandle" />). Both hosts share the handle theme, so both
+/// token identities are written.
 /// </summary>
 internal static class PrimeNGButtonSpinnerTokens
 {
@@ -25,8 +26,8 @@ internal static class PrimeNGButtonSpinnerTokens
 }
 
 /// <summary>
-/// NumericUpDown's spinner owns <see cref="NumericUpDownToken"/> (a sibling of <see cref="ButtonSpinnerToken"/>), so the
-/// same PrimeUIX <c>inputnumber.button</c> values are written through its own identity.
+/// NumericUpDown's spinner owns <see cref="NumericUpDownToken" /> (a sibling of <see cref="ButtonSpinnerToken" />),
+/// so the same PrimeUIX <c>inputnumber.button</c> values are written through its own identity.
 /// </summary>
 internal static class PrimeNGNumericUpDownTokens
 {
@@ -42,12 +43,16 @@ internal static class PrimeNGNumericUpDownTokens
     }
 }
 
-/// <summary>The shared <c>inputnumber.button</c> mapping, written for both spinner token identities.</summary>
+/// <summary>
+/// The shared <c>inputnumber.button</c> mapping, written for both spinner token identities.
+/// </summary>
 internal static class PrimeNGSpinnerHandle
 {
     internal static void Apply(in TokenEvaluationContext<PrimeNGToken> context, DesignToken effectiveGlobal, AbstractButtonSpinnerToken token)
     {
         var language = context.Language;
+        // inputnumber.button: a transparent resting fill, surface.100 / 800 on hover, surface.200 / 700 pressed; the
+        // icon surface.400, on hover surface.500 / 300, pressed surface.600 / 200.
         var dark    = context.Variant.Appearance == ThemeAppearance.Dark;
         token.HandleBg          = Colors.Transparent;
         token.FilledHandleBg    = Colors.Transparent;

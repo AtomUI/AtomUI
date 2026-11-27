@@ -3,7 +3,9 @@ using AtomUI.Theme.Languages;
 
 namespace AtomUI.Desktop.Controls.Themes.AntDesign;
 
-/// <summary>The AntDesign view of <see cref="SplitButtonToken"/>.</summary>
+/// <summary>
+/// The AntDesign view of <see cref="SplitButtonToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class SplitButtonTokenRule : IControlTokenRule<AntDesignToken, SplitButtonToken>
 {

@@ -107,8 +107,9 @@ internal sealed class ThemeSchemaRegistry
     }
 
     /// <summary>
-    /// 全部输入均携带编译期包指纹的启动路径：Revision 由常量组合而来，不再逐字段遍历。
-    /// 内容构建与公共入口完全一致，仅 Revision 计算走组合域。
+    /// Startup path for inputs that all carry compile-time package fingerprints: the revision is composed from the
+    /// supplied fingerprints instead of being computed by walking every descriptor field. The registry content is
+    /// built exactly as it is without fingerprints; only the <see cref="Revision" /> is calculated differently.
     /// </summary>
     internal ThemeSchemaRegistry(
         IEnumerable<TokenDescriptor> globalTokens,
@@ -257,7 +258,9 @@ internal sealed class ThemeSchemaRegistry
 
     public IReadOnlyList<TokenDescriptor> GlobalTokens { get; }
     public IReadOnlyList<ControlTokenDescriptor> Controls { get; }
-    /// <summary>The enabled design languages, ordered by identity.</summary>
+    /// <summary>
+    /// The enabled design languages, ordered by identity.
+    /// </summary>
     public IReadOnlyList<DesignLanguageDescriptor> Languages { get; }
 
     /// <summary>
@@ -272,8 +275,10 @@ internal sealed class ThemeSchemaRegistry
     internal IReadOnlyList<ControlThemeAssetDescriptor> ThemeAssets { get; }
 
     /// <summary>
-    /// 启动 Prepare 专用：只含全局 Token 与语言，不含控件描述。主题定义绑定在此模式下跳过控件段，
-    /// 因为控件段只影响控件层 Token，全局层结果与完整 registry 相同。
+    /// <see langword="true" /> only on the registry that the startup prepare step creates with
+    /// <see cref="CreateGlobalOnly" />. It holds the global Tokens and the languages but no controls, so theme
+    /// definition binding skips the control section, which only affects control-layer Tokens; the global layer is
+    /// bound as with a full registry.
     /// </summary>
     internal bool IsGlobalOnly { get; private init; }
 
@@ -285,9 +290,11 @@ internal sealed class ThemeSchemaRegistry
             IsGlobalOnly = true
         };
 
-    // 全局编译只依赖这些不可变描述符，不依赖控件/资产的 registry Revision。
-    // 使用精确对象身份也覆盖自定义 setter/factory 的行为，不能仅比较名字或版本号。
-    // 新增的语言不影响已编译的全局结果（语言由配置按身份携带），因此只要求 previous 的每个语言描述符在这里按引用存在。
+    // Global compilation depends only on the immutable global Token and language descriptors compared here, not on the
+    // registry revision of controls/assets. Comparing exact object identity also covers the behavior of custom setters
+    // and factories; names or version numbers do not. A language added to this registry does not change an already
+    // compiled global result, because a configuration carries its languages by identity. Only each language
+    // descriptor of `previous` must therefore be present here by reference.
     internal bool ExtendsGlobalSchemaOf(ThemeSchemaRegistry previous)
     {
         ArgumentNullException.ThrowIfNull(previous);
@@ -390,8 +397,9 @@ internal sealed class ThemeSchemaRegistry
     }
 
     /// <summary>
-    /// 对编译期全局 Token 名列表计算两个生成指纹（契约 / 资源键）的公共前缀中间状态，
-    /// 供差分测试核对与生成代码的前缀续算使用。
+    /// Hashes the compile-time list of global Token names into the saved prefix state of the two generated
+    /// fingerprints, contract and resource key. Differential tests check generated code against it, and generated
+    /// code resumes hashing from it.
     /// </summary>
     internal static (SchemaPrefixState ContractPrefix, SchemaPrefixState ResourceKeyPrefix) HashGlobalTokenNames(
         IReadOnlyList<string> globalTokenNames)
@@ -499,9 +507,9 @@ internal sealed class ThemeSchemaRegistry
     }
 
     /// <summary>
-    /// The rule of the control in <paramref name="controlSlot"/> under <paramref name="language"/>: the first one
-    /// registered along the language token type's base types, from the most specific to <see cref="LanguageDesignToken"/>
-    /// (spec 6.1). <see langword="null"/> for a control without control tokens.
+    /// The rule of the control in <paramref name="controlSlot" /> under <paramref name="language" />: the first one
+    /// registered along the language token type's base types, from the most specific to
+    /// <see cref="LanguageDesignToken" />. <see langword="null" /> for a control without control tokens.
     /// </summary>
     internal ControlTokenRuleDescriptor? FindControlTokenRule(DesignLanguageDescriptor language, int controlSlot)
     {
@@ -510,7 +518,11 @@ internal sealed class ThemeSchemaRegistry
         return table[controlSlot];
     }
 
-    /// <summary>Finds the rule registered for (<paramref name="languageTokenType"/>, <paramref name="control"/>) along the type chain.</summary>
+    /// <summary>
+    /// The first rule registered for <paramref name="control" /> along <paramref name="languageTokenType" /> and
+    /// its base types, from the most specific to <see cref="LanguageDesignToken" />.
+    /// <see langword="null" /> when none is registered.
+    /// </summary>
     internal ControlTokenRuleDescriptor? FindControlTokenRule(Type languageTokenType, ControlTokenIdentity control)
     {
         for (var type = languageTokenType;
@@ -541,8 +553,10 @@ internal sealed class ThemeSchemaRegistry
     }
 
     /// <summary>
-    /// Spec 8, check 1: every enabled language finds a rule for every control token class of every enabled
-    /// control package. The message names the value package that is missing.
+    /// Requires every enabled language to find a rule for every control token class of every enabled control
+    /// package, and checks that each found rule's value package was built against the loaded control package's
+    /// token schema. A missing rule throws a <see cref="ThemeSchemaException" /> whose message names the control,
+    /// the language and the value package to install and enable. Nothing is checked when no language is enabled.
     /// </summary>
     private void ValidateTokenRuleCoverage()
     {
@@ -564,7 +578,7 @@ internal sealed class ThemeSchemaRegistry
                 var identity = GetControlIdentity(slot);
                 if (FindControlTokenRule(language.LanguageTokenType, identity) is { } found)
                 {
-                    // Spec 8, check 4: the value package was built against the loaded control package's token schema.
+                    // The value package must have been built against the loaded control package's token schema.
                     TokenSchemaDigests.Validate(found.ValuePackage, found.TokenType.Assembly);
                 }
                 else
@@ -585,8 +599,9 @@ internal sealed class ThemeSchemaRegistry
 
     /// <summary>
     /// Validates the rules a package append brings, where this registry is the appended one and
-    /// <paramref name="previous"/> the committed one. A new rule is rejected when a committed language would
-    /// find it for a committed control: it would change committed values.
+    /// <paramref name="previous" /> the committed one. A new rule is rejected when its control is committed and
+    /// a committed language has a token type equal to the rule's token type or derived from it, because the rule
+    /// could then replace values that are already committed.
     /// </summary>
     internal void ValidateAppendedTokenRules(ThemeSchemaRegistry previous)
     {

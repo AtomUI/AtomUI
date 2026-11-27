@@ -11,48 +11,194 @@ using Avalonia.Data;
 
 namespace AtomUI.Desktop.Controls;
 
+/// <summary>
+/// A single calendar panel that shows a grid of days, months, quarters or years and stores the pick in
+/// <see cref="Value" />: a date, a week, a month, a quarter or a year, as <see cref="SelectionUnit" /> selects.
+/// When <see cref="Calendar" /> embeds the panel, navigation and picks are forwarded to it and the footer with
+/// the Today button is hidden.
+/// </summary>
 public partial class DateViewer : TemplatedControl, IDatePanelHost
 {
     #region 公共属性定义
+    /// <summary>
+    /// Identifies the <see cref="Value" /> property.
+    /// </summary>
     public static readonly StyledProperty<DateTime?> ValueProperty = AvaloniaProperty.Register<DateViewer, DateTime?>(nameof(Value), defaultBindingMode: BindingMode.TwoWay, enableDataValidation: true);
+    /// <summary>
+    /// Identifies the <see cref="DisplayDate" /> property.
+    /// </summary>
     public static readonly StyledProperty<DateTime> DisplayDateProperty = AvaloniaProperty.Register<DateViewer, DateTime>(nameof(DisplayDate), defaultBindingMode: BindingMode.TwoWay);
+    /// <summary>
+    /// Identifies the <see cref="SelectionUnit" /> property.
+    /// </summary>
     public static readonly StyledProperty<DateViewerSelectionUnit> SelectionUnitProperty = AvaloniaProperty.Register<DateViewer, DateViewerSelectionUnit>(nameof(SelectionUnit));
+    /// <summary>
+    /// Identifies the <see cref="Presentation" /> property.
+    /// </summary>
     public static readonly StyledProperty<DateViewerPresentation> PresentationProperty = AvaloniaProperty.Register<DateViewer, DateViewerPresentation>(nameof(Presentation));
+    /// <summary>
+    /// Identifies the <see cref="MinDate" /> property.
+    /// </summary>
     public static readonly StyledProperty<DateTime?> MinDateProperty = AvaloniaProperty.Register<DateViewer, DateTime?>(nameof(MinDate));
+    /// <summary>
+    /// Identifies the <see cref="MaxDate" /> property.
+    /// </summary>
     public static readonly StyledProperty<DateTime?> MaxDateProperty = AvaloniaProperty.Register<DateViewer, DateTime?>(nameof(MaxDate));
+    /// <summary>
+    /// Identifies the <see cref="DisabledDate" /> property.
+    /// </summary>
     public static readonly StyledProperty<Func<DateTime, bool>?> DisabledDateProperty = AvaloniaProperty.Register<DateViewer, Func<DateTime, bool>?>(nameof(DisabledDate));
+    /// <summary>
+    /// Identifies the <see cref="FirstDayOfWeek" /> property.
+    /// </summary>
     public static readonly StyledProperty<DayOfWeek?> FirstDayOfWeekProperty = AvaloniaProperty.Register<DateViewer, DayOfWeek?>(nameof(FirstDayOfWeek));
+    /// <summary>
+    /// Identifies the <see cref="ShowWeek" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> ShowWeekProperty = AvaloniaProperty.Register<DateViewer, bool>(nameof(ShowWeek));
+    /// <summary>
+    /// Identifies the <see cref="ShowHeader" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> ShowHeaderProperty = AvaloniaProperty.Register<DateViewer, bool>(nameof(ShowHeader), true);
+    /// <summary>
+    /// Identifies the <see cref="HeaderTemplate" /> property.
+    /// </summary>
     public static readonly StyledProperty<IDataTemplate?> HeaderTemplateProperty = AvaloniaProperty.Register<DateViewer, IDataTemplate?>(nameof(HeaderTemplate));
+    /// <summary>
+    /// Identifies the <see cref="CellTemplate" /> property.
+    /// </summary>
     public static readonly StyledProperty<IDataTemplate?> CellTemplateProperty = AvaloniaProperty.Register<DateViewer, IDataTemplate?>(nameof(CellTemplate));
+    /// <summary>
+    /// Identifies the <see cref="FullCellTemplate" /> property.
+    /// </summary>
     public static readonly StyledProperty<IDataTemplate?> FullCellTemplateProperty = AvaloniaProperty.Register<DateViewer, IDataTemplate?>(nameof(FullCellTemplate));
+    /// <summary>
+    /// Identifies the <see cref="PanelKind" /> property.
+    /// </summary>
     public static readonly DirectProperty<DateViewer, DateViewerPanelKind> PanelKindProperty = AvaloniaProperty.RegisterDirect<DateViewer, DateViewerPanelKind>(nameof(PanelKind), control => control.PanelKind);
+    /// <summary>
+    /// Identifies the <see cref="FocusedValue" /> property.
+    /// </summary>
     public static readonly DirectProperty<DateViewer, DateTime?> FocusedValueProperty = AvaloniaProperty.RegisterDirect<DateViewer, DateTime?>(nameof(FocusedValue), control => control.FocusedValue);
+    /// <summary>
+    /// Identifies the <see cref="HoveredValue" /> property.
+    /// </summary>
     public static readonly DirectProperty<DateViewer, DateTime?> HoveredValueProperty = AvaloniaProperty.RegisterDirect<DateViewer, DateTime?>(nameof(HoveredValue), control => control.HoveredValue);
 
+    /// <summary>
+    /// The selected date, normalized for <see cref="SelectionUnit" />, or <see langword="null" /> when nothing
+    /// is selected, which is the default. A pick in the panel writes it. Bindings to it default to
+    /// <see cref="BindingMode.TwoWay" /> with data validation enabled.
+    /// </summary>
     public DateTime? Value { get => GetValue(ValueProperty); set => SetValue(ValueProperty, value); }
+    /// <summary>
+    /// The date that anchors the shown panel: a day of the shown month on a date panel, of the shown year on a
+    /// month or quarter panel, and of the shown decade on a year panel. Paging, drilling into a cell and a pick
+    /// move it. It starts at today, and bindings to it default to <see cref="BindingMode.TwoWay" />.
+    /// </summary>
     public DateTime DisplayDate { get => GetValue(DisplayDateProperty); set => SetValue(DisplayDateProperty, value); }
+    /// <summary>
+    /// What a pick selects: a date, a week, a month, a quarter or a year. It also decides the panel on which a pick
+    /// selects: <see cref="DateViewerSelectionUnit.Date" /> and <see cref="DateViewerSelectionUnit.Week" /> select
+    /// on the date panel, and each other unit selects on the panel of its own kind. A change of the unit resets
+    /// <see cref="PanelKind" /> to that panel. The default is <see cref="DateViewerSelectionUnit.Date" />, the only
+    /// unit that shows the default footer; its Today button is enabled only while today is not excluded by
+    /// <see cref="MinDate" />, <see cref="MaxDate" /> or <see cref="DisabledDate" />.
+    /// </summary>
     public DateViewerSelectionUnit SelectionUnit { get => GetValue(SelectionUnitProperty); set => SetValue(SelectionUnitProperty, value); }
+    /// <summary>
+    /// How the cells of the panel are laid out. <see cref="DateViewerPresentation.Compact" />, the default, keeps
+    /// fixed-size cells in a panel of fixed width, as in a calendar. <see cref="DateViewerPresentation.Content" />
+    /// leaves room for cell content and lets the panel stretch to the width it is given.
+    /// </summary>
     public DateViewerPresentation Presentation { get => GetValue(PresentationProperty); set => SetValue(PresentationProperty, value); }
+    /// <summary>
+    /// The earliest date a cell may show; the boundary date itself is not disabled. Earlier cells are disabled, and
+    /// the panel cannot be navigated to a period before the one that contains it. <see langword="null" />, the
+    /// default, leaves the range open at this side.
+    /// </summary>
     public DateTime? MinDate { get => GetValue(MinDateProperty); set => SetValue(MinDateProperty, value); }
+    /// <summary>
+    /// The latest date a cell may show; the boundary date itself is not disabled. Later cells are disabled, and the
+    /// panel cannot be navigated to a period after the one that contains it. <see langword="null" />, the default,
+    /// leaves the range open at this side.
+    /// </summary>
     public DateTime? MaxDate { get => GetValue(MaxDateProperty); set => SetValue(MaxDateProperty, value); }
+    /// <summary>
+    /// A predicate that receives the date of a cell and returns <see langword="true" /> to disable the cell. It
+    /// applies in addition to <see cref="MinDate" /> and <see cref="MaxDate" />. <see langword="null" />, the
+    /// default, disables nothing.
+    /// </summary>
     public Func<DateTime, bool>? DisabledDate { get => GetValue(DisabledDateProperty); set => SetValue(DisabledDateProperty, value); }
+    /// <summary>
+    /// The weekday that starts each week row of the date panel. <see langword="null" />, the default, uses the first
+    /// day of the week of the current culture.
+    /// </summary>
     public DayOfWeek? FirstDayOfWeek { get => GetValue(FirstDayOfWeekProperty); set => SetValue(FirstDayOfWeekProperty, value); }
+    /// <summary>
+    /// Shows a column of week numbers in front of the date panel. The default is <see langword="false" />.
+    /// </summary>
     public bool ShowWeek { get => GetValue(ShowWeekProperty); set => SetValue(ShowWeekProperty, value); }
+    /// <summary>
+    /// Shows the header above the panel, whether it shows the default navigation or the content of
+    /// <see cref="HeaderTemplate" />. The default is <see langword="true" />.
+    /// </summary>
     public bool ShowHeader { get => GetValue(ShowHeaderProperty); set => SetValue(ShowHeaderProperty, value); }
+    /// <summary>
+    /// A template for custom header content. It replaces the default navigation of the panel while it is set. Its
+    /// data context is a <see cref="DateViewerHeaderContext" />, which exposes the state and the navigation of the
+    /// panel. <see langword="null" />, the default, shows the default navigation.
+    /// </summary>
     public IDataTemplate? HeaderTemplate { get => GetValue(HeaderTemplateProperty); set => SetValue(HeaderTemplateProperty, value); }
+    /// <summary>
+    /// A template for extra content shown below the date in every cell. Its data context is the
+    /// <c>DateViewerCellContext</c> of the cell, which exposes the cell state. <see langword="null" />, the
+    /// default, shows the date alone.
+    /// </summary>
     public IDataTemplate? CellTemplate { get => GetValue(CellTemplateProperty); set => SetValue(CellTemplateProperty, value); }
+    /// <summary>
+    /// A template that replaces the whole content of every cell. It takes precedence over
+    /// <see cref="CellTemplate" />. <see langword="null" />, the default, shows the default cell: the date and,
+    /// when <see cref="CellTemplate" /> is set, its content.
+    /// </summary>
     public IDataTemplate? FullCellTemplate { get => GetValue(FullCellTemplateProperty); set => SetValue(FullCellTemplateProperty, value); }
+    /// <summary>
+    /// The kind of grid the panel shows, as a <see cref="DateViewerPanelKind" /> value. Navigation inside the panel
+    /// changes it, and a change of <see cref="SelectionUnit" /> resets it to the panel on which picks select.
+    /// </summary>
     public DateViewerPanelKind PanelKind => _host?.ReadInput().PanelKind ?? _panelKind;
+    /// <summary>
+    /// The date of the cell that keyboard navigation is positioned on. It follows keyboard navigation and starts
+    /// at <see cref="Value" />, or at <see cref="DisplayDate" /> when nothing is selected.
+    /// </summary>
     public DateTime? FocusedValue => _session?.FocusedValue;
+    /// <summary>
+    /// The date of the cell under the pointer, or <see langword="null" /> while no cell is hovered.
+    /// </summary>
     public DateTime? HoveredValue => _session?.HoveredValue;
     #endregion
 
     #region 公共事件定义
+    /// <summary>
+    /// Raised after a pick changed <see cref="Value" />: the new value is committed. A pick that results in the
+    /// same value, and an assignment to <see cref="Value" />, do not raise it.
+    /// </summary>
     public event EventHandler<DateViewerValueChangedEventArgs>? ValueChanged;
+    /// <summary>
+    /// Raised after a pick that produces a selection, also when the value stays the same.
+    /// <see cref="ValueChanged" /> is raised first when the value did change.
+    /// </summary>
     public event EventHandler<DateViewerSelectedEventArgs>? Selected;
+    /// <summary>
+    /// Raised after the panel moved to another period or another kind, once <see cref="DisplayDate" /> and
+    /// <see cref="PanelKind" /> are updated. Paging and picks that move the panel do so; a change of
+    /// <see cref="SelectionUnit" /> that resets the kind does not raise it.
+    /// </summary>
     public event EventHandler<DateViewerPanelChangedEventArgs>? PanelChanged;
+    /// <summary>
+    /// Raised when the date under the pointer changes. The event argument carries the new date, or
+    /// <see langword="null" /> when no cell is hovered.
+    /// </summary>
     public event EventHandler<DateViewerHoveredValueChangedEventArgs>? HoveredValueChanged;
     #endregion
 
@@ -97,6 +243,13 @@ public partial class DateViewer : TemplatedControl, IDatePanelHost
         RefreshHeaderContext();
     }
 
+    /// <summary>
+    /// Called when a styled property changes. A change of <see cref="SelectionUnit" /> resets
+    /// <see cref="PanelKind" /> and the visibility of the default footer; a change of a property that feeds the
+    /// panel refreshes the panel input; a change of <see cref="SelectionUnit" />, <see cref="MinDate" />,
+    /// <see cref="MaxDate" /> or <see cref="DisabledDate" /> updates the enabled state of the Today button.
+    /// Call the base member first.
+    /// </summary>
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
@@ -123,6 +276,11 @@ public partial class DateViewer : TemplatedControl, IDatePanelHost
         }
     }
 
+    /// <summary>
+    /// Called when the control is attached to a visual tree. It subscribes to the geometry of the template panel,
+    /// to language changes, takes the formatting culture of the language manager and refreshes the panel input.
+    /// Call the base member first.
+    /// </summary>
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
@@ -136,6 +294,10 @@ public partial class DateViewer : TemplatedControl, IDatePanelHost
         _session.UpdateInput();
     }
 
+    /// <summary>
+    /// Called when the control is detached from a visual tree. It unsubscribes from the panel geometry and from
+    /// language changes and drops the language manager. Call the base member last.
+    /// </summary>
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         if (_geometryPanel is not null)
@@ -152,6 +314,11 @@ public partial class DateViewer : TemplatedControl, IDatePanelHost
         base.OnDetachedFromVisualTree(e);
     }
 
+    /// <summary>
+    /// Called when the control template is applied. It releases the previous template panel, locates
+    /// <c>PART_PrimaryPanel</c> and publishes the cell geometry relative to this control. Call the base member
+    /// before the parts are located.
+    /// </summary>
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         if (_geometryPanel is not null)
@@ -178,6 +345,10 @@ public partial class DateViewer : TemplatedControl, IDatePanelHost
 
     private void OnPanelGeometryChanged(object? sender, EventArgs e) => PublishCellGeometry();
 
+    /// <summary>
+    /// Arranges the content and then publishes the cell bounds relative to this control. Call the base member
+    /// first and return its size; the bounds are final only after the arrangement.
+    /// </summary>
     protected override Size ArrangeOverride(Size finalSize)
     {
         var result = base.ArrangeOverride(finalSize);

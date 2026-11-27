@@ -5,7 +5,9 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 
-/// <summary>The PrimeNG view of <see cref="ExpanderToken"/>.</summary>
+/// <summary>
+/// The PrimeNG view of <see cref="ExpanderToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class ExpanderTokenRule : IControlTokenRule<PrimeNGToken, ExpanderToken>
 {
@@ -13,7 +15,8 @@ internal sealed class ExpanderTokenRule : IControlTokenRule<PrimeNGToken, Expand
     {
         var token  = target.Own;
         var global = target.Global;
-        // PrimeNG: the control-global overrides, read by the formulas below.
+        // PrimeNG: the control-global overrides (ColorBorder, MotionDurationSlow), read by the Expander theme
+        // (BorderBrush, MotionDuration) and not by the formulas below.
         PrimeNGExpanderTokens.EvaluateGlobal(in context, global);
         token.HeaderPadding            = new Thickness(global.UniformlyPadding, global.UniformlyPaddingSM);
         token.HeaderBg                 = global.ColorFillAlter;

@@ -4,7 +4,9 @@ using AtomUI.Theme.Languages;
 
 namespace AtomUI.Desktop.Controls.Themes.Shadcn;
 
-/// <summary>The shadcn view of <see cref="SplitButtonToken"/>.</summary>
+/// <summary>
+/// The shadcn view of <see cref="SplitButtonToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class SplitButtonTokenRule : IControlTokenRule<ShadcnToken, SplitButtonToken>
 {
@@ -16,6 +18,7 @@ internal sealed class SplitButtonTokenRule : IControlTokenRule<ShadcnToken, Spli
         global.BorderRadiusMD   = new CornerRadius(context.Language.ButtonRadius);
         global.BorderRadiusLG   = new CornerRadius(context.Language.ButtonRadiusLG);
         global.BorderRadiusSM   = new CornerRadius(context.Language.ButtonRadiusSM);
+        // Ant Design's separator switch and colors; the registry button-group values replace them below.
         token.InsetSeparator         = false;
         token.GutterToFlyout         = global.UniformlyMarginXXS;
         token.SolidSeparatorColor    = global.ColorPrimaryHover;

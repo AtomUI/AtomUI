@@ -4,7 +4,8 @@ using Avalonia;
 
 namespace AtomUI.Utils;
 
-// 反射扩展类
+// AvaloniaProperty.Notifying is not public, so it is looked up through reflection and validated by
+// FixedMemberReflection.RequireProperty.
 internal static class AvaloniaPropertyReflectionExtensions
 {
     private static readonly Lazy<PropertyInfo> NotifyingPropertyInfo = new(() =>

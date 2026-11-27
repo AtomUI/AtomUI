@@ -5,6 +5,14 @@ using Avalonia.Controls;
 
 namespace AtomUI.Theme.Resources;
 
+/// <summary>
+/// Reads compiled Token values for code that cannot obtain them through a resource binding. A consumer captures
+/// the <see cref="ThemeSnapshot" /> that is current for the theme context of an owner, then reads global, control
+/// or own Token values from that snapshot: global and control values by slot, own values by resource key.
+/// The values are those of the captured snapshot until the consumer captures again, which <c>Subscribe</c>
+/// triggers when the context of the owner changes or publishes. Used by the Badge, FloatButton, QRCode and Tag
+/// controls of AtomUI.Controls.
+/// </summary>
 internal sealed class ThemeTokenResolver
 {
     internal ThemeSnapshot Capture(AvaloniaObject owner)

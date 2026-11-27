@@ -3,7 +3,9 @@ using AtomUI.Theme.Languages;
 
 namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 
-/// <summary>The PrimeNG view of <see cref="SearchEditToken"/>.</summary>
+/// <summary>
+/// The PrimeNG view of <see cref="SearchEditToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class SearchEditTokenRule : IControlTokenRule<PrimeNGToken, SearchEditToken>
 {
@@ -11,7 +13,8 @@ internal sealed class SearchEditTokenRule : IControlTokenRule<PrimeNGToken, Sear
     {
         var token  = target.Own;
         var global = target.Global;
-        // PrimeNG: the control-global overrides, read by the formulas below.
+        // PrimeNG: the control-global overrides of PrimeNGInputStage.Apply (form-field values), read by the SearchEdit
+        // theme and its input frame (CornerRadius, Foreground, Background, IconBrush), not the formulas below.
         PrimeNGSearchEditTokens.EvaluateGlobal(in context, global);
         token.InputFontSizeSM = global.FontSize;
         // PrimeNG: the preset's control values, over the formulas.

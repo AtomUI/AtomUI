@@ -17,6 +17,13 @@ using Avalonia.Media;
 
 namespace AtomUI.Controls.Commons;
 
+/// <summary>
+/// Base class of a control that presents mutually exclusive options as one joined block. An item is an
+/// <see cref="AbstractOptionButton" /> or data such as <see cref="OptionButtonData" />; a derived class
+/// creates the option buttons in <c>CreateContainerForItemOverride</c>, and they must derive from
+/// <see cref="AbstractOptionButton" />. The checked option is the one at
+/// <see cref="SelectingItemsControl.SelectedIndex" />.
+/// </summary>
 public abstract class AbstractOptionButtonGroup : SelectingItemsControl,
                                                   ICustomizableSizeTypeAware,
                                                   IWaveSpiritAwareControl,
@@ -24,45 +31,85 @@ public abstract class AbstractOptionButtonGroup : SelectingItemsControl,
 {
     #region 公共属性定义
 
+    /// <summary>
+    /// Identifies the <see cref="SizeType" /> property.
+    /// </summary>
     public static readonly StyledProperty<CustomizableSizeType> SizeTypeProperty =
         CustomizableSizeTypeControlProperty.SizeTypeProperty.AddOwner<AbstractOptionButtonGroup>();
 
+    /// <summary>
+    /// Identifies the <see cref="Orientation" /> property.
+    /// </summary>
     public static readonly StyledProperty<Orientation> OrientationProperty =
         StackPanel.OrientationProperty.AddOwner<AbstractOptionButtonGroup>();
 
+    /// <summary>
+    /// Identifies the <see cref="ButtonStyle" /> property.
+    /// </summary>
     public static readonly StyledProperty<OptionButtonStyle> ButtonStyleProperty =
         AvaloniaProperty.Register<AbstractOptionButtonGroup, OptionButtonStyle>(nameof(ButtonStyle));
 
+    /// <summary>
+    /// Identifies the <see cref="IsMotionEnabled" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<AbstractOptionButtonGroup>();
 
+    /// <summary>
+    /// Identifies the <see cref="IsWaveSpiritEnabled" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsWaveSpiritEnabledProperty =
         WaveSpiritAwareControlProperty.IsWaveSpiritEnabledProperty.AddOwner<AbstractOptionButtonGroup>();
 
+    /// <summary>
+    /// Size preset of the group and of every option, <see cref="CustomizableSizeType.Middle" /> by default.
+    /// It drives the height, the corner radius, the font size, the padding and the icon size.
+    /// <see cref="CustomizableSizeType.Custom" /> has no preset of its own here and renders like
+    /// <see cref="CustomizableSizeType.Middle" />.
+    /// </summary>
     public CustomizableSizeType SizeType
     {
         get => GetValue(SizeTypeProperty);
         set => SetValue(SizeTypeProperty, value);
     }
 
+    /// <summary>
+    /// Direction in which the options are lined up,
+    /// <see cref="Avalonia.Layout.Orientation.Horizontal" /> by default. It also decides which corners of
+    /// an option are rounded and the direction of the separators.
+    /// </summary>
     public Orientation Orientation
     {
         get => GetValue(OrientationProperty);
         set => SetValue(OrientationProperty, value);
     }
 
+    /// <summary>
+    /// Visual variant of the options, <see cref="OptionButtonStyle.Outline" /> by default.
+    /// Every option follows the value set on the group.
+    /// </summary>
     public OptionButtonStyle ButtonStyle
     {
         get => GetValue(ButtonStyleProperty);
         set => SetValue(ButtonStyleProperty, value);
     }
 
+    /// <summary>
+    /// Whether the options animate their foreground, background and border colors when their state changes.
+    /// The theme sets it from the shared <c>EnableMotion</c> token, and every option follows the value set
+    /// on the group.
+    /// </summary>
     public bool IsMotionEnabled
     {
         get => GetValue(IsMotionEnabledProperty);
         set => SetValue(IsMotionEnabledProperty, value);
     }
 
+    /// <summary>
+    /// Whether an option plays the click wave when a press on it ends; this also needs
+    /// <see cref="IsMotionEnabled" /> to be <see langword="true" />. The theme sets it from the shared
+    /// <c>EnableWaveSpirit</c> token, and every option follows the value set on the group.
+    /// </summary>
     public bool IsWaveSpiritEnabled
     {
         get => GetValue(IsWaveSpiritEnabledProperty);
@@ -72,11 +119,20 @@ public abstract class AbstractOptionButtonGroup : SelectingItemsControl,
     #endregion
 
     #region 公共事件定义
+    /// <summary>
+    /// Identifies the <see cref="OptionCheckedChanged" /> routed event.
+    /// </summary>
     public static readonly RoutedEvent<OptionCheckedChangedEventArgs> OptionCheckedChangedEvent =
         RoutedEvent.Register<AbstractOptionButtonGroup, OptionCheckedChangedEventArgs>(
             nameof(OptionCheckedChanged),
             RoutingStrategies.Bubble);
     
+    /// <summary>
+    /// Raised after an option became the checked one and the selection of the group was moved to it:
+    /// when the <c>IsChecked</c> of an option changes to <see langword="true" />, and when an option that is
+    /// already checked, such as one declared with <c>IsChecked="True"</c>, is prepared. The event bubbles
+    /// up from the group.
+    /// </summary>
     public event EventHandler<OptionCheckedChangedEventArgs>? OptionCheckedChanged
     {
         add => AddHandler(OptionCheckedChangedEvent, value);
@@ -96,12 +152,21 @@ public abstract class AbstractOptionButtonGroup : SelectingItemsControl,
 
     private Thickness _effectiveBorderThickness;
 
+    /// <summary>
+    /// Border thickness that the theme applies to the frame of the group. The class only stores the value and never
+    /// changes it itself, and no other code assigns it, so the frame never has a border; the group's own rendering
+    /// reads <see cref="TemplatedControl.BorderThickness" /> instead.
+    /// </summary>
     internal Thickness EffectiveBorderThickness
     {
         get => _effectiveBorderThickness;
         set => SetAndRaise(EffectiveBorderThicknessProperty, ref _effectiveBorderThickness, value);
     }
 
+    /// <summary>
+    /// Border brush of the background that the group draws behind the selected option. The theme sets it from the
+    /// <c>ColorPrimary</c> token of the group; <see langword="null" /> draws the background without a border.
+    /// </summary>
     internal IBrush? SelectedOptionBorderColor
     {
         get => GetValue(SelectedOptionBorderColorProperty);
@@ -176,6 +241,10 @@ public abstract class AbstractOptionButtonGroup : SelectingItemsControl,
         }
     }
 
+    /// <summary>
+    /// Gives every realized option button the new orientation when <see cref="Orientation" /> changes.
+    /// Overrides must call the base method.
+    /// </summary>
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
@@ -185,6 +254,10 @@ public abstract class AbstractOptionButtonGroup : SelectingItemsControl,
         }
     }
 
+    /// <summary>
+    /// Subscribes to index changes of the options and to selection changes, then brings the realized
+    /// options in line with the orientation and the selection. Overrides must call the base method.
+    /// </summary>
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
@@ -198,6 +271,10 @@ public abstract class AbstractOptionButtonGroup : SelectingItemsControl,
         SyncSelectedOptionButton();
     }
 
+    /// <summary>
+    /// Unsubscribes the handlers that <see cref="OnAttachedToVisualTree" /> added. Overrides must call the
+    /// base method.
+    /// </summary>
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         if (this is IChildIndexProvider childIndexProvider)
@@ -208,6 +285,10 @@ public abstract class AbstractOptionButtonGroup : SelectingItemsControl,
         base.OnDetachedFromVisualTree(e);
     }
 
+    /// <summary>
+    /// Selects the option button that received focus through directional navigation and, when that
+    /// selection is accepted, marks the focus event handled. Overrides must call the base method.
+    /// </summary>
     protected override void OnGotFocus(FocusChangedEventArgs e)
     {
         base.OnGotFocus(e);
@@ -218,6 +299,16 @@ public abstract class AbstractOptionButtonGroup : SelectingItemsControl,
         }
     }
 
+    /// <summary>
+    /// Prepares an option button for an item and binds it to the size, style and motion settings of the
+    /// group. An item that implements <c>IOptionButtonData</c>, such as <see cref="OptionButtonData" />,
+    /// also provides the content, the icon and the enabled state of the generated option button; an
+    /// option button used as the item keeps its own content, icon and enabled state. Ends by calling
+    /// <see cref="PrepareOptionButton" />. Overrides must call the base method.
+    /// </summary>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// <paramref name="container" /> is not an <see cref="AbstractOptionButton" />.
+    /// </exception>
     protected override void PrepareContainerForItemOverride(Control container, object? item, int index)
     {
         if (container is not AbstractOptionButton optionButton)
@@ -268,10 +359,21 @@ public abstract class AbstractOptionButtonGroup : SelectingItemsControl,
         PrepareOptionButton(optionButton, item, index);
     }
     
+    /// <summary>
+    /// Called for each option button after its content and its bindings to the group are in place, both
+    /// for generated option buttons and for option buttons used directly as items. The base method does
+    /// nothing.
+    /// </summary>
     protected virtual void PrepareOptionButton(AbstractOptionButton optionButton, object? item, int index)
     {
     }
 
+    /// <summary>
+    /// Refreshes the position of every realized option button and keeps the prepared one in line with the
+    /// selection: an option button at <c>SelectedIndex</c> that is not checked becomes checked, and an
+    /// option button that is already checked becomes the selected option and raises
+    /// <see cref="OptionCheckedChanged" />. Overrides must call the base method.
+    /// </summary>
     protected override void ContainerForItemPreparedOverride(Control container, object? item, int index)
     {
         base.ContainerForItemPreparedOverride(container, item, index);
@@ -311,6 +413,11 @@ public abstract class AbstractOptionButtonGroup : SelectingItemsControl,
         }
     }
 
+    /// <summary>
+    /// Releases what the group attached to an option button before its container is reused or removed:
+    /// the bindings to the group, the checked handler, the group orientation and the position in the group.
+    /// Overrides must call the base method.
+    /// </summary>
     protected override void ClearContainerForItemOverride(Control container)
     {
         if (container is AbstractOptionButton optionButton)
@@ -391,11 +498,22 @@ public abstract class AbstractOptionButtonGroup : SelectingItemsControl,
         }
     }
 
+    /// <summary>
+    /// Reports whether the group has to create an option button for an item.
+    /// </summary>
+    /// <returns>
+    /// <see langword="true" /> when <paramref name="item" /> is not an <see cref="AbstractOptionButton" />;
+    /// an option button used directly as an item is its own container.
+    /// </returns>
     protected override bool NeedsContainerOverride(object? item, int index, out object? recycleKey)
     {
         return NeedsContainer<AbstractOptionButton>(item, out recycleKey);
     }
 
+    /// <summary>
+    /// Gives an option button the position that belongs to its new index, so that its corner radius
+    /// follows a move within the group.
+    /// </summary>
     protected override void ContainerIndexChangedOverride(Control container, int oldIndex, int newIndex)
     {
         if (container is AbstractOptionButton optionButton)
@@ -444,6 +562,12 @@ public abstract class AbstractOptionButtonGroup : SelectingItemsControl,
         }
     }
 
+    /// <summary>
+    /// Paints the background and border of the group, the separators between the options and, in the
+    /// <see cref="OptionButtonStyle.Outline" /> style, the border and fill of the checked option. In the
+    /// <see cref="OptionButtonStyle.Solid" /> style the checked option paints itself and the separators
+    /// next to it are not drawn.
+    /// </summary>
     public override void Render(DrawingContext context)
     {
         var renderBorderThickness = BorderUtils.BuildRenderScaleAwareThickness(this, BorderThickness);
@@ -623,26 +747,57 @@ public abstract class AbstractOptionButtonGroup : SelectingItemsControl,
     void IFormItemAware.ClearFormValue() => NotifyClearFormValue();
     void IFormItemAware.NotifyValidateStatus(FormValidateStatus status) => NotifyValidateStatus(status);
     
+    /// <summary>
+    /// Notifies the form item that the value of the group changed. The base method raises the
+    /// <see cref="IFormItemAware.ValueChanged" /> event.
+    /// </summary>
+    /// <param name="value">
+    /// The new selected item.
+    /// </param>
     protected virtual void NotifyFormValueChanged(object? value)
     {
         _formValueChanged?.Invoke(this, EventArgs.Empty);
     }
 
+    /// <summary>
+    /// Applies a value that the form item assigns to the group. The base method makes it the
+    /// <see cref="SelectingItemsControl.SelectedItem" />.
+    /// </summary>
+    /// <param name="value">
+    /// The item to select.
+    /// </param>
     protected virtual void NotifySetFormValue(object? value)
     {
         SetCurrentValue(SelectedItemProperty, value);
     }
 
+    /// <summary>
+    /// Returns the value of the group for the form item. The base method returns
+    /// <see cref="SelectingItemsControl.SelectedItem" />.
+    /// </summary>
+    /// <returns>
+    /// The selected item, or <see langword="null" /> when nothing is selected.
+    /// </returns>
     protected virtual object? NotifyGetFormValue()
     {
         return SelectedItem;
     }
 
+    /// <summary>
+    /// Called when the form item clears its value. The base method assigns <see langword="false" /> to
+    /// <see cref="SelectingItemsControl.SelectedItem" />, a value that equals no item.
+    /// </summary>
     protected virtual void NotifyClearFormValue()
     {
         SetCurrentValue(SelectedItemProperty, false);
     }
 
+    /// <summary>
+    /// Passes the validation status that the form item reports. The base method does nothing.
+    /// </summary>
+    /// <param name="status">
+    /// The validation status of the form item.
+    /// </param>
     protected virtual void NotifyValidateStatus(FormValidateStatus status)
     {
     }

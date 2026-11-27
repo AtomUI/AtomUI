@@ -4,7 +4,9 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls.Themes.AntDesign;
 
-/// <summary>The AntDesign view of <see cref="CompactSpaceAddOnToken"/>.</summary>
+/// <summary>
+/// The AntDesign view of <see cref="CompactSpaceAddOnToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class CompactSpaceAddOnTokenRule : IControlTokenRule<AntDesignToken, CompactSpaceAddOnToken>
 {

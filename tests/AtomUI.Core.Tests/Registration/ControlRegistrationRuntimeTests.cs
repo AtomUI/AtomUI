@@ -32,7 +32,8 @@ public class ControlRegistrationRuntimeTests
             builder.ThemeManagerBuilder.ControlPackages.Select(p => p.Id).ShouldBe(["Common", "Desktop"]);
             using var manager = builder.ThemeManagerBuilder.Build();
             manager.InitializeApplication(Application.Current!);
-            // 惰性挂载：挂载只记录代理，工厂推迟到首次资源查找，按合并列表逆序（后挂载优先）逐个构造。
+            // Lazy attachment: attaching only records a proxy, the factory is deferred to the first resource lookup,
+            // and the proxies are built one by one in reverse order of the merged list (last attached wins).
             calls.Count.ShouldBe(7);
             manager.Resources.TryGetResource("priority", null, out var priority).ShouldBeTrue();
             priority.ShouldBe("Desktop/z");
@@ -305,7 +306,8 @@ public class ControlRegistrationRuntimeTests
             calls.ShouldBe(0);
             using var manager = builder.ThemeManagerBuilder.Build();
             manager.InitializeApplication(Application.Current!);
-            // 惰性挂载：去重后的唯一注册项只挂一个代理，首次全量扫描恰好执行一次工厂。
+            // Lazy attachment: the single registration left after deduplication attaches one proxy, and the first
+            // full scan runs the factory exactly once.
             calls.ShouldBe(0);
             manager.Resources.TryGetResource("missing", null, out _).ShouldBeFalse();
             calls.ShouldBe(1);

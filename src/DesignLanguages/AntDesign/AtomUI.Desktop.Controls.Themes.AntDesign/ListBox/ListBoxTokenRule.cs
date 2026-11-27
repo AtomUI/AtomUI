@@ -4,7 +4,9 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls.Themes.AntDesign;
 
-/// <summary>The AntDesign view of <see cref="ListBoxToken"/>.</summary>
+/// <summary>
+/// The AntDesign view of <see cref="ListBoxToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class ListBoxTokenRule : IControlTokenRule<AntDesignToken, ListBoxToken>
 {

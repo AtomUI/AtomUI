@@ -6,7 +6,9 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
 
-/// <summary>Prepares a definition using layout values, without retaining a popup.</summary>
+/// <summary>
+/// Prepares a definition using layout values, without retaining a popup.
+/// </summary>
 internal interface IPopupMotion
 {
     bool RequiresPositionedAnchorForEntry => false;
@@ -14,7 +16,9 @@ internal interface IPopupMotion
     AbstractMotion Resolve(PopupMotionGeometry geometry, RelativePoint? retainedOrigin);
 }
 
-/// <summary>Layout and menu semantics by value; no owner or running presentation is retained.</summary>
+/// <summary>
+/// Layout and menu semantics by value; no owner or running presentation is retained.
+/// </summary>
 internal readonly record struct PopupMotionGeometry(
     PlacementMode Placement,
     bool HorizontalFlipped,
@@ -27,7 +31,9 @@ internal readonly record struct PopupMotionGeometry(
     MenuSemanticLevel? MenuLevel = null,
     bool IsHorizontalMenu = false);
 
-/// <summary>Stateless theme defaults. Definitions never retain a popup or owner.</summary>
+/// <summary>
+/// Stateless theme defaults. Definitions never retain a popup or owner.
+/// </summary>
 internal static class PopupMotionDefaults
 {
     public static readonly AbstractMotion SelectOpen = new SlideIn(GetSelectDirection);

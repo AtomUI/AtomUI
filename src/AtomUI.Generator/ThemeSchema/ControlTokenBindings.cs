@@ -22,16 +22,20 @@ internal sealed class ControlTokenBinding
     public string TokenName { get; }
     public string MetadataName => TokenNamespace + "." + TokenName;
 
-    /// <summary>The fully qualified generated <c>&lt;Control&gt;Tokens</c> class that holds the control identity.</summary>
+    /// <summary>
+    /// The fully qualified generated <c>&lt;Control&gt;Tokens</c> class that holds the control identity.
+    /// </summary>
     public string TokensTypeName { get; }
 
-    /// <summary>False when the class already declares <c>IControlToken</c> itself.</summary>
+    /// <summary>
+    /// False when the class already declares <c>IControlToken</c> itself.
+    /// </summary>
     public bool Emit { get; }
 }
 
 /// <summary>
 /// Which terminal token classes of this compilation implement <c>IControlToken</c>: the generator emits that half for
-/// every terminal control token class bound to a control.
+/// every terminal control token class bound to a control, unless the class already declares the interface itself.
 /// </summary>
 internal static class ControlTokenBindings
 {

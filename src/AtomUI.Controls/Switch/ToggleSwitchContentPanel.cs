@@ -4,8 +4,9 @@ using Avalonia.Media;
 
 namespace AtomUI.Controls;
 
-// 内容画布汇报内容的期望尺寸，使内容尺寸变化沿模板树触发 owner 重新测量。
-// 偏移由模板提供。内容排列在固定槽，过渡只更新渲染平移。
+// Content canvas of the toggle switch. It reports the desired size of the contents, so that a change of the
+// content size makes the owner measure again through the template tree. The template provides the offsets.
+// The contents are arranged in fixed slots; transitions only update the render transform.
 internal sealed class ToggleSwitchContentPanel : Canvas
 {
     public static readonly StyledProperty<Point> OnContentOffsetProperty =
@@ -69,8 +70,9 @@ internal sealed class ToggleSwitchContentPanel : Canvas
                 Math.Max(desired.Height, child.DesiredSize.Height));
         }
 
-        // owner 的居中偏移依赖每个 presenter 的尺寸，而不仅是模板根的最大尺寸。
-        // 把手尺寸可能掩盖内容的尺寸变化，因此必须显式声明这条排列依赖。
+        // The centering offsets of the owner depend on the size of each presenter, not only on the maximum size of
+        // the template root. The knob size can hide a change of the content size, so this arrange dependency must be
+        // declared explicitly.
         if (TemplatedParent is AbstractToggleSwitch owner)
         {
             owner.InvalidateArrange();

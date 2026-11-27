@@ -34,10 +34,9 @@
                                 ContentTemplate="{TemplateBinding ContentTemplate}"
                                 HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
                                 VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}" />
-                            <!--
-                                活动 cell 的输入光标。
-                                显隐由 OtpLineEditCell 依据 IsActive 与内容驱动，
-                                闪烁为标准 1s 步进动画；颜色/高度跟随 cell 字体。
+                            <!-- Input caret of the active cell. OtpLineEditCell drives its visibility from IsActive and
+                            the content; blinking is the standard 1s step animation; color and height follow the
+                            cell font.
                             -->
                             <!-- layout: the caret is 1 px wide, as the text box caret it replaces -->
                             <Rectangle

@@ -1,6 +1,8 @@
 namespace AtomUI;
 
-/// <summary>控件包诊断阶段，与全局启动阶段分别约束。</summary>
+/// <summary>
+/// Diagnostic phases of a control package, kept apart from the global <see cref="StartupPhase" /> values.
+/// </summary>
 internal enum PackagePhase
 {
     Enable,

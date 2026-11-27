@@ -17,6 +17,13 @@ namespace AtomUI.Desktop.Controls;
 
 using IconControl = AtomUI.Controls.Icon;
 
+/// <summary>
+/// Result control for desktop layouts. While it is attached and <c>UseResultPresentationTokenResources</c> is
+/// <see langword="true" />, which the desktop theme sets, it takes the line height ratios of the header and the
+/// sub-header and the size and color of the status icon from the theme tokens. A line height ratio set
+/// explicitly through <c>RelativeHeaderLineHeight</c> or <c>RelativeSubHeaderLineHeight</c> is kept instead of
+/// the token value.
+/// </summary>
 public partial class Result : AbstractResult
 {
     private const int HeaderRatioIndex = 0;
@@ -56,9 +63,17 @@ public partial class Result : AbstractResult
     private double _headerLineHeightRatio;
     private double _subHeaderLineHeightRatio;
 
+    /// <summary>
+    /// Height of one header line as a multiple of the header font size: the ratio last read from the theme
+    /// Tokens, or the base value while <c>RelativeHeaderLineHeight</c> is set explicitly.
+    /// </summary>
     private protected override double HeaderLineHeightRatio =>
         IsSet(RelativeHeaderLineHeightProperty) ? base.HeaderLineHeightRatio : _headerLineHeightRatio;
 
+    /// <summary>
+    /// Height of one sub-header line as a multiple of the sub-header font size: the ratio last read from the theme
+    /// Tokens, or the base value while <c>RelativeSubHeaderLineHeight</c> is set explicitly.
+    /// </summary>
     private protected override double SubHeaderLineHeightRatio =>
         IsSet(RelativeSubHeaderLineHeightProperty) ? base.SubHeaderLineHeightRatio : _subHeaderLineHeightRatio;
 
@@ -66,6 +81,12 @@ public partial class Result : AbstractResult
     {
     }
 
+    /// <summary>
+    /// Called when the control template is applied. It releases the handler and the size and color values that
+    /// were held for the status icon of the previous template, then observes the <c>PART_StatusIconPresenter</c>
+    /// of the new template and applies the current status icon size and color to its icon when the presenter has
+    /// one. Overrides must call the base implementation.
+    /// </summary>
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
@@ -87,6 +108,12 @@ public partial class Result : AbstractResult
         }
     }
 
+    /// <summary>
+    /// Called when a property of this control changes. When <c>UseResultPresentationTokenResources</c> changes
+    /// while the control is attached, the subscription to the theme tokens is created or released. When
+    /// <see cref="AbstractResult.Status" /> changes while that subscription exists, the theme tokens are read
+    /// again, which applies the status icon color of the new status. Overrides must call the base implementation.
+    /// </summary>
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
@@ -100,12 +127,22 @@ public partial class Result : AbstractResult
         }
     }
 
+    /// <summary>
+    /// Called when the control is attached to the visual tree. It creates the subscription to the theme tokens
+    /// when <c>UseResultPresentationTokenResources</c> is set and then reads the line heights and the status icon
+    /// size and color. Overrides must call the base implementation.
+    /// </summary>
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
         UpdatePresentationTokenSubscription();
     }
 
+    /// <summary>
+    /// Called when the control is detached from the visual tree. It disposes the subscription to the theme tokens
+    /// before it calls the base implementation. The line heights and the status icon keep the values that were
+    /// read last. Overrides must call the base implementation.
+    /// </summary>
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         _styleTokens?.Dispose();
@@ -214,7 +251,7 @@ public partial class Result : AbstractResult
 
     private void UpdateStatusIcon()
     {
-        // Status size and colour are removable Template-priority values: they outrank the icon's own ControlTheme
+        // Status size and color are removable Template-priority values: they outrank the icon's own ControlTheme
         // setters, so a publish that re-resolves the icon tokens cannot repaint the status icon, while user local
         // values and style triggers on the icon keep winning. Reapplying disposes exactly the values applied here.
         _statusIconValues?.Dispose();

@@ -17,11 +17,18 @@ using Avalonia.VisualTree;
 
 namespace AtomUI.Controls.Commons;
 
+/// <summary>
+/// Base class of tag controls. It resolves the color scheme selected by <see cref="TagColor" /> and
+/// <see cref="Variant" /> into the brushes that the theme applies, and runs the close button that raises
+/// <see cref="Closed" />.
+/// </summary>
 [TemplatePart(CloseButtonPartName, typeof(AbstractIconButton), IsRequired = false)]
 [TemplatePart(CloseButtonHostPartName, typeof(Decorator), IsRequired = false)]
 public abstract class AbstractTag : TemplatedControl
 {
-    /// <summary>Name of the close button. Declared by the template, or created on demand into the host.</summary>
+    /// <summary>
+    /// Name of the close button. Declared by the template, or created on demand into the host.
+    /// </summary>
     protected const string CloseButtonPartName = "PART_CloseButton";
 
     /// <summary>
@@ -32,58 +39,112 @@ public abstract class AbstractTag : TemplatedControl
 
     #region 公共属性定义
 
+    /// <summary>
+    /// Identifies the <see cref="TagColor" /> property.
+    /// </summary>
     public static readonly StyledProperty<string?> TagColorProperty =
         AvaloniaProperty.Register<AbstractTag, string?>(
             nameof(TagColor));
 
+    /// <summary>
+    /// Identifies the <see cref="IsClosable" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsClosableProperty =
         AvaloniaProperty.Register<AbstractTag, bool>(nameof(IsClosable));
 
+    /// <summary>
+    /// Identifies the <see cref="Variant" /> property.
+    /// </summary>
     public static readonly StyledProperty<TagVariant> VariantProperty =
         AvaloniaProperty.Register<AbstractTag, TagVariant>(
             nameof(Variant),
             TagVariant.Filled);
 
+    /// <summary>
+    /// Identifies the <see cref="Icon" /> property.
+    /// </summary>
     public static readonly StyledProperty<PathIcon?> IconProperty =
         AvaloniaProperty.Register<AbstractTag, PathIcon?>(nameof(Icon));
 
+    /// <summary>
+    /// Identifies the <see cref="CloseIcon" /> property.
+    /// </summary>
     public static readonly StyledProperty<PathIcon?> CloseIconProperty =
         AvaloniaProperty.Register<AbstractTag, PathIcon?>(nameof(CloseIcon));
 
+    /// <summary>
+    /// Identifies the <see cref="Text" /> property.
+    /// </summary>
     public static readonly StyledProperty<string?> TextProperty =
         AvaloniaProperty.Register<AbstractTag, string?>(
             nameof(Text));
 
+    /// <summary>
+    /// Gets or sets the color scheme of the tag, which paints the background, the text and the border in every
+    /// <see cref="Variant" />. The value is a preset color name such as <c>red</c> or <c>geekblue</c> (a member of
+    /// <c>PresetColorType</c>), a status name (<c>success</c>, <c>info</c>, <c>processing</c>, <c>warning</c>,
+    /// <c>error</c>, <c>danger</c> or <c>primary</c>), or a color string for a custom color. Names ignore case, and
+    /// surrounding whitespace is ignored.
+    /// </summary>
+    /// <remarks>
+    /// <see langword="null" />, an empty string and <c>default</c> select no color, as does a value that the theme
+    /// cannot resolve. The colors come from the theme that applies to the tag while it is attached to the visual
+    /// tree, and they follow theme changes.
+    /// </remarks>
     public string? TagColor
     {
         get => GetValue(TagColorProperty);
         set => SetValue(TagColorProperty, value);
     }
 
+    /// <summary>
+    /// Gets or sets whether the tag shows a close button. Clicking the button raises <see cref="Closed" />.
+    /// </summary>
     public bool IsClosable
     {
         get => GetValue(IsClosableProperty);
         set => SetValue(IsClosableProperty, value);
     }
 
+    /// <summary>
+    /// Gets or sets how the tag paints its background, text and border. The default is
+    /// <see cref="TagVariant.Filled" />.
+    /// </summary>
+    /// <remarks>
+    /// With a <see cref="TagColor" /> the variant selects among the colors of that scheme; without one it selects the
+    /// neutral look that the theme defines for the variant.
+    /// </remarks>
     public TagVariant Variant
     {
         get => GetValue(VariantProperty);
         set => SetValue(VariantProperty, value);
     }
 
+    /// <summary>
+    /// Gets or sets the icon shown before the text of the tag. <see langword="null" /> shows no icon.
+    /// </summary>
     public PathIcon? Icon
     {
         get => GetValue(IconProperty);
         set => SetValue(IconProperty, value);
     }
 
+    /// <summary>
+    /// Gets or sets the icon of the close button. While <see cref="IsClosable" /> is <see langword="true" />,
+    /// <see langword="null" /> is replaced by the default <see cref="CloseOutlined" /> icon. This happens when the
+    /// template is applied, when this property changes, and when <see cref="IsClosable" /> changes while the tag is
+    /// attached to the visual tree.
+    /// </summary>
     public PathIcon? CloseIcon
     {
         get => GetValue(CloseIconProperty);
         set => SetValue(CloseIconProperty, value);
     }
 
+    /// <summary>
+    /// Gets or sets the text of the tag. It is the XAML content property, so text written between the opening and
+    /// closing tags of the tag is assigned here.
+    /// </summary>
     [Content]
     public string? Text
     {
@@ -94,9 +155,16 @@ public abstract class AbstractTag : TemplatedControl
 
     #region 公共事件定义
 
+    /// <summary>
+    /// Identifies the <see cref="Closed" /> routed event.
+    /// </summary>
     public static readonly RoutedEvent<RoutedEventArgs> ClosedEvent =
         RoutedEvent.Register<AbstractTag, RoutedEventArgs>(nameof(Closed), RoutingStrategies.Bubble);
 
+    /// <summary>
+    /// Occurs when the close button of the tag is clicked. The event bubbles up the visual tree and cannot be
+    /// canceled, and the tag is neither hidden nor removed, so the handler decides what happens to the tag.
+    /// </summary>
     public event EventHandler<RoutedEventArgs>? Closed
     {
         add => AddHandler(ClosedEvent, value);
@@ -115,9 +183,9 @@ public abstract class AbstractTag : TemplatedControl
             o => o.RenderScaleAwareBorderThickness,
             (o, v) => o.RenderScaleAwareBorderThickness = v);
 
-    // Runtime palette colours are projected by untriggered ControlTheme setters (unset = the Token defaults the theme
+    // Runtime palette colors are projected by untriggered ControlTheme setters (unset = the Token defaults the theme
     // gives these inputs). Keeping them in internal inputs instead of writing Background/Foreground/BorderBrush lets
-    // app Styles, Semantic Part Styles and local values override the visuals natively (consumption rule 7).
+    // app Styles, Semantic Part Styles and local values override the visuals natively.
     internal static readonly StyledProperty<IBrush?> CalculatedBackgroundProperty =
         AvaloniaProperty.Register<AbstractTag, IBrush?>(nameof(CalculatedBackground));
 
@@ -128,36 +196,86 @@ public abstract class AbstractTag : TemplatedControl
         AvaloniaProperty.Register<AbstractTag, IBrush?>(nameof(CalculatedBorderBrush));
 
     /// <summary>
-    /// Whether a Filled status tag paints like the Solid variant (status fill, contrast text). Set by the theme;
-    /// false (the default) keeps the light status background with the status text.
+    /// Identifies the <see cref="IsFilledStatusSolid" /> property.
     /// </summary>
     internal static readonly StyledProperty<bool> IsFilledStatusSolidProperty =
         AvaloniaProperty.Register<AbstractTag, bool>(nameof(IsFilledStatusSolid));
 
+    /// <summary>
+    /// Gets or sets the brush that the theme binds to <see cref="TemplatedControl.Background" />, which paints
+    /// the frame of the tag. The theme sets it from the <c>DefaultBg</c> token, or, while <see cref="TagColor" />
+    /// selects no color, to the neutral default of the <see cref="Variant" />.
+    /// </summary>
+    /// <remarks>
+    /// While <see cref="TagColor" /> resolves to a color, the control overrides this value with the calculated
+    /// color scheme, and clears the override when the color is empty or cannot be resolved, so the theme value
+    /// applies again. A <see langword="null" /> brush paints nothing. A style or a local value on
+    /// <see cref="TemplatedControl.Background" /> keeps precedence over this value.
+    /// </remarks>
     internal IBrush? CalculatedBackground
     {
         get => GetValue(CalculatedBackgroundProperty);
         set => SetValue(CalculatedBackgroundProperty, value);
     }
 
+    /// <summary>
+    /// Gets or sets the brush that the theme binds to <see cref="TemplatedControl.Foreground" />, which paints
+    /// the text, the icon and the close icon of the tag. The theme sets it from the <c>DefaultColor</c> token,
+    /// or, while <see cref="TagColor" /> selects no color, to the neutral default of the <see cref="Variant" />.
+    /// The theme of <c>SelectTag</c> sets it from the <c>ColorText</c> token.
+    /// </summary>
+    /// <remarks>
+    /// While <see cref="TagColor" /> resolves to a color, the control overrides this value with the calculated
+    /// color scheme, and clears the override when the color is empty or cannot be resolved, so the theme value
+    /// applies again. A <see langword="null" /> brush paints nothing. A style or a local value on
+    /// <see cref="TemplatedControl.Foreground" /> keeps precedence over this value.
+    /// </remarks>
     internal IBrush? CalculatedForeground
     {
         get => GetValue(CalculatedForegroundProperty);
         set => SetValue(CalculatedForegroundProperty, value);
     }
 
+    /// <summary>
+    /// Gets or sets the brush that the theme binds to <see cref="TemplatedControl.BorderBrush" />, which paints
+    /// the outline of the frame of the tag. While <see cref="TagColor" /> selects no color, the theme sets it
+    /// from the <c>ColorBorder</c> token for <see cref="TagVariant.Outlined" />, from the <c>ColorPrimary</c>
+    /// token for <see cref="TagVariant.Outline" />, and to <c>Transparent</c> for the other variants.
+    /// </summary>
+    /// <remarks>
+    /// While <see cref="TagColor" /> resolves to a color, the control overrides this value with the calculated
+    /// color scheme, and clears the override when the color is empty or cannot be resolved, so the theme value
+    /// applies again. A <see langword="null" /> brush paints nothing. A style or a local value on
+    /// <see cref="TemplatedControl.BorderBrush" /> keeps precedence over this value.
+    /// </remarks>
     internal IBrush? CalculatedBorderBrush
     {
         get => GetValue(CalculatedBorderBrushProperty);
         set => SetValue(CalculatedBorderBrushProperty, value);
     }
 
+    /// <summary>
+    /// Gets or sets whether a <see cref="TagVariant.Filled" /> tag whose <see cref="TagColor" /> is a status
+    /// color is painted with the status color as background and the <c>ColorTextLightSolid</c> token as text.
+    /// The default, <see langword="false" />, keeps the light status background with the status color as text.
+    /// The theme sets the value from the <c>FilledStatusSolid</c> token.
+    /// </summary>
+    /// <remarks>
+    /// The value changes nothing for preset and custom colors and for the other variants. A change while the tag
+    /// is attached to the visual tree recalculates <see cref="CalculatedBackground" />,
+    /// <see cref="CalculatedForeground" /> and <see cref="CalculatedBorderBrush" />.
+    /// </remarks>
     internal bool IsFilledStatusSolid
     {
         get => GetValue(IsFilledStatusSolidProperty);
         set => SetValue(IsFilledStatusSolidProperty, value);
     }
 
+    /// <summary>
+    /// Gets or sets the padding around the text of the tag, inside the <see cref="TemplatedControl.Padding" />
+    /// of the tag. The theme sets the value from the <c>TagTextPaddingInline</c> token and binds it to the
+    /// <c>Padding</c> of the text label. Without a value the label has no padding of its own.
+    /// </summary>
     internal Thickness TagTextPaddingInline
     {
         get => GetValue(TagTextPaddingInlineProperty);
@@ -166,6 +284,12 @@ public abstract class AbstractTag : TemplatedControl
 
     private Thickness _renderScaleAwareBorderThickness;
 
+    /// <summary>
+    /// Gets or sets the border thickness of the frame of the tag in device-independent pixels. The theme sets
+    /// the value from the <c>BorderThickness</c> token. The control applies it to
+    /// <see cref="TemplatedControl.BorderThickness" /> through a held value when the template is applied and
+    /// whenever this property changes, so the frame follows Token changes.
+    /// </summary>
     internal Thickness RenderScaleAwareBorderThickness
     {
         get => _renderScaleAwareBorderThickness;
@@ -175,6 +299,11 @@ public abstract class AbstractTag : TemplatedControl
     #endregion
     
     private static readonly ThemeTokenResolver s_themeTokenResolver = new();
+    /// <summary>
+    /// The close button in use: the <c>PART_CloseButton</c> of the template, or the button created into
+    /// <c>PART_CloseButtonHost</c> while <see cref="IsClosable" /> is true. <see langword="null" />
+    /// until the template is applied and whenever the tag has no close button.
+    /// </summary>
     protected AbstractIconButton? CloseButton;
     private Decorator? _closeButtonHost;
     private bool _closeButtonCreatedOnDemand;
@@ -210,6 +339,10 @@ public abstract class AbstractTag : TemplatedControl
         return null;
     }
 
+    /// <summary>
+    /// Resolves the color table for the current theme and applies the colors of <see cref="TagColor" />. A derived
+    /// override must call the base method, otherwise the colors of <see cref="TagColor" /> are not applied.
+    /// </summary>
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
@@ -218,6 +351,10 @@ public abstract class AbstractTag : TemplatedControl
         UpdateTagColorVisualState();
     }
 
+    /// <summary>
+    /// Releases the theme subscription and the color table of the tag. A derived override must call the base method,
+    /// otherwise the tag stays subscribed to the theme while it is detached.
+    /// </summary>
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         ReleaseThemeTracking();
@@ -259,6 +396,11 @@ public abstract class AbstractTag : TemplatedControl
         UpdateTagColorVisualState();
     }
 
+    /// <summary>
+    /// Connects the close button of the new template, prepares the default close icon, and updates the colors and the
+    /// border thickness of the tag. A derived override must call the base method first, before it uses
+    /// <see cref="CloseButton" />.
+    /// </summary>
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
@@ -280,6 +422,12 @@ public abstract class AbstractTag : TemplatedControl
         ConfigureBorderThickness();
     }
 
+    /// <summary>
+    /// Updates the close button, the default close icon and the calculated colors after <see cref="CloseIcon" />,
+    /// <see cref="IsClosable" />, <see cref="TagColor" />, <see cref="Variant" /> or
+    /// <see cref="IsFilledStatusSolid" /> changed, and the border thickness after the theme input for it changed.
+    /// A derived override must call the base method.
+    /// </summary>
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
@@ -316,7 +464,8 @@ public abstract class AbstractTag : TemplatedControl
         }
     }
 
-    // 每次套模板都会写入，持有句柄替换，避免累积属性帧
+    // Written on every template application. The hold handle is replaced instead of stacked, so property frames
+    // do not pile up.
     private void ConfigureBorderThickness() =>
         this.SetHeldValue(BorderThicknessProperty, RenderScaleAwareBorderThickness, ref _borderThicknessValue);
 
@@ -342,11 +491,11 @@ public abstract class AbstractTag : TemplatedControl
         var colorSpan = TagColor.AsSpan().Trim();
         if (IsColorEmpty(TagColor) || _colorTable is not { } table)
         {
-            // Off-tree tags get their colours once the theme subscription attaches a context.
+            // Off-tree tags get their colors once the theme subscription attaches a context.
             return false;
         }
 
-        // Status and solid text colours are the Tag's effective global Tokens, so Controls[Tag] and scoped overrides
+        // Status and solid text colors are the Tag's effective global Tokens, so Controls[Tag] and scoped overrides
         // reach them; preset palettes belong to the snapshot. A subclass without a registered Token identity reads the
         // snapshot's globals.
         var snapshot    = s_themeTokenResolver.Capture(this);
@@ -375,8 +524,8 @@ public abstract class AbstractTag : TemplatedControl
 
         if (Color.TryParse(colorSpan, out var color))
         {
-            // antd lightens a custom colour to a fixed HSL lightness, which stays near-white under a dark theme; the
-            // palette algorithm of the snapshot's appearance gives the same step 1 colour preset tags use.
+            // antd lightens a custom color to a fixed HSL lightness, which stays near-white under a dark theme; the
+            // palette algorithm of the snapshot's appearance gives the same step 1 color preset tags use.
             ApplyCustomColor(color, PresetColorPalette.ResolveCustom(snapshot, color).LightColor, solidTextColor);
             PseudoClasses.Set(TagPseudoClass.CustomColor, true);
             return true;
@@ -386,8 +535,10 @@ public abstract class AbstractTag : TemplatedControl
     }
 
     /// <summary>
-    /// The control token that holds the main colour of a status tag (spec 6.1: a language gives a control its own
-    /// status colours through control tokens); <see langword="null"/> reads the global status colour.
+    /// Returns the key of the control token that holds the main color of a status tag, which lets a design language
+    /// give a control its own status colors; <see langword="null" /> makes the tag read the global status color
+    /// instead. Consulted when the colors of <see cref="TagColor" /> are resolved, and only for a derived tag
+    /// type with a registered token identity.
     /// </summary>
     private protected virtual object? StatusColorTokenKey(TagStatus status) => null;
 
@@ -465,7 +616,7 @@ public abstract class AbstractTag : TemplatedControl
 
     private void ApplyCalculatedColors(Color background, Color foreground, Color border)
     {
-        // Theme publications and variant refreshes re-run this projection; unchanged colours keep their brushes and
+        // Theme publications and variant refreshes re-run this projection; unchanged colors keep their brushes and
         // raise no property change.
         if (_calculatedColors == (background, foreground, border))
         {

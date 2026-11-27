@@ -5,12 +5,37 @@ using Avalonia.Media.TextFormatting;
 
 namespace AtomUI.Media;
 
+/// <summary>
+/// Measures the size of laid-out text.
+/// </summary>
 public static class TextUtils
 {
     private const int MeasureCacheCapacity = 512;
     private static readonly object s_measureCacheGate = new();
     private static readonly Dictionary<MeasureKey, Size> s_measureCache = new();
 
+    /// <summary>
+    /// Lays out the text without wrapping and returns the width and height of the layout, in device-independent
+    /// pixels.
+    /// </summary>
+    /// <param name="text">
+    /// The text to measure.
+    /// </param>
+    /// <param name="fontSize">
+    /// The font size, in device-independent pixels.
+    /// </param>
+    /// <param name="fontFamily">
+    /// The font family.
+    /// </param>
+    /// <param name="fontStyle">
+    /// The font style.
+    /// </param>
+    /// <param name="fontWeight">
+    /// The font weight.
+    /// </param>
+    /// <returns>
+    /// The width and height of the laid-out text, in device-independent pixels.
+    /// </returns>
     public static Size CalculateTextSize(string text,
                                          double fontSize,
                                          FontFamily fontFamily,
@@ -23,7 +48,7 @@ public static class TextUtils
     }
 
     /// <summary>
-    /// Returns the same size as <see cref="CalculateTextSize"/>, reusing an earlier measurement of the identical
+    /// Returns the same size as <see cref="CalculateTextSize" />, reusing an earlier measurement of the identical
     /// text with the identical font. The key also holds the resolved primary glyph typeface, the font collection
     /// generation and the current cultures, so any change that could alter shaping or fallback measures again.
     /// The cache is bounded and is cleared when full.

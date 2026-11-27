@@ -3,10 +3,11 @@ using Avalonia.Media;
 namespace AtomUI.Desktop.Controls;
 
 /// <summary>
-/// 分隔符字形墨迹居中计算。字形墨迹盒来自字体表的 glyph metrics（设计单位），
-/// 相对基线原点描述：XBearing 为墨迹左缘水平偏移，YBearing 为墨迹顶缘
-/// 在基线上方的高度（向上为正）。目标是把墨迹中心平移到行盒中心：
-/// 水平方向对齐 advance 的中点，垂直方向对齐行盒的几何中心。
+/// Computes the translation that centers the ink of a separator glyph. The ink box comes from the glyph metrics
+/// of the font table, in design units and relative to the baseline origin: XBearing is the horizontal offset of
+/// the left edge of the ink, YBearing is the height of the top edge of the ink above the baseline, positive
+/// upward. The goal is to move the ink center onto the center of the line box: horizontally onto the middle of
+/// the advance, vertically onto the geometric center of the line box.
 /// </summary>
 internal static class OtpSeparatorInkMath
 {
@@ -36,7 +37,7 @@ internal static class OtpSeparatorInkMath
         var inkCenterX = inkLeft + inkWidth / 2;
         var offsetX    = advance / 2 - inkCenterX;
 
-        // 垂直：inkCenterAboveBaseline 为正表示墨迹中心高于基线。
+        // Vertical: a positive inkCenterAboveBaseline means the ink center lies above the baseline.
         var inkCenterAboveBaseline = inkTop - inkHeight / 2;
         var boxCenterAboveBaseline = baseline - lineHeight / 2;
         var offsetY                = inkCenterAboveBaseline - boxCenterAboveBaseline;

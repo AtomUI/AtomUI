@@ -3,11 +3,25 @@ using AtomUI.Controls;
 
 namespace AtomUI.Icons.AntDesign.Generator;
 
+/// <summary>
+/// Generates the C# source of the Ant Design icon package from its SVG files. It specializes
+/// <see cref="DefaultIconPackageGenerator" /> to write every icon class as a subclass of <c>AntDesignIcon</c>.
+/// The drawing instructions of that class take their brush from the icon theme.
+/// </summary>
 public class AntDesignGenerator : DefaultIconPackageGenerator
 {
     private List<string> _twoToneTplPrimaryColors;
     private readonly List<string> _twoToneTplSecondaryColors;
     
+    /// <summary>
+    /// Creates the generator of the <c>AntDesign</c> package in the namespace <c>AtomUI.Icons.AntDesign</c>.
+    /// </summary>
+    /// <param name="sourcePath">
+    /// The directory that the SVG files are read from.
+    /// </param>
+    /// <param name="targetPath">
+    /// The project directory that the generated source files are written to.
+    /// </param>
     public AntDesignGenerator(string sourcePath, string targetPath)
         : base(sourcePath, targetPath)
     {
@@ -21,6 +35,17 @@ public class AntDesignGenerator : DefaultIconPackageGenerator
         ];
     }
     
+    /// <summary>
+    /// Entry point that generates the icon package into <c>src/AtomUI.Icons.AntDesign</c> from the SVG files in
+    /// <c>src/AtomUI.Icons.AntDesign.Generator/Assets/Svg</c>, both resolved four directories above the current one.
+    /// </summary>
+    /// <param name="args">
+    /// Not read.
+    /// </param>
+    /// <returns>
+    /// 0 when the package was generated. When the generation fails, the error message is written to the standard
+    /// error stream and 1 is returned; a <c>DEBUG</c> build rethrows the exception instead.
+    /// </returns>
     public static async Task<int> Main(string[] args)
     {
         try
@@ -43,6 +68,27 @@ public class AntDesignGenerator : DefaultIconPackageGenerator
         }
     }
     
+    /// <summary>
+    /// Writes the source of the class of one icon as a subclass of <c>AntDesignIcon</c> that keeps its drawing
+    /// instructions in a static array.
+    /// </summary>
+    /// <param name="iconFileInfo">
+    /// The icon whose class is written; its name and theme form the class name.
+    /// </param>
+    /// <param name="output">
+    /// The stream that the source is written to as UTF-8 text; the caller disposes it.
+    /// </param>
+    /// <remarks>
+    /// <para>
+    /// Every <c>PathElement</c> of the SVG file becomes one <c>PathDrawingInstruction</c>, with the transform of the
+    /// element when it has one; other graphic elements are skipped.
+    /// </para>
+    /// <para>
+    /// The brush follows the theme: <c>IconBrushType.Fill</c> for a filled icon and <c>IconBrushType.Stroke</c> for an
+    /// outlined icon. In a two-tone icon a path takes <c>IconBrushType.Fill</c> when its fill color is one of
+    /// <c>#E6E6E6</c>, <c>#D9D9D9</c> and <c>#D8D8D8</c>, and <c>IconBrushType.Stroke</c> otherwise.
+    /// </para>
+    /// </remarks>
     protected override async Task GenerateIconPackageClass(IconFileInfo iconFileInfo, Stream output)
     {
         var      sourceText = new StringBuilder();

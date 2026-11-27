@@ -6,16 +6,18 @@
     <ControlTheme x:Key="{x:Type atom:WindowNotificationManager}"
                   TargetType="atom:WindowNotificationManager"
                   x:DataType="atom:WindowNotificationManager">
-        <!--
-            manager 的 Padding 投影为列表外边距，保持 presenter 的命中范围紧贴可见卡片。
-            卡片之间的间距由 FeedbackStackPanel 管理，卡片自身保持零外边距。
+        <!-- The Padding of the manager is projected as the list margin, keeping the hit extent of the presenter close
+        to the visible cards. The gap between cards is managed by FeedbackStackPanel, and the cards keep a zero
+        margin of their own.
         -->
         <Setter Property="ThemePadding" Value="{atom:NotificationCardTokenResource NotificationTopMargin}" />
         <Setter Property="Padding" Value="{CompiledBinding ThemePadding, RelativeSource={RelativeSource Self}}" />
         <Setter Property="Template">
             <ControlTemplate>
-                <!-- layer: 表面宿主（规则 3），卡片内控件的焦点描边、Badge 落在它的装饰层，紧贴本 manager 的卡片；
-                     它没有背景，不参与命中，列表的命中区不变。 -->
+                <!-- layer: surface host. The focus strokes and badges of controls inside the cards land in its adorner
+                layer, right next to this manager's cards. It has no background and takes no part in hit testing,
+                so the hit area of the list is unchanged.
+                -->
                 <VisualLayerManager Name="PART_SurfaceHost"
                                     atom:LayerLadder.IsSurfaceHost="True">
                     <atom:FeedbackStackPresenter Name="PART_Items"

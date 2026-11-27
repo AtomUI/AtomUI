@@ -3,25 +3,57 @@ using Avalonia.Media;
 namespace AtomUI.DesignLanguages.Shadcn.TokenEvaluation;
 
 /// <summary>
-/// The resolved shadcn base-colour variables of one appearance, by the official step rule: every variable is a
+/// The resolved shadcn base-color variables of one appearance, by the official step rule: every variable is a
 /// stop of one neutral family (or white, or an alpha white in dark mode).
 /// </summary>
-/// <param name="Background">Light <c>--background</c>: white; dark: stop 950.</param>
-/// <param name="Foreground"><c>--foreground</c>: light stop 950, dark stop 50.</param>
-/// <param name="Card">Light <c>--card</c>: white; dark: stop 900.</param>
-/// <param name="Popover">Light <c>--popover</c>: white; dark: stop 900.</param>
-/// <param name="Primary">Light: stop 900; dark: stop 200.</param>
-/// <param name="PrimaryForeground">Light: stop 50; dark: stop 900.</param>
-/// <param name="Secondary">Stop 100 / 800.</param>
-/// <param name="SecondaryForeground">Stop 900 / 50.</param>
-/// <param name="Muted">Stop 100 / 800.</param>
-/// <param name="MutedForeground">Stop 500 / 400; the light value is the family's seed.</param>
-/// <param name="Accent">Stop 100 / 800.</param>
-/// <param name="AccentForeground">Stop 900 / 50.</param>
-/// <param name="Destructive">red-600 / red-400.</param>
-/// <param name="Border">Stop 200; dark: white at 10% (<c>#1AFFFFFF</c>).</param>
-/// <param name="Input">Stop 200; dark: white at 15% (<c>#26FFFFFF</c>).</param>
-/// <param name="Ring">Stop 400 / 500.</param>
+/// <param name="Background">
+/// Light <c>--background</c>: white; dark: stop 950.
+/// </param>
+/// <param name="Foreground">
+/// <c>--foreground</c>: light stop 950, dark stop 50.
+/// </param>
+/// <param name="Card">
+/// Light <c>--card</c>: white; dark: stop 900.
+/// </param>
+/// <param name="Popover">
+/// Light <c>--popover</c>: white; dark: stop 900.
+/// </param>
+/// <param name="Primary">
+/// Light: stop 900; dark: stop 200.
+/// </param>
+/// <param name="PrimaryForeground">
+/// Light: stop 50; dark: stop 900.
+/// </param>
+/// <param name="Secondary">
+/// Stop 100 / 800.
+/// </param>
+/// <param name="SecondaryForeground">
+/// Stop 900 / 50.
+/// </param>
+/// <param name="Muted">
+/// Stop 100 / 800.
+/// </param>
+/// <param name="MutedForeground">
+/// Stop 500 / 400; the light value is the family's seed.
+/// </param>
+/// <param name="Accent">
+/// Stop 100 / 800.
+/// </param>
+/// <param name="AccentForeground">
+/// Stop 900 / 50.
+/// </param>
+/// <param name="Destructive">
+/// red-600 / red-400.
+/// </param>
+/// <param name="Border">
+/// Stop 200; dark: white at 10% (<c>#1AFFFFFF</c>).
+/// </param>
+/// <param name="Input">
+/// Stop 200; dark: white at 15% (<c>#26FFFFFF</c>).
+/// </param>
+/// <param name="Ring">
+/// Stop 400 / 500.
+/// </param>
 internal sealed record ShadcnSurface(
     Color Background,
     Color Foreground,
@@ -41,20 +73,22 @@ internal sealed record ShadcnSurface(
     Color Ring);
 
 /// <summary>
-/// Resolves the shadcn base-colour variables from a <c>BaseColor</c> seed: the seed is the
+/// Resolves the shadcn base-color variables from a <c>BaseColor</c> seed: the seed is the
 /// light <c>--muted-foreground</c>, i.e. the 500 stop of one neutral family. An unknown seed generates its own
 /// eleven-stop ladder in OKLCH (the neutral lightness ladder at the seed's hue, zinc's chroma ladder scaled by
 /// the seed's chroma) and applies the same step rule.
 /// </summary>
 internal static class ShadcnBaseColors
 {
-    /// <summary>neutral-500, the seed of the default base color.</summary>
+    /// <summary>
+    /// neutral-500, the seed of the default base color.
+    /// </summary>
     public static readonly Color DefaultSeed = ShadcnTailwindPalette.Stop("neutral", 500);
 
     /// <summary>
-    /// Alpha-composites <paramref name="source"/> over <paramref name="background"/> into an opaque colour, the
-    /// AtomUI stand-in for a Tailwind <c>bg-primary/80</c>-style value (design 6.2: compositing keeps the look on
-    /// non-white parents).
+    /// Alpha-composites <paramref name="source" /> over <paramref name="background" /> into an opaque color, the
+    /// AtomUI stand-in for a Tailwind <c>bg-primary/80</c>-style value; compositing keeps the look on non-white
+    /// parents.
     /// </summary>
     public static Color CompositeOver(Color source, double alpha, Color background)
     {
@@ -68,7 +102,7 @@ internal static class ShadcnBaseColors
     private static readonly Color s_darkInput  = Color.FromArgb(0x26, 0xFF, 0xFF, 0xFF);
 
     /// <summary>
-    /// Gets the neutral family whose 500 stop equals the seed, or <see langword="null"/> for a custom seed.
+    /// Gets the neutral family whose 500 stop equals the seed, or <see langword="null" /> for a custom seed.
     /// </summary>
     public static string? FamilyOf(Color seed)
     {
@@ -84,7 +118,7 @@ internal static class ShadcnBaseColors
     }
 
     /// <summary>
-    /// Resolves the base-colour variables; a <see langword="null"/> seed resolves the default (neutral) base color.
+    /// Resolves the base-color variables; a <see langword="null" /> seed resolves the default (neutral) base color.
     /// </summary>
     public static ShadcnSurface Resolve(Color? neutralSeed, bool dark)
     {
@@ -167,7 +201,9 @@ internal static class ShadcnBaseColors
 
     internal readonly record struct Oklch(double Lightness, double Chroma, double Hue);
 
-    /// <summary>sRGB to OKLCH (CSS Color 4), the inverse of <see cref="ColorFromOklch"/>.</summary>
+    /// <summary>
+    /// sRGB to OKLCH (CSS Color 4), the inverse of <see cref="ColorFromOklch" />.
+    /// </summary>
     internal static Oklch OklchOf(Color color)
     {
         double Linear(byte value)
@@ -188,7 +224,10 @@ internal static class ShadcnBaseColors
         return new Oklch(lightness, Math.Sqrt(a * a + blue * blue), Math.Atan2(blue, a));
     }
 
-    /// <summary>OKLCH to sRGB (CSS Color 4), rounded like the alignment appendix generator.</summary>
+    /// <summary>
+    /// OKLCH to sRGB (CSS Color 4); each channel is clamped to the sRGB gamut and rounded to the nearest
+    /// byte.
+    /// </summary>
     internal static Color ColorFromOklch(double lightness, double chroma, double hue)
     {
         var a = chroma * Math.Cos(hue);
@@ -215,8 +254,8 @@ internal static class ShadcnBaseColors
 
 
 /// <summary>
-/// A resolved theme primary: <see cref="Primary"/> and its <see cref="Foreground"/>, plus the theme identity —
-/// <c>"neutral"</c> follows the base color, a family name is an official theme, <see langword="null"/> is custom.
+/// A resolved theme primary: <see cref="Primary" /> and its <see cref="Foreground" />, plus the theme identity —
+/// <c>"neutral"</c> follows the base color, a family name is an official theme, <see langword="null" /> is custom.
 /// </summary>
 internal readonly record struct ShadcnPrimary(Color Primary, Color Foreground, string? Theme);
 

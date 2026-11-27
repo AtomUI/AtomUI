@@ -10,19 +10,25 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
 
+/// <summary>
+/// Presents the details section inside a row template. The owning row sets <see cref="ContentHeight" />;
+/// the section is laid out next to the row group indentation and, unless the grid freezes row details, it
+/// is clipped where it would cover the elements to its left while the grid scrolls horizontally.
+/// </summary>
 public sealed class DataGridDetailsPresenter : Panel
 {
     #region 公共属性定义
 
+    /// <summary>
+    /// Identifies the <see cref="ContentHeight" /> property.
+    /// </summary>
     public static readonly StyledProperty<double> ContentHeightProperty =
         AvaloniaProperty.Register<DataGridDetailsPresenter, double>(nameof(ContentHeight));
     
     /// <summary>
-    /// Gets or sets the height of the content.
+    /// Gets or sets the height of the details section. The owning row sets it from the measured details content;
+    /// it affects measure, and <see cref="double.NaN" /> is treated as 0.
     /// </summary>
-    /// <returns>
-    /// The height of the content.
-    /// </returns>
     public double ContentHeight
     {
         get => GetValue(ContentHeightProperty);
@@ -41,20 +47,16 @@ public sealed class DataGridDetailsPresenter : Panel
         AffectsMeasure<DataGridDetailsPresenter>(ContentHeightProperty);
     }
 
-    // protected override AutomationPeer OnCreateAutomationPeer()
-    // {
-    //     return new DataGridDetailsPresenterAutomationPeer(this);
-    // }
 
     /// <summary>
     /// Arranges the content of the <see cref="T:AtomUI.Desktop.Controls.DataGridDetailsPresenter" />.
     /// </summary>
-    /// <returns>
-    /// The actual size used by the <see cref="T:AtomUI.Desktop.Controls.DataGridDetailsPresenter" />.
-    /// </returns>
     /// <param name="finalSize">
     /// The final area within the parent that this element should use to arrange itself and its children.
     /// </param>
+    /// <returns>
+    /// The actual size used by the <see cref="T:AtomUI.Desktop.Controls.DataGridDetailsPresenter" />.
+    /// </returns>
     protected override Size ArrangeOverride(Size finalSize)
     {
         if (OwningGrid == null)
@@ -129,8 +131,8 @@ public sealed class DataGridDetailsPresenter : Panel
     }
 
     /// <summary>
-    /// Measures the children of a <see cref="T:AtomUI.Desktop.Controls.DataGridDetailsPresenter" /> to 
-    /// prepare for arranging them during the <see cref="M:System.Windows.FrameworkElement.ArrangeOverride(System.Windows.Size)" /> pass.
+    /// Measures the children of a <see cref="T:AtomUI.Desktop.Controls.DataGridDetailsPresenter" /> to
+    /// prepare for arranging them during the <see cref="ArrangeOverride" /> pass.
     /// </summary>
     /// <param name="availableSize">
     /// The available size that this element can give to child elements. Indicates an upper limit that child elements should not exceed.

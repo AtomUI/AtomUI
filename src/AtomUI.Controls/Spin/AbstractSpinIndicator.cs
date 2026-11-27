@@ -13,53 +13,94 @@ using Avalonia.Rendering.Composition.Animations;
 
 namespace AtomUI.Controls.Commons;
 
+/// <summary>
+/// Base of the loading indicator that <see cref="AbstractSpin" /> shows over its content. It switches between the
+/// built-in four-dot indicator and the custom indicator, and runs the animation of the shown one while the control
+/// is loaded, visible and <see cref="IsMotionEnabled" /> is true. A derived control supplies the template; in
+/// <see cref="IndicatorAnimationMode.Custom" /> mode it also supplies the animation.
+/// </summary>
 public abstract class AbstractSpinIndicator : TemplatedControl, ICustomizableSizeTypeAware
 {
     #region 公共属性定义
 
+    /// <summary>
+    /// Identifies the <see cref="SizeType" /> property.
+    /// </summary>
     public static readonly StyledProperty<CustomizableSizeType> SizeTypeProperty =
         CustomizableSizeTypeControlProperty.SizeTypeProperty.AddOwner<AbstractSpinIndicator>();
 
+    /// <summary>
+    /// Identifies the <see cref="CustomIndicator" /> property.
+    /// </summary>
     public static readonly StyledProperty<object?> CustomIndicatorProperty =
         AbstractSpin.CustomIndicatorProperty.AddOwner<AbstractSpinIndicator>();
 
+    /// <summary>
+    /// Identifies the <see cref="CustomIndicatorTemplate" /> property.
+    /// </summary>
     public static readonly StyledProperty<IDataTemplate?> CustomIndicatorTemplateProperty =
         AbstractSpin.CustomIndicatorTemplateProperty.AddOwner<AbstractSpinIndicator>();
 
+    /// <summary>
+    /// Identifies the <see cref="IsMotionEnabled" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<AbstractSpinIndicator>();
 
+    /// <summary>
+    /// Identifies the <see cref="MotionDuration" /> property.
+    /// </summary>
     public static readonly StyledProperty<TimeSpan> MotionDurationProperty =
         MotionAwareControlProperty.MotionDurationProperty.AddOwner<AbstractSpinIndicator>();
 
+    /// <summary>
+    /// Identifies the <see cref="MotionEasingCurve" /> property.
+    /// </summary>
     public static readonly StyledProperty<Easing?> MotionEasingCurveProperty =
         AbstractSpin.MotionEasingCurveProperty.AddOwner<AbstractSpinIndicator>();
 
+    /// <summary>
+    /// Identifies the <see cref="IndicatorSize" /> property.
+    /// </summary>
     public static readonly StyledProperty<double> IndicatorSizeProperty =
         AvaloniaProperty.Register<AbstractSpinIndicator, double>(nameof(IndicatorSize), double.NaN);
 
+    /// <summary>
+    /// Identifies the <see cref="DotSize" /> property.
+    /// </summary>
     public static readonly StyledProperty<double> DotSizeProperty =
         AvaloniaProperty.Register<AbstractSpinIndicator, double>(nameof(DotSize), double.NaN);
 
     /// <summary>
-    /// 内置指示器圆点的填充画刷。
+    /// Identifies the <see cref="DotBgBrush" /> property.
     /// </summary>
     public static readonly StyledProperty<IBrush?> DotBgBrushProperty =
         AvaloniaProperty.Register<AbstractSpinIndicator, IBrush?>(nameof(DotBgBrush));
 
     /// <summary>
-    /// 动画模式；默认 <see cref="IndicatorAnimationMode.Rotate"/>，<see cref="IndicatorAnimationMode.Custom"/>
-    /// 时由子类通过 <see cref="StartCustomAnimation"/> 与 <see cref="StopCustomAnimation"/> 提供动画。
+    /// Identifies the <see cref="AnimationMode" /> property.
     /// </summary>
     public static readonly StyledProperty<IndicatorAnimationMode> AnimationModeProperty =
         AvaloniaProperty.Register<AbstractSpinIndicator, IndicatorAnimationMode>(nameof(AnimationMode));
 
+    /// <summary>
+    /// Size step of the indicator; the Spin control forwards its own step to it. The SpinIndicator theme takes the
+    /// width and height of the indicator area and of its dots from the tokens of that step, and
+    /// <see cref="CustomizableSizeType.Custom" /> uses the middle values unless <see cref="IndicatorSize" /> and
+    /// <see cref="DotSize" /> are set explicitly. The default is <see cref="CustomizableSizeType.Middle" />.
+    /// </summary>
     public CustomizableSizeType SizeType
     {
         get => GetValue(SizeTypeProperty);
         set => SetValue(SizeTypeProperty, value);
     }
 
+    /// <summary>
+    /// Content shown in place of the built-in dots, or <see langword="null" /> to show the dots. Use
+    /// <see cref="CustomIndicatorTemplate" /> to build the content from a data object. When the content is a
+    /// <see cref="PathIcon" />, it gets the width and height of <see cref="IndicatorSize" />. A change restarts the
+    /// animation.
+    /// </summary>
     [DependsOn(nameof(CustomIndicatorTemplate))]
     public object? CustomIndicator
     {
@@ -67,49 +108,90 @@ public abstract class AbstractSpinIndicator : TemplatedControl, ICustomizableSiz
         set => SetValue(CustomIndicatorProperty, value);
     }
 
+    /// <summary>
+    /// Data template that builds the content of <see cref="CustomIndicator" />. It is used only while
+    /// <see cref="CustomIndicator" /> is not <see langword="null" />, so a template on its own leaves the built-in dots
+    /// shown. A change restarts the animation.
+    /// </summary>
     public IDataTemplate? CustomIndicatorTemplate
     {
         get => GetValue(CustomIndicatorTemplateProperty);
         set => SetValue(CustomIndicatorTemplateProperty, value);
     }
 
-    /// <summary>Usually bound to the <c>EnableMotion</c> token; when false the indicator rests on its initial frame.</summary>
+    /// <summary>
+    /// Switches the indicator animation on or off; while false, the running animation is stopped and the built-in
+    /// indicator rests on its initial frame. The default is true, and <see cref="AbstractSpin" /> does not forward its
+    /// own motion setting, so following the <c>EnableMotion</c> token needs a theme that binds this property to it.
+    /// </summary>
     public bool IsMotionEnabled
     {
         get => GetValue(IsMotionEnabledProperty);
         set => SetValue(IsMotionEnabledProperty, value);
     }
 
+    /// <summary>
+    /// Duration of one turn of the built-in indicator and of one fade-in of its dots. The SpinIndicator theme binds it
+    /// to the <c>IndicatorDuration</c> token. Values below 1 ms are treated as 1 ms, and a change restarts the
+    /// animation.
+    /// </summary>
     public TimeSpan MotionDuration
     {
         get => GetValue(MotionDurationProperty);
         set => SetValue(MotionDurationProperty, value);
     }
 
+    /// <summary>
+    /// Easing of the rotation and of the dot opacity animation of the built-in indicator.
+    /// <see langword="null" /> animates linearly, and the SpinIndicator theme sets <see cref="LinearEasing" />. A
+    /// change restarts the animation.
+    /// </summary>
     public Easing? MotionEasingCurve
     {
         get => GetValue(MotionEasingCurveProperty);
         set => SetValue(MotionEasingCurveProperty, value);
     }
 
+    /// <summary>
+    /// Selects who animates the indicator. In <see cref="IndicatorAnimationMode.Rotate" />, the default, the base class
+    /// rotates the shown indicator and fades the dots of the built-in one. In
+    /// <see cref="IndicatorAnimationMode.Custom" />, a derived control animates through
+    /// <see cref="StartCustomAnimation" /> and <see cref="StopCustomAnimation" />, while the base class still decides
+    /// when the animation starts and stops. A change restarts the animation.
+    /// </summary>
     public IndicatorAnimationMode AnimationMode
     {
         get => GetValue(AnimationModeProperty);
         set => SetValue(AnimationModeProperty, value);
     }
 
+    /// <summary>
+    /// Width and height of the indicator area. The built-in dots are laid out in it, and a custom indicator is centered
+    /// in it; a custom indicator that is a <see cref="PathIcon" /> also gets it as its own width and height. The
+    /// SpinIndicator theme sets it from the token of the <see cref="SizeType" /> step. The registered default is
+    /// <see cref="double.NaN" />, so clearing an explicit value returns to that token.
+    /// </summary>
     public double IndicatorSize
     {
         get => GetValue(IndicatorSizeProperty);
         set => SetValue(IndicatorSizeProperty, value);
     }
 
+    /// <summary>
+    /// Width and height of each dot of the built-in indicator; it has no effect on a custom indicator. The
+    /// SpinIndicator theme sets it from the token of the <see cref="SizeType" /> step. The registered default is
+    /// <see cref="double.NaN" />, so clearing an explicit value returns to that token.
+    /// </summary>
     public double DotSize
     {
         get => GetValue(DotSizeProperty);
         set => SetValue(DotSizeProperty, value);
     }
 
+    /// <summary>
+    /// Fill of the four dots of the built-in indicator; it has no effect on a custom indicator. The SpinIndicator theme
+    /// binds it to the <c>ColorPrimary</c> token, and <see langword="null" /> leaves the dots unfilled.
+    /// </summary>
     public IBrush? DotBgBrush
     {
         get => GetValue(DotBgBrushProperty);
@@ -128,6 +210,11 @@ public abstract class AbstractSpinIndicator : TemplatedControl, ICustomizableSiz
 
     private bool _isCustomIndicator;
 
+    /// <summary>
+    /// Whether the indicator shows the custom indicator instead of the built-in dots. The indicator sets it from
+    /// <c>CustomIndicator</c>. While <see langword="true" />, the theme hides the dot panel and shows the custom
+    /// indicator presenter, and the loading animation targets the presenter instead of the dots.
+    /// </summary>
     internal bool IsCustomIndicator
     {
         get => _isCustomIndicator;
@@ -153,7 +240,10 @@ public abstract class AbstractSpinIndicator : TemplatedControl, ICustomizableSiz
     private bool _isIndicatorAnimationStale;
     private readonly MotionGate _motionGate;
 
-    /// <summary>True while a composition animation runs on the active indicator.</summary>
+    /// <summary>
+    /// True while an animation runs on the active indicator: the built-in one, or the custom one started through
+    /// <see cref="StartCustomAnimation" />.
+    /// </summary>
     internal bool IsIndicatorAnimationRunning => _animatedIndicatorTarget is not null;
 
     internal event EventHandler? IndicatorAnimationStarted;
@@ -174,18 +264,30 @@ public abstract class AbstractSpinIndicator : TemplatedControl, ICustomizableSiz
         _motionGate = new MotionGate(this, HandleShouldRunChanged);
     }
 
+    /// <summary>
+    /// Starts the indicator animation when the control is loaded. Overrides must call the base member.
+    /// </summary>
     protected override void OnLoaded(RoutedEventArgs e)
     {
         base.OnLoaded(e);
         StartIndicatorAnimation();
     }
 
+    /// <summary>
+    /// Stops the indicator animation when the control is detached from the visual tree. Overrides must call the base
+    /// member.
+    /// </summary>
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         StopIndicatorAnimation();
         base.OnDetachedFromVisualTree(e);
     }
 
+    /// <summary>
+    /// Stops the running animation, looks up the template parts <c>BuiltInIndicatorLayout</c>,
+    /// <c>PART_CustomIndicatorPresenter</c> and <c>PART_IndicatorLayout</c>, and starts the animation again when the
+    /// control is already loaded. Overrides must call the base member.
+    /// </summary>
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
@@ -217,6 +319,13 @@ public abstract class AbstractSpinIndicator : TemplatedControl, ICustomizableSiz
         }
     }
 
+    /// <summary>
+    /// Updates the animation after property changes: <see cref="IsMotionEnabled" /> opens or closes the motion gate,
+    /// <see cref="IndicatorSize" /> updates the size of a <see cref="PathIcon" /> indicator and the rotation center,
+    /// and a change of <see cref="CustomIndicator" />, <see cref="CustomIndicatorTemplate" />,
+    /// <see cref="AnimationMode" />, <see cref="MotionDuration" /> or <see cref="MotionEasingCurve" /> restarts the
+    /// animation. Overrides must call the base member.
+    /// </summary>
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
@@ -312,17 +421,33 @@ public abstract class AbstractSpinIndicator : TemplatedControl, ICustomizableSiz
     }
 
     /// <summary>
-    /// <see cref="IndicatorAnimationMode.Custom"/> 模式下在门控放行且已加载时调用；<paramref name="target"/> 为模板部件
-    /// <c>PART_IndicatorLayout</c>，找不到时为内置或自定义指示器目标。返回是否已启动；返回 false 时不视为运行中。
+    /// Starts the animation in <see cref="IndicatorAnimationMode.Custom" /> mode. The base class calls it whenever the
+    /// animation should run: when the control is loaded, when the motion gate opens, after the template is applied, and
+    /// after <see cref="CustomIndicator" />, <see cref="CustomIndicatorTemplate" />,
+    /// <see cref="AnimationMode" />, <see cref="MotionDuration" /> or <see cref="MotionEasingCurve" /> changes. The
+    /// base implementation starts nothing and returns <see langword="false" />.
     /// </summary>
+    /// <param name="target">
+    /// The <c>PART_IndicatorLayout</c> part of the template, or, when the template has no such part, the built-in dot
+    /// panel or the presenter of the custom indicator.
+    /// </param>
+    /// <returns>
+    /// <see langword="true" /> when the animation runs. After <see langword="false" /> the indicator does not count as
+    /// animating, so no <see cref="StopCustomAnimation" /> call follows.
+    /// </returns>
     protected virtual bool StartCustomAnimation(Visual target)
     {
         return false;
     }
 
     /// <summary>
-    /// 每次成功的 <see cref="StartCustomAnimation"/> 恰好对应一次调用（门控关闭、脱离、模板重应用、模式切换、重启）。
+    /// Stops the animation that <see cref="StartCustomAnimation" /> started. It is called exactly once for each start
+    /// that returned <see langword="true" />: when the motion gate closes, when the control is detached, when the
+    /// template is applied, and before the animation restarts. The base implementation does nothing.
     /// </summary>
+    /// <param name="target">
+    /// The target that was passed to <see cref="StartCustomAnimation" />.
+    /// </param>
     protected virtual void StopCustomAnimation(Visual target)
     {
     }
@@ -356,7 +481,11 @@ public abstract class AbstractSpinIndicator : TemplatedControl, ICustomizableSiz
         StopTargetAnimation(_customIndicatorPresenter);
     }
 
-    /// <summary>几何等变化后由子类调用，先停止再重新开始当前动画。</summary>
+    /// <summary>
+    /// Stops the running animation and starts it again, for use by derived controls after a change that affects a
+    /// running custom animation, such as its geometry. The animation starts again only while the control is loaded and
+    /// the motion gate is open.
+    /// </summary>
     protected void RestartIndicatorAnimation()
     {
         StopIndicatorAnimation();

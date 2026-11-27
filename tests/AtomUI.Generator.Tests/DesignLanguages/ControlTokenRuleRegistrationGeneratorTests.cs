@@ -171,8 +171,8 @@ public class ControlTokenRuleRegistrationGeneratorTests
 
         var package = Run(CreatePackage("Acme.Controls", source, core, shadcn), out var diagnostics);
 
-        // A control package that references a language package breaks the dependency direction (spec 3.3); the
-        // registration is still emitted so the rest of the build reports its own errors.
+        // A control package that references a language package breaks the dependency direction; the registration
+        // is still emitted so the rest of the build reports its own errors.
         diagnostics.Where(static d => d.Severity == DiagnosticSeverity.Error).ShouldAllBe(d => d.Id == "ATOMUIGEN053");
         // The Create<> constraints require IControlToken: the emitted calls bind against the same-run identity halves.
         Errors(package).ShouldBeEmpty();

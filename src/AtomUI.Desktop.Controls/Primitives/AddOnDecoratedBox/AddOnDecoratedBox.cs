@@ -593,7 +593,7 @@ internal class AddOnDecoratedBox : InputControlFrame
     {
         base.OnApplyTemplate(e);
 
-        // 取消旧的 ContentPresenter 订阅
+        // Unsubscribe from the content presenters of the previous template.
         if (_contentLeftAddOn != null)
         {
             _contentLeftAddOn.PropertyChanged -= HandleContentPresenterChildChanged;
@@ -625,7 +625,7 @@ internal class AddOnDecoratedBox : InputControlFrame
         _contentLeftAddOn  = e.NameScope.Find<ContentPresenter>("PART_ContentLeftAddOn");
         _contentRightAddOn = e.NameScope.Find<ContentPresenter>("PART_ContentRightAddOn");
 
-        // 订阅新的 ContentPresenter Child 变化
+        // Subscribe to Child changes of the new content presenters.
         if (_contentLeftAddOn != null)
         {
             _contentLeftAddOn.PropertyChanged += HandleContentPresenterChildChanged;
@@ -695,7 +695,7 @@ internal class AddOnDecoratedBox : InputControlFrame
 
     private void UpdateIconStatusColors()
     {
-        // Status colours are removable Template-priority values: user local values and part styles on the add-on
+        // Status colors are removable Template-priority values: user local values and part styles on the add-on
         // presenters and icons keep winning and are never erased, and leaving the status disposes exactly the values
         // applied here (no ClearValue). Add-on icons are runtime content (not template parts), possibly logically
         // owned by the outer input control, so a ControlTheme selector cannot reach them.

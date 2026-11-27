@@ -5,7 +5,8 @@ namespace AtomUI.Controls.Commons;
 using AvaloniaCheckBox = Avalonia.Controls.CheckBox;
 
 /// <summary>
-/// AtomUI 复选框的抽象基类，提供动效、水波反馈以及表单项集成能力。
+/// Base class of the AtomUI check boxes. It adds state change motion, click wave feedback and form item
+/// integration to the Avalonia check box.
 /// </summary>
 public abstract class AbstractCheckBox : AvaloniaCheckBox, 
                                          IWaveSpiritAwareControl,
@@ -14,19 +15,20 @@ public abstract class AbstractCheckBox : AvaloniaCheckBox,
     #region 公共属性定义
 
     /// <summary>
-    /// 标识 <see cref="IsMotionEnabled"/> 是否启用的 Avalonia 样式属性。
+    /// Identifies the <see cref="IsMotionEnabled" /> property.
     /// </summary>
     public static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<AbstractCheckBox>();
 
     /// <summary>
-    /// 标识 <see cref="IsWaveSpiritEnabled"/> 是否启用的 Avalonia 样式属性。
+    /// Identifies the <see cref="IsWaveSpiritEnabled" /> property.
     /// </summary>
     public static readonly StyledProperty<bool> IsWaveSpiritEnabledProperty =
         WaveSpiritAwareControlProperty.IsWaveSpiritEnabledProperty.AddOwner<AbstractCheckBox>();
     
     /// <summary>
-    /// 获取或设置控件是否启用状态切换相关动效。
+    /// Enables the animated transitions of the indicator when the checked state changes. When the value is not set,
+    /// the theme supplies it from the <c>EnableMotion</c> token.
     /// </summary>
     public bool IsMotionEnabled
     {
@@ -35,7 +37,9 @@ public abstract class AbstractCheckBox : AvaloniaCheckBox,
     }
 
     /// <summary>
-    /// 获取或设置控件是否启用点击时的水波反馈效果。
+    /// Enables the wave feedback on the indicator when the check box changes to checked. The wave plays only while
+    /// <see cref="IsMotionEnabled" /> is <see langword="true" /> and the check box is enabled. When the value is not
+    /// set, the theme supplies it from the <c>EnableWaveSpirit</c> token.
     /// </summary>
     public bool IsWaveSpiritEnabled
     {
@@ -54,7 +58,7 @@ public abstract class AbstractCheckBox : AvaloniaCheckBox,
     private EventHandler? _formValueChanged;
 
     /// <summary>
-    /// 当复选框的表单值发生变化时触发。
+    /// Raised after <see cref="Avalonia.Controls.Primitives.ToggleButton.IsChecked" /> changed.
     /// </summary>
     event EventHandler? IFormItemAware.ValueChanged
     {
@@ -63,26 +67,32 @@ public abstract class AbstractCheckBox : AvaloniaCheckBox,
     }
 
     /// <summary>
-    /// 由表单系统设置复选框的当前值。
+    /// Called by the form system to assign a value to the check box.
     /// </summary>
-    /// <param name="value">要设置的表单值，应为 <see cref="bool"/> 或 <see langword="null"/>。</param>
+    /// <param name="value">
+    /// The value to assign: a <see cref="bool" /> or <see langword="null" />.
+    /// </param>
     void IFormItemAware.SetFormValue(object? value) => NotifySetFormValue((bool?)value);
 
     /// <summary>
-    /// 由表单系统读取复选框的当前值。
+    /// Called by the form system to read the current value of the check box.
     /// </summary>
-    /// <returns>当前复选框值。</returns>
+    /// <returns>
+    /// The current value of <see cref="Avalonia.Controls.Primitives.ToggleButton.IsChecked" />.
+    /// </returns>
     object? IFormItemAware.GetFormValue() => NotifyGetFormValue();
 
     /// <summary>
-    /// 由表单系统清空复选框的当前值。
+    /// Called by the form system to reset the check box. The check box ends up unchecked.
     /// </summary>
     void IFormItemAware.ClearFormValue() => NotifyClearFormValue();
 
     /// <summary>
-    /// 由表单系统通知复选框当前的校验状态。
+    /// Called by the form system when the validation status of the form item changes.
     /// </summary>
-    /// <param name="status">当前表单校验状态。</param>
+    /// <param name="status">
+    /// The current validation status.
+    /// </param>
     void IFormItemAware.NotifyValidateStatus(FormValidateStatus status) => NotifyValidateStatus(status);
     
     private void HandleCheckedChanged()
@@ -91,25 +101,31 @@ public abstract class AbstractCheckBox : AvaloniaCheckBox,
     }
 
     /// <summary>
-    /// 设置复选框绑定到表单系统的值。
+    /// Applies a value assigned by the form system. The default sets
+    /// <see cref="Avalonia.Controls.Primitives.ToggleButton.IsChecked" /> with <c>SetCurrentValue</c>, so a binding on
+    /// the property is kept.
     /// </summary>
-    /// <param name="value">要设置的复选框值。</param>
+    /// <param name="value">
+    /// The value to assign, or <see langword="null" />.
+    /// </param>
     protected virtual void NotifySetFormValue(bool? value)
     {
         SetCurrentValue(IsCheckedProperty, value);
     }
 
     /// <summary>
-    /// 获取复选框绑定到表单系统的值。
+    /// Returns the value reported to the form system.
     /// </summary>
-    /// <returns>当前复选框值。</returns>
+    /// <returns>
+    /// The current value of <see cref="Avalonia.Controls.Primitives.ToggleButton.IsChecked" />.
+    /// </returns>
     protected virtual bool? NotifyGetFormValue()
     {
         return IsChecked;
     }
 
     /// <summary>
-    /// 清空复选框绑定到表单系统的值。
+    /// Resets the check box on behalf of the form system. The default unchecks it with <c>SetCurrentValue</c>.
     /// </summary>
     protected virtual void NotifyClearFormValue()
     {
@@ -117,9 +133,11 @@ public abstract class AbstractCheckBox : AvaloniaCheckBox,
     }
     
     /// <summary>
-    /// 响应表单校验状态变化。
+    /// Called when the form system reports a new validation status. The default ignores the status.
     /// </summary>
-    /// <param name="status">当前表单校验状态。</param>
+    /// <param name="status">
+    /// The validation status reported by the form system.
+    /// </param>
     protected virtual void NotifyValidateStatus(FormValidateStatus status)
     {
     }

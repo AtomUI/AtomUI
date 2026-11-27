@@ -1,13 +1,15 @@
 namespace AtomUI.Desktop.Controls;
 
 /// <summary>
-/// Declares how a child of <see cref="Masonry"/> occupies columns.
+/// Declares how a child of <see cref="Masonry" /> occupies columns.
 /// </summary>
 public enum MasonryItemSpan
 {
     /// <summary>
-    /// The item occupies a single column and is placed into the current shortest column
-    /// (or the column assigned via <c>Masonry.Column</c>). This is the default behavior.
+    /// The item occupies a single column. It is placed into the column assigned via
+    /// <c>Masonry.Column</c> when that is set, otherwise into the current shortest column, where
+    /// <see cref="MasonryLayoutStrategy.StableColumns" /> keeps the item container while the effective
+    /// column count stays unchanged. This is the default behavior.
     /// </summary>
     Auto,
 

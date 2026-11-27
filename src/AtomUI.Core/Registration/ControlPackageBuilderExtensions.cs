@@ -1,8 +1,14 @@
 namespace AtomUI;
 
+/// <summary>
+/// Extensions of <see cref="IAtomUIBuilder" /> for application code that cannot rely on the generated host
+/// interface.
+/// </summary>
 public static class ControlPackageBuilderExtensions
 {
-    /// <summary>Uses the generated startup image when the Application cannot implement the generated host interface.</summary>
+    /// <summary>
+    /// Uses the generated startup image when the Application cannot implement the generated host interface.
+    /// </summary>
     public static IAtomUIBuilder UseStartupImage(this IAtomUIBuilder builder, Registration.StartupImage image)
     {
         ArgumentNullException.ThrowIfNull(builder);

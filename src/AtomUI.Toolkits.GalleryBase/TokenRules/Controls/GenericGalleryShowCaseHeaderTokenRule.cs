@@ -6,7 +6,9 @@ using Avalonia.Media;
 
 namespace AtomUI.Toolkits.GalleryBase.TokenRules;
 
-/// <summary>The Generic view of <see cref="GalleryShowCaseHeaderToken"/>.</summary>
+/// <summary>
+/// The Generic view of <see cref="GalleryShowCaseHeaderToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class GenericGalleryShowCaseHeaderTokenRule : IControlTokenRule<LanguageDesignToken, GalleryShowCaseHeaderToken>
 {

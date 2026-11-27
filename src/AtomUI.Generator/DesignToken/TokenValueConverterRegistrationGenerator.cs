@@ -2,11 +2,19 @@ using Microsoft.CodeAnalysis;
 
 namespace AtomUI.Generator;
 
+/// <summary>
+/// Generates <c>TokenValueConverterRegistry.g.cs</c>, the registry of every type marked with
+/// <c>[TokenValueConverter]</c>.
+/// </summary>
 [Generator]
 public class TokenValueConverterRegistrationGenerator : IIncrementalGenerator
 {
     private const string TokenValueConverterInterface = "global::AtomUI.Theme.DesignTokens.ITokenValueConverter";
 
+    /// <summary>
+    /// Registers the implementation source output that collects the types marked with <c>[TokenValueConverter]</c>,
+    /// sorted and de-duplicated by type name, and writes the registry when there is at least one.
+    /// </summary>
     public void Initialize(IncrementalGeneratorInitializationContext initContext)
     {
         var converterTypesProvider = initContext.SyntaxProvider.ForAttributeWithMetadataName(

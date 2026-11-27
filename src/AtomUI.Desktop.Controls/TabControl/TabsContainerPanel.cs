@@ -79,8 +79,9 @@ internal class TabsContainerPanel : Panel
 
     protected override Size ArrangeOverride(Size arrangeSize)
     {
-        // TODO 暂时不做验证，默认认为两个元素都存在
-        // 理论上这里要报错，但是我们是内部使用
+        // TODO Arrange validation: decide whether a missing scroll viewer or add-tab button should raise an error.
+        // Both are skipped silently for now, because the panel is internal.
+        // Remove this TODO when the check is added, or when it is decided that the silent skip stays.
         if (_tabScrollViewer is not null && _addTabButton is not null)
         {
             if (TabStripPlacement == Dock.Top || TabStripPlacement == Dock.Bottom)

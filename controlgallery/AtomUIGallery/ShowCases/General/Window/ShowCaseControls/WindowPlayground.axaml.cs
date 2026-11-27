@@ -10,7 +10,8 @@ internal partial class WindowPlayground : AtomUI.Desktop.Controls.Window
     public WindowPlayground()
     {
         InitializeComponent();
-        // macOS 使用原生红绿灯按钮，这三个 visibility 属性只作用于 Windows/Linux 的自绘按钮
+        // macOS uses the native traffic-light buttons; these three visibility properties only affect the
+        // custom buttons on Windows and Linux.
         if (OperatingSystem.IsMacOS())
         {
             MinimizeCaptionRow.IsVisible = false;
@@ -44,7 +45,8 @@ internal partial class WindowPlayground : AtomUI.Desktop.Controls.Window
     {
         if (sender is ToggleButton toggle)
         {
-            // Icon 是 Visual，每次打开都新建实例，避免重新挂载时的 visual parent 冲突
+            // An icon is a Visual, so every open creates a new instance to avoid a visual parent conflict
+            // on re-attach.
             Logo = toggle.IsChecked == true ? new AtomUiLogoIcon() : null;
         }
     }

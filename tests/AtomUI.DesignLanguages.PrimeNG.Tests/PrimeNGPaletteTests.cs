@@ -6,7 +6,7 @@ using Xunit;
 namespace AtomUI.DesignLanguages.PrimeNG.Tests;
 
 /// <summary>
-/// The PrimeNG colour scale: the PrimeUIX <c>palette</c> formula (verified against <c>@primeuix/styled</c> 1.2.0)
+/// The PrimeNG color scale: the PrimeUIX <c>palette</c> formula (verified against <c>@primeuix/styled</c> 1.2.0)
 /// and the Tailwind tables transcribed from the <c>@primeuix/themes</c> primitive tokens.
 /// </summary>
 public class PrimeNGPaletteTests

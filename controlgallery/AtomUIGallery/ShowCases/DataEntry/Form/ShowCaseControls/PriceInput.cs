@@ -29,23 +29,41 @@ public class PriceInput : TemplatedControl,
                           IInputControlStyleVariantAware
 {
     #region 公共属性定义
+    /// <summary>
+    /// Identifies the <see cref="SizeType" /> property.
+    /// </summary>
     public static readonly StyledProperty<CustomizableSizeType> SizeTypeProperty =
         CustomizableSizeTypeControlProperty.SizeTypeProperty.AddOwner<PriceInput>();
     
+    /// <summary>
+    /// Identifies the <see cref="IsMotionEnabled" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<PriceInput>();
     
+    /// <summary>
+    /// Identifies the <see cref="Value" /> property.
+    /// </summary>
     public static readonly StyledProperty<PriceInfo?> ValueProperty =
         AvaloniaProperty.Register<PriceInput, PriceInfo?>(nameof(Value));
 
+    /// <summary>
+    /// Identifies the <see cref="CurrencyOptions" /> property.
+    /// </summary>
     public static readonly DirectProperty<PriceInput, IList<ISelectOption>?> CurrencyOptionsProperty =
         AvaloniaProperty.RegisterDirect<PriceInput, IList<ISelectOption>?>(
             nameof(CurrencyOptions),
             o => o.CurrencyOptions);
     
+    /// <summary>
+    /// Identifies the <see cref="StyleVariant" /> property.
+    /// </summary>
     public static readonly StyledProperty<InputControlStyleVariant> StyleVariantProperty =
         InputControlStyleVariantProperty.StyleVariantProperty.AddOwner<PriceInput>();
 
+    /// <summary>
+    /// Identifies the <see cref="Status" /> property.
+    /// </summary>
     public static readonly StyledProperty<InputControlStatus> StatusProperty =
         InputControlStatusProperty.StatusProperty.AddOwner<PriceInput>();
     

@@ -5,7 +5,9 @@ using AvaloniaWindow = Avalonia.Controls.Window;
 
 namespace AtomUI.Desktop.Controls;
 
-/// <summary>Owns native style compatibility for all application windows, including ordinary Avalonia windows.</summary>
+/// <summary>
+/// Owns native style compatibility for all application windows, including ordinary Avalonia windows.
+/// </summary>
 internal sealed class WindowsWindowStyleCompatibility : IDisposable
 {
     private readonly ConditionalWeakTable<AvaloniaWindow, IDisposable> _hooks = new();

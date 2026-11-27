@@ -4,7 +4,9 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 
-/// <summary>The PrimeNG view of <see cref="CascaderToken"/>.</summary>
+/// <summary>
+/// The PrimeNG view of <see cref="CascaderToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class CascaderTokenRule : IControlTokenRule<PrimeNGToken, CascaderToken>
 {
@@ -12,10 +14,14 @@ internal sealed class CascaderTokenRule : IControlTokenRule<PrimeNGToken, Cascad
     {
         var token  = target.Own;
         var global = target.Global;
-        // PrimeNG: the control-global overrides, read by the formulas below.
+        // PrimeNG: the control-global overrides of PrimeNGInputStage.Apply (form-field values): the formulas below
+        // read ColorTextDisabled; the Cascader theme and its input frame (Foreground, CornerRadius, Background) too.
         PrimeNGCascaderTokens.EvaluateGlobal(in context, global);
         SelectInputTokenCalculator.Calculate(in context, global, token);
         var itemPaddingVertical = Math.Round((global.ControlHeight - global.FontHeight) / 2);
+        // Ant Design formula kept as is; the PrimeNG cascader stage (PrimeNGCascaderTokens.EvaluateOwn)
+        // replaces the option padding, radius, margin, hover background and selected font weight, the menu
+        // padding and the chip background. The widths 184 and 111 and the drop-down height 180 stay.
         token.ControlWidth             = 184;
         token.ControlItemWidth         = 111;
         token.DropdownHeight           = 180;

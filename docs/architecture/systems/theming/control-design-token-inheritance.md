@@ -46,10 +46,14 @@ public sealed class ControlDesignTokenAttribute : Attribute
 [ControlDesignToken]
 public abstract partial class CommonButtonToken : AbstractControlDesignToken
 {
-    /// <summary>Height of the button content box.</summary>
+    /// <summary>
+    /// Height of the button content box.
+    /// </summary>
     public partial double ContentHeight { get; set; }
 
-    /// <summary>Padding around the button content.</summary>
+    /// <summary>
+    /// Padding around the button content.
+    /// </summary>
     public partial Thickness ContentPadding { get; set; }
 }
 ```
@@ -75,7 +79,9 @@ namespace AtomUI.Desktop.Controls
     [ControlDesignToken]
     public sealed partial class ButtonToken : CommonButtonToken
     {
-        /// <summary>Shadow of a default button at rest.</summary>
+        /// <summary>
+        /// Shadow of a default button at rest.
+        /// </summary>
         public partial BoxShadows DefaultShadow { get; set; }
     }
 }

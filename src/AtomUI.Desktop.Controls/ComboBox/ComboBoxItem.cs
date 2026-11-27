@@ -11,6 +11,11 @@ namespace AtomUI.Desktop.Controls;
 
 using AvaloniaComboBoxItem = Avalonia.Controls.ComboBoxItem;
 
+/// <summary>
+/// An option of the <see cref="ComboBox" /> drop-down. Selecting it on a pointer press or tap goes through the
+/// owner, which commits the selection and closes the drop-down. The owner sets
+/// <see cref="IsCandidateSelected" /> on the item highlighted as the pending selection; <c>Enter</c> commits it.
+/// </summary>
 public class ComboBoxItem : AvaloniaComboBoxItem, ITransitionInitializationOwner
 {
     #region 内部属性定义
@@ -54,30 +59,54 @@ public class ComboBoxItem : AvaloniaComboBoxItem, ITransitionInitializationOwner
         _transitionInitialization = new TransitionInitializationSession(this);
     }
 
+    /// <summary>
+    /// Completes the transition initialization once the template is applied. The base method runs first; an
+    /// override that does not call it must still complete the initialization.
+    /// </summary>
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
         _transitionInitialization.CompleteInitialization();
     }
 
+    /// <summary>
+    /// Resets the transition initialization session, then lets the base method run. An override that does not call
+    /// the base method must still reset the session, so that it is completed again for the new template by
+    /// <see cref="OnApplyTemplate" /> or <see cref="OnLoaded" />.
+    /// </summary>
     protected override void OnTemplateChanged(AvaloniaPropertyChangedEventArgs e)
     {
         _transitionInitialization?.Reset();
         base.OnTemplateChanged(e);
     }
 
+    /// <summary>
+    /// Resets the transition initialization session, then calls the base method. An override that does not call
+    /// the base method must still reset the session, so that it is completed again by <see cref="OnLoaded" />
+    /// when the item is attached once more.
+    /// </summary>
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         _transitionInitialization.Reset();
         base.OnDetachedFromVisualTree(e);
     }
 
+    /// <summary>
+    /// Completes the transition initialization. The base method runs first; an override that does not call it
+    /// must still complete the initialization.
+    /// </summary>
     protected override void OnLoaded(RoutedEventArgs e)
     {
         base.OnLoaded(e);
         _transitionInitialization.CompleteInitialization();
     }
 
+    /// <summary>
+    /// Selects this item through the owner <see cref="ComboBox" /> when a mouse button or a pen right button is
+    /// pressed on it and the press is not handled yet. When the owner commits the selection, the drop-down closes
+    /// and the press is marked handled. A touch or pen tip press only stores the press point for
+    /// <see cref="OnPointerReleased" />.
+    /// </summary>
     protected override void OnPointerPressed(PointerPressedEventArgs e)
     {
         base.OnPointerPressed(e);
@@ -103,6 +132,13 @@ public class ComboBoxItem : AvaloniaComboBoxItem, ITransitionInitializationOwner
         }
     }
 
+    /// <summary>
+    /// Selects this item through the owner <see cref="ComboBox" /> after a tap of a touch or a pen tip: the release
+    /// must not be handled yet, it must happen inside the item and within the platform tap tolerance of the press
+    /// point that <see cref="OnPointerPressed" /> stored. A mouse press selects on press already and stores no
+    /// point. When the owner commits the selection, the release event is raised on the owner again for a pointer
+    /// that is not a mouse, and the event is marked handled.
+    /// </summary>
     protected override void OnPointerReleased(PointerReleasedEventArgs e)
     {
         base.OnPointerReleased(e);

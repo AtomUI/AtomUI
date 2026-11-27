@@ -6,8 +6,9 @@
              xmlns:viewModels="clr-namespace:AtomUIGallery.ShowCases.Notification"
              x:DataType="viewModels:NotificationViewModel">
     <UserControl.Resources>
-        <!-- 默认样式示例：浅绿卡片 + 2px 绿边 + 圆角 16 + 硬阴影，icon / title / description 绿字；
-             error 分支整卡转红。 -->
+        <!-- Default style example: light green card + 2px green border + corner radius 16 + hard shadow, with green
+        icon / title / description text; the error branch turns the whole card red.
+        -->
         <Styles x:Key="NotificationSemanticStyleStyles">
             <Styles.Resources>
                 <ResourceDictionary>
@@ -59,9 +60,11 @@
                     <Setter Property="IconBrush" Value="{DynamicResource NotificationSuccessForeground}" />
                 </atom:NotificationCardCloseStyle>
             </Style>
-            <!-- error 分支只覆盖背景色 / 边框色 / 阴影色，边框粗细与圆角沿用默认样式的那两个 Setter，
-                 所以这里必须重复声明 BorderThickness 与 CornerRadius；否则会回落到主题默认值
-                 （零边框 / 半径 8），卡片边框更细、圆角更小。 -->
+            <!-- The error branch only overrides the background, border and shadow colors. The border thickness and the
+            corner radius come from those two setters of the default style, so BorderThickness and CornerRadius
+            have to be declared again here; otherwise they fall back to the theme defaults (zero border / radius 8)
+            and the card gets a thinner border and a smaller radius.
+            -->
             <Style Selector="atom|NotificationCard.semantic-error-style-demo:error">
                 <Setter Property="Background" Value="{DynamicResource NotificationErrorBackground}" />
                 <Setter Property="BorderBrush" Value="{DynamicResource NotificationErrorBorder}" />
@@ -99,10 +102,12 @@
 
             <gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
                 <DataTemplate x:DataType="viewModels:NotificationViewModel">
-                    <!-- 单个预览舞台同时承载「通知列表宿主」与「通知卡片」两个公开 owner 的 Part，
-                         右侧按 owner 顺序列出全部 11 个 Part。
-                         NotificationCard 没有声明式构造入口（只能由 manager 创建），因此卡片实例由
-                         code-behind 在舞台内播种并挂到下方 Owner 锚点上；manager 用无宿主实例铺满舞台。 -->
+                    <!-- One preview stage hosts the parts of two public owners, the "notification list host" and the
+                    "notification card", and the panel on the right lists all 11 parts in owner order.
+                    NotificationCard has no declarative construction entry (only the manager can create it), so the
+                    card instances are seeded inside the stage by the code-behind and attached to the Owner anchor
+                    below; the manager fills the stage without a host instance.
+                    -->
                     <gallery:SemanticPartPreview Name="NotificationSemanticPreview"
                                                  Title="Notification"
                                                  SemanticOwner="{Binding #NotificationSemanticAnchor}">
@@ -115,11 +120,15 @@
                         <gallery:SemanticPartPreview.PreviewContent>
                             <Panel MinHeight="320"
                                    Background="{atom:SharedTokenResource ColorFillAlter}">
-                                <!-- manager 无宿主实例拉伸铺满舞台；root 高亮 = 列表宿主本身。 -->
+                                <!-- The manager stretches over the stage without a host instance; the root highlight is
+                                the list host itself.
+                                -->
                                 <atom:WindowNotificationManager x:Name="NotificationManagerSemanticOwner"
                                                                MaxItems="3"
                                                                IsMotionEnabled="False" />
-                                <!-- 卡片锚点：NotificationCard 有公开无参构造，可声明式实例化两张常驻卡片。 -->
+                                <!-- Card anchors: NotificationCard has a public parameterless constructor, so two
+                                persistent cards can be instantiated declaratively.
+                                -->
                                 <StackPanel x:Name="NotificationSemanticAnchor"
                                             Orientation="Vertical"
                                             Spacing="16"

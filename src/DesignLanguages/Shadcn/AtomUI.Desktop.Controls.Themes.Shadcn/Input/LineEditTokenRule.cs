@@ -3,7 +3,9 @@ using AtomUI.Theme.Languages;
 
 namespace AtomUI.Desktop.Controls.Themes.Shadcn;
 
-/// <summary>The shadcn view of <see cref="LineEditToken"/>.</summary>
+/// <summary>
+/// The shadcn view of <see cref="LineEditToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class LineEditTokenRule : IControlTokenRule<ShadcnToken, LineEditToken>
 {
@@ -17,6 +19,8 @@ internal sealed class LineEditTokenRule : IControlTokenRule<ShadcnToken, LineEdi
         token.InputFontSize = global.FontSize;
         token.InputFontSizeLG = global.FontSizeLG;
         token.InputFontSizeSM = token.InputFontSize;
+        // The frame of the style replaces the outlined frame of the formula: a translucent fill without a border in
+        // Luma and Rhea, a bottom rule only in Sera.
         (token.TransparentOutlineBorder, token.BottomOutlineBorder) = frame;
     }
 }

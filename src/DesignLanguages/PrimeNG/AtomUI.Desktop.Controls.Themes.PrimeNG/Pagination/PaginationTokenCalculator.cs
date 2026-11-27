@@ -4,9 +4,15 @@ using AtomUI.Theme.Languages;
 
 namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 
-/// <summary>The PrimeNG values of the shared <see cref="AbstractPaginationToken"/> layer.</summary>
+/// <summary>
+/// The PrimeNG values of the shared <see cref="AbstractPaginationToken" /> layer.
+/// </summary>
 public static class PaginationTokenCalculator
 {
+    /// <summary>
+    /// Writes the PrimeNG values into the shared pagination layer: the item sizes, colors, hover background and
+    /// radius, the spacing of the normal and mini layouts and the widths of the quick jumper inputs.
+    /// </summary>
     public static void Calculate(in TokenEvaluationContext<PrimeNGToken> context, DesignToken global, AbstractPaginationToken token)
     {
         token.ItemSize                  = global.ControlHeight;

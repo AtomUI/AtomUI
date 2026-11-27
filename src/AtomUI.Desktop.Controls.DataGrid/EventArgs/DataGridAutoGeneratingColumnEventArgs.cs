@@ -7,6 +7,11 @@ using System.ComponentModel;
 
 namespace AtomUI.Desktop.Controls;
 
+/// <summary>
+/// Carries the data for the <see cref="DataGrid.AutoGeneratingColumn" /> event, which the grid raises once
+/// for each property of the data source before it adds the column it generated for that property. Cancelling
+/// the event, or leaving <see cref="Column" /> null, skips the column.
+/// </summary>
 public class DataGridAutoGeneratingColumnEventArgs : CancelEventArgs
 {
     /// <summary>
@@ -29,7 +34,8 @@ public class DataGridAutoGeneratingColumnEventArgs : CancelEventArgs
     }
 
     /// <summary>
-    /// Gets the generated column.
+    /// Gets or sets the column that the grid adds for the property. A handler can replace the generated column
+    /// with its own, which is then marked as auto-generated; when left null, no column is added.
     /// </summary>
     public DataGridColumn? Column
     {

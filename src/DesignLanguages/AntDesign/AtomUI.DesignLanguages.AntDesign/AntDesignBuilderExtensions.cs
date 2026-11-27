@@ -3,11 +3,14 @@ using AtomUI.Theme.Languages;
 
 namespace AtomUI.DesignLanguages.AntDesign;
 
+/// <summary>
+/// Provides the entry point that enables the Ant Design language and its themes on an AtomUI builder.
+/// </summary>
 public static class AntDesignBuilderExtensions
 {
     /// <summary>
     /// Enables the Ant Design language and its official themes (Daybreak Blue). The value packages of the enabled
-    /// control packages are added in <paramref name="configure"/>, for example
+    /// control packages are added in <paramref name="configure" />, for example
     /// <c>builder.UseAntDesign(language =&gt; language.AddDesktopControls())</c>.
     /// </summary>
     public static IAtomUIBuilder UseAntDesign(this IAtomUIBuilder builder,

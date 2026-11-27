@@ -6,7 +6,7 @@ using Xunit;
 namespace AtomUI.Core.Tests.Theme;
 
 /// <summary>
-/// The selection resolver (spec 7.8): a pure function with three rules and no fallback search — the language, theme and
+/// The selection resolver: a pure function with three rules and no fallback search — the language, theme and
 /// axis values must be available; the theme's fixed axes win; the theme's locked seeds are not replaced.
 /// </summary>
 public class ThemeSelectionResolverTests

@@ -4,7 +4,9 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls.Themes.AntDesign;
 
-/// <summary>The AntDesign view of <see cref="TextAreaToken"/>.</summary>
+/// <summary>
+/// The AntDesign view of <see cref="TextAreaToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class TextAreaTokenRule : IControlTokenRule<AntDesignToken, TextAreaToken>
 {

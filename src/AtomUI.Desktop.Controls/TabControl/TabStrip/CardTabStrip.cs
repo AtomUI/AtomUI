@@ -12,24 +12,43 @@ using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
 
+/// <summary>
+/// A tab strip whose tabs are rendered as cards. Every tab takes its corner radius and border thickness
+/// from the strip, and only the corners on the <see cref="BaseTabStrip.TabStripPlacement" /> side of a tab
+/// are rounded. An optional add button raises <see cref="AddTabRequest" />.
+/// </summary>
 public partial class CardTabStrip : BaseTabStrip
 {
     #region 公共属性实现
 
+    /// <summary>
+    /// Identifies the <see cref="IsShowAddTabButton" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsShowAddTabButtonProperty =
         AvaloniaProperty.Register<CardTabStrip, bool>(nameof(IsShowAddTabButton));
 
+    /// <summary>
+    /// Identifies the <see cref="AddTabRequest" /> routed event.
+    /// </summary>
     public static readonly RoutedEvent<RoutedEventArgs> AddTabRequestEvent =
         RoutedEvent.Register<CardTabStrip, RoutedEventArgs>(
             nameof(AddTabRequest),
             RoutingStrategies.Bubble);
 
+    /// <summary>
+    /// Controls whether the add button after the last tab is visible. Clicking the button raises
+    /// <see cref="AddTabRequest" />.
+    /// </summary>
     public bool IsShowAddTabButton
     {
         get => GetValue(IsShowAddTabButtonProperty);
         set => SetValue(IsShowAddTabButtonProperty, value);
     }
 
+    /// <summary>
+    /// Occurs when the add button is clicked. The event bubbles up the element tree. The strip adds no tab
+    /// itself, so a handler has to create the tab.
+    /// </summary>
     public event EventHandler<RoutedEventArgs>? AddTabRequest
     {
         add => AddHandler(AddTabRequestEvent, value);
@@ -91,6 +110,10 @@ public partial class CardTabStrip : BaseTabStrip
     private IconButton? _addTabButton;
     private ItemsPresenter? _itemsPresenter;
 
+    /// <summary>
+    /// Creates a card-shaped <see cref="TabStripItem" /> and adds <c>CardTabStripSemanticParts.ItemClass</c> to
+    /// its classes. The item, its index and the recycle key do not affect the container.
+    /// </summary>
     protected override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey)
     {
         var tabStripItem = new TabStripItem
@@ -109,6 +132,12 @@ public partial class CardTabStrip : BaseTabStrip
         BindingOperations.GetBindingExpressionBase(tabStripItem, BorderThicknessProperty)?.Dispose();
     }
 
+    /// <summary>
+    /// Calls the base implementation, then keeps a <see cref="TabStripItem" /> container card-shaped and binds
+    /// its <c>CornerRadius</c> and <c>BorderThickness</c> to <see cref="EffectiveCardBorderRadius" /> and
+    /// <see cref="CardBorderThickness" />. <see cref="ReleaseTabStripItemOwnerBindings" /> releases these
+    /// bindings again.
+    /// </summary>
     protected override void PrepareContainerForItemOverride(Control container, object? item, int index)
     {
         base.PrepareContainerForItemOverride(container, item, index);
@@ -121,6 +150,10 @@ public partial class CardTabStrip : BaseTabStrip
         }
     }
 
+    /// <summary>
+    /// Locates the <c>PART_AddTabButton</c> and <c>PART_ItemsPresenter</c> template parts and moves the click
+    /// handler that raises <see cref="AddTabRequest" /> to the button of the new template.
+    /// </summary>
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         if (_addTabButton is not null)
@@ -137,6 +170,13 @@ public partial class CardTabStrip : BaseTabStrip
         }
     }
 
+    /// <summary>
+    /// Keeps the tab cards in sync with property changes: the radius token subscription follows
+    /// <see cref="UseCardRadiusTokenResources" />, a <see cref="BaseTabStrip.SizeType" /> change refreshes the
+    /// radius read from the tokens, and a change of <see cref="BaseTabStrip.TabStripPlacement" /> or
+    /// <see cref="CardSize" /> updates the effective corner radius and the size of the add button. Call the
+    /// base method as well.
+    /// </summary>
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
@@ -154,12 +194,20 @@ public partial class CardTabStrip : BaseTabStrip
         }
     }
 
+    /// <summary>
+    /// Calls the base method, then synchronizes the radius token subscription with
+    /// <see cref="UseCardRadiusTokenResources" /> and refreshes the card radius.
+    /// </summary>
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
         UpdateCardRadiusTokenSubscription();
     }
 
+    /// <summary>
+    /// Disposes the radius token subscription before calling the base method. The subscription is created
+    /// again on the next attach while <see cref="UseCardRadiusTokenResources" /> is <see langword="true" />.
+    /// </summary>
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         _radiusTokens?.Dispose();
@@ -200,6 +248,10 @@ public partial class CardTabStrip : BaseTabStrip
         RaiseEvent(new RoutedEventArgs(AddTabRequestEvent));
     }
 
+    /// <summary>
+    /// Calls the base method, then updates the placement-dependent values: the effective corner radius of the
+    /// tabs and the size of the add button.
+    /// </summary>
     protected override Size ArrangeOverride(Size finalSize)
     {
         var size = base.ArrangeOverride(finalSize);

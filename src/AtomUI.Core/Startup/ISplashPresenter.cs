@@ -3,37 +3,68 @@ using Avalonia.Media;
 namespace AtomUI;
 
 /// <summary>
-/// 应用提供的 Splash 内容（由 UseSplash 收集）。图片是工厂：配置回调早于平台初始化，此时无法创建位图，
-/// 呈现器在显示 Splash 时于 UI 线程调用工厂。
+/// The splash content supplied by the application; <c>UseSplash</c> collects it. The images are factories
+/// because the configuration callback runs before the platform is initialized, when no bitmap can be created
+/// yet. The presenter invokes each factory on the UI thread when it shows the splash.
 /// </summary>
 internal sealed record SplashContent(Func<IImage>? Logo, Func<IImage>? BackgroundImage, string? Title, string? Message,
     Func<Avalonia.Controls.ResourceDictionary>? CreateControlTheme);
 
+/// <summary>
+/// The splash registration collected by <c>UseSplash</c>: when it is shown, how its presenter is created and
+/// what it displays.
+/// </summary>
 internal sealed record SplashRegistration(SplashMode Mode, Func<ISplashPresenter> CreatePresenter,
     SplashContent Content);
 
-/// <summary>Core 与 AtomUI.Controls 之间的 Splash 接缝。全部方法在 UI 线程调用。</summary>
+/// <summary>
+/// The seam through which AtomUI.Core drives the splash implemented in AtomUI.Controls. All members are
+/// invoked on the UI thread.
+/// </summary>
 internal interface ISplashPresenter
 {
-    /// <summary>创建并显示 Splash；返回 false 表示本次不显示（原因已写日志）。</summary>
+    /// <summary>
+    /// Creates and shows the splash. Returns <see langword="false" /> when no splash is shown for this startup;
+    /// the reason has been written to the log.
+    /// </summary>
     bool Show(IReadOnlyDictionary<object, object?> globalResources, SplashContent content);
 
-    /// <summary>Splash 首个合成批次渲染完成。</summary>
+    /// <summary>
+    /// Completes once the first composition batch of the splash has been rendered.
+    /// </summary>
     Task FirstFrameRendered { get; }
 
+    /// <summary>
+    /// Forwards a progress report given to <see cref="MainWindowContext.Progress" /> to the splash.
+    /// </summary>
     void ReportProgress(StartupProgress progress);
 
-    /// <summary>切换错误态；之后用户可关闭，关闭后 <see cref="ErrorAcknowledged"/> 完成。</summary>
+    /// <summary>
+    /// Switches the splash to its error state. The user can then close the splash, which completes
+    /// <see cref="ErrorAcknowledged" />.
+    /// </summary>
     void ShowError(Exception exception);
 
+    /// <summary>
+    /// Completes when the user closes the splash after <see cref="ShowError" /> switched it to the error state.
+    /// </summary>
     Task ErrorAcknowledged { get; }
 
-    /// <summary>主窗体首帧完成后隐藏 Splash；窗口随后由启动编排安全关闭。</summary>
+    /// <summary>
+    /// Hides the splash once the main window has rendered its first frame. The window itself is closed afterwards
+    /// by the startup orchestration, at a safe point.
+    /// </summary>
     Task HideAsync();
 
-    /// <summary>立即关闭；用于启动取消或呈现失败时释放窗口。</summary>
+    /// <summary>
+    /// Closes the splash window immediately. Used to release the window when startup is canceled or showing the
+    /// splash fails.
+    /// </summary>
     void Close();
 
-    /// <summary>用户在交接前关闭了 Splash（不含错误态的确认关闭与交接关闭）。</summary>
+    /// <summary>
+    /// Raised when the user closes the splash before the handoff to the main window. Closing the splash to
+    /// acknowledge an error does not raise it, and neither does the handoff hide.
+    /// </summary>
     event EventHandler? ClosedByUser;
 }

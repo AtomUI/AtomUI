@@ -8,17 +8,31 @@ using AtomUI.SourceGeneration;
 namespace AtomUI.Generator.Startup;
 
 /// <summary>
-/// 为每个具体的 partial Avalonia Application 生成 RegisterServices 重写，在 base.RegisterServices() 之后
-/// 调用 ApplicationStartup.Attach(this)。已手写重写且调用了 Attach 的跳过；具体类手写重写未调用 Attach 的报
-/// ATOMUIGEN039。抽象、泛型、嵌套类不生成，由运行时守卫给出修复说明；抽象类自身也不报缺少 Attach，
-/// 它无法实例化也无法自行修复，其派生类由本生成器补齐挂接。
+/// Generates a <c>RegisterServices</c> override for every concrete partial Avalonia <c>Application</c>. The override
+/// calls <c>ApplicationStartup.Attach(this)</c> after <c>base.RegisterServices()</c>.
 /// </summary>
+/// <remarks>
+/// <para>
+/// A class whose handwritten override already calls <c>Attach</c> is skipped. A concrete class whose handwritten
+/// override does not call it is reported with the error ATOMUIGEN039.
+/// </para>
+/// <para>
+/// Abstract, generic and nested classes get no generated override, and the runtime guard explains how to fix that.
+/// An abstract class is not reported for a missing <c>Attach</c> either: it cannot be instantiated and cannot fix
+/// itself, and its derived classes get the hook from this generator.
+/// </para>
+/// </remarks>
 [Generator]
 public sealed class ApplicationStartupHookGenerator : IIncrementalGenerator
 {
     private const string ApplicationMetadataName = "Avalonia.Application";
     private const string StartupMetadataName = "AtomUI.ApplicationStartup";
 
+    /// <summary>
+    /// Registers the collection of the candidate application classes and the step that reports ATOMUIGEN039 or adds
+    /// the generated source for a class. Both run only when the compilation contains the
+    /// <c>AtomUI.ApplicationStartup</c> type.
+    /// </summary>
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
         var hasStartup = context.CompilationProvider
@@ -69,8 +83,9 @@ public sealed class ApplicationStartupHookGenerator : IIncrementalGenerator
             ? "global::" + GeneratedCodeNamespace.ForAssembly(symbol.ContainingAssembly.Name) + ".GeneratedApplicationStartupImage"
             : null;
 
-        // 只统计类型自身声明的重写：抽象基类里的重写由派生类经 base 调用继续生效，
-        // 因此不影响派生类是否还需要生成挂接。
+        // Only overrides declared by the type itself are counted. An override in an abstract base class stays in
+        // effect because the derived class calls it through base, so it does not decide whether the derived class
+        // still needs a generated hook.
         var ownOverrides = symbol.GetMembers("RegisterServices")
             .OfType<IMethodSymbol>()
             .Where(static method => method.IsOverride && method.Parameters.Length == 0)
@@ -92,8 +107,8 @@ public sealed class ApplicationStartupHookGenerator : IIncrementalGenerator
             NeedsHook: true, MissingAttach: false, ImageClassName: imageClass);
     }
 
-    // 按符号判定，而不是文本：开发者可能用别名、限定名或 using static 调用同一个 Attach，
-    // 文本匹配会把别名写法误报成「缺少 Attach」。
+    // Decides by symbol, not by text: the same Attach can be called through an alias, a qualified name or
+    // a using static directive, and text matching would report the alias form as a missing Attach.
     private static bool CallsAttach(IMethodSymbol method, SemanticModel semanticModel, CancellationToken token)
     {
         foreach (var reference in method.DeclaringSyntaxReferences)

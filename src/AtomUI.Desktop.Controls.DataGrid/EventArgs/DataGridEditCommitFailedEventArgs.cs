@@ -7,6 +7,21 @@ namespace AtomUI.Desktop.Controls;
 /// </summary>
 public class DataGridEditCommitFailedEventArgs : EventArgs
 {
+    /// <summary>
+    /// Initializes an instance that describes the edit that could not be committed.
+    /// </summary>
+    /// <param name="rowKey">
+    /// The key of the edited row.
+    /// </param>
+    /// <param name="values">
+    /// The edited field values that were not committed.
+    /// </param>
+    /// <param name="exception">
+    /// The failure reported by the data source, or the reason the grid could not submit the edit.
+    /// </param>
+    /// <exception cref="ArgumentNullException">
+    /// <paramref name="values" /> or <paramref name="exception" /> is null.
+    /// </exception>
     public DataGridEditCommitFailedEventArgs(
         DataGridRowKey rowKey,
         ImmutableDictionary<DataGridFieldId, DataGridScalar> values,

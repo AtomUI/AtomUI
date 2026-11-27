@@ -12,19 +12,48 @@ using Avalonia.VisualTree;
 
 namespace AtomUI.Controls.Primitives;
 
+/// <summary>
+/// T3 content overlay layer: a canvas that draws adorners above the content of one scope. An adorner is
+/// bound to its target by the attached <c>Adorner</c> property; the layer places it over the bounds of the
+/// target and clips it to them. <see cref="GetLayer" /> returns the layer of a scope and injects one into
+/// the scope host when the host has none.
+/// </summary>
 public class ScopeAwareAdornerLayer : Canvas
 {
     #region 公共属性定义
 
+    /// <summary>
+    /// Identifies the <c>AdornedElement</c> attached property, which an adorner carries for the element it
+    /// adorns. See <see cref="SetAdornedElement" />.
+    /// </summary>
     public static readonly AttachedProperty<Control?> AdornedElementProperty =
         AvaloniaProperty.RegisterAttached<ScopeAwareAdornerLayer, Visual, Control?>("AdornedElement");
 
+    /// <summary>
+    /// Identifies the <c>Adorner</c> attached property, which an adorned element carries for its adorner.
+    /// See <see cref="SetAdorner" />.
+    /// </summary>
     public static readonly AttachedProperty<Control?> AdornerProperty =
         AvaloniaProperty.RegisterAttached<ScopeAwareAdornerLayer, Visual, Control?>("Adorner");
 
+    /// <summary>
+    /// Identifies the <see cref="LayerHost" /> property.
+    /// </summary>
     public static readonly StyledProperty<Visual?> LayerHostProperty = AvaloniaProperty
         .Register<ScopeAwareAdornerLayer, Visual?>(nameof(LayerHost));
 
+    /// <summary>
+    /// The visual that owns the scope of this layer: a <c>ScrollContentPresenter</c>, a <c>ContentControl</c>
+    /// (a <c>TopLevel</c> included) or a <c>VisualLayerManager</c>. The layer itself, or the wrapping panel
+    /// that holds it, is attached under this visual. The layer injection and the creators of derived layers
+    /// assign it; until then it is <see langword="null" />.
+    /// </summary>
+    /// <remarks>
+    /// <para>
+    /// When an adorned element cannot be translated into the layer directly, its position is computed relative
+    /// to this visual, plus the scroll offset when it is a <c>ScrollContentPresenter</c>.
+    /// </para>
+    /// </remarks>
     public Visual? LayerHost
     {
         get => GetValue(LayerHostProperty);
@@ -59,16 +88,65 @@ public class ScopeAwareAdornerLayer : Canvas
         Children.CollectionChanged += ChildrenCollectionChanged;
     }
 
+    /// <summary>
+    /// Returns the element that the adorner <paramref name="control" /> adorns, or <see langword="null" /> when
+    /// none is set.
+    /// </summary>
+    /// <param name="control">
+    /// The adorner.
+    /// </param>
     public static Visual? GetAdornedElement(Visual control)
     {
         return control.GetValue(AdornedElementProperty);
     }
 
+    /// <summary>
+    /// Sets the element that the adorner <paramref name="control" /> adorns.
+    /// </summary>
+    /// <param name="control">
+    /// The adorner. The value is stored on it and does not propagate to its children.
+    /// </param>
+    /// <param name="adorned">
+    /// The adorned element, or <see langword="null" /> to stop tracking the current one.
+    /// </param>
+    /// <remarks>
+    /// <para>
+    /// The layer sets the value when it adds an adorner and clears it when it removes the adorner. Setting it
+    /// on an adorner that is already a child of a layer makes that layer track the new element: the adorner
+    /// follows the bounds of the element and is clipped to them.
+    /// </para>
+    /// </remarks>
     public static void SetAdornedElement(Visual control, Visual? adorned)
     {
         control.SetValue(AdornedElementProperty, adorned);
     }
 
+    /// <summary>
+    /// Returns the content overlay layer of the scope that contains <paramref name="visual" />, and injects
+    /// one into the scope host when the host has none.
+    /// </summary>
+    /// <param name="visual">
+    /// A visual of the scope, usually the adorned element.
+    /// </param>
+    /// <returns>
+    /// The layer of the scope, or <see langword="null" /> when no scope host can be resolved, for example
+    /// because <paramref name="visual" /> is not attached to a visual tree.
+    /// </returns>
+    /// <remarks>
+    /// <para>
+    /// The scope host is resolved in this order: the nearest <c>ScrollContentPresenter</c> at or above
+    /// <paramref name="visual" />, moved up to the first one that contains the adorned element when
+    /// <paramref name="visual" /> is an adorner; a surface host marked with
+    /// <see cref="LayerLadder.SetIsSurfaceHost" /> that is nearer than that presenter, unless the adorned
+    /// element lies outside it; when no host was found that way and <paramref name="visual" /> lies in a layer
+    /// of this exact type, that layer, which is returned as it is; the <c>VisualLayerManager</c> that
+    /// <c>LayerLadder.FindContentLayerManager</c> returns; and finally the <c>TopLevel</c>.
+    /// </para>
+    /// <para>
+    /// Injecting a layer into a <c>ScrollContentPresenter</c> or a <c>ContentControl</c> replaces its content
+    /// with a wrapping panel that holds the original content and the layer.
+    /// </para>
+    /// </remarks>
     public static ScopeAwareAdornerLayer? GetLayer(Visual visual)
     {
         Layoutable? layerHost = visual.FindAncestorOfType<ScrollContentPresenter>(true);
@@ -81,16 +159,19 @@ public class ScopeAwareAdornerLayer : Canvas
             }
         }
 
-        // 规则 2：比滚动宿主更近的表面宿主（例如滚动内容中作用域 Drawer 的表面）优先。被装饰元素位于该表面之外时
-        // 仍保留上面按被装饰元素选出的滚动宿主（Drawer 等随滚动跟踪的语义不变）。
+        // Nearest scope wins: a surface host nearer than the scroll host takes precedence (for example the
+        // surface of a scoped Drawer in scrolled content). When the adorned element lies outside that surface,
+        // the scroll host chosen above for the element is kept, so that a Drawer and the like keep following
+        // scrolling.
         if (LayerLadder.PreferNearerSurfaceHost(visual, layerHost) is VisualLayerManager surfaceHost &&
             (adorned is null || surfaceHost.IsVisualAncestorOf(adorned)))
         {
             layerHost = surfaceHost;
         }
 
-        // "包含层"复用只认精确类型的 T3 实例：呈现层子类（T5/T7）里的 Watermark 等内容覆盖
-        // 不得以兄弟身份落进呈现层，否则会画到更高的 Drawer 之上。
+        // The reuse of a containing layer accepts only T3 instances of the exact type: content overlays such as a
+        // Watermark inside a presentation layer subclass (T5/T7) must not land in that presentation layer as a
+        // sibling, or they would paint above a Drawer that is higher.
         if (layerHost == null &&
             visual.FindAncestorOfType<ScopeAwareAdornerLayer>(true) is { } containingLayer &&
             IsContentOverlayLayer(containingLayer))
@@ -113,8 +194,9 @@ public class ScopeAwareAdornerLayer : Canvas
     }
 
     /// <summary>
-    /// 在指定宿主上查找（或注入）T3 层。宿主为 TopLevel 时走内容包裹面板注入，供没有
-    /// VisualLayerManager 的 TopLevel 上的呈现层共享同一个包裹面板。
+    /// Finds (or injects) the T3 layer on the given host. When the host is a TopLevel, the layer is injected
+    /// through the content wrapping panel, so that presentation layers on a TopLevel without a
+    /// VisualLayerManager share that panel.
     /// </summary>
     internal static ScopeAwareAdornerLayer? GetOrInjectLayer(Layoutable layerHost)
     {
@@ -134,16 +216,56 @@ public class ScopeAwareAdornerLayer : Canvas
         return layer;
     }
 
+    /// <summary>
+    /// Returns the adorner that <see cref="SetAdorner" /> set on <paramref name="visual" />, or
+    /// <see langword="null" /> when it has none.
+    /// </summary>
+    /// <param name="visual">
+    /// The adorned element.
+    /// </param>
     public static Control? GetAdorner(Visual visual)
     {
         return visual.GetValue(AdornerProperty);
     }
 
+    /// <summary>
+    /// Sets the adorner that the content overlay layer of the scope draws over <paramref name="visual" />.
+    /// </summary>
+    /// <param name="visual">
+    /// The adorned element. The value is stored on it and does not propagate to its children.
+    /// </param>
+    /// <param name="adorner">
+    /// The adorner to show, or <see langword="null" /> to remove the current one. An element has one adorner,
+    /// so setting another removes the previous one.
+    /// </param>
+    /// <remarks>
+    /// <para>
+    /// While <paramref name="visual" /> is attached to the visual tree, the adorner is a child of the layer
+    /// that <see cref="GetLayer" /> resolves for it and a logical child of <paramref name="visual" />. The
+    /// layer places the adorner over the bounds of the element and clips it to them.
+    /// </para>
+    /// <para>
+    /// The adorner is added when the value is set on an attached element and each time the element attaches
+    /// to the visual tree. It is removed when the value is replaced or cleared and each time the element
+    /// detaches. Nothing is added while <see cref="GetLayer" /> finds no scope host for the element.
+    /// </para>
+    /// </remarks>
     public static void SetAdorner(Visual visual, Control? adorner)
     {
         visual.SetValue(AdornerProperty, adorner);
     }
 
+    /// <summary>
+    /// Measures every adorner with the size of the bounds snapshot of its adorned element, or with
+    /// <paramref name="availableSize" /> while it has no snapshot. Returns a size of zero, so the layer adds
+    /// no size to its host. An override must call this implementation, or the adorners are not measured.
+    /// </summary>
+    /// <param name="availableSize">
+    /// The size available to the layer.
+    /// </param>
+    /// <returns>
+    /// A size of zero.
+    /// </returns>
     protected override Size MeasureOverride(Size availableSize)
     {
         foreach (var child in Children)
@@ -166,6 +288,14 @@ public class ScopeAwareAdornerLayer : Canvas
         return default;
     }
 
+    /// <summary>
+    /// Places every adorner at the bounds snapshot of its adorned element: translated by the snapshot
+    /// transform and clipped to the snapshot bounds. An adorner without a snapshot is arranged as a plain
+    /// child of the canvas. An override must call this implementation, or the adorners are not placed.
+    /// </summary>
+    /// <param name="finalSize">
+    /// The size allocated to the layer.
+    /// </param>
     protected override Size ArrangeOverride(Size finalSize)
     {
         foreach (var child in Children)
@@ -263,10 +393,11 @@ public class ScopeAwareAdornerLayer : Canvas
             {
                 Debug.Assert(LayerHost != null);
 
-                // 层与被装饰元素位于同一内容子树时（层注入路径：层是被装饰元素
-                // 所在内容根的兄弟节点），直接换算到层坐标：滚动平移在链路上抵消，
-                // 结果对滚动不变。回退路径按 LayerHost 换算并补偿宿主
-                // ScrollContentPresenter 的滚动偏移。
+                // When the layer and the adorned element are in the same content subtree (the injection path: the
+                // layer is a sibling of the content root that holds the adorned element), translate directly into
+                // the layer coordinates. The scroll translation cancels out along the chain, so the result does not
+                // change with scrolling. The fallback translates relative to LayerHost and compensates the scroll
+                // offset of a host ScrollContentPresenter.
                 var translation = adorned.TranslatePoint(new Point(0, 0), this);
                 if (translation is null)
                 {
@@ -285,10 +416,11 @@ public class ScopeAwareAdornerLayer : Canvas
                 }
 
                 var translationMatrix = Matrix.CreateTranslation(translation.Value.X, translation.Value.Y);
-                // 尺寸必须取被装饰元素的排列盒（Bounds，不含 Margin）：DesiredSize
-                // 包含 Margin，直接取大会把容器放大成 margin box，遮罩与面板会
-                // 越出宿主的可见边界（带边距的宿主元素尤甚）。仅在尚未排列
-                // （Bounds 为空）时回退到「DesiredSize - Margin」的测量值。
+                // The size must be the arranged box of the adorned element (Bounds, without Margin). DesiredSize
+                // includes Margin: using it would enlarge the container to the margin box, and the mask and the panel
+                // would extend beyond the visible bounds of the host (most visibly for a host element with a margin).
+                // Only an element that is not arranged yet (Bounds is empty) falls back to the measured value
+                // DesiredSize minus Margin.
                 var adornedWidth  = adorned.Bounds.Width > 0
                     ? adorned.Bounds.Width
                     : Math.Max(0, adorned.DesiredSize.Width - adorned.Margin.Left - adorned.Margin.Right);
@@ -301,11 +433,13 @@ public class ScopeAwareAdornerLayer : Canvas
                 InvalidateMeasure();
             }
 
-            // 层注入把层挂进全新的包裹面板，首次快照发生在面板/层尚未 arrange 的
-            // 瞬态，换算链不可用（得到未补偿滚动的错误位置，且被装饰元素的 Bounds
-            // 不会随之再变，错误会一直保持到下一次开合）。订阅层自身 Bounds：注入
-            // 后层被 arrange（0 → 实际值）时换算链就绪、快照自愈；正常滚动不改变
-            // 层的 Bounds，不会引入「旧位置 + 新偏移」的混态重算。
+            // Layer injection attaches the layer to a brand-new wrapping panel, so the first snapshot is taken while
+            // the panel and the layer are not arranged yet and the translation is unavailable. That yields a wrong
+            // position with the scroll offset left uncompensated, and the Bounds of the adorned element do not change
+            // afterwards, so the error would stay until the next open or close. Subscribing to the Bounds of the layer
+            // itself heals the snapshot when the layer is arranged after the injection (from empty to its real
+            // bounds). Scrolling does not change the Bounds of the layer, so it causes no recalculation that mixes
+            // the old position with the new offset.
             var adornedSubscription = adorned.GetObservable(BoundsProperty).Subscribe(_ => TakeBoundsSnapshot());
             var layerSubscription   = this.GetObservable(BoundsProperty).Subscribe(_ => TakeBoundsSnapshot());
             info.Subscription = Disposable.Create(() =>
@@ -353,7 +487,8 @@ public class ScopeAwareAdornerLayer : Canvas
             Detach(visual, oldAdorner);
         }
 
-        // Detach 可同步触发用户更换 adorner；只让当前属性指向的实例进入层。
+        // Detach may synchronously lead the user to replace the adorner; only the instance that the property
+        // points to now may enter the layer.
         if (!ReferenceEquals(GetAdorner(visual), newAdorner))
         {
             return;
@@ -370,8 +505,9 @@ public class ScopeAwareAdornerLayer : Canvas
     private static void Attach(Visual visual, Control adorner)
     {
         var layer = ScopeAwareAdornerLayer.GetLayer(visual);
-        // 加入视觉树会同步触发资源绑定与用户回调；回调可能立即移除 adorner。
-        // 必须先记录退出所需的层，避免重入 Detach 找不到尚未写入的宿主。
+        // Adding to the visual tree synchronously raises resource bindings and user callbacks, and a callback may
+        // remove the adorner at once. Record the layer that the exit needs first, so that a re-entrant Detach
+        // does not miss the host that has not been written yet.
         visual.SetValue(SavedAdornerLayerProperty, layer);
         AddVisualAdorner(visual, adorner, layer);
     }
@@ -455,14 +591,16 @@ public class ScopeAwareAdornerLayer : Canvas
         {
             LayerLadder.AddLayer(layerHost, layer, LayerLadder.ContentOverlay);
         }
-        // 下面的包裹面板注入分支不走 LayerLadder.AddLayer：宿主不是层容器，必须先摘下原内容、
-        // 重建一个同时容纳内容与层的包裹 Panel 再装回宿主。层号码仍取自 LayerLadder（见上方 ZIndex 初始化）。
+        // The wrapping panel injection below does not go through LayerLadder.AddLayer: the host is not a layer
+        // container. The original content is taken off and put into a new wrapping Panel together with the layer,
+        // and that Panel is put back into the host. The layer number still comes from LayerLadder (see the ZIndex
+        // initialization above).
         else if (layerHost is ScrollContentPresenter scrollContentPresenter)
         {
             if (scrollContentPresenter.Content is Control controlContent)
             {
                 var oldOffset = scrollContentPresenter.Offset;
-                // 直接内容控件
+                // The content is a control that needs no template.
                 scrollContentPresenter.Content = null;
                 scrollContentPresenter.UpdateChild();
                 var panel = new Panel
@@ -481,7 +619,7 @@ public class ScopeAwareAdornerLayer : Canvas
             }
             else if (scrollContentPresenter.Content != null && scrollContentPresenter.ContentTemplate != null)
             {
-                // 模版处理
+                // The content is built by a content template.
                 var injectTemplate = new FuncDataTemplate<object?>((o, scope) =>
                 {
                     var originControl = scrollContentPresenter.ContentTemplate.Build(o);
@@ -536,7 +674,7 @@ public class ScopeAwareAdornerLayer : Canvas
         ScopeAwareAdornerLayer? layer = null;
         if (layerHost is ScrollContentPresenter scrollContentPresenter)
         {
-            // 在 Panel 下面
+            // The layer sits under the wrapping panel that the injection created.
             var panel = scrollContentPresenter.FindChildOfType<Panel>();
             if (panel is not null)
             {
@@ -545,7 +683,7 @@ public class ScopeAwareAdornerLayer : Canvas
         }
         else if (layerHost is VisualLayerManager visualLayerManager)
         {
-            // 直接就在下面
+            // The layer is a direct child of the manager.
             layer = FindContentOverlayChild(visualLayerManager);
         }
         else if (layerHost is ContentControl contentControl)
@@ -565,7 +703,8 @@ public class ScopeAwareAdornerLayer : Canvas
     }
 
     /// <summary>
-    /// 只返回精确类型的 T3 实例：同一宿主中的呈现层子类（T5/T7）不能被当作内容覆盖层复用。
+    /// Returns only T3 instances of the exact type: presentation layer subclasses (T5/T7) in the same host
+    /// must not be reused as the content overlay layer.
     /// </summary>
     private static ScopeAwareAdornerLayer? FindContentOverlayChild(Visual parent)
     {

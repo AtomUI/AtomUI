@@ -6,7 +6,7 @@ namespace AtomUI.Native.Windows;
 [SupportedOSPlatform("windows")]
 internal static class WindowUtilsInterop
 {
-    // 常量定义
+    // Constants.
     public const int GWL_STYLE = -16;
     public const int GWL_EXSTYLE = -20;
     public const uint WS_POPUP = 0x80000000;
@@ -45,7 +45,7 @@ internal static class WindowUtilsInterop
         public uint StyleNew;
     }
 
-    // 使用正确的 Windows 类型
+    // Use the correct Windows types.
     // GWL_STYLE/GWL_EXSTYLE contain 32-bit values on both 32-bit and 64-bit Windows.
     [DllImport("user32.dll", EntryPoint = "GetWindowLongW", SetLastError = true)]
     public static extern int GetWindowLong(IntPtr hWnd, int nIndex);

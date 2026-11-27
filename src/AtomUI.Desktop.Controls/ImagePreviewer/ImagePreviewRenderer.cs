@@ -29,8 +29,9 @@ internal class ImagePreviewRenderer : Control
     }
 
     /// <summary>
-    /// 封面图片圆角。上游 image 元素自带 border-radius（示例中为 4px），AtomUI 的 image part
-    /// 是纯渲染 Control，由本属性在图片上施加圆角裁剪几何。
+    /// Corner radius of the cover image. The antd image element brings its own border-radius (4px in the
+    /// examples); the AtomUI image part is a pure rendering control, so this property applies the rounded
+    /// clip geometry to the image.
     /// </summary>
     public CornerRadius CornerRadius
     {
@@ -44,10 +45,12 @@ internal class ImagePreviewRenderer : Control
 
     #region 内部属性定义
 
-    // 本属性是 Border.CornerRadiusProperty 的 AddOwner，同一属性实例。XAML Semantic Style 必须以
-    // 限定名 `Property="Border.CornerRadius"` 引用（经 public 声明类型 Border 的字段解析）；直接写
-    // `CornerRadius` 会经 x:SetterTargetType 解析到本 internal 类型的字段，XAML 编译器生成的 ldsfld
-    // 不做编译期可见性检查，internal 类型（即使字段声明为 public）会在运行时抛 FieldAccessException。
+    // This field is an AddOwner of Border.CornerRadiusProperty: the same property instance. A XAML
+    // semantic style must reference it by its qualified name, `Property="Border.CornerRadius"`, which
+    // resolves through the field of the public declaring type Border. A bare `CornerRadius` is resolved
+    // by x:SetterTargetType to the field of this internal type. The ldsfld emitted by the XAML compiler
+    // gets no compile-time visibility check, so an internal type (even with a public field) throws
+    // FieldAccessException at runtime.
     internal static readonly StyledProperty<CornerRadius> CornerRadiusProperty =
         Border.CornerRadiusProperty.AddOwner<ImagePreviewRenderer>();
 
@@ -75,7 +78,7 @@ internal class ImagePreviewRenderer : Control
     protected override Size ArrangeOverride(Size finalSize)
     {
         var size = base.ArrangeOverride(finalSize);
-        // 子 Image 的 Bounds 在 Arrange 后才确定，裁剪几何跟随其实际边界。
+        // The bounds of the child Image are known only after Arrange; the clip geometry follows them.
         UpdateImageClip();
         return size;
     }
@@ -106,9 +109,10 @@ internal class ImagePreviewRenderer : Control
         UpdateImageClip();
     }
 
-    // 与 DashedBorder.ClipContentToCornerRadius 同构：裁剪直接落在子 Image 的 Clip 几何上。
-    // 不能在 Render override 里 PushGeometryClip 包着 _image.Render 画——Image 是 VisualChild，
-    // 渲染器在父 Render 之后还会独立遍历 VisualChildren 再绘制一次无裁剪的 Image，覆盖裁剪结果。
+    // Same construction as DashedBorder.ClipContentToCornerRadius: the clip is applied directly to the
+    // Clip geometry of the child Image. Pushing a geometry clip around _image.Render inside the Render
+    // override does not work: the Image is a VisualChild, and after the parent's Render the renderer
+    // walks the VisualChildren again and draws the Image once more without the clip.
     private void UpdateImageClip()
     {
         if (_image is null)
@@ -129,7 +133,8 @@ internal class ImagePreviewRenderer : Control
             return;
         }
 
-        // 与 DashedBorder 圆角裁剪同一 WinUI 关键点算法，保持全库圆角观感一致。
+        // Same WinUI key-point algorithm as the rounded clip of DashedBorder, so rounded corners look the
+        // same across the library.
         var keypoints = RoundRectGeometryBuilder.CalculateRoundedCornersRectangleWinUI(
             new Rect(size),
             default,

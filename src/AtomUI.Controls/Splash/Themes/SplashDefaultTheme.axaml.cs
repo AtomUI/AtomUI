@@ -3,7 +3,10 @@ using Avalonia.Markup.Xaml;
 
 namespace AtomUI.Controls;
 
-/// <summary>Splash 默认主题。自定义主题可整体替换，或合并本字典后用 BasedOn 局部覆盖。</summary>
+/// <summary>
+/// Default theme of the <see cref="Splash" /> and the <see cref="SplashWindow" />. A custom theme can replace
+/// it as a whole, or merge this dictionary and use <c>BasedOn</c> to override parts of it.
+/// </summary>
 public partial class SplashDefaultTheme : ResourceDictionary
 {
     public SplashDefaultTheme()

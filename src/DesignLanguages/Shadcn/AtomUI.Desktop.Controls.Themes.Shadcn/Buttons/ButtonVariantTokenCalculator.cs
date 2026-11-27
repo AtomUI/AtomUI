@@ -6,11 +6,20 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls.Themes.Shadcn;
 
-/// <summary>The shadcn values of the shared <see cref="AbstractButtonVariantToken"/> layer.</summary>
+/// <summary>
+/// The shadcn values of the shared <see cref="AbstractButtonVariantToken" /> layer.
+/// </summary>
 public static class ButtonVariantTokenCalculator
 {
+    /// <summary>
+    /// Assigns the shadcn values to <paramref name="token" />, the shared
+    /// <see cref="AbstractButtonVariantToken" /> layer. <see cref="ButtonGeometryTokenCalculator.Calculate" />
+    /// calls it first, so the geometry and standard button layers receive these values as well.
+    /// </summary>
     public static void Calculate(in TokenEvaluationContext<ShadcnToken> context, DesignToken global, AbstractButtonVariantToken token)
     {
+        // Ant Design formula kept as is: ButtonTokenCalculator.CalculateOwn, run after this layer by every button
+        // rule, merges the registry `button` values.
         var controlOutlineWidth = global.ControlOutlineWidth;
         token.DefaultShadow = new BoxShadows(new BoxShadow
         {

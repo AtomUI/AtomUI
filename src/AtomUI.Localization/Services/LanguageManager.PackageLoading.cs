@@ -1,5 +1,8 @@
 namespace AtomUI.Localization;
 
+// Package-loading part of LanguageManager. Between BeginPackageLoading and EndPackageLoading, a language change and
+// a dispose throw an InvalidOperationException. PreparePackages turns the catalogs and translation bundles collected by
+// a LocalizationBuilder into one update that AtomUI.Core then stages and commits, or rolls back when the append fails.
 internal sealed partial class LanguageManager
 {
     internal void BeginPackageLoading()

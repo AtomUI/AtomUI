@@ -3,7 +3,7 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
 
-// Item metrics and colours from the terminal's Own Tokens. The terminal theme (ListView, or TransferListView, whose
+// Item metrics and colors from the terminal's Own Tokens. The terminal theme (ListView, or TransferListView, whose
 // setters replace the ListView ones) assigns them on the list root; the list forwards the item values to each
 // container it prepares. They do not inherit through the list tree.
 public partial class ListView

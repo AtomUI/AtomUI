@@ -6,15 +6,26 @@ using Avalonia.Metadata;
 
 namespace AtomUI.Desktop.Controls;
 
+/// <summary>
+/// A titled group of entries in a <see cref="NavMenu" />. A group is an entry itself, so it can sit in the menu,
+/// in the children of a node or in another group. Its own entries are nodes, groups and dividers. An instance
+/// can be owned by only one parent at a time.
+/// </summary>
 [GenerateScopedResourceHost]
 public partial class NavMenuGroup : AvaloniaObject, INavMenuEntry
 {
+    /// <summary>
+    /// Identifies the <see cref="Header" /> property.
+    /// </summary>
     public static readonly DirectProperty<NavMenuGroup, object?> HeaderProperty =
         AvaloniaProperty.RegisterDirect<NavMenuGroup, object?>(
             nameof(Header),
             group => group.Header,
             (group, value) => group.Header = value);
 
+    /// <summary>
+    /// Identifies the <see cref="HeaderTemplate" /> property.
+    /// </summary>
     public static readonly DirectProperty<NavMenuGroup, IDataTemplate?> HeaderTemplateProperty =
         AvaloniaProperty.RegisterDirect<NavMenuGroup, IDataTemplate?>(
             nameof(HeaderTemplate),
@@ -28,18 +39,32 @@ public partial class NavMenuGroup : AvaloniaObject, INavMenuEntry
 
     internal INavMenuNode? SemanticParentNode { get; private set; }
 
+    /// <summary>
+    /// Gets or sets the content shown as the group title, or <see langword="null" /> to leave the title row empty.
+    /// The row keeps its height and padding.
+    /// </summary>
     public object? Header
     {
         get => _header;
         set => SetAndRaise(HeaderProperty, ref _header, value);
     }
 
+    /// <summary>
+    /// Gets or sets the template used to display <see cref="Header" />, or <see langword="null" /> to let the
+    /// title presenter choose a template for the content.
+    /// </summary>
     public IDataTemplate? HeaderTemplate
     {
         get => _headerTemplate;
         set => SetAndRaise(HeaderTemplateProperty, ref _headerTemplate, value);
     }
 
+    /// <summary>
+    /// Gets the entries of the group in display order: nodes, nested groups and dividers. The list can be
+    /// changed at runtime. It is the XAML content property; a value assigned in an object initializer is
+    /// appended to it. A node or group instance can belong to only one parent in an entry tree; inserting
+    /// it a second time throws an <see cref="InvalidOperationException" />.
+    /// </summary>
     [Content]
     public IList<INavMenuEntry> Entries
     {

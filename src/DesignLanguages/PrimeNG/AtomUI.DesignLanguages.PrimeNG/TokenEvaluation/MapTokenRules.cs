@@ -7,7 +7,9 @@ using Avalonia.Media;
 
 namespace AtomUI.DesignLanguages.PrimeNG.TokenEvaluation;
 
-/// <summary>The seeds the preset rules read from the original seed rather than from the token in progress.</summary>
+/// <summary>
+/// The seeds the preset rules read from the original seed rather than from the token in progress.
+/// </summary>
 internal readonly record struct PrimeNGSeeds(
     Color ColorPrimary,
     Color? ColorLink,
@@ -28,14 +30,14 @@ internal readonly record struct PrimeNGSeeds(
 /// <summary>
 /// The PrimeNG map tokens. The Ant Design base (the default calculator, or the dark one for the dark appearance) gives
 /// every Map token a value (the preset palettes, the font, size, motion and line ladders); then the preset writes its
-/// colours, its state transition duration and its size ladder; the compact density then applies the compact size and
+/// colors, its state transition duration and its size ladder; the compact density then applies the compact size and
 /// height ladders on top, as the <c>[PrimeNG preset, Compact]</c> chain did.
 /// </summary>
 /// <remarks>
 /// The <c>ColorPrimary</c>, <c>ColorSuccess</c>, <c>ColorWarning</c>, <c>ColorError</c> and <c>ColorInfo</c> seeds are
 /// the 500 stops of their families; <c>ColorLink</c> defaults to the primary seed. The neutral scale is the language's
 /// surface scale. A primary or link seed that is the 950 stop of a neutral family is the primeng.dev "noir" primary
-/// (<see cref="PrimeNGNoir"/>).
+/// (<see cref="PrimeNGNoir" />).
 /// </remarks>
 internal static class MapTokenRules
 {
@@ -56,7 +58,7 @@ internal static class MapTokenRules
         WriteColors(in seeds, token, PrimeNGPresets.For(preset, variant.Appearance, language), PrimeNGNoir.For(dark));
         if (preset.TransitionDuration is { } transition)
         {
-            // The state-colour transitions; VerySlow drives value animations (progress, count-up), which PrimeNG
+            // The state-color transitions; VerySlow drives value animations (progress, count-up), which PrimeNG
             // keeps in every preset (progressbar: width 1s).
             token.MotionDurationFast = transition;
             token.MotionDurationMid  = transition;

@@ -3,7 +3,9 @@ using AtomUI.Theme.Languages;
 
 namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 
-/// <summary>The PrimeNG view of <see cref="SimplePaginationToken"/>.</summary>
+/// <summary>
+/// The PrimeNG view of <see cref="SimplePaginationToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class SimplePaginationTokenRule : IControlTokenRule<PrimeNGToken, SimplePaginationToken>
 {
@@ -11,7 +13,8 @@ internal sealed class SimplePaginationTokenRule : IControlTokenRule<PrimeNGToken
     {
         var token  = target.Own;
         var global = target.Global;
-        // PrimeNG: the control-global overrides, read by the formulas below.
+        // PrimeNG: the control-global overrides (UniformlyMarginXS), read by the formulas below
+        // (PaginationTokenCalculator).
         PrimeNGSimplePaginationTokens.EvaluateGlobal(in context, global);
         PaginationTokenCalculator.Calculate(in context, global, token);
         token.ItemInputBg = global.ColorBgContainer;

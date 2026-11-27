@@ -4,15 +4,24 @@ using AtomUI.Theme.DesignTokens;
 namespace AtomUI.Theme.Schema;
 
 /// <summary>
-/// Generated per-token-class accessor. <c>slot</c> is the owning descriptor's <see cref="TokenDescriptor.Slot"/>.
+/// Generated per-token-class accessor. <c>slot</c> is the owning descriptor's <see cref="TokenDescriptor.Slot" />.
 /// </summary>
 [EditorBrowsable(EditorBrowsableState.Never)]
 public abstract class TokenValueAccessor
 {
+    /// <summary>
+    /// Reads the value of the token at <paramref name="slot" /> from a token instance.
+    /// </summary>
     public abstract object? GetValue(AbstractDesignToken token, int slot);
 
+    /// <summary>
+    /// Writes the value of the token at <paramref name="slot" /> to a token instance.
+    /// </summary>
     public abstract void SetValue(AbstractDesignToken token, int slot, object? value);
 
+    /// <summary>
+    /// Converts the value of the token at <paramref name="slot" /> into the value a theme resource exposes.
+    /// </summary>
     public abstract object? ProjectResourceValue(AbstractDesignToken token, int slot);
 }
 

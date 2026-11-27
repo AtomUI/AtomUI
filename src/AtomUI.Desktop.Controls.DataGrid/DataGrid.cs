@@ -22,6 +22,10 @@ using Avalonia.Styling;
 
 namespace AtomUI.Desktop.Controls;
 
+/// <summary>
+/// A data table with editable, sortable, filterable and groupable columns, row details, selection and paging.
+/// A row source that supports range loading is read by range instead of as a whole.
+/// </summary>
 [PseudoClasses(StdPseudoClass.Invalid, DataGridPseudoClass.EmptyRows, DataGridPseudoClass.EmptyColumns)]
 public partial class DataGrid : TemplatedControl,
                                 ICustomizableSizeTypeAware,
@@ -29,132 +33,237 @@ public partial class DataGrid : TemplatedControl,
 {
     #region 公共属性定义
 
+    /// <summary>
+    /// Identifies the <see cref="SizeType" /> property.
+    /// </summary>
     public static readonly StyledProperty<CustomizableSizeType> SizeTypeProperty =
         CustomizableSizeTypeControlProperty.SizeTypeProperty.AddOwner<DataGrid>();
     
+    /// <summary>
+    /// Identifies the <see cref="IsOperating" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsOperatingProperty =
         AvaloniaProperty.Register<DataGrid, bool>(nameof(IsOperating));
     
+    /// <summary>
+    /// Identifies the <see cref="OperatingMsg" /> property.
+    /// </summary>
     public static readonly StyledProperty<string?> OperatingMsgProperty =
         AvaloniaProperty.Register<DataGrid, string?>(nameof(OperatingMsg));
     
+    /// <summary>
+    /// Identifies the <see cref="CustomOperatingIndicator" /> property.
+    /// </summary>
     public static readonly StyledProperty<object?> CustomOperatingIndicatorProperty =
         AvaloniaProperty.Register<DataGrid, object?>(nameof(CustomOperatingIndicator));
 
+    /// <summary>
+    /// Identifies the <see cref="CustomOperatingIndicatorTemplate" /> property.
+    /// </summary>
     public static readonly StyledProperty<IDataTemplate?> CustomOperatingIndicatorTemplateProperty =
         AvaloniaProperty.Register<DataGrid, IDataTemplate?>(nameof(CustomOperatingIndicatorTemplate));
 
+    /// <summary>
+    /// Identifies the <see cref="IsFrameBorderVisible" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsFrameBorderVisibleProperty =
         AvaloniaProperty.Register<DataGrid, bool>(nameof(IsFrameBorderVisible), false);
 
+    /// <summary>
+    /// Identifies the <see cref="CanUserReorderColumns" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> CanUserReorderColumnsProperty =
         AvaloniaProperty.Register<DataGrid, bool>(nameof(CanUserReorderColumns));
     
+    /// <summary>
+    /// Identifies the <see cref="CanUserResizeColumns" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> CanUserResizeColumnsProperty =
         AvaloniaProperty.Register<DataGrid, bool>(nameof(CanUserResizeColumns));
     
+    /// <summary>
+    /// Identifies the <see cref="CanUserSortColumns" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> CanUserSortColumnsProperty =
         AvaloniaProperty.Register<DataGrid, bool>(nameof(CanUserSortColumns), false);
     
+    /// <summary>
+    /// Identifies the <see cref="CanUserFilterColumns" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> CanUserFilterColumnsProperty =
         AvaloniaProperty.Register<DataGrid, bool>(nameof(CanUserFilterColumns), false);
     
+    /// <summary>
+    /// Identifies the <see cref="CanUserReorderRows" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> CanUserReorderRowsProperty =
         AvaloniaProperty.Register<DataGrid, bool>(nameof(CanUserReorderRows), false);
     
+    /// <summary>
+    /// Identifies the <see cref="IsSorterTooltipVisible" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsSorterTooltipVisibleProperty =
         AvaloniaProperty.Register<DataGrid, bool>(nameof(IsSorterTooltipVisible), true);
     
+    /// <summary>
+    /// Identifies the <see cref="ColumnHeaderHeight" /> property.
+    /// </summary>
     public static readonly StyledProperty<double> ColumnHeaderHeightProperty = 
         AvaloniaProperty.Register<DataGrid, double>(nameof(ColumnHeaderHeight), defaultValue: double.NaN, validate: IsValidColumnHeaderHeight);
     
+    /// <summary>
+    /// Identifies the <see cref="ColumnWidth" /> property.
+    /// </summary>
     public static readonly StyledProperty<DataGridLength> ColumnWidthProperty =
         AvaloniaProperty.Register<DataGrid, DataGridLength>(nameof(ColumnWidth), defaultValue: DataGridLength.Auto);
     
+    /// <summary>
+    /// Identifies the <see cref="RowGroupTheme" /> property.
+    /// </summary>
     public static readonly StyledProperty<ControlTheme> RowGroupThemeProperty =
         AvaloniaProperty.Register<DataGrid, ControlTheme>(nameof(RowGroupTheme));
 
+    /// <summary>
+    /// Identifies the <see cref="LeftFrozenColumnCount" /> property.
+    /// </summary>
     public static readonly StyledProperty<int> LeftFrozenColumnCountProperty =
         AvaloniaProperty.Register<DataGrid, int>(
             nameof(LeftFrozenColumnCount),
             validate: ValidateFrozenColumnCount);
     
+    /// <summary>
+    /// Identifies the <see cref="RightFrozenColumnCount" /> property.
+    /// </summary>
     public static readonly StyledProperty<int> RightFrozenColumnCountProperty =
         AvaloniaProperty.Register<DataGrid, int>(
             nameof(RightFrozenColumnCount),
             validate: ValidateFrozenColumnCount);
 
+    /// <summary>
+    /// Identifies the <see cref="GridLinesVisibility" /> property.
+    /// </summary>
     public static readonly StyledProperty<DataGridGridLinesVisibility> GridLinesVisibilityProperty =
         AvaloniaProperty.Register<DataGrid, DataGridGridLinesVisibility>(nameof(GridLinesVisibility),
             DataGridGridLinesVisibility.Horizontal);
 
+    /// <summary>
+    /// Identifies the <see cref="HeadersVisibility" /> property.
+    /// </summary>
     public static readonly StyledProperty<DataGridHeadersVisibility> HeadersVisibilityProperty =
         AvaloniaProperty.Register<DataGrid, DataGridHeadersVisibility>(nameof(HeadersVisibility),
             DataGridHeadersVisibility.Column);
 
+    /// <summary>
+    /// Identifies the <see cref="HorizontalScrollBarVisibility" /> property.
+    /// </summary>
     public static readonly StyledProperty<ScrollBarVisibility> HorizontalScrollBarVisibilityProperty =
         AvaloniaProperty.Register<DataGrid, ScrollBarVisibility>(nameof(HorizontalScrollBarVisibility));
 
+    /// <summary>
+    /// Identifies the <see cref="IsReadOnly" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsReadOnlyProperty =
         AvaloniaProperty.Register<DataGrid, bool>(nameof(IsReadOnly));
 
+    /// <summary>
+    /// Identifies the <see cref="IsRowGroupHeadersFrozen" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsRowGroupHeadersFrozenProperty =
         AvaloniaProperty.Register<DataGrid, bool>(
             nameof(IsRowGroupHeadersFrozen),
             defaultValue: true);
 
+    /// <summary>
+    /// Identifies the <see cref="IsValid" /> property.
+    /// </summary>
     public static readonly DirectProperty<DataGrid, bool> IsValidProperty =
         AvaloniaProperty.RegisterDirect<DataGrid, bool>(
             nameof(IsValid),
             o => o.IsValid);
 
+    /// <summary>
+    /// Identifies the <see cref="MaxColumnWidth" /> property.
+    /// </summary>
     public static readonly StyledProperty<double> MaxColumnWidthProperty =
         AvaloniaProperty.Register<DataGrid, double>(
             nameof(MaxColumnWidth),
             defaultValue: DefaultMaxColumnWidth,
             validate: IsValidColumnWidth);
 
+    /// <summary>
+    /// Identifies the <see cref="MinColumnWidth" /> property.
+    /// </summary>
     public static readonly StyledProperty<double> MinColumnWidthProperty =
         AvaloniaProperty.Register<DataGrid, double>(
             nameof(MinColumnWidth),
             defaultValue: DefaultMinColumnWidth,
             validate: IsValidMinColumnWidth);
 
+    /// <summary>
+    /// Identifies the <see cref="IsScrollInertiaEnabled" /> property.
+    /// </summary>
     public static readonly AttachedProperty<bool> IsScrollInertiaEnabledProperty =
         ScrollViewer.IsScrollInertiaEnabledProperty.AddOwner<DataGrid>();
 
+    /// <summary>
+    /// Identifies the <see cref="RowHeight" /> property.
+    /// </summary>
     public static readonly StyledProperty<double> RowHeightProperty =
         AvaloniaProperty.Register<DataGrid, double>(
             nameof(RowHeight),
             defaultValue: double.NaN,
             validate: IsValidRowHeight);
 
+    /// <summary>
+    /// Identifies the <see cref="RowHeaderWidth" /> property.
+    /// </summary>
     public static readonly StyledProperty<double> RowHeaderWidthProperty =
         AvaloniaProperty.Register<DataGrid, double>(
             nameof(RowHeaderWidth),
             defaultValue: double.NaN,
             validate: IsValidRowHeaderWidth);
     
+    /// <summary>
+    /// Identifies the <see cref="RowHeaderContentTemplate" /> property.
+    /// </summary>
     public static readonly StyledProperty<IDataTemplate?> RowHeaderContentTemplateProperty =
         AvaloniaProperty.Register<DataGrid, IDataTemplate?>(nameof(RowHeaderContentTemplate));
 
+    /// <summary>
+    /// Identifies the <see cref="SelectionMode" /> property.
+    /// </summary>
     public static readonly StyledProperty<DataGridSelectionMode> SelectionModeProperty =
         AvaloniaProperty.Register<DataGrid, DataGridSelectionMode>(nameof(SelectionMode), DataGridSelectionMode.None);
     
+    /// <summary>
+    /// Identifies the <see cref="SelectTriggerType" /> property.
+    /// </summary>
     public static readonly StyledProperty<DataGridSelectTriggerType> SelectTriggerTypeProperty =
         AvaloniaProperty.Register<DataGrid, DataGridSelectTriggerType>(nameof(SelectTriggerType), DataGridSelectTriggerType.SelectIndicator);
 
+    /// <summary>
+    /// Identifies the <see cref="VerticalScrollBarVisibility" /> property.
+    /// </summary>
     public static readonly StyledProperty<ScrollBarVisibility> VerticalScrollBarVisibilityProperty =
         AvaloniaProperty.Register<DataGrid, ScrollBarVisibility>(nameof(VerticalScrollBarVisibility));
 
+    /// <summary>
+    /// Identifies the <see cref="ClipboardCopyMode" /> property.
+    /// </summary>
     public static readonly StyledProperty<DataGridClipboardCopyMode> ClipboardCopyModeProperty =
         AvaloniaProperty.Register<DataGrid, DataGridClipboardCopyMode>(
             nameof(ClipboardCopyMode),
             defaultValue: DataGridClipboardCopyMode.ExcludeHeader);
 
+    /// <summary>
+    /// Identifies the <see cref="AutoGenerateColumns" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> AutoGenerateColumnsProperty =
         AvaloniaProperty.Register<DataGrid, bool>(nameof(AutoGenerateColumns));
 
+    /// <summary>
+    /// Identifies the <see cref="ItemsSource" /> property.
+    /// </summary>
     public static readonly DirectProperty<DataGrid, IDataGridSource?> ItemsSourceProperty =
         AvaloniaProperty.RegisterDirect<DataGrid, IDataGridSource?>(
             nameof(ItemsSource),
@@ -162,6 +271,9 @@ public partial class DataGrid : TemplatedControl,
             (control, value) => control.ItemsSource = value,
             defaultBindingMode: BindingMode.TwoWay);
 
+    /// <summary>
+    /// Identifies the <see cref="Query" /> property.
+    /// </summary>
     public static readonly DirectProperty<DataGrid, DataGridQuery> QueryProperty =
         AvaloniaProperty.RegisterDirect<DataGrid, DataGridQuery>(
             nameof(Query),
@@ -169,6 +281,9 @@ public partial class DataGrid : TemplatedControl,
             (control, value) => control.Query = value,
             defaultBindingMode: BindingMode.TwoWay);
 
+    /// <summary>
+    /// Identifies the <see cref="GroupExpansion" /> property.
+    /// </summary>
     public static readonly DirectProperty<DataGrid, DataGridGroupExpansion> GroupExpansionProperty =
         AvaloniaProperty.RegisterDirect<DataGrid, DataGridGroupExpansion>(
             nameof(GroupExpansion),
@@ -176,6 +291,9 @@ public partial class DataGrid : TemplatedControl,
             (control, value) => control.GroupExpansion = value,
             defaultBindingMode: BindingMode.TwoWay);
 
+    /// <summary>
+    /// Identifies the <see cref="PageRequest" /> property.
+    /// </summary>
     public static readonly DirectProperty<DataGrid, DataGridPageRequest?> PageRequestProperty =
         AvaloniaProperty.RegisterDirect<DataGrid, DataGridPageRequest?>(
             nameof(PageRequest),
@@ -183,6 +301,9 @@ public partial class DataGrid : TemplatedControl,
             (control, value) => control.PageRequest = value,
             defaultBindingMode: BindingMode.TwoWay);
 
+    /// <summary>
+    /// Identifies the <see cref="Selection" /> property.
+    /// </summary>
     public static readonly DirectProperty<DataGrid, DataGridSelectionState> SelectionProperty =
         AvaloniaProperty.RegisterDirect<DataGrid, DataGridSelectionState>(
             nameof(Selection),
@@ -190,6 +311,9 @@ public partial class DataGrid : TemplatedControl,
             (control, value) => control.Selection = value,
             defaultBindingMode: BindingMode.TwoWay);
 
+    /// <summary>
+    /// Identifies the <see cref="CurrentRowKey" /> property.
+    /// </summary>
     public static readonly DirectProperty<DataGrid, DataGridRowKey?> CurrentRowKeyProperty =
         AvaloniaProperty.RegisterDirect<DataGrid, DataGridRowKey?>(
             nameof(CurrentRowKey),
@@ -197,120 +321,215 @@ public partial class DataGrid : TemplatedControl,
             (control, value) => control.CurrentRowKey = value,
             defaultBindingMode: BindingMode.TwoWay);
 
+    /// <summary>
+    /// Identifies the <see cref="AppliedQuery" /> property.
+    /// </summary>
     public static readonly DirectProperty<DataGrid, DataGridQuery> AppliedQueryProperty =
         AvaloniaProperty.RegisterDirect<DataGrid, DataGridQuery>(
             nameof(AppliedQuery),
             control => control.AppliedQuery);
 
+    /// <summary>
+    /// Identifies the <see cref="AppliedPageRequest" /> property.
+    /// </summary>
     public static readonly DirectProperty<DataGrid, DataGridPageRequest?> AppliedPageRequestProperty =
         AvaloniaProperty.RegisterDirect<DataGrid, DataGridPageRequest?>(
             nameof(AppliedPageRequest),
             control => control.AppliedPageRequest);
 
+    /// <summary>
+    /// Identifies the <see cref="LoadState" /> property.
+    /// </summary>
     public static readonly DirectProperty<DataGrid, DataGridLoadState> LoadStateProperty =
         AvaloniaProperty.RegisterDirect<DataGrid, DataGridLoadState>(
             nameof(LoadState),
             control => control.LoadState);
 
+    /// <summary>
+    /// Identifies the <see cref="LoadError" /> property.
+    /// </summary>
     public static readonly DirectProperty<DataGrid, Exception?> LoadErrorProperty =
         AvaloniaProperty.RegisterDirect<DataGrid, Exception?>(
             nameof(LoadError),
             control => control.LoadError);
 
+    /// <summary>
+    /// Identifies the <see cref="TotalItemCount" /> property.
+    /// </summary>
     public static readonly DirectProperty<DataGrid, long> TotalItemCountProperty =
         AvaloniaProperty.RegisterDirect<DataGrid, long>(
             nameof(TotalItemCount),
             control => control.TotalItemCount);
 
+    /// <summary>
+    /// Identifies the <see cref="TotalEntryCount" /> property.
+    /// </summary>
     public static readonly DirectProperty<DataGrid, int> TotalEntryCountProperty =
         AvaloniaProperty.RegisterDirect<DataGrid, int>(
             nameof(TotalEntryCount),
             control => control.TotalEntryCount);
 
+    /// <summary>
+    /// Identifies the <see cref="IsDataStale" /> property.
+    /// </summary>
     public static readonly DirectProperty<DataGrid, bool> IsDataStaleProperty =
         AvaloniaProperty.RegisterDirect<DataGrid, bool>(
             nameof(IsDataStale),
             control => control.IsDataStale);
 
+    /// <summary>
+    /// Identifies the <see cref="IsRowDetailsFrozen" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsRowDetailsFrozenProperty =
         AvaloniaProperty.Register<DataGrid, bool>(nameof(IsRowDetailsFrozen));
 
+    /// <summary>
+    /// Identifies the <see cref="RowDetailsTemplate" /> property.
+    /// </summary>
     public static readonly StyledProperty<IDataTemplate?> RowDetailsTemplateProperty =
         AvaloniaProperty.Register<DataGrid, IDataTemplate?>(nameof(RowDetailsTemplate));
 
+    /// <summary>
+    /// Identifies the <see cref="RowDetailsVisibilityMode" /> property.
+    /// </summary>
     public static readonly StyledProperty<DataGridRowDetailsVisibilityMode> RowDetailsVisibilityModeProperty =
         AvaloniaProperty.Register<DataGrid, DataGridRowDetailsVisibilityMode>(nameof(RowDetailsVisibilityMode),
             DataGridRowDetailsVisibilityMode.Collapsed);
 
+    /// <summary>
+    /// Identifies the <see cref="Title" /> property.
+    /// </summary>
     public static readonly StyledProperty<object?> TitleProperty =
         AvaloniaProperty.Register<DataGrid, object?>(nameof(Title));
 
+    /// <summary>
+    /// Identifies the <see cref="TitleTemplate" /> property.
+    /// </summary>
     public static readonly StyledProperty<IDataTemplate?> TitleTemplateProperty =
         AvaloniaProperty.Register<DataGrid, IDataTemplate?>(nameof(TitleTemplate));
 
+    /// <summary>
+    /// Identifies the <see cref="Footer" /> property.
+    /// </summary>
     public static readonly StyledProperty<object?> FooterProperty =
         AvaloniaProperty.Register<DataGrid, object?>(nameof(Footer));
 
+    /// <summary>
+    /// Identifies the <see cref="FooterTemplate" /> property.
+    /// </summary>
     public static readonly StyledProperty<IDataTemplate?> FooterTemplateProperty =
         AvaloniaProperty.Register<DataGrid, IDataTemplate?>(nameof(FooterTemplate));
     
+    /// <summary>
+    /// Identifies the <see cref="EmptyIndicator" /> property.
+    /// </summary>
     public static readonly StyledProperty<object?> EmptyIndicatorProperty =
         AvaloniaProperty.Register<DataGrid, object?>(nameof(EmptyIndicator));
     
+    /// <summary>
+    /// Identifies the <see cref="EmptyIndicatorTemplate" /> property.
+    /// </summary>
     public static readonly StyledProperty<IDataTemplate?> EmptyIndicatorTemplateProperty =
         AvaloniaProperty.Register<DataGrid, IDataTemplate?>(nameof(EmptyIndicatorTemplate));
     
+    /// <summary>
+    /// Identifies the <see cref="PaginationVisibility" /> property.
+    /// </summary>
     public static readonly StyledProperty<DataGridPaginationVisibility> PaginationVisibilityProperty =
         AvaloniaProperty.Register<DataGrid, DataGridPaginationVisibility>(nameof(PaginationVisibility), DataGridPaginationVisibility.Bottom);
     
+    /// <summary>
+    /// Identifies the <see cref="TopPaginationAlign" /> property.
+    /// </summary>
     public static readonly StyledProperty<PaginationAlign> TopPaginationAlignProperty =
         AvaloniaProperty.Register<DataGrid, PaginationAlign>(nameof(TopPaginationAlign), PaginationAlign.End);
     
+    /// <summary>
+    /// Identifies the <see cref="BottomPaginationAlign" /> property.
+    /// </summary>
     public static readonly StyledProperty<PaginationAlign> BottomPaginationAlignProperty =
         AvaloniaProperty.Register<DataGrid, PaginationAlign>(nameof(BottomPaginationAlign), PaginationAlign.End);
     
+    /// <summary>
+    /// Identifies the <see cref="PageSize" /> property.
+    /// </summary>
     public static readonly StyledProperty<int> PageSizeProperty =
         AvaloniaProperty.Register<DataGrid, int>(nameof(PageSize));
 
+    /// <summary>
+    /// Identifies the <see cref="IsShowPageSizeSelector" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsShowPageSizeSelectorProperty =
         AvaloniaProperty.Register<DataGrid, bool>(nameof(IsShowPageSizeSelector), true);
 
+    /// <summary>
+    /// Identifies the <see cref="TopPaginationExtraContent" /> property.
+    /// </summary>
     public static readonly StyledProperty<object?> TopPaginationExtraContentProperty =
         AvaloniaProperty.Register<DataGrid, object?>(nameof(TopPaginationExtraContent));
 
+    /// <summary>
+    /// Identifies the <see cref="TopPaginationExtraContentTemplate" /> property.
+    /// </summary>
     public static readonly StyledProperty<IDataTemplate?> TopPaginationExtraContentTemplateProperty =
         AvaloniaProperty.Register<DataGrid, IDataTemplate?>(nameof(TopPaginationExtraContentTemplate));
 
+    /// <summary>
+    /// Identifies the <see cref="BottomPaginationExtraContent" /> property.
+    /// </summary>
     public static readonly StyledProperty<object?> BottomPaginationExtraContentProperty =
         AvaloniaProperty.Register<DataGrid, object?>(nameof(BottomPaginationExtraContent));
 
+    /// <summary>
+    /// Identifies the <see cref="BottomPaginationExtraContentTemplate" /> property.
+    /// </summary>
     public static readonly StyledProperty<IDataTemplate?> BottomPaginationExtraContentTemplateProperty =
         AvaloniaProperty.Register<DataGrid, IDataTemplate?>(nameof(BottomPaginationExtraContentTemplate));
 
+    /// <summary>
+    /// Identifies the <see cref="IsHideOnSinglePage" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsHideOnSinglePageProperty =
         AbstractPagination.IsHideOnSinglePageProperty.AddOwner<DataGrid>();
 
+    /// <summary>
+    /// Identifies the <see cref="IsMotionEnabled" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<DataGrid>();
 
+    /// <summary>
+    /// Density preset of the grid parts. The pagers, rows, row headers and column group headers take their sizes
+    /// from it.
+    /// </summary>
     public CustomizableSizeType SizeType
     {
         get => GetValue(SizeTypeProperty);
         set => SetValue(SizeTypeProperty, value);
     }
     
+    /// <summary>
+    /// Shows the loading indicator over the grid content while <see langword="true" />. The indicator also shows
+    /// while <see cref="LoadState" /> is <see cref="DataGridLoadState.Loading" />, whatever this property is.
+    /// </summary>
     public bool IsOperating
     {
         get => GetValue(IsOperatingProperty);
         set => SetValue(IsOperatingProperty, value);
     }
     
+    /// <summary>
+    /// Text shown with the loading indicator. The theme's default is the <c>Operating</c> language resource.
+    /// </summary>
     public string? OperatingMsg
     {
         get => GetValue(OperatingMsgProperty);
         set => SetValue(OperatingMsgProperty, value);
     }
     
+    /// <summary>
+    /// Content that replaces the built-in loading indicator. <see langword="null" /> keeps the built-in one.
+    /// </summary>
     [DependsOn(nameof(CustomOperatingIndicatorTemplate))]
     public object? CustomOperatingIndicator
     {
@@ -318,12 +537,21 @@ public partial class DataGrid : TemplatedControl,
         set => SetValue(CustomOperatingIndicatorProperty, value);
     }
     
+    /// <summary>
+    /// Template that builds <see cref="CustomOperatingIndicator" />. Changing it re-evaluates that content.
+    /// </summary>
     public IDataTemplate? CustomOperatingIndicatorTemplate
     {
         get => GetValue(CustomOperatingIndicatorTemplateProperty);
         set => SetValue(CustomOperatingIndicatorTemplateProperty, value);
     }
 
+    /// <summary>
+    /// Draws the border of the outer frame with <see cref="TemplatedControl.BorderThickness" /> and rounds all
+    /// four corners with <see cref="TemplatedControl.CornerRadius" />. When <see langword="false" />, the frame
+    /// border has no thickness, only the top corners are rounded, the separator under the title is hidden and
+    /// the last row keeps its bottom grid line. The default is <see langword="false" />.
+    /// </summary>
     public bool IsFrameBorderVisible
     {
         get => GetValue(IsFrameBorderVisibleProperty);
@@ -488,6 +716,10 @@ public partial class DataGrid : TemplatedControl,
 
     private bool _isValid = true;
 
+    /// <summary>
+    /// Whether the grid content is valid. <see langword="false" /> adds the <c>invalid</c> pseudo-class.
+    /// The setter is internal.
+    /// </summary>
     public bool IsValid
     {
         get => _isValid;
@@ -606,6 +838,11 @@ public partial class DataGrid : TemplatedControl,
 
     private DataGridQuery _query = DataGridQuery.Empty;
 
+    /// <summary>
+    /// The filters, sorts and groups that the grid applies to its data. Assigning a new value commits the active
+    /// edit (the assignment is dropped when the commit fails), expands all groups when the groups changed, moves
+    /// <see cref="PageRequest" /> back to the first page, raises <see cref="QueryChanged" /> and reloads the rows.
+    /// </summary>
     public DataGridQuery Query
     {
         get => _query;
@@ -614,6 +851,11 @@ public partial class DataGrid : TemplatedControl,
 
     private DataGridGroupExpansion _groupExpansion = DataGridGroupExpansion.AllExpanded;
 
+    /// <summary>
+    /// Which groups of <see cref="Query" /> are expanded; all of them by default. Assigning a value commits the
+    /// active edit (the assignment is dropped when the commit fails) and reloads the rows.
+    /// <see cref="ExpandGroup" /> and <see cref="CollapseGroup" /> change a single group.
+    /// </summary>
     public DataGridGroupExpansion GroupExpansion
     {
         get => _groupExpansion;
@@ -622,6 +864,13 @@ public partial class DataGrid : TemplatedControl,
 
     private DataGridPageRequest? _pageRequest;
 
+    /// <summary>
+    /// The data window that the grid asks the source for, given by its start index and its row count.
+    /// <see langword="null" /> leaves the window to the grid, which derives it from the current page and
+    /// <see cref="PageSize" />. Assigning a value commits the active edit (the assignment is dropped when the
+    /// commit fails), copies the row count into <see cref="PageSize" /> (0 for <see langword="null" />) and
+    /// reloads the rows.
+    /// </summary>
     public DataGridPageRequest? PageRequest
     {
         get => _pageRequest;
@@ -630,6 +879,11 @@ public partial class DataGrid : TemplatedControl,
 
     private DataGridSelectionState _selection = DataGridSelectionState.Empty;
 
+    /// <summary>
+    /// The row selection: explicit keys, index intervals and all rows matching a query, minus the excluded keys.
+    /// The default value selects nothing. An assigned value is normalized for <see cref="SelectionMode" /> before
+    /// it is stored, and <see cref="SelectionChanged" /> is raised after the new state has been stored.
+    /// </summary>
     public DataGridSelectionState Selection
     {
         get => _selection;
@@ -638,6 +892,12 @@ public partial class DataGrid : TemplatedControl,
 
     private DataGridRowKey? _currentRowKey;
 
+    /// <summary>
+    /// The key of the current row, or <see langword="null" /> when the grid has no current row. A key whose
+    /// <c>IsValid</c> is <see langword="false" /> throws <see cref="ArgumentException" />. With range presentation
+    /// active, a key that is in the committed data moves the current cell to its row and commits the active edit;
+    /// any other value clears the current cell.
+    /// </summary>
     public DataGridRowKey? CurrentRowKey
     {
         get => _currentRowKey;
@@ -646,30 +906,59 @@ public partial class DataGrid : TemplatedControl,
 
     private DataGridQuery _appliedQuery = DataGridQuery.Empty;
 
+    /// <summary>
+    /// The <see cref="Query" /> that the presented rows were loaded for. It follows <see cref="Query" /> only when
+    /// a load succeeds or falls back to the previous snapshot, and it is empty while no snapshot is applied.
+    /// </summary>
     public DataGridQuery AppliedQuery => _appliedQuery;
 
     private DataGridPageRequest? _appliedPageRequest;
 
+    /// <summary>
+    /// The <see cref="PageRequest" /> that the presented rows were loaded for, or <see langword="null" /> while
+    /// no snapshot is applied. It is updated together with <see cref="AppliedQuery" />.
+    /// </summary>
     public DataGridPageRequest? AppliedPageRequest => _appliedPageRequest;
 
     private DataGridLoadState _dataLoadState;
 
+    /// <summary>
+    /// The state of the latest data load. It is <see cref="DataGridLoadState.Ready" /> after a load succeeds and
+    /// <see cref="DataGridLoadState.Error" /> after one fails; <see cref="DataGridLoadState.Loading" /> also shows
+    /// the loading indicator.
+    /// </summary>
     public DataGridLoadState LoadState => _dataLoadState;
 
     private Exception? _loadError;
 
+    /// <summary>
+    /// The error of the latest failed load, set together with <see cref="LoadState" />
+    /// <see cref="DataGridLoadState.Error" />. It is cleared when the next load starts and after a load succeeds.
+    /// </summary>
     public Exception? LoadError => _loadError;
 
     private long _totalItemCount;
 
+    /// <summary>
+    /// The total number of data rows that the source reports for <see cref="AppliedQuery" />, over all pages.
+    /// It is updated together with <see cref="AppliedQuery" />.
+    /// </summary>
     public long TotalItemCount => _totalItemCount;
 
     private int _totalEntryCount;
 
+    /// <summary>
+    /// The number of presentation entries in the applied snapshot: the rows plus the group headers. It is updated
+    /// together with <see cref="AppliedQuery" />.
+    /// </summary>
     public int TotalEntryCount => _totalEntryCount;
 
     private bool _isDataStale;
 
+    /// <summary>
+    /// <see langword="true" /> while the presented rows are known to be out of date: after a mutation or an
+    /// invalidation requested a reload, until that reload succeeds.
+    /// </summary>
     public bool IsDataStale => _isDataStale;
 
     /// <summary>
@@ -700,6 +989,9 @@ public partial class DataGrid : TemplatedControl,
         set => SetValue(RowDetailsVisibilityModeProperty, value);
     }
 
+    /// <summary>
+    /// Content of the title area above the table. The area exists only while this is not <see langword="null" />.
+    /// </summary>
     [DependsOn(nameof(TitleTemplateProperty))]
     public object? Title
     {
@@ -707,12 +999,19 @@ public partial class DataGrid : TemplatedControl,
         set => SetValue(TitleProperty, value);
     }
 
+    /// <summary>
+    /// Template that builds <see cref="Title" />. Changing it re-evaluates <see cref="Title" />.
+    /// </summary>
     public IDataTemplate? TitleTemplate
     {
         get => GetValue(TitleTemplateProperty);
         set => SetValue(TitleTemplateProperty, value);
     }
 
+    /// <summary>
+    /// Content of the footer area below the table and above the bottom pager. The area exists only while this is
+    /// not <see langword="null" />.
+    /// </summary>
     [DependsOn(nameof(FooterTemplateProperty))]
     public object? Footer
     {
@@ -720,12 +1019,19 @@ public partial class DataGrid : TemplatedControl,
         set => SetValue(FooterProperty, value);
     }
 
+    /// <summary>
+    /// Template that builds <see cref="Footer" />. Changing it re-evaluates <see cref="Footer" />.
+    /// </summary>
     public IDataTemplate? FooterTemplate
     {
         get => GetValue(FooterTemplateProperty);
         set => SetValue(FooterTemplateProperty, value);
     }
     
+    /// <summary>
+    /// Content shown in place of the rows while the data source is empty. The default is an <see cref="Empty" />
+    /// control of middle size with the simple preset image.
+    /// </summary>
     [DependsOn(nameof(EmptyIndicatorTemplate))]
     public object? EmptyIndicator
     {
@@ -733,24 +1039,39 @@ public partial class DataGrid : TemplatedControl,
         set => SetValue(EmptyIndicatorProperty, value);
     }
 
+    /// <summary>
+    /// Template that builds <see cref="EmptyIndicator" />. Changing it re-evaluates <see cref="EmptyIndicator" />.
+    /// </summary>
     public IDataTemplate? EmptyIndicatorTemplate
     {
         get => GetValue(EmptyIndicatorTemplateProperty);
         set => SetValue(EmptyIndicatorTemplateProperty, value);
     }
 
+    /// <summary>
+    /// The edges of the grid that show a pager; the bottom edge by default. No pager is shown while the page size
+    /// is 0, while there is no data or while <see cref="IsHideOnSinglePage" /> applies.
+    /// </summary>
     public DataGridPaginationVisibility PaginationVisibility
     {
         get => GetValue(PaginationVisibilityProperty);
         set => SetValue(PaginationVisibilityProperty, value);
     }
     
+    /// <summary>
+    /// Alignment of the pager at the top edge of the grid; <c>End</c> by default. The extra content of that pager
+    /// is placed on the opposite side: on the left at <c>End</c>, otherwise on the right.
+    /// </summary>
     public PaginationAlign TopPaginationAlign
     {
         get => GetValue(TopPaginationAlignProperty);
         set => SetValue(TopPaginationAlignProperty, value);
     }
     
+    /// <summary>
+    /// Alignment of the pager at the bottom edge of the grid; <c>End</c> by default. The extra content of that
+    /// pager is placed on the opposite side: on the left at <c>End</c>, otherwise on the right.
+    /// </summary>
     public PaginationAlign BottomPaginationAlign
     {
         get => GetValue(BottomPaginationAlignProperty);
@@ -776,7 +1097,7 @@ public partial class DataGrid : TemplatedControl,
     }
 
     /// <summary>
-    /// Gets or sets the template used to render <see cref="TopPaginationExtraContent"/>.
+    /// Gets or sets the template used to render <see cref="TopPaginationExtraContent" />.
     /// </summary>
     public IDataTemplate? TopPaginationExtraContentTemplate
     {
@@ -794,7 +1115,7 @@ public partial class DataGrid : TemplatedControl,
     }
 
     /// <summary>
-    /// Gets or sets the template used to render <see cref="BottomPaginationExtraContent"/>.
+    /// Gets or sets the template used to render <see cref="BottomPaginationExtraContent" />.
     /// </summary>
     public IDataTemplate? BottomPaginationExtraContentTemplate
     {
@@ -802,12 +1123,20 @@ public partial class DataGrid : TemplatedControl,
         set => SetValue(BottomPaginationExtraContentTemplateProperty, value);
     }
 
+    /// <summary>
+    /// Hides the pager while all rows fit on one page, that is while <see cref="TotalItemCount" /> is not greater
+    /// than the page size.
+    /// </summary>
     public bool IsHideOnSinglePage
     {
         get => GetValue(IsHideOnSinglePageProperty);
         set => SetValue(IsHideOnSinglePageProperty, value);
     }
     
+    /// <summary>
+    /// The number of rows per page; 0 by default. 0 hides the pager and disables paging. Assigning
+    /// <see cref="PageRequest" /> overwrites this value with the row count of the request.
+    /// </summary>
     public int PageSize
     {
         get => GetValue(PageSizeProperty);
@@ -892,8 +1221,16 @@ public partial class DataGrid : TemplatedControl,
     /// </summary>
     public ObservableCollection<DataGridColumn> Columns => ColumnsInternal;
 
+    /// <summary>
+    /// The root nodes of the column group tree, shown in the group header row above the column headers while the
+    /// collection is not empty. A node is either a group that nests columns and other groups, or a column.
+    /// </summary>
     public ObservableCollection<IDataGridColumnGroupItem> ColumnGroups => ColumnGroupsInternal;
 
+    /// <summary>
+    /// Turns the animations of the grid and its parts on or off. The template passes the value to both pagers,
+    /// and the theme's default is the <c>EnableMotion</c> design token.
+    /// </summary>
     public bool IsMotionEnabled
     {
         get => GetValue(IsMotionEnabledProperty);
@@ -1020,12 +1357,12 @@ public partial class DataGrid : TemplatedControl,
     public event EventHandler<DataGridPreparingCellForEditEventArgs>? PreparingCellForEdit;
 
     /// <summary>
-    /// Occurs when the row has been successfully committed or cancelled.
+    /// Occurs when the row has been successfully committed or canceled.
     /// </summary>
     public event EventHandler<DataGridRowEditEndedEventArgs>? RowEditEnded;
 
     /// <summary>
-    /// Occurs immediately before the row has been successfully committed or cancelled.
+    /// Occurs immediately before the row has been successfully committed or canceled.
     /// </summary>
     public event EventHandler<DataGridRowEditEndingEventArgs>? RowEditEnding;
 
@@ -1040,12 +1377,12 @@ public partial class DataGrid : TemplatedControl,
     public event EventHandler<DataGridSelectionChangedEventArgs>? SelectionChanged;
 
     /// <summary>
-    /// Occurs when the <see cref="DataGridColumn"/> sorting request is triggered.
+    /// Occurs when the <see cref="DataGridColumn" /> sorting request is triggered.
     /// </summary>
     public event EventHandler<DataGridColumnEventArgs>? Sorting;
 
     /// <summary>
-    /// Occurs when the <see cref="DataGridColumn"/> filtering request is triggered.
+    /// Occurs when the <see cref="DataGridColumn" /> filtering request is triggered.
     /// </summary>
     public event EventHandler<DataGridColumnEventArgs>? Filtering;
 
@@ -1072,7 +1409,13 @@ public partial class DataGrid : TemplatedControl,
     /// </summary>
     public event EventHandler<DataGridRowDetailsEventArgs>? UnloadingRowDetails;
 
+    /// <summary>
+    /// Raised after the grid has processed a scroll of its horizontal scroll bar. The sender is the scroll bar.
+    /// </summary>
     public event EventHandler<ScrollEventArgs>? HorizontalScroll;
+    /// <summary>
+    /// Raised after the grid has processed a scroll of its vertical scroll bar. The sender is the scroll bar.
+    /// </summary>
     public event EventHandler<ScrollEventArgs>? VerticalScroll;
 
     /// <summary>
@@ -1101,6 +1444,12 @@ public partial class DataGrid : TemplatedControl,
     /// </summary>
     public event EventHandler<PageChangingEventArgs>? PageChanging;
 
+    /// <summary>
+    /// Raised after <see cref="Query" /> changed and the change was projected onto the columns, before the rows
+    /// are reloaded. Also raised with the reason <see cref="DataGridQueryChangeReason.LoadRollback" /> when a
+    /// failed load restores the previous query. A handler that assigns <see cref="Query" /> again replaces the
+    /// pending reload with its own.
+    /// </summary>
     public event EventHandler<DataGridQueryChangedEventArgs>? QueryChanged;
 
     #endregion
@@ -1192,8 +1541,12 @@ public partial class DataGrid : TemplatedControl,
     /// <summary>
     /// Enters editing mode for the current cell and current row (if they're not already in editing mode).
     /// </summary>
-    /// <param name="editingEventArgs">Provides information about the user gesture that caused the call to BeginEdit. Can be null.</param>
-    /// <returns>True if operation was successful. False otherwise.</returns>
+    /// <param name="editingEventArgs">
+    /// Provides information about the user gesture that caused the call to BeginEdit. Can be null.
+    /// </param>
+    /// <returns>
+    /// True if operation was successful. False otherwise.
+    /// </returns>
     public bool BeginEdit(RoutedEventArgs editingEventArgs)
     {
         // Editing follows the current cell; row selection is an independent feature in this grid.
@@ -1220,8 +1573,12 @@ public partial class DataGrid : TemplatedControl,
     /// <summary>
     /// Cancels editing mode for the specified DataGridEditingUnit and restores its original value.
     /// </summary>
-    /// <param name="editingUnit">Specifies whether to cancel edit for a Cell or Row.</param>
-    /// <returns>True if operation was successful. False otherwise.</returns>
+    /// <param name="editingUnit">
+    /// Specifies whether to cancel edit for a Cell or Row.
+    /// </param>
+    /// <returns>
+    /// True if operation was successful. False otherwise.
+    /// </returns>
     public bool CancelEdit(DataGridEditingUnit editingUnit = DataGridEditingUnit.Row)
     {
         return CancelEdit(editingUnit, raiseEvents: true);
@@ -1230,7 +1587,9 @@ public partial class DataGrid : TemplatedControl,
     /// <summary>
     /// Commits editing mode and pushes changes to the backend.
     /// </summary>
-    /// <returns>True if operation was successful. False otherwise.</returns>
+    /// <returns>
+    /// True if operation was successful. False otherwise.
+    /// </returns>
     public bool CommitEdit()
     {
         return CommitEdit(DataGridEditingUnit.Row, true);
@@ -1239,9 +1598,15 @@ public partial class DataGrid : TemplatedControl,
     /// <summary>
     /// Commits editing mode for the specified DataGridEditingUnit and pushes changes to the backend.
     /// </summary>
-    /// <param name="editingUnit">Specifies whether to commit edit for a Cell or Row.</param>
-    /// <param name="exitEditingMode">Editing mode is left if True.</param>
-    /// <returns>True if operation was successful. False otherwise.</returns>
+    /// <param name="editingUnit">
+    /// Specifies whether to commit edit for a Cell or Row.
+    /// </param>
+    /// <param name="exitEditingMode">
+    /// Editing mode is left if True.
+    /// </param>
+    /// <returns>
+    /// True if operation was successful. False otherwise.
+    /// </returns>
     public bool CommitEdit(DataGridEditingUnit editingUnit, bool exitEditingMode)
     {
         if (!EndCellEdit(
@@ -1267,8 +1632,12 @@ public partial class DataGrid : TemplatedControl,
     /// If column is not null: scrolls the column into view;
     /// If both item and column are null, the method returns without scrolling.
     /// </summary>
-    /// <param name="item">A currently cached source item.</param>
-    /// <param name="column">a column from the DataGrid's columns collection</param>
+    /// <param name="item">
+    /// A currently cached source item.
+    /// </param>
+    /// <param name="column">
+    /// a column from the DataGrid's columns collection
+    /// </param>
     public void ScrollIntoView(object? item, DataGridColumn? column)
     {
         if ((column == null && (item == null || FirstDisplayedNonFillerColumnIndex == -1))
@@ -1303,6 +1672,12 @@ public partial class DataGrid : TemplatedControl,
         }
     }
 
+    /// <summary>
+    /// Called when the grid is attached to a visual tree. Besides the base behavior, it sets up the token owner
+    /// of the content, attaches the range data source, subscribes to the page change events of both pagers and
+    /// refreshes the pinned-open filter target. An override must call the base member, which this implementation
+    /// does first.
+    /// </summary>
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
@@ -1323,6 +1698,12 @@ public partial class DataGrid : TemplatedControl,
         RefreshPopupPinnedOpenFilterTarget();
     }
 
+    /// <summary>
+    /// Called when the grid is detached from a visual tree. It releases the token owner binding of the content,
+    /// detaches the range data source, cancels a running row reorder and suspends the pinned-open filter target,
+    /// then calls the base member and unsubscribes from the page change events of both pagers. An override must
+    /// call the base member.
+    /// </summary>
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         _contentTokenOwnerBinding?.Dispose();
@@ -1372,13 +1753,14 @@ public partial class DataGrid : TemplatedControl,
     /// arranging them during the
     /// <see cref="M:DataGridError.DataGridRow.ArrangeOverride(System.Windows.Size)" /> pass.
     /// </summary>
-    /// <returns>
-    /// The size that the <see cref="T:DataGridError.DataGridRow" /> determines it needs during layout, based on its calculations of child object allocated sizes.
-    /// </returns>
     /// <param name="availableSize">
     /// The available size that this element can give to child elements. Indicates an upper limit that
     /// child elements should not exceed.
     /// </param>
+    /// <returns>
+    /// The size that the <see cref="T:DataGridError.DataGridRow" /> determines it needs during layout, based on its
+    /// calculations of child object allocated sizes.
+    /// </returns>
     protected override Size MeasureOverride(Size availableSize)
     {
         // Delay layout until after the initial measure to avoid invalid calculations when the
@@ -1443,7 +1825,7 @@ public partial class DataGrid : TemplatedControl,
         return desiredSize;
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     protected override void OnDataContextBeginUpdate()
     {
         base.OnDataContextBeginUpdate();
@@ -1451,7 +1833,7 @@ public partial class DataGrid : TemplatedControl,
         NotifyDataContextPropertyForAllRowCells(GetAllRows(), true);
     }
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     protected override void OnDataContextEndUpdate()
     {
         base.OnDataContextEndUpdate();
@@ -1520,7 +1902,9 @@ public partial class DataGrid : TemplatedControl,
     /// <summary>
     /// Scrolls the DataGrid according to the direction of the delta.
     /// </summary>
-    /// <param name="e">PointerWheelEventArgs</param>
+    /// <param name="e">
+    /// PointerWheelEventArgs
+    /// </param>
     protected override void OnPointerWheelChanged(PointerWheelEventArgs e)
     {
         var delta = e.Delta;
@@ -1819,6 +2203,12 @@ public partial class DataGrid : TemplatedControl,
         }
     }
 
+    /// <summary>
+    /// Selects all rows of the committed data by adding an all-matching scope to <see cref="Selection" />; keys
+    /// that are already selected stay selected. Does nothing unless <see cref="SelectionMode" /> is
+    /// <see cref="DataGridSelectionMode.Extended" />, <see cref="TotalItemCount" /> is greater than zero and a
+    /// committed snapshot exists.
+    /// </summary>
     public void SelectAll()
     {
         var scope = GetCommittedSelectionScope();
@@ -1833,7 +2223,9 @@ public partial class DataGrid : TemplatedControl,
     /// <summary>
     /// Raises the LoadingRowGroup event
     /// </summary>
-    /// <param name="e">EventArgs</param>
+    /// <param name="e">
+    /// EventArgs
+    /// </param>
     protected virtual void NotifyLoadingRowGroup(DataGridRowGroupHeaderEventArgs e)
     {
         EventHandler<DataGridRowGroupHeaderEventArgs>? handler = LoadingRowGroup;
@@ -1848,7 +2240,9 @@ public partial class DataGrid : TemplatedControl,
     /// <summary>
     /// Raises the UnLoadingRowGroup event
     /// </summary>
-    /// <param name="e">EventArgs</param>
+    /// <param name="e">
+    /// EventArgs
+    /// </param>
     protected virtual void OnUnloadingRowGroup(DataGridRowGroupHeaderEventArgs e)
     {
         EventHandler<DataGridRowGroupHeaderEventArgs>? handler = UnloadingRowGroup;
@@ -1863,7 +2257,9 @@ public partial class DataGrid : TemplatedControl,
     /// <summary>
     /// This method raises the CopyingRowClipboardContent event.
     /// </summary>
-    /// <param name="e">Contains the necessary information for generating the row clipboard content.</param>
+    /// <param name="e">
+    /// Contains the necessary information for generating the row clipboard content.
+    /// </param>
     protected virtual void OnCopyingRowClipboardContent(DataGridRowClipboardEventArgs e)
     {
         CopyingRowClipboardContent?.Invoke(this, e);
@@ -1877,6 +2273,12 @@ public partial class DataGrid : TemplatedControl,
         AutoGeneratingColumn?.Invoke(this, e);
     }
 
+    /// <summary>
+    /// Besides the base behavior, keeps the derived state of the grid in step with the changed property: frame
+    /// border and corner radii, pager visibility, column sort and filter capabilities, row grid lines, frozen
+    /// column limits and the pinned-open filter target. An override must call the base member, which this
+    /// implementation does first.
+    /// </summary>
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);

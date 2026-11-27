@@ -61,9 +61,11 @@
             </ControlTemplate>
         </Setter>
 
-        <!-- container 的背景/圆角必须走 ControlTheme 样式而不是模板局部值：局部值优先级压过
-             任何 Style setter，DialogContainerStyle（owner 实例级语义样式）将永远无法覆盖。
-             CornerRadius 经 TemplatedParent 绑定保持对 Surface 运行时变更（如最大化归零）的跟随。 -->
+        <!-- The background and corner radius of container must go through ControlTheme styles, not local template
+        values: a local value outranks any style setter, so DialogContainerStyle (the instance-level semantic style
+        of the owner) could never override them. CornerRadius is bound through TemplatedParent so that it keeps
+        following runtime changes of Surface, such as zeroing on maximize.
+        -->
         <Style Selector="^ /template/ Border#Frame">
             <Setter Property="Background" Value="{CompiledBinding $self.(atom:DialogSurface.ContentBackground)}" />
             <Setter Property="CornerRadius"

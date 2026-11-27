@@ -156,12 +156,12 @@ internal class SelectTagAwareTextBox : TemplatedControl
 
     #region 内部协作 API
 
-    /// 多选标签容器标记：Select 族共享，宿主（如 Cascader）的 item 部件经
-    /// descendant 路由命中该标记。
+    /// Marker of the multiple-selection tag container, shared by the Select family. The item part of a host such as
+    /// Cascader reaches this marker through a descendant route.
     internal const string TagItemClass = "semantic-item";
 
-    /// 多选模式行内搜索输入标记：搜索框运行时创建，TreeSelect/Cascader 的
-    /// input 部件经模板路由命中该标记。
+    /// Marker of the inline search input in multiple mode. The search box is created at runtime, and the input part
+    /// of TreeSelect and Cascader reaches this marker through a template route.
     internal const string TagSearchInputClass = "semantic-input";
 
     #endregion
@@ -235,8 +235,9 @@ internal class SelectTagAwareTextBox : TemplatedControl
         {
             HorizontalAlignment = HorizontalAlignment.Stretch
         };
-        // 多选/标签模式下的搜索输入是运行时创建的，静态模板中的 PART_SingleFilterInput
-        // 在非 Single 模式保持隐藏，因此此处注入 input 部件 marker 以便语义高亮/样式可达。
+        // In multiple and tag modes the search input is created at runtime, and PART_SingleFilterInput in the static
+        // template stays hidden outside Single mode. The input part marker is added here so that semantic
+        // highlighting and styles reach it.
         _searchTextBox.Classes.Add(TagSearchInputClass);
         _collapsedInfoTag = new SelectRemainInfoTag()
         {

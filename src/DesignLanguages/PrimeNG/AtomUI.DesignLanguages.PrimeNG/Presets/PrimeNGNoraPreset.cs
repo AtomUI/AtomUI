@@ -4,12 +4,11 @@ using Avalonia.Media;
 namespace AtomUI.DesignLanguages.PrimeNG.Presets;
 
 /// <summary>
-/// The Nora rule table (spec 4.7), transcribed from the four pre-algorithm Nora XML profiles (the acceptance baseline)
+/// The Nora rule table, transcribed from the four pre-algorithm Nora XML profiles (the acceptance baseline)
 /// and aligned with the <c>nora</c> preset of <c>@primeuix/themes</c> 3.1.1. It differs from Aura in the primary and
 /// status stops (one stop darker in both appearances: light 600, dark 500), the deeper text and border stops, the
 /// transparent secondary border, the solid selected background (PrimeUIX <c>highlight.background</c>
-/// <c>light-dark(primary.600, primary.500)</c>), the dark focus ring, the 2px radius ladder and the control values;
-/// the README of this package lists the sources row by row.
+/// <c>light-dark(primary.600, primary.500)</c>), the dark focus ring, the 2px radius ladder and the control values.
 /// </summary>
 internal static class PrimeNGNoraPreset
 {
@@ -59,7 +58,7 @@ internal static class PrimeNGNoraPreset
             FocusBorder: static token => token.ColorPrimary,
             CardBorderSecondary: null,
             // PrimeUIX nora (3.1.1) highlight: background primary.600 (ColorPrimary), focusBackground primary.700
-            // (ColorPrimaryHover), color #ffffff (the contrast colour).
+            // (ColorPrimaryHover), color #ffffff (the contrast color).
             Highlight: static token => (token.ColorPrimary, token.ColorPrimaryHover),
             HighlightColor: static token => token.ColorTextLightSolid,
             // PrimeUIX toggleswitch (3.1.1): background = hoverBackground = form.field.background (surface.0), border
@@ -113,12 +112,12 @@ internal static class PrimeNGNoraPreset
                 BgContainerDisabled: new(700), TextDisabled: new(500)),
             SelectionForeground: new(950),
             ControlOutline: null,
-            // PrimeUIX nora focus.ring.color, dark: the primary colour (surface.50 under noir).
+            // PrimeUIX nora focus.ring.color, dark: the primary color (surface.50 under noir).
             FocusBorder: static token => token.ColorPrimary,
             // PrimeUIX nora-compat overlay.*.border.color: transparent in light, surface.700 in dark.
             CardBorderSecondary: new(700),
             // PrimeUIX nora (3.1.1) highlight: background primary.500 (ColorPrimary), focusBackground primary.400
-            // (ColorPrimaryHover), color surface.950 (the contrast colour).
+            // (ColorPrimaryHover), color surface.950 (the contrast color).
             Highlight: static token => (token.ColorPrimary, token.ColorPrimaryHover),
             HighlightColor: static token => token.ColorTextLightSolid,
             // PrimeUIX toggleswitch (3.1.1), dark: form.field.background surface.950, border and handle surface.500,

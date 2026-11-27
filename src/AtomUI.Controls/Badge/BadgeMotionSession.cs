@@ -8,7 +8,9 @@ using Avalonia.Threading;
 
 namespace AtomUI.Controls.Commons;
 
-/// <summary>Coordinates badge readiness and physical removal; Core owns finite playback.</summary>
+/// <summary>
+/// Coordinates badge readiness and physical removal; Core owns finite playback.
+/// </summary>
 internal sealed class BadgeMotionSession(Control owner)
 {
     private Control? _target;

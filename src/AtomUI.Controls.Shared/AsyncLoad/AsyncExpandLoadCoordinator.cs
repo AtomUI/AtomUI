@@ -3,10 +3,21 @@ using System.Collections.Concurrent;
 namespace AtomUI.Controls.AsyncLoad;
 
 /// <summary>
-/// 展开类场景的异步加载协调器。同一 context 引用有请求在飞时复用同一 Task（in-flight 去重），按 <see cref="Timeout"/> 硬超时。
-///
-/// 不做 debounce，不取消前一次 —— 展开语义下每个节点的加载互相独立。
+/// Coordinates asynchronous loading for expanding items such as tree nodes. A request for a context that is
+/// already loading joins the load that is in flight instead of starting another one, and every load has its own
+/// time limit from <see cref="Timeout" />.
+/// <para>
+/// The coordinator neither debounces nor cancels an earlier request, because the items load independently of
+/// each other.
+/// </para>
 /// </summary>
+/// <typeparam name="TContext">
+/// The item whose data is loaded. Requests whose contexts are equal under the comparer of the constructor share
+/// one load.
+/// </typeparam>
+/// <typeparam name="TResult">
+/// The type of the loaded data.
+/// </typeparam>
 public sealed class AsyncExpandLoadCoordinator<TContext, TResult>
     where TContext : notnull
     where TResult : class
@@ -20,6 +31,13 @@ public sealed class AsyncExpandLoadCoordinator<TContext, TResult>
     {
     }
 
+    /// <summary>
+    /// Initializes the coordinator with the comparer that decides whether two contexts belong to the same item.
+    /// </summary>
+    /// <param name="dedupComparer">
+    /// The comparer for contexts, or <see langword="null" /> to use the default equality comparer of
+    /// <typeparamref name="TContext" />.
+    /// </param>
     public AsyncExpandLoadCoordinator(IEqualityComparer<TContext>? dedupComparer)
     {
         _inFlight = new ConcurrentDictionary<
@@ -28,8 +46,34 @@ public sealed class AsyncExpandLoadCoordinator<TContext, TResult>
             dedupComparer ?? EqualityComparer<TContext>.Default);
     }
 
+    /// <summary>
+    /// Gets or sets the maximum duration of one load. A positive value cancels the token of the loader when it
+    /// elapses; zero, a negative value and the default infinite timeout disable the limit.
+    /// </summary>
+    /// <remarks>
+    /// The value is read when a load starts. Changing it does not affect loads that are already running.
+    /// </remarks>
     public TimeSpan Timeout { get; set; } = System.Threading.Timeout.InfiniteTimeSpan;
 
+    /// <summary>
+    /// Loads the data of <paramref name="context" />, or joins the load that is already running for it.
+    /// </summary>
+    /// <param name="context">
+    /// The item to load. Its equality with other contexts is decided by the comparer of the constructor.
+    /// </param>
+    /// <param name="loader">
+    /// The function that loads the data. Only a request that starts a new load calls it, with a token that
+    /// <see cref="CancelAll" /> and <see cref="Timeout" /> cancel.
+    /// </param>
+    /// <param name="external">
+    /// A token that is linked to the token of the loader. Only the request that starts the load links its token;
+    /// the token of a request that joins the load is ignored.
+    /// </param>
+    /// <returns>
+    /// A task that completes with the outcome of the load. Requests that share a load receive the same outcome.
+    /// An exception of the loader that is not a cancellation is reported as <see cref="AsyncLoadStatus.Faulted" />
+    /// and does not fault the task.
+    /// </returns>
     public Task<AsyncLoadOutcome<TResult>> LoadOrJoinAsync(
         TContext context,
         Func<TContext, CancellationToken, Task<TResult>> loader,
@@ -49,6 +93,14 @@ public sealed class AsyncExpandLoadCoordinator<TContext, TResult>
         return operation.Task;
     }
 
+    /// <summary>
+    /// Cancels the token of the loader of every load that is still running.
+    /// </summary>
+    /// <remarks>
+    /// A load whose loader stops with <see cref="OperationCanceledException" /> after this call reports
+    /// <see cref="AsyncLoadStatus.TimedOut" />. It reports <see cref="AsyncLoadStatus.Cancelled" /> only when the
+    /// external token of the request that started it is canceled as well.
+    /// </remarks>
     public void CancelAll()
     {
         foreach (var cts in _activeCts.Keys)

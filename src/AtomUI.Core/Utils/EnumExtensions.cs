@@ -3,10 +3,23 @@
 namespace AtomUI.Utils;
 
 /// <summary>
-/// Provides extension methods for enums.
+/// Provides bit tests for enum values: whether a value has all the bits of a given set, or shares at
+/// least one bit with it.
 /// </summary>
 public static class EnumExtensions
 {
+    /// <summary>
+    /// Returns whether <paramref name="value" /> has all the bits that are set in <paramref name="flags" />.
+    /// </summary>
+    /// <typeparam name="T">
+    /// An enum type whose underlying type is 1, 2, 4 or 8 bytes wide.
+    /// </typeparam>
+    /// <param name="value">
+    /// The value to test.
+    /// </param>
+    /// <param name="flags">
+    /// The bits that must all be set.
+    /// </param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static unsafe bool HasAllFlags<T>(this T value, T flags) where T : unmanaged, Enum
     {
@@ -41,6 +54,18 @@ public static class EnumExtensions
         throw new NotSupportedException("Enum with size of " + Unsafe.SizeOf<T>() + " are not supported");
     }
 
+    /// <summary>
+    /// Returns whether <paramref name="value" /> and <paramref name="flags" /> share at least one set bit.
+    /// </summary>
+    /// <typeparam name="T">
+    /// An enum type whose underlying type is 1, 2, 4 or 8 bytes wide.
+    /// </typeparam>
+    /// <param name="value">
+    /// The value to test.
+    /// </param>
+    /// <param name="flags">
+    /// The bits to look for. Any one of them is enough.
+    /// </param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public static unsafe bool HasAnyFlag<T>(this T value, T flags) where T : unmanaged, Enum
     {

@@ -8,16 +8,21 @@ using Avalonia.Rendering;
 namespace AtomUI.Utils;
 
 /// <summary>
-/// Windows 下让渲染循环跟随显示器刷新出帧。
+/// Makes the Windows render loop produce frames in step with the display refresh.
 /// </summary>
 /// <remarks>
-/// RedirectionSurface 合成模式（以及没有可用合成器时的回退）下，Avalonia 用 SleepLoopRenderTimer 驱动渲染循环：
-/// 渲染线程以带超时的内核等待睡到下一帧，不对齐垂直同步；Windows 默认计时精度约 15.6 ms，等待还会被拉长到下一个系统时钟
-/// 节拍，渲染线程不定期多睡一帧，所有合成动画随之卡顿。其余合成模式由系统合成器按垂直同步驱动，不需要处理。
-/// <para>
-/// 处理方式分两级：优先把睡眠计时器换成 <see cref="DwmVsyncRenderTimer"/>；Avalonia 内部布局变化导致无法替换时，
-/// 退回把进程计时精度提高到 1 ms（保持到进程退出），只消除多睡一帧，节拍仍不锁定刷新率。
-/// </para>
+/// In RedirectionSurface composition mode, and in the fallback used when no compositor is available, Avalonia
+/// drives the render loop with <c>SleepLoopRenderTimer</c>: the render thread sleeps until the next frame in a
+/// kernel wait with a timeout, which is not aligned to the vertical blank. At the default Windows timer
+/// resolution of about 15.6 ms the wait is also stretched to the next system clock tick, so the render thread
+/// sleeps one frame too long at irregular intervals, and every composited animation stutters with it. The other
+/// composition modes are driven by the system compositor at the vertical blank and need no handling.
+///     <para>
+///     The fix has two levels. The sleep timer is preferably replaced with <see cref="DwmVsyncRenderTimer" />.
+///     When a change in the internal layout of Avalonia makes that replacement impossible, the process timer
+///     resolution is raised to 1 ms instead, and stays raised until the process exits. That only removes the
+///     extra frame of sleep; the cadence is still not locked to the refresh rate.
+///     </para>
 /// </remarks>
 [SupportedOSPlatform("windows")]
 internal static class WindowsRenderPacing
@@ -26,7 +31,8 @@ internal static class WindowsRenderPacing
     private static int s_timerResolutionRaised;
 
     /// <summary>
-    /// 平台服务就绪后调用：此时渲染循环与它的计时器已按最终的 <see cref="Win32PlatformOptions"/> 创建。
+    /// Call it once the platform services are ready. By then the render loop and its timer have been created
+    /// from the final <see cref="Win32PlatformOptions" />.
     /// </summary>
     internal static void Apply(AppBuilder appBuilder)
     {
@@ -50,7 +56,8 @@ internal static class WindowsRenderPacing
         }
         else
         {
-            // 读不到计时器时按选项推断：首选 RedirectionSurface 即睡眠计时。
+            // When the timer cannot be read, infer it from the options: RedirectionSurface as the first
+            // preferred mode means the sleep timer.
             sleeps = AvaloniaLocator.Current.GetService<Win32PlatformOptions>()?.CompositionMode is { Count: > 0 } modes &&
                      modes[0] == Win32CompositionMode.RedirectionSurface;
         }
@@ -63,7 +70,8 @@ internal static class WindowsRenderPacing
             "raising the process timer resolution to 1 ms instead. Animations will not be locked to the display refresh.");
         if (Interlocked.Exchange(ref s_timerResolutionRaised, 1) == 0)
         {
-            // 失败（TIMERR_NOCANDO）时保持系统默认精度，渲染行为与未提高时相同，无需额外处理。
+            // When the call fails (TIMERR_NOCANDO), the system default resolution stays in effect and rendering
+            // behaves as it would without the raise, so nothing more is needed.
             _ = timeBeginPeriod(TimerResolutionMilliseconds);
         }
     }

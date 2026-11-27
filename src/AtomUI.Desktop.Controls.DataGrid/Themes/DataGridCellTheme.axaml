@@ -67,8 +67,11 @@
 
         <Style Selector="^[IsSorting=True]">
             <Setter Property="Background" Value="{atom:DataGridTokenResource TableBodySortBg}"/>
-            <!-- 选中行背景优先于排序列底色（对齐 Ant Design：tr-selected > td 的选择器特异性高于 td.ant-table-column-sort）：
-                 单元格绘制在行背景之上，选中时让位为透明，透出 DataGridRow 上的选中背景（含选中行 hover 变体） -->
+            <!-- The selected row background outranks the sort tint of the column (as in Ant Design, where tr-selected >
+            td has a higher selector specificity than td.ant-table-column-sort): the cell paints above the row
+            background, so it yields to transparent when selected and lets the selected background on DataGridRow
+            show through, including the hover variant of the selected row.
+            -->
             <Style Selector="^:selected">
                 <Setter Property="Background" Value="Transparent"/>
             </Style>
@@ -84,13 +87,13 @@
             <Style Selector="^ /template/ atom|DataGridFrozenColumnShadow#FrozenShadow">
                 <Setter Property="IsVisible" Value="True"/>
             </Style>
-            <!-- 右冻结列首列：阴影条带位于单元格左外侧 -->
+            <!-- First column of the right frozen columns: the shadow strip sits outside the left edge of the cell -->
             <Style Selector="^[FrozenShadowPosition=Left] /template/ atom|DataGridFrozenColumnShadow#FrozenShadow">
                 <Setter Property="HorizontalAlignment" Value="Left"/>
                 <Setter Property="RenderTransform" Value="translateX(-30px)"/>
                 <Setter Property="BoxShadow" Value="{atom:DataGridTokenResource RightFrozenShadows}"/>
             </Style>
-            <!-- 左冻结列末列：阴影条带位于单元格右外侧 -->
+            <!-- Last column of the left frozen columns: the shadow strip sits outside the right edge of the cell -->
             <Style Selector="^[FrozenShadowPosition=Right] /template/ atom|DataGridFrozenColumnShadow#FrozenShadow">
                 <Setter Property="HorizontalAlignment" Value="Right"/>
                 <Setter Property="RenderTransform" Value="translateX(30px)"/>

@@ -157,7 +157,7 @@ public class ThemeCatalogReloadTests
             var result = await manager.ReloadThemesAsync();
 
             result.Status.ShouldBe(ThemeCatalogReloadStatus.Committed);
-            // A selected theme that disappeared falls back to its language's default with the same variant (spec 7.9).
+            // A selected theme that disappeared falls back to its language's default with the same variant.
             manager.CurrentTheme!.ThemeId.ShouldBe(ThemeInfo.LanguageDefaultId("AntDesign"));
             manager.CurrentTheme.Variant.Density.ShouldBe(DesignDensity.Compact);
             var snapshot = manager.CurrentSnapshot.ShouldNotBeNull();

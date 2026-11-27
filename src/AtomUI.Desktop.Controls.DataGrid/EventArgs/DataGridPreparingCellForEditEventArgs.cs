@@ -8,15 +8,27 @@ using Avalonia.Interactivity;
 
 namespace AtomUI.Desktop.Controls;
 
+/// <summary>
+/// Carries the data for the <see cref="DataGrid.PreparingCellForEdit" /> event, raised when a cell of a
+/// template column enters edit mode.
+/// </summary>
 public class DataGridPreparingCellForEditEventArgs: EventArgs
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="T:AtomUI.Desktop.Controls.DataGridPreparingCellForEditEventArgs" /> class.
     /// </summary>
-    /// <param name="column">The column that contains the cell to be edited.</param>
-    /// <param name="row">The row that contains the cell to be edited.</param>
-    /// <param name="editingEventArgs">Information about the user gesture that caused the cell to enter edit mode.</param>
-    /// <param name="editingElement">The element that the column displays for a cell in editing mode.</param>
+    /// <param name="column">
+    /// The column that contains the cell to be edited.
+    /// </param>
+    /// <param name="row">
+    /// The row that contains the cell to be edited.
+    /// </param>
+    /// <param name="editingEventArgs">
+    /// Information about the user gesture that caused the cell to enter edit mode.
+    /// </param>
+    /// <param name="editingElement">
+    /// The element that the column displays for a cell in editing mode.
+    /// </param>
     public DataGridPreparingCellForEditEventArgs(DataGridColumn column,
                                                  DataGridRow row,
                                                  RoutedEventArgs editingEventArgs,

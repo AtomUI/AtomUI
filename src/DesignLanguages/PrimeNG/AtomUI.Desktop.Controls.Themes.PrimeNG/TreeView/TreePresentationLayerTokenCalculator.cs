@@ -4,9 +4,16 @@ using AtomUI.Theme.Languages;
 
 namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 
-/// <summary>The PrimeNG values of the shared <see cref="AbstractTreePresentationToken"/> layer.</summary>
+/// <summary>
+/// The PrimeNG values of the shared <see cref="AbstractTreePresentationToken" /> layer.
+/// </summary>
 public static class TreePresentationLayerTokenCalculator
 {
+    /// <summary>
+    /// Copies the values returned by <c>TreePresentationTokenCalculator.Calculate</c> into the shared tree
+    /// presentation layer: the header height, the node hover and selected colors and the margins and paddings of the
+    /// node, its header, switcher and icon.
+    /// </summary>
     public static void Calculate(in TokenEvaluationContext<PrimeNGToken> context, DesignToken global, AbstractTreePresentationToken token)
     {
         var presentation = TreePresentationTokenCalculator.Calculate(global);

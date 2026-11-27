@@ -4,67 +4,61 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
 
+/// <summary>
+/// Design tokens of the <see cref="Descriptions" />: the colors of the title, the extra area and the item labels
+/// and content, the margin of the header and the padding of the bordered item cells by size.
+/// </summary>
 [ControlDesignToken]
 public sealed partial class DescriptionsToken : AbstractControlDesignToken
 {
     
     /// <summary>
-    /// 标签背景色
-    /// Background color of label
+    /// Background of an item label in the bordered layout.
     /// </summary>
     public partial Color LabelBg { get; set; }
 
     /// <summary>
-    /// 标签文字颜色
-    /// Text color of label
+    /// Text color of an item label and of the colon that follows it.
     /// </summary>
     public partial Color LabelColor { get; set; }
 
     /// <summary>
-    /// 标题文字颜色
-    /// Text color of title
+    /// Text color of the header title.
     /// </summary>
     public partial Color TitleColor { get; set; }
 
     /// <summary>
-    /// 标题下间距
-    /// Bottom margin of Header
+    /// Margin of the header bar that holds the title and the extra area.
     /// </summary>
     public partial Thickness HeaderMargin { get; set; }
 
     /// <summary>
-    /// 子项下间距，大号
-    /// padding of item
+    /// Padding of an item cell in the bordered layout, for the large size.
     /// </summary>
     public partial Thickness ItemPaddingLG { get; set; }
     
     /// <summary>
-    /// 子项下间距，默认
-    /// padding of item
+    /// Padding of an item cell in the bordered layout, for the medium size.
     /// </summary>
     public partial Thickness ItemPadding { get; set; }
     
     /// <summary>
-    /// 子项下间距，小号
-    /// padding of item
+    /// Padding of an item cell in the bordered layout, for the small size.
     /// </summary>
     public partial Thickness ItemPaddingSM { get; set; }
 
     /// <summary>
-    /// 冒号间距
-    /// margin of colon
+    /// Margin of the colon that follows a label.
     /// </summary>
     public partial Thickness ColonMargin { get; set; }
 
     /// <summary>
-    /// 内容区域文字颜色
-    /// Text color of content
+    /// Text color of the content of an item.
     /// </summary>
     public partial Color ContentColor { get; set; }
 
     /// <summary>
-    /// 额外区域文字颜色
-    /// Text color of extra area
+    /// Text color of the extra area in the header.
     /// </summary>
     public partial Color ExtraColor { get; set; }
     

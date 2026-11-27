@@ -2,11 +2,16 @@ using System.ComponentModel;
 
 namespace AtomUI.Desktop.Controls;
 
+/// <summary>
+/// The standard buttons a dialog can offer. The values are flags: combine them to build a
+/// <see cref="DialogStandardButtons" /> set. Each value stands for one button whose text the button box supplies
+/// and whose <see cref="DialogButtonRole" /> is fixed by the value.
+/// </summary>
 [Flags]
 public enum DialogStandardButton
 {
     /// <summary>
-    /// An invalid button.
+    /// No standard button: the value of an empty <see cref="DialogStandardButtons" /> set.
     /// </summary>
     NoButton = 0x00000000,
     /// <summary>
@@ -42,7 +47,7 @@ public enum DialogStandardButton
     /// </summary>
     Reset = 0x00000080,
     /// <summary>
-    /// A "Reload" button defined with the ResetRole.
+    /// A "Reload" button defined with the ActionRole.
     /// </summary>
     Reload = 0x00000100,
     /// <summary>
@@ -87,6 +92,10 @@ public enum DialogStandardButton
     Ignore = 0x00040000,
 }
 
+/// <summary>
+/// An immutable set of standard buttons for a dialog button box, stored as a combination of
+/// <see cref="DialogStandardButton" /> flags.
+/// </summary>
 public readonly struct DialogStandardButtons : IEquatable<DialogStandardButtons>
 {
     private static readonly EnumConverter DialogStandardButtonConverter = new(typeof(DialogStandardButton));
@@ -112,29 +121,82 @@ public readonly struct DialogStandardButtons : IEquatable<DialogStandardButtons>
               DialogStandardButton.Retry |
               DialogStandardButton.Ignore);
 
+    /// <summary>
+    /// Gets the combined <see cref="DialogStandardButton" /> flags this set was created with.
+    /// </summary>
     public DialogStandardButton ButtonFlags { get; }
 
+    /// <summary>
+    /// Initializes a set that contains the given standard buttons.
+    /// </summary>
+    /// <param name="buttonFlags">
+    /// The buttons the set contains.
+    /// </param>
     public DialogStandardButtons(DialogStandardButton buttonFlags)
     {
         ButtonFlags = buttonFlags;
     }
     
+    /// <summary>
+    /// Returns whether both sets contain the same buttons.
+    /// </summary>
     public static bool operator ==(DialogStandardButtons left, DialogStandardButtons right) => left.Equals(right);
+    /// <summary>
+    /// Returns whether the two sets differ in the buttons they contain.
+    /// </summary>
     public static bool operator !=(DialogStandardButtons left, DialogStandardButtons right) => !left.Equals(right);
 
+    /// <summary>
+    /// Returns whether every button in <paramref name="flag" /> is part of this set. For
+    /// <see cref="DialogStandardButton.NoButton" /> the result is always <see langword="true" />, so test an
+    /// empty set with <see cref="Count" /> instead.
+    /// </summary>
+    /// <param name="flag">
+    /// One standard button, or a combination of them.
+    /// </param>
     public bool HasFlag(DialogStandardButton flag)
     {
         return (ButtonFlags & flag) == flag;
     }
     
+    /// <summary>
+    /// Returns whether <paramref name="other" /> contains the same buttons as this set.
+    /// </summary>
+    /// <param name="other">
+    /// The set to compare with this set.
+    /// </param>
     public bool Equals(DialogStandardButtons other)
     {
         return ButtonFlags == other.ButtonFlags;
     }
+    /// <summary>
+    /// Returns whether <paramref name="obj" /> is a <see cref="DialogStandardButtons" /> with the same buttons.
+    /// </summary>
+    /// <param name="obj">
+    /// The object to compare with this set.
+    /// </param>
     public override bool Equals(object? obj) => obj is DialogStandardButtons other && Equals(other);
+    /// <summary>
+    /// Returns the hash code of <see cref="ButtonFlags" />; sets with the same buttons have the same hash code.
+    /// </summary>
     public override int GetHashCode() => ButtonFlags.GetHashCode();
+    /// <summary>
+    /// Returns the flags as text, for example <c>Ok, Cancel</c>.
+    /// </summary>
     public override string ToString() => ButtonFlags.ToString();
     
+    /// <summary>
+    /// Converts the invariant text form of standard buttons into a set.
+    /// </summary>
+    /// <param name="s">
+    /// The text to convert, in a form the enum converter of <see cref="DialogStandardButton" /> accepts.
+    /// </param>
+    /// <returns>
+    /// The set described by <paramref name="s" />.
+    /// </returns>
+    /// <exception cref="InvalidOperationException">
+    /// Thrown when the conversion yields no <see cref="DialogStandardButton" /> value.
+    /// </exception>
     public static DialogStandardButtons Parse(string s)
     {
         var dialogButton = DialogStandardButtonConverter.ConvertFromInvariantString(s) as DialogStandardButton?;
@@ -145,8 +207,15 @@ public readonly struct DialogStandardButtons : IEquatable<DialogStandardButtons>
         return new DialogStandardButtons(dialogButton.Value);
     }
     
+    /// <summary>
+    /// Allows a single standard button to be used where a set is expected.
+    /// </summary>
     public static implicit operator DialogStandardButtons(DialogStandardButton flags) => new DialogStandardButtons(flags);
         
+    /// <summary>
+    /// Gets the number of standard buttons in this set. Bits that stand for no defined standard button are
+    /// ignored.
+    /// </summary>
     public int Count
     {
         get

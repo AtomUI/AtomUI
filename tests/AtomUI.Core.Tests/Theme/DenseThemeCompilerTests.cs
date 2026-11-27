@@ -183,7 +183,8 @@ public class DenseThemeCompilerTests
 
         result.Success.ShouldBeTrue();
         resourceProjections.ShouldBe(1);
-        // Controls 为按槽位惰性容器（不实现枚举），单槽位语义用 Count + 索引表达。
+        // Controls is a lazy per-slot container that is not enumerable, so single-slot semantics are expressed
+        // with Count and the indexer.
         var controls = result.Snapshot!.Controls;
         controls.Count.ShouldBe(1);
         var controlSnapshot = controls[0];
@@ -293,9 +294,9 @@ public class DenseThemeCompilerTests
         child.Controls[button.Slot].ShouldNotBeSameAs(parent.Controls[button.Slot]);
         child.Controls[input.Slot].ShouldBeSameAs(parent.Controls[input.Slot]);
 
-        // 惰性契约（runtime.md §7 控件槽位编译契约）：评估发生在首访而非编译期。
-        // 首访后 button 被父子两次独立求值（2），input 复用父对象只求值一次（1）——
-        // "changeSet 只重算变更控件"的不变量保持不变。
+        // Lazy contract: evaluation happens on first access, not at compile time. After that first access button
+        // is evaluated twice, once by the parent and once by the child (2), while input reuses the parent's object
+        // and is evaluated once (1). The invariant that a change set only re-evaluates changed controls holds.
         buttonEvaluations.ShouldBe(2);
         inputEvaluations.ShouldBe(1);
     }
@@ -346,7 +347,7 @@ public class DenseThemeCompilerTests
         var parentHeading = parent.Controls[heading.Slot];
         var parentHeight = parent.Controls[height.Slot];
 
-        // Spec 12.5: a local scope that overrides one Alias token re-derives only the controls that read it.
+        // A local scope that overrides one Alias token re-derives only the controls that read it.
         var child = new ThemeCompiler().Compile(CreateInput(
             registry,
             globalTokens: [Token(registry, nameof(DesignToken.ColorTextHeading), "#80112233")],
@@ -735,7 +736,9 @@ public class DenseThemeCompilerTests
     public sealed class ListId : IDenseId { public static string Id => "Select"; }
     public sealed class TagId : IDenseId { public static string Id => "Dialog"; }
 
-    /// <summary>A test control token whose single value is read from the global view by a test-supplied function.</summary>
+    /// <summary>
+    /// A test control token whose single value is read from the global view by a test-supplied function.
+    /// </summary>
     public sealed class DenseReadToken<TId>(Func<DesignToken, double> read) : DenseToken, IControlToken where TId : IDenseId
     {
         public static ControlTokenIdentity ControlIdentity { get; } = new("AtomUI", TId.Id);
@@ -755,7 +758,9 @@ public class DenseThemeCompilerTests
         internal override void Evaluate(DesignToken global, in DesignVariant variant) => Height = read(global);
     }
 
-    /// <summary>A test control token whose view is computed by the token itself (it carries the injected test inputs).</summary>
+    /// <summary>
+    /// A test control token whose view is computed by the token itself (it carries the injected test inputs).
+    /// </summary>
     public abstract class DenseToken : AbstractControlDesignToken
     {
         internal abstract void Evaluate(DesignToken global, in DesignVariant variant);

@@ -97,10 +97,10 @@
             <Setter Property="Transitions" Value="{x:Null}" />
         </Style>
 
-        <!--
-            root 表面默认值放在 owner 级：PART_Frame 通过 TemplateBinding 取用，因此 ControlTheme
-            只提供默认视觉，用户经 owner-scoped Semantic Style 覆盖时能真正投影到卡片外框。
-            BorderBrush / BorderThickness 不设默认值（保持 null / 0），与透传前的默认外观一致。
+        <!-- The root surface defaults live at owner level: PART_Frame reads them through TemplateBinding, so the
+        ControlTheme only supplies the default look and an override through an owner-scoped Semantic Style really
+        reaches the card frame. BorderBrush and BorderThickness get no default (they stay null / 0), the same
+        default look as before the pass-through.
         -->
         <Setter Property="Background" Value="{atom:MessageCardTokenResource ContentBg}" />
         <Setter Property="Padding" Value="{atom:MessageCardTokenResource ContentPadding}" />

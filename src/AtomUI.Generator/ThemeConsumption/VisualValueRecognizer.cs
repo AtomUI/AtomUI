@@ -8,7 +8,7 @@ namespace AtomUI.Generator.ThemeConsumption;
 /// Recognises hard-coded visual values in C# expressions. Shared by ATOMUIGEN044 (visual literals in control code)
 /// and the fallback sub-rule of ATOMUIGEN043 (hard-coded value after a failed Token read).
 /// Everything is symbol based; only expressions made of literals are considered, so a value that reaches the
-/// consuming site through a local variable, a named constant or a computation is never reported.
+/// consuming site through a local variable, a named constant or a computation on non-literals is never reported.
 /// </summary>
 internal sealed class VisualValueRecognizer
 {
@@ -45,15 +45,17 @@ internal sealed class VisualValueRecognizer
     }
 
     /// <summary>
-    /// True when <paramref name="name"/> equals a visual member name after stripping one leading <c>_</c> or
-    /// <c>s_</c> and upper-casing the first letter (so <c>_borderThickness</c> matches, <c>DefaultFontSize</c> does not).
+    /// True when <paramref name="name" /> equals a visual member name after stripping one leading <c>_</c> or <c>s_</c>
+    /// and upper-casing the first letter (so <c>_borderThickness</c> matches, <c>DefaultFontSize</c> does not).
     /// </summary>
     public static bool IsVisualName(string name)
     {
         return s_visualNames.Contains(NormalizeName(name));
     }
 
-    /// <summary>A literal expression: numeric/string/char literals, possibly parenthesised, signed, cast or combined.</summary>
+    /// <summary>
+    /// A literal expression: numeric/string/char literals, possibly parenthesised, signed, cast or combined.
+    /// </summary>
     public static bool IsLiteral(ExpressionSyntax expression)
     {
         switch (expression)
@@ -79,7 +81,9 @@ internal sealed class VisualValueRecognizer
         }
     }
 
-    /// <summary>A numeric literal expression whose constant value is not zero.</summary>
+    /// <summary>
+    /// A numeric literal expression whose constant value is not zero.
+    /// </summary>
     public static bool IsNonZeroNumericLiteral(SemanticModel semanticModel, ExpressionSyntax expression, CancellationToken cancellationToken)
     {
         if (!IsLiteral(expression))
@@ -103,7 +107,9 @@ internal sealed class VisualValueRecognizer
         }
     }
 
-    /// <summary><c>Color.FromRgb/FromArgb/FromUInt32/Parse</c> whose arguments are all literals.</summary>
+    /// <summary>
+    /// <c>Color.FromRgb/FromArgb/FromUInt32/Parse</c> whose arguments are all literals.
+    /// </summary>
     public bool IsColorLiteralCall(SemanticModel semanticModel, InvocationExpressionSyntax invocation, CancellationToken cancellationToken)
     {
         if (_color is null ||
@@ -126,7 +132,9 @@ internal sealed class VisualValueRecognizer
         return true;
     }
 
-    /// <summary><c>BoxShadows.Parse("...")</c> with a literal argument.</summary>
+    /// <summary>
+    /// <c>BoxShadows.Parse("...")</c> with a literal argument.
+    /// </summary>
     public bool IsBoxShadowLiteralCall(SemanticModel semanticModel, InvocationExpressionSyntax invocation, CancellationToken cancellationToken)
     {
         if (_boxShadows is null ||
@@ -141,7 +149,9 @@ internal sealed class VisualValueRecognizer
         return invocation.ArgumentList.Arguments.All(static argument => IsLiteral(argument.Expression));
     }
 
-    /// <summary><c>Brushes.X</c> / <c>Colors.X</c> other than <c>Transparent</c>.</summary>
+    /// <summary>
+    /// <c>Brushes.X</c> / <c>Colors.X</c> other than <c>Transparent</c>.
+    /// </summary>
     public bool IsPaletteMember(SemanticModel semanticModel, MemberAccessExpressionSyntax memberAccess, CancellationToken cancellationToken)
     {
         if (string.Equals(memberAccess.Name.Identifier.ValueText, "Transparent", StringComparison.Ordinal) ||
@@ -160,7 +170,9 @@ internal sealed class VisualValueRecognizer
                SymbolEqualityComparer.Default.Equals(symbol.ContainingType, _colors);
     }
 
-    /// <summary><c>new SolidColorBrush(&lt;literal&gt;[, ...])</c>.</summary>
+    /// <summary>
+    /// <c>new SolidColorBrush(&lt;literal&gt;[, ...])</c>.
+    /// </summary>
     public bool IsSolidColorBrushLiteral(SemanticModel semanticModel, BaseObjectCreationExpressionSyntax creation, CancellationToken cancellationToken)
     {
         if (_solidColorBrush is null ||
@@ -173,7 +185,9 @@ internal sealed class VisualValueRecognizer
         return IsCreationOf(semanticModel, creation, _solidColorBrush, cancellationToken);
     }
 
-    /// <summary><c>new Pen(brush, &lt;literal thickness&gt;, ...)</c> with a non-zero literal thickness.</summary>
+    /// <summary>
+    /// <c>new Pen(brush, &lt;literal thickness&gt;, ...)</c> with a non-zero literal thickness.
+    /// </summary>
     public bool IsPenWithLiteralThickness(SemanticModel semanticModel, BaseObjectCreationExpressionSyntax creation,
         CancellationToken cancellationToken, out ExpressionSyntax? thickness)
     {
@@ -201,7 +215,9 @@ internal sealed class VisualValueRecognizer
         return false;
     }
 
-    /// <summary><c>new Thickness(...)</c> / <c>new CornerRadius(...)</c> whose arguments are literals and not all zero.</summary>
+    /// <summary>
+    /// <c>new Thickness(...)</c> / <c>new CornerRadius(...)</c> whose arguments are literals and not all zero.
+    /// </summary>
     public bool IsGeometryLiteral(SemanticModel semanticModel, ExpressionSyntax expression, CancellationToken cancellationToken)
     {
         if (expression is not BaseObjectCreationExpressionSyntax { ArgumentList: { Arguments.Count: > 0 } arguments } creation ||
@@ -226,8 +242,8 @@ internal sealed class VisualValueRecognizer
     }
 
     /// <summary>
-    /// A hard-coded visual value for the 043 fallback sub-rule: non-zero numeric literal, colour/brush/geometry
-    /// literal, or a <c>TimeSpan.FromXxx(&lt;literal&gt;)</c> motion duration.
+    /// A hard-coded visual value for the 043 fallback sub-rule: non-zero numeric literal, color/brush/geometry or
+    /// box-shadow literal, or a <c>TimeSpan.FromXxx(&lt;non-zero numeric literal&gt;)</c> motion duration.
     /// </summary>
     public bool IsFallbackValue(SemanticModel semanticModel, ExpressionSyntax expression, CancellationToken cancellationToken)
     {

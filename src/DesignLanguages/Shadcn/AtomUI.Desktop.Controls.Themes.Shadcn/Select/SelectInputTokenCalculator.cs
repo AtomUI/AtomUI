@@ -5,9 +5,15 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls.Themes.Shadcn;
 
-/// <summary>The shadcn values of the shared <see cref="AbstractSelectInputToken"/> layer.</summary>
+/// <summary>
+/// The shadcn values of the shared <see cref="AbstractSelectInputToken" /> layer.
+/// </summary>
 public static class SelectInputTokenCalculator
 {
+    /// <summary>
+    /// Assigns the shadcn values to <paramref name="token" />, the shared
+    /// <see cref="AbstractSelectInputToken" /> layer of the select.
+    /// </summary>
     public static void Calculate(in TokenEvaluationContext<ShadcnToken> context, DesignToken global, AbstractSelectInputToken token)
     {
 
@@ -20,6 +26,7 @@ public static class SelectInputTokenCalculator
         double multipleItemHeightSM = Math.Min(global.ControlHeightSM - dblPaddingXXS, global.ControlHeightSM - dblLineWidth);
         double multipleItemHeightLG = Math.Min(global.ControlHeightLG - dblPaddingXXS, global.ControlHeightLG - dblLineWidth);
 
+        // Ant Design formula kept as is: no registry value is merged into the shared select input tokens here.
         token.OptionFontSize =  global.FontSize;
         token.InputFontSizeSM = global.FontSize;
         token.MultipleItemBg = global.ColorFillSecondary;

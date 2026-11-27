@@ -3,7 +3,9 @@ using AtomUI.Theme.Languages;
 
 namespace AtomUI.Desktop.Controls.Themes.AntDesign;
 
-/// <summary>The AntDesign view of <see cref="CarouselToken"/>.</summary>
+/// <summary>
+/// The AntDesign view of <see cref="CarouselToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class CarouselTokenRule : IControlTokenRule<AntDesignToken, CarouselToken>
 {
@@ -14,6 +16,7 @@ internal sealed class CarouselTokenRule : IControlTokenRule<AntDesignToken, Caro
         token.IndicatorActiveWidth = 24;
         token.ArrowSize            = 16;
         token.ArrowOffset          = global.SpacingXS;
+        // AtomUI extension: antd fixes the resting arrow at 0.4; the value here stays at the 0.2 default.
         token.ArrowOpacity         = 0.2;
         token.IndicatorWidth       = 16;
         token.IndicatorHeight      = 3;

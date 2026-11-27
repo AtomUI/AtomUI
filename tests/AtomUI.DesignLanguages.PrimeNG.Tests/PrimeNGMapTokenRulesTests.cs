@@ -11,8 +11,8 @@ using Xunit;
 namespace AtomUI.DesignLanguages.PrimeNG.Tests;
 
 /// <summary>
-/// The PrimeNG map derivation against the colours the preset tables fix (spec 4.7 of the previous PrimeNG package: the
-/// values the pre-algorithm Aura profiles wrote), the primary seed and primeng.dev's noir primary.
+/// The PrimeNG map derivation against the colors the preset tables fix (the values the pre-algorithm Aura profiles
+/// wrote), the primary seed and primeng.dev's noir primary.
 /// </summary>
 public class PrimeNGMapTokenRulesTests
 {

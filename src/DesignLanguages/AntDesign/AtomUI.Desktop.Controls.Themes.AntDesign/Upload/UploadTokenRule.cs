@@ -4,7 +4,9 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls.Themes.AntDesign;
 
-/// <summary>The AntDesign view of <see cref="UploadToken"/>.</summary>
+/// <summary>
+/// The AntDesign view of <see cref="UploadToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class UploadTokenRule : IControlTokenRule<AntDesignToken, UploadToken>
 {

@@ -4,7 +4,9 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls.Themes.Shadcn;
 
-/// <summary>The shadcn view of <see cref="DateViewerToken"/>.</summary>
+/// <summary>
+/// The shadcn view of <see cref="DateViewerToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class DateViewerTokenRule : IControlTokenRule<ShadcnToken, DateViewerToken>
 {

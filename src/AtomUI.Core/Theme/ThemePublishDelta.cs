@@ -4,7 +4,7 @@ using AtomUI.Theme.Resources;
 namespace AtomUI.Theme;
 
 /// <summary>
-/// What one commit of a <see cref="ThemeContext"/> changed, expressed in resource keys, so a per-target binding that
+/// What one commit of a <see cref="ThemeContext" /> changed, expressed in resource keys, so a per-target binding that
 /// is notified by the publish can skip re-resolving a key whose value did not change.
 /// </summary>
 /// <remarks>
@@ -16,8 +16,8 @@ namespace AtomUI.Theme;
 /// when it is certain.
 /// </para>
 /// <para>
-/// <see cref="Everything"/> is used when the two snapshots are not comparable (no previous snapshot, a different
-/// schema registry, a different appearance); <see cref="Nothing"/> is handed to a binding that already handled the
+/// <see cref="Everything" /> is used when the two snapshots are not comparable (no previous snapshot, a different
+/// schema registry, a different appearance); <see cref="Nothing" /> is handed to a binding that already handled the
 /// current publish.
 /// </para>
 /// </remarks>
@@ -53,15 +53,21 @@ internal sealed class ThemePublishDelta
         return new ThemePublishDelta(previous, current, everything: false, nothing: false);
     }
 
-    /// <summary>The snapshot this delta leads to; null for the two sentinels.</summary>
+    /// <summary>
+    /// The snapshot this delta leads to; null for the two sentinels.
+    /// </summary>
     internal ThemeSnapshot? Current => _current;
 
-    /// <summary>The snapshot this delta compares against; null for the sentinels and for <see cref="IsEverything"/>.</summary>
+    /// <summary>
+    /// The snapshot this delta compares against; null for the sentinels and for <see cref="IsEverything" />.
+    /// </summary>
     internal ThemeSnapshot? Previous => _previous;
 
     internal bool IsEverything => _everything;
 
-    /// <summary>Whether the global value stored under <paramref name="resourceKey"/> changed.</summary>
+    /// <summary>
+    /// Whether the global value stored under <paramref name="resourceKey" /> changed.
+    /// </summary>
     internal bool IsGlobalChanged(object resourceKey)
     {
         if (_nothing)
@@ -76,8 +82,8 @@ internal sealed class ThemePublishDelta
     }
 
     /// <summary>
-    /// Whether the Effective Global value of <paramref name="globalResourceKey"/> for the control in
-    /// <paramref name="slot"/> changed.
+    /// Whether the Effective Global value of <paramref name="globalResourceKey" /> for the control in
+    /// <paramref name="slot" /> changed.
     /// </summary>
     internal bool IsOwnerGlobalChanged(int slot, object globalResourceKey)
     {
@@ -107,7 +113,10 @@ internal sealed class ThemePublishDelta
         return true;
     }
 
-    /// <summary>Whether the Own value stored under <paramref name="ownResourceKey"/> of the control in <paramref name="slot"/> changed.</summary>
+    /// <summary>
+    /// Whether the Own value stored under <paramref name="ownResourceKey" /> of the control in <paramref name="slot" />
+    /// changed.
+    /// </summary>
     internal bool IsOwnChanged(int slot, object ownResourceKey)
     {
         if (_nothing)
@@ -135,7 +144,7 @@ internal sealed class ThemePublishDelta
     }
 
     /// <summary>
-    /// Whether the value a resource lookup of <paramref name="key"/> through the current snapshot would return
+    /// Whether the value a resource lookup of <paramref name="key" /> through the current snapshot would return
     /// changed. Keys the theme does not own (and owners the registry does not register) count as changed.
     /// </summary>
     internal bool IsChanged(object key)
@@ -226,14 +235,14 @@ internal sealed class ThemePublishDelta
 
 /// <summary>
 /// Per-binding record of the snapshot the binding last resolved against. From a <c>ResourcesChanged</c> handler,
-/// <see cref="Observe"/> tells the binding whether this notification belongs to a theme publish whose
-/// <see cref="ThemePublishDelta"/> it may consult: the context's last commit must lead from exactly that snapshot to
+/// <see cref="Observe" /> tells the binding whether this notification belongs to a theme publish whose
+/// <see cref="ThemePublishDelta" /> it may consult: the context's last commit must lead from exactly that snapshot to
 /// the context's current one (null otherwise: not a publish, or the binding is not current with the delta's
 /// previous snapshot, so it must refresh fully). A notification while the context still holds the snapshot the
-/// binding resolved against yields <see cref="ThemePublishDelta.Nothing"/>.
+/// binding resolved against yields <see cref="ThemePublishDelta.Nothing" />.
 /// </summary>
 /// <remarks>
-/// Snapshot identity, not <see cref="ThemeContext.PublishVersion"/>, decides: in a root transaction every scoped
+/// Snapshot identity, not <see cref="ThemeContext.PublishVersion" />, decides: in a root transaction every scoped
 /// context is committed before the root publishes and its own publish raises no <c>ResourcesChanged</c>, so a binding
 /// inside a scope sees the root's notification while its context's version has not moved yet. The committed snapshot
 /// has, and that is what the binding's value depends on.
@@ -243,7 +252,9 @@ internal struct ThemePublishTracker
     private ThemeContext? _context;
     private ThemeSnapshot? _snapshot;
 
-    /// <summary>Records that the binding has just resolved its value against <paramref name="context"/>'s current snapshot.</summary>
+    /// <summary>
+    /// Records that the binding has just resolved its value against <paramref name="context" />'s current snapshot.
+    /// </summary>
     internal void MarkCurrent(ThemeContext? context)
     {
         _context  = context;

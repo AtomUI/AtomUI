@@ -17,120 +17,250 @@ using AvaloniaWindow = Avalonia.Controls.Window;
 
 namespace AtomUI.Desktop.Controls;
 
+/// <summary>
+/// A desktop carousel that shows one item per page and changes the page through autoplay, the previous/next
+/// buttons, the pagination indicator or a pointer swipe.
+/// <see cref="AbstractCarousel" /> owns the paging and autoplay rules. This class decides which of these input
+/// methods are available and where the buttons and the indicator are placed.
+/// </summary>
 public class Carousel : AbstractCarousel
 {
     #region 公共属性定义
+    /// <summary>
+    /// Identifies the <see cref="IsShowNavButtons" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsShowNavButtonsProperty = 
         AvaloniaProperty.Register<Carousel, bool>(nameof(IsShowNavButtons), false);
     
+    /// <summary>
+    /// Identifies the <see cref="IsAutoPlay" /> property.
+    /// </summary>
     public new static readonly StyledProperty<bool> IsAutoPlayProperty =
         AbstractCarousel.IsAutoPlayProperty.AddOwner<Carousel>();
     
+    /// <summary>
+    /// Identifies the <see cref="AutoPlaySpeed" /> property.
+    /// </summary>
     public new static readonly StyledProperty<TimeSpan> AutoPlaySpeedProperty =
         AbstractCarousel.AutoPlaySpeedProperty.AddOwner<Carousel>();
     
+    /// <summary>
+    /// Identifies the <see cref="PaginationPosition" /> property.
+    /// </summary>
     public static readonly StyledProperty<CarouselPaginationPosition> PaginationPositionProperty = 
         AvaloniaProperty.Register<Carousel, CarouselPaginationPosition>(nameof(PaginationPosition), CarouselPaginationPosition.Bottom);
     
+    /// <summary>
+    /// Identifies the <see cref="IsShowPagination" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsShowPaginationProperty = 
         AvaloniaProperty.Register<Carousel, bool>(nameof(IsShowPagination), true);
     
+    /// <summary>
+    /// Identifies the <see cref="IsShowTransitionProgress" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsShowTransitionProgressProperty = 
         AvaloniaProperty.Register<Carousel, bool>(nameof(IsShowTransitionProgress), false);
     
+    /// <summary>
+    /// Identifies the <see cref="IsInfinite" /> property.
+    /// </summary>
     public new static readonly StyledProperty<bool> IsInfiniteProperty =
         AbstractCarousel.IsInfiniteProperty.AddOwner<Carousel>();
     
+    /// <summary>
+    /// Identifies the <see cref="PageTransitionDuration" /> property.
+    /// </summary>
     public static readonly StyledProperty<TimeSpan> PageTransitionDurationProperty = 
         AvaloniaProperty.Register<Carousel, TimeSpan>(nameof(PageTransitionDuration));
     
+    /// <summary>
+    /// Identifies the <see cref="PageInEasing" /> property.
+    /// </summary>
     public static readonly StyledProperty<Easing> PageInEasingProperty = 
         AvaloniaProperty.Register<Carousel, Easing>(nameof(PageInEasing));
     
+    /// <summary>
+    /// Identifies the <see cref="PageOutEasing" /> property.
+    /// </summary>
     public static readonly StyledProperty<Easing> PageOutEasingProperty = 
         AvaloniaProperty.Register<Carousel, Easing>(nameof(PageOutEasing));
     
+    /// <summary>
+    /// Identifies the <see cref="TransitionEffect" /> property.
+    /// </summary>
     public static readonly StyledProperty<CarouselTransitionEffect> TransitionEffectProperty = 
         AvaloniaProperty.Register<Carousel, CarouselTransitionEffect>(nameof(TransitionEffect));
     
+    /// <summary>
+    /// Identifies the <see cref="IsMotionEnabled" /> property.
+    /// </summary>
     public new static readonly StyledProperty<bool> IsMotionEnabledProperty =
         AbstractCarousel.IsMotionEnabledProperty.AddOwner<Carousel>();
 
+    /// <summary>
+    /// Identifies the <see cref="IsSwipeEnabled" /> property.
+    /// </summary>
     public new static readonly StyledProperty<bool> IsSwipeEnabledProperty =
         AbstractCarousel.IsSwipeEnabledProperty.AddOwner<Carousel>();
     
+    /// <summary>
+    /// Gets or sets whether the previous/next buttons are shown; one click moves one page. The default is
+    /// <see langword="false" />.
+    /// While <see cref="IsInfinite" /> is <see langword="false" />, the previous button is hidden on the first page
+    /// and the next button on the last page; while it is <see langword="true" />, both are shown on every page.
+    /// </summary>
     public bool IsShowNavButtons
     {
         get => GetValue(IsShowNavButtonsProperty);
         set => SetValue(IsShowNavButtonsProperty, value);
     }
     
+    /// <summary>
+    /// Gets or sets whether the carousel advances to the next page by itself. The value is shared with
+    /// <see cref="AbstractCarousel.IsAutoPlay" />. The default is <see langword="false" />.
+    /// Autoplay runs only while the control is attached, enabled and visible, <see cref="IsMotionEnabled" /> is
+    /// <see langword="true" />, there are at least two pages and nothing pauses it. In this class a tracked swipe
+    /// and a minimized host window keep it from running until the swipe ends or the window is restored.
+    /// </summary>
     public new bool IsAutoPlay
     {
         get => GetValue(IsAutoPlayProperty);
         set => SetValue(IsAutoPlayProperty, value);
     }
     
+    /// <summary>
+    /// Gets or sets how long each page stays on screen during autoplay. The value is shared with
+    /// <see cref="AbstractCarousel.AutoPlaySpeed" />. The default is 3 seconds.
+    /// A value of zero or less keeps autoplay from running. The timer applies a change immediately, also while
+    /// autoplay runs. The theme forwards the value to the pagination indicator, and the autoplay progress animation
+    /// on the current page takes as long.
+    /// </summary>
     public new TimeSpan AutoPlaySpeed
     {
         get => GetValue(AutoPlaySpeedProperty);
         set => SetValue(AutoPlaySpeedProperty, value);
     }
     
+    /// <summary>
+    /// Gets or sets the edge of the carousel on which the pagination indicator is placed. The default is
+    /// <see cref="CarouselPaginationPosition.Bottom" />.
+    /// The previous/next buttons sit at the ends of the same axis: left and right for Top and Bottom, top and
+    /// bottom for Left and Right. The value also selects the axis of the swipe gesture and of the
+    /// <see cref="CarouselTransitionEffect.Scroll" /> transition.
+    /// </summary>
     public CarouselPaginationPosition PaginationPosition
     {
         get => GetValue(PaginationPositionProperty);
         set => SetValue(PaginationPositionProperty, value);
     }
     
+    /// <summary>
+    /// Gets or sets whether the pagination indicator is shown. The default is <see langword="true" />.
+    /// </summary>
     public bool IsShowPagination
     {
         get => GetValue(IsShowPaginationProperty);
         set => SetValue(IsShowPaginationProperty, value);
     }
     
+    /// <summary>
+    /// Gets or sets whether the pagination indicator shows the autoplay progress on the current page. The default
+    /// is <see langword="false" />.
+    /// The progress shows only while the autoplay timer runs, so it also needs <see cref="IsAutoPlay" /> to be
+    /// <see langword="true" />. One progress run takes <see cref="AutoPlaySpeed" />.
+    /// </summary>
     public bool IsShowTransitionProgress
     {
         get => GetValue(IsShowTransitionProgressProperty);
         set => SetValue(IsShowTransitionProgressProperty, value);
     }
     
+    /// <summary>
+    /// Gets or sets whether the carousel loops. The value is shared with <see cref="AbstractCarousel.IsInfinite" />.
+    /// The default is <see langword="true" />.
+    /// While <see langword="true" />, moving past the last page continues with the first page and moving before the
+    /// first page continues with the last page. While <see langword="false" />, <see cref="Next" /> and
+    /// <see cref="Previous" /> stop at the last and first page, and so do the buttons and the swipe gesture.
+    /// While <see cref="IsShowNavButtons" /> is <see langword="true" />, the buttons are shown on every page.
+    /// </summary>
     public new bool IsInfinite
     {
         get => GetValue(IsInfiniteProperty);
         set => SetValue(IsInfiniteProperty, value);
     }
     
+    /// <summary>
+    /// Gets or sets how long the page transition takes. The theme sets the value from the <c>MotionDurationSlow</c>
+    /// token of the carousel tokens; clearing a local value returns to the token.
+    /// The carousel writes the value into the transition when it builds or reconfigures the transition: when the
+    /// template is applied and when <see cref="TransitionEffect" /> or <see cref="PaginationPosition" /> changes.
+    /// </summary>
     public TimeSpan PageTransitionDuration
     {
         get => GetValue(PageTransitionDurationProperty);
         set => SetValue(PageTransitionDurationProperty, value);
     }
 
+    /// <summary>
+    /// Gets or sets the easing of the incoming page in the page transition. The theme sets the value to
+    /// <c>CubicEaseOut</c>; clearing a local value returns to it.
+    /// The carousel writes the value into the transition when it builds or reconfigures the transition: when the
+    /// template is applied and when <see cref="TransitionEffect" /> or <see cref="PaginationPosition" /> changes.
+    /// </summary>
     public Easing PageInEasing
     {
         get => GetValue(PageInEasingProperty);
         set => SetValue(PageInEasingProperty, value);
     }
 
+    /// <summary>
+    /// Gets or sets the easing of the outgoing page in the page transition. The theme sets the value to
+    /// <c>CubicEaseOut</c>; clearing a local value returns to it.
+    /// The carousel writes the value into the transition when it builds or reconfigures the transition: when the
+    /// template is applied and when <see cref="TransitionEffect" /> or <see cref="PaginationPosition" /> changes.
+    /// </summary>
     public Easing PageOutEasing
     {
         get => GetValue(PageOutEasingProperty);
         set => SetValue(PageOutEasingProperty, value);
     }
 
+    /// <summary>
+    /// Gets or sets which page transition the carousel builds when <see cref="PageTransition" /> is
+    /// <see langword="null" />. The default is <see cref="CarouselTransitionEffect.Scroll" />.
+    /// A change builds a new transition and replaces the current one, also one that was assigned to
+    /// <see cref="PageTransition" />.
+    /// </summary>
     public CarouselTransitionEffect TransitionEffect
     {
         get => GetValue(TransitionEffectProperty);
         set => SetValue(TransitionEffectProperty, value);
     }
     
+    /// <summary>
+    /// Gets or sets whether motion runs on the carousel. The value is shared with
+    /// <see cref="AbstractCarousel.IsMotionEnabled" />.
+    /// The theme sets it from the <c>EnableMotion</c> token of the carousel tokens and forwards it to the pagination
+    /// indicator. A value set on the carousel overrides the token; clearing it returns to the token.
+    /// While <see langword="false" />, autoplay does not run even if <see cref="IsAutoPlay" /> is
+    /// <see langword="true" />.
+    /// </summary>
     public new bool IsMotionEnabled
     {
         get => GetValue(IsMotionEnabledProperty);
         set => SetValue(IsMotionEnabledProperty, value);
     }
 
+    /// <summary>
+    /// Gets or sets whether a drag with the pointer changes the page. The value is shared with
+    /// <see cref="AbstractCarousel.IsSwipeEnabled" />. The default is <see langword="false" />.
+    /// While <see langword="true" />, a drag that starts outside the previous/next buttons and the pagination
+    /// indicator and covers at least 30 device-independent pixels along the page axis, more than along the other
+    /// axis, moves one page: dragging left, or up when the axis is vertical, goes to the next page, and the other
+    /// way goes to the previous page. The axis follows <see cref="PaginationPosition" />. Autoplay does not run while
+    /// the carousel tracks the drag, and the carousel shows the drag-move cursor.
+    /// </summary>
     public new bool IsSwipeEnabled
     {
         get => GetValue(IsSwipeEnabledProperty);
@@ -191,6 +321,13 @@ public class Carousel : AbstractCarousel
     private static readonly FuncTemplate<Panel?> DefaultPanel =
         new(() => new VirtualizingCarouselPanel());
     
+    /// <summary>
+    /// Gets or sets the transition that the default items panel plays when the current page changes, or
+    /// <see langword="null" /> to use the transition built from <see cref="TransitionEffect" />.
+    /// The carousel acts on <see langword="null" /> when the template is applied. Duration, easings and the slide
+    /// axis are applied as described for <see cref="PageTransitionDuration" />.
+    /// A transition assigned here stays in place until <see cref="TransitionEffect" /> changes.
+    /// </summary>
     public IPageTransition? PageTransition
     {
         get => GetValue(PageTransitionProperty);
@@ -298,10 +435,26 @@ public class Carousel : AbstractCarousel
         SetCurrentValue(IndicatorItemsProperty, items);
     }
     
+    /// <summary>
+    /// Moves to the next page and reports a programmatic change as the origin, in the same way as
+    /// <see cref="AbstractCarousel.Next" />.
+    /// The carousel wraps to the first page while <see cref="IsInfinite" /> is <see langword="true" />, and
+    /// otherwise stays on the last page. Nothing happens while there are no items.
+    /// </summary>
     public new void Next() => base.Next();
 
+    /// <summary>
+    /// Moves to the previous page and reports a programmatic change as the origin, in the same way as
+    /// <see cref="AbstractCarousel.Previous" />.
+    /// The carousel wraps to the last page while <see cref="IsInfinite" /> is <see langword="true" />, and otherwise
+    /// stays on the first page. Nothing happens while there are no items.
+    /// </summary>
     public new void Previous() => base.Previous();
 
+    /// <summary>
+    /// Arranges the control and then sets the scroll offset of the template's scroll viewer to the selected page.
+    /// Calls the base member first and returns the size it reports.
+    /// </summary>
     protected override Size ArrangeOverride(Size finalSize)
     {
         var result = base.ArrangeOverride(finalSize);
@@ -314,6 +467,12 @@ public class Carousel : AbstractCarousel
         return result;
     }
     
+    /// <summary>
+    /// Cancels a swipe in progress, releases the parts of the previous template, calls the base member and connects
+    /// the parts of the new one: the pagination indicator gets this carousel as its owner, the previous/next buttons
+    /// move one page per click, a page transition is built when none is assigned and the buttons are configured for
+    /// the current page.
+    /// </summary>
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         CancelSwipe();
@@ -361,6 +520,12 @@ public class Carousel : AbstractCarousel
         MoveBy(1, CarouselChangeSource.User);
     }
 
+    /// <summary>
+    /// Calls the base member and then starts tracking a swipe when <see cref="IsSwipeEnabled" /> is
+    /// <see langword="true" />: the pointer is captured, the press position is stored and autoplay is paused.
+    /// Presses on the previous/next buttons or the pagination indicator, presses of mouse buttons other than the
+    /// left one and presses that arrive while another pointer is tracked are ignored.
+    /// </summary>
     protected override void OnPointerPressed(PointerPressedEventArgs e)
     {
         base.OnPointerPressed(e);
@@ -389,6 +554,11 @@ public class Carousel : AbstractCarousel
         SetAutoPlayInteractionPaused(true);
     }
 
+    /// <summary>
+    /// Calls the base member and then ends the swipe tracked for the releasing pointer: autoplay is no longer held
+    /// back for the swipe and, when the drag covers the swipe distance, the page changes and the event is marked
+    /// handled. Releases of other pointers are ignored.
+    /// </summary>
     protected override void OnPointerReleased(PointerReleasedEventArgs e)
     {
         base.OnPointerReleased(e);
@@ -406,6 +576,10 @@ public class Carousel : AbstractCarousel
         }
     }
 
+    /// <summary>
+    /// Calls the base member and then cancels the swipe when the capture was lost by the tracked pointer, so that
+    /// no page change follows and autoplay is no longer held back for the swipe.
+    /// </summary>
     protected override void OnPointerCaptureLost(PointerCaptureLostEventArgs e)
     {
         base.OnPointerCaptureLost(e);
@@ -428,6 +602,16 @@ public class Carousel : AbstractCarousel
 
     internal void SelectPageFromPagination(int index) => RequestPageChange(index, CarouselChangeSource.User);
 
+    /// <summary>
+    /// Calls the base member and then updates the state that depends on the changed property.
+    /// The selected page moves the scroll offset. The selected page, the item count, <see cref="IsInfinite" /> and
+    /// <see cref="IsShowNavButtons" /> configure the previous/next buttons. <see cref="PaginationPosition" />
+    /// updates the margins of the indicator and the buttons, the slide axis and the swipe cursor.
+    /// <see cref="TransitionEffect" /> builds a new page transition. <see cref="IsSwipeEnabled" /> updates the swipe
+    /// cursor and cancels a swipe when it becomes <see langword="false" />. <see cref="IsShowTransitionProgress" />
+    /// updates whether the autoplay progress shows, and <c>UseNavigationOffsetTokenResources</c> updates the offset
+    /// token subscription while the control is attached.
+    /// </summary>
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
@@ -484,6 +668,14 @@ public class Carousel : AbstractCarousel
         }
     }
 
+    /// <summary>
+    /// Updates whether the pagination indicator shows the autoplay progress, which it does only while the autoplay
+    /// timer runs. The base class calls this method when the autoplay timer starts or stops.
+    /// </summary>
+    /// <param name="isRunning">
+    /// Whether the autoplay timer runs after the change. This override ignores the argument and reads the timer
+    /// state instead.
+    /// </param>
     protected override void OnAutoPlayRunningChanged(bool isRunning) => UpdateTransitionProgressVisibility();
 
     private void UpdateTransitionProgressVisibility() =>
@@ -585,6 +777,11 @@ public class Carousel : AbstractCarousel
         }
     }
 
+    /// <summary>
+    /// Registers the host window before the base member is called, so that autoplay can take a minimized window
+    /// into account, and after that call subscribes to the offset tokens of the pagination indicator and the
+    /// buttons when <c>UseNavigationOffsetTokenResources</c> is <see langword="true" />.
+    /// </summary>
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         _window = TopLevel.GetTopLevel(this) as AvaloniaWindow;
@@ -597,6 +794,10 @@ public class Carousel : AbstractCarousel
         UpdateNavigationOffsetTokenSubscription();
     }
 
+    /// <summary>
+    /// Disposes the offset token subscription and the host window subscription before the base member is called,
+    /// and after that call cancels a swipe in progress.
+    /// </summary>
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         _offsetTokens?.Dispose();

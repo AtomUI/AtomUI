@@ -5,13 +5,19 @@ using AtomUI.Theme.Definitions;
 
 namespace AtomUI.Theme.Build;
 
-/// <summary>One file written by <see cref="ThemeDefinitionV1Converter"/>: its name and v2 content.</summary>
+/// <summary>
+/// One file written by <see cref="ThemeDefinitionV1Converter" />: its name and v2 content.
+/// </summary>
 internal sealed record ConvertedThemeDefinition(string FileName, string Xml, IReadOnlyList<string> SourceFileNames);
 
-/// <summary>Something the conversion could not decide on its own, for the author to review.</summary>
+/// <summary>
+/// Something the conversion could not decide on its own, for the author to review.
+/// </summary>
 internal sealed record ThemeConversionNote(string FileName, bool IsError, string Message);
 
-/// <summary>The files a conversion writes, the source files it merged away, and its notes.</summary>
+/// <summary>
+/// The files a conversion writes, the source files it merged away, and its notes.
+/// </summary>
 internal sealed record ThemeConversionResult(
     IReadOnlyList<ConvertedThemeDefinition> Files,
     IReadOnlyList<string> MergedFileNames,
@@ -21,10 +27,11 @@ internal sealed record ThemeConversionResult(
 }
 
 /// <summary>
-/// The one-shot rewrite of v1 theme definitions as v2 (spec 7.11). The variants of one language and style (light, dark,
-/// compact, dark compact) merge into one file whose differences go into <c>&lt;When&gt;</c> sections; a single file keeps
-/// the axes its algorithm chain fixed. Brand and neutral colors declared <c>Fixed</c> become locked seeds. A control that
-/// disabled its algorithms and overrides a seed changes behavior in v2 and is reported rather than rewritten.
+/// The one-shot rewrite of v1 theme definitions as v2. The variants of one language and style (light, dark,
+/// compact, dark compact) merge into one file whose differences go into <c>&lt;When&gt;</c> sections; a single file
+/// keeps the axes its algorithm chain fixed. Brand and neutral colors declared <c>Fixed</c> become locked seeds.
+/// A control that disabled its algorithms and overrides a seed changes behavior in v2 and is reported
+/// rather than rewritten.
 /// </summary>
 internal static class ThemeDefinitionV1Converter
 {
@@ -50,7 +57,9 @@ internal static class ThemeDefinitionV1Converter
     private sealed record SourceControl(
         string Catalog, string Id, string? Appearance, string? Density, IReadOnlyList<(string Name, string Value)> Tokens);
 
-    /// <summary>Converts the v1 documents of one directory; the input maps a file name to its content.</summary>
+    /// <summary>
+    /// Converts the v1 documents of one directory; the input maps a file name to its content.
+    /// </summary>
     internal static ThemeConversionResult Convert(IReadOnlyList<(string FileName, string Xml)> documents)
     {
         var notes = new List<ThemeConversionNote>();
@@ -256,7 +265,7 @@ internal static class ThemeDefinitionV1Converter
         return common;
     }
 
-    // v1's global ColorNeutral seed is the shadcn language seed BaseColor in v2 (spec 5.3).
+    // v1's global ColorNeutral seed is the shadcn language seed BaseColor in v2.
     private const string V1NeutralSeed = "ColorNeutral";
     private const string NeutralLanguageSeed = "BaseColor";
 

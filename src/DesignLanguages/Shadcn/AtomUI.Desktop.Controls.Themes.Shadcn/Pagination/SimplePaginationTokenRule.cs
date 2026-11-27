@@ -4,7 +4,9 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls.Themes.Shadcn;
 
-/// <summary>The shadcn view of <see cref="SimplePaginationToken"/>.</summary>
+/// <summary>
+/// The shadcn view of <see cref="SimplePaginationToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class SimplePaginationTokenRule : IControlTokenRule<ShadcnToken, SimplePaginationToken>
 {

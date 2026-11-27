@@ -26,9 +26,10 @@
                                                  SemanticOwner="{Binding #SemanticCaseGrid}"
                                                  SemanticOwnerType="{x:Type atom:DataGrid}">
                         <gallery:SemanticPartPreview.PreviewContent>
-                            <!-- 对齐上游 style-class 演示:4 个纯文本列,Small 尺寸,pageSize 3。
-                                 不设固定 Height:预览画布高度被宿主钳制在视口剩余空间内,
-                                 固定高度的内容会被裁剪,自然高度随画布收缩。 -->
+                            <!-- Mirrors the upstream style-class demo: 4 plain text columns, Small size, pageSize 3. No
+                            fixed Height: the host clamps the preview canvas to the viewport space that is left, so
+                            fixed-height content would be clipped while natural height shrinks with the canvas.
+                            -->
                             <atom:DataGrid x:Name="SemanticCaseGrid"
                                            x:DataType="vm:ExpandableRowDataType"
                                            SizeType="Small"
@@ -1268,7 +1269,9 @@
                                     </Style>
                                 </StackPanel.Styles>
 
-                                <!-- 对齐上游 style-class 演示的两张卡:4 列 + title/footer + pageSize 3,自然高度不裁剪 -->
+                                <!-- The two cards of the upstream style-class demo: 4 columns + title/footer + pageSize
+                                3, natural height, no clipping
+                                -->
                                 <atom:DataGrid x:Name="SemanticStyleCaseGridA"
                                                x:DataType="vm:ExpandableRowDataType"
                                                Classes="semantic-info-table-demo"

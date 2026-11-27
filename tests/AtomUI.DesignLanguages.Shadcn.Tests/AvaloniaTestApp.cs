@@ -10,7 +10,9 @@ using Avalonia.Headless.XUnit;
 
 namespace AtomUI.DesignLanguages.Shadcn.Tests;
 
-/// <summary>A headless application with the desktop controls and shadcn as the only design language.</summary>
+/// <summary>
+/// A headless application with the desktop controls and shadcn as the only design language.
+/// </summary>
 public static class TestAppBuilder
 {
     public static AppBuilder BuildAvaloniaApp()

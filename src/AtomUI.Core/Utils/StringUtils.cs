@@ -57,10 +57,9 @@ internal static class StringUtils
             case GeneralCategory.MathSymbol:
                 return true;
 
-            // TODO: How do you do this in .NET?
-            // case UnicodeCategory.OtherPunctuation:
-            //    // words cannot start with '.', but they can start with '&' or '*' (for example)
-            //    return g_unichar_break_type(buffer->text[index]) == G_UNICODE_BREAK_ALPHABETIC;
+            // TODO GTK lets a word start with '&' or '*', but not with '.', and .NET's OtherPunctuation covers both.
+            // Until the Unicode line-break class can be read in .NET, or the word-starting characters are listed
+            // here, no character of this category counts as a word character.
             default:
                 return false;
         }
@@ -114,10 +113,9 @@ internal static class StringUtils
             case GeneralCategory.MathSymbol:
                 return false;
 
-            // TODO: How do you do this in .NET?
-            // case UnicodeCategory.OtherPunctuation:
-            //    // words cannot start with '.', but they can start with '&' or '*' (for example)
-            //    return g_unichar_break_type(buffer->text[index]) == G_UNICODE_BREAK_ALPHABETIC;
+            // TODO GTK lets a word start with '&' or '*', but not with '.', and .NET's OtherPunctuation covers both.
+            // Until the Unicode line-break class can be read in .NET, or the word-starting characters are listed
+            // here, every character of this category counts as the end of a word.
             default:
                 return true;
         }

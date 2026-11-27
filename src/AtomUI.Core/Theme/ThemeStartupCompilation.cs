@@ -7,8 +7,9 @@ using Avalonia.Media;
 namespace AtomUI.Theme;
 
 /// <summary>
-/// 启动期主题编译的纯函数：不读写 ThemeManager 状态、不接触 Avalonia 线程对象，
-/// 供 ThemeManager 与后台 Prepare 共用，保证两边的有效配置一致（全局层才能复用）。
+/// Pure functions of the startup theme compilation: they neither read nor write <c>ThemeManager</c> state and
+/// touch no Avalonia object bound to the UI thread. <c>ThemeManager</c> and the background preparation share
+/// them, so both derive the same effective config and the global layer compiled in the background can be reused.
 /// </summary>
 internal static class ThemeStartupCompilation
 {
@@ -38,10 +39,13 @@ internal static class ThemeStartupCompilation
     }
 
     /// <summary>
-    /// The startup requests (spec 7.9): the explicit initial request; else the initial selection resolved against the
-    /// catalog (both appearances when it follows the system); else, with exactly one enabled language, that language's
-    /// default variant.
+    /// The startup requests: the explicit initial request; else the initial selection resolved against the catalog (both
+    /// appearances when it follows the system); else, with exactly one enabled language, that language's default variant.
     /// </summary>
+    /// <exception cref="ThemeLoadException">
+    /// Neither an initial request nor an initial selection is given, and the number of enabled languages is not
+    /// exactly one.
+    /// </exception>
     internal static (ThemeRequest Initial, ThemeRequest? Light, ThemeRequest? Dark) ResolveStartupRequests(
         ThemeRequest? initialRequest,
         ThemeSelection? initialSelection,
@@ -81,7 +85,10 @@ internal static class ThemeStartupCompilation
             : "Several design languages are enabled; call WithInitialDesignLanguage<TLanguage>() or WithInitialTheme(ThemeSelection).");
     }
 
-    /// <summary>主题定义默认值之上依次叠加应用层（初始请求）与运行时层（本次请求）。</summary>
+    /// <summary>
+    /// Layers the application config (<paramref name="initial" />) and then the runtime config
+    /// (<paramref name="runtime" />) over the theme definition defaults (<paramref name="defaults" />).
+    /// </summary>
     internal static NormalizedThemeConfig MergeEffectiveConfig(
         NormalizedThemeConfig defaults,
         NormalizedThemeConfig initial,
@@ -92,9 +99,17 @@ internal static class ThemeStartupCompilation
     }
 
     /// <summary>
-    /// 与 ThemeManager.PrepareCompiledTheme 的配置分层一一对应：运行时层取本次请求的配置，
-    /// 应用层取初始请求的配置，二者为空时都退回仅含默认字体的配置。"仅全局"registry 下先去掉控件段。
+    /// Compiles <paramref name="request" /> with the config layers of <c>ThemeManager.PrepareCompiledTheme</c>: the
+    /// runtime layer is the config of <paramref name="request" />, the application layer is the config of
+    /// <paramref name="initialRequest" />, and a missing config is replaced by one that holds only the default font.
+    /// With a global-only registry, the controls are removed from the given configs before they are normalized.
     /// </summary>
+    /// <returns>
+    /// The compile result; a failed compilation is reported through <c>Success</c> and not thrown.
+    /// </returns>
+    /// <exception cref="ThemeLoadException">
+    /// The config of <paramref name="request" /> or of <paramref name="initialRequest" /> is invalid.
+    /// </exception>
     internal static ThemeCompileResult CompileInitial(
         ThemeRequest request,
         ThemeRequest? initialRequest,

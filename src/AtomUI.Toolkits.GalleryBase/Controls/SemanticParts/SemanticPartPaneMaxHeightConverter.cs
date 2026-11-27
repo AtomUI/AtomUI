@@ -6,10 +6,12 @@ namespace AtomUI.Toolkits.GalleryBase.Controls;
 /// <summary>
 /// Converts the content height bound a SemanticPartPreview inherits from the
 /// showcase host into the max height its parts pane may occupy: the bound minus
-/// the fixed vertical insets of PART_InspectionPanel (20 top margin + 32 bottom
-/// margin + 1x2 border thickness). When the host does not bound the content
-/// height (the Examples tab or a plain GalleryStickyTabsHost), the default pane
-/// cap applies instead.
+/// the vertical insets of PART_InspectionPanel outside the compact size (20 top
+/// margin + 32 bottom margin + 1x2 border thickness). In the compact size the
+/// panel margins are 16 top and 24 bottom; the converter does not account for
+/// them, so the pane then gets 12 less than the panel leaves. When the host
+/// does not bound the content height (the Examples tab or a plain
+/// GalleryStickyTabsHost), the default pane cap applies instead.
 /// </summary>
 internal sealed class SemanticPartPaneMaxHeightConverter : IValueConverter
 {

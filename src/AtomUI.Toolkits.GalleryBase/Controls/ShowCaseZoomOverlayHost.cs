@@ -6,8 +6,17 @@ using Avalonia.VisualTree;
 
 namespace AtomUI.Toolkits.GalleryBase.Controls;
 
+/// <summary>
+/// Shows the Gallery page content with the showcase zoom overlay layered on top of it. The content of a
+/// <see cref="ShowCaseItem" /> that raises its zoom request moves into the overlay, and returns to the item
+/// when the overlay closes, when the item leaves the visual tree or when this host is detached. A request is
+/// ignored while another item is zoomed, or when zoom is disabled in the Gallery base configuration.
+/// </summary>
 public sealed class ShowCaseZoomOverlayHost : UserControl
 {
+    /// <summary>
+    /// Identifies the <see cref="PageContent" /> property.
+    /// </summary>
     public static readonly StyledProperty<object?> PageContentProperty =
         AvaloniaProperty.Register<ShowCaseZoomOverlayHost, object?>(nameof(PageContent));
 
@@ -35,18 +44,30 @@ public sealed class ShowCaseZoomOverlayHost : UserControl
         };
     }
 
+    /// <summary>
+    /// The content shown beneath the zoom overlay. This host handles the zoom requests that a
+    /// <see cref="ShowCaseItem" /> inside it raises. <see langword="null" /> shows no content.
+    /// </summary>
     public object? PageContent
     {
         get => GetValue(PageContentProperty);
         set => SetValue(PageContentProperty, value);
     }
 
+    /// <summary>
+    /// Called when this host is detached. Before the base call it puts the content of a zoomed item back into
+    /// the item, so that the item is not left empty.
+    /// </summary>
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         RestoreZoomedItem();
         base.OnDetachedFromVisualTree(e);
     }
 
+    /// <summary>
+    /// Called when a property of this host changes. Passes <see cref="PageContent" /> to the presenter beneath the
+    /// overlay and leaves every other change to the base call.
+    /// </summary>
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
@@ -76,11 +97,12 @@ public sealed class ShowCaseZoomOverlayHost : UserControl
         _overlay.Description  = e.Description;
         _overlay.DataContext  = item.DataContext;
         _overlay.SourceItem   = item;
-        // 先恢复逻辑挂载再挂舞台（ImagePreviewer overlay 先例）：内容视觉上迁入
-        // overlay，但逻辑上保持对原卡片的挂载——页面级 Styles/Resources 与
-        // DataContext 继承沿逻辑树解析，脱离页面树会导致 Grid 展示页等以
-        // UserControl.Styles 定制示例的样式整体丢失；面板集合只认领无父级子级，
-        // 顺序颠倒会与逻辑挂载冲突。
+        // Restore the logical parent first and stage the content second, as the ImagePreviewer overlay does.
+        // The content moves into the overlay only visually and stays attached to its original card logically:
+        // page-level Styles and Resources and the inherited DataContext resolve along the logical tree, so
+        // leaving the page tree loses every style that showcases such as the Grid page apply to their
+        // examples through UserControl.Styles. The panel collection claims only children that have no
+        // parent, so the reverse order conflicts with the logical attach.
         if (_zoomedContent is Control stagedContent)
         {
             ((ISetLogicalParent)stagedContent).SetParent(item);
@@ -89,9 +111,9 @@ public sealed class ShowCaseZoomOverlayHost : UserControl
         _overlay.StageContent = _zoomedContent;
         _overlay.IsOpen       = true;
 
-        // 放大 overlay 位于内容树内，钉住的页签宿主却提升在窗口级 adorner 层
-        // （渲染于所有内容之上），不挂起会浮在 overlay 之上；关闭后由粘滞机制
-        // 自动重新提升。
+        // The zoom overlay lives inside the content tree, but a pinned tabs host is elevated to a window-level
+        // adorner layer that renders above all content, so it would float above the overlay unless the elevation
+        // is suppressed. The sticky mechanism elevates the host again on its own once the overlay is closed.
         _suppressedStickyHost = item.FindAncestorOfType<GalleryStickyTabsHost>();
         if (_suppressedStickyHost is not null)
         {

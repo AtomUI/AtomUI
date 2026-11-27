@@ -1,20 +1,58 @@
 namespace AtomUI.Controls;
 
+/// <summary>
+/// Classifies the outcome of a remote request that loads data for a control. A load result carries it so that the
+/// handlers of the load can tell the kinds of failure apart.
+/// </summary>
 public enum RpcStatusCode
 {
+    /// <summary>
+    /// The request completed without an error.
+    /// </summary>
     Success = 0,
+    /// <summary>
+    /// The request failed for a reason that no other value describes. A <c>CascaderItemLoadResult</c> whose status is
+    /// not set carries this value.
+    /// </summary>
     Unknown,
     
-    InvalidRequest, // 参数校验失败等
-    Unauthorized,   // 身份认证失败
-    Forbidden,      // 权限不足
-    NotFound,       // 请求的资源或端点不存在
+    /// <summary>
+    /// The request was rejected, for example because an argument failed validation.
+    /// </summary>
+    InvalidRequest,
+    /// <summary>
+    /// Authentication failed: the request carried no valid credentials.
+    /// </summary>
+    Unauthorized,
+    /// <summary>
+    /// The caller is authenticated but lacks the permission that the request needs.
+    /// </summary>
+    Forbidden,
+    /// <summary>
+    /// The requested resource or endpoint does not exist.
+    /// </summary>
+    NotFound,
     
-    NetworkFailure, // 网络不通（连接拒绝、DNS失败等）
-    Timeout,        // 请求超时
+    /// <summary>
+    /// The server could not be reached, for example because the connection was refused or the DNS lookup failed.
+    /// </summary>
+    NetworkFailure,
+    /// <summary>
+    /// The request did not complete within the time limit.
+    /// </summary>
+    Timeout,
     
-    ServerInternal, // 服务器内部错误
-    ServiceUnavailable, // 服务不可用（如熔断、维护）
+    /// <summary>
+    /// The server failed with an internal error.
+    /// </summary>
+    ServerInternal,
+    /// <summary>
+    /// The service is unavailable, for example because a circuit breaker is open or it is under maintenance.
+    /// </summary>
+    ServiceUnavailable,
     
-    Cancelled       // 操作被取消
+    /// <summary>
+    /// The request was canceled before it completed.
+    /// </summary>
+    Cancelled
 }

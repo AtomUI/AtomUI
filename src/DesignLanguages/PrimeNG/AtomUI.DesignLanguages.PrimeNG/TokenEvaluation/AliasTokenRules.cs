@@ -11,7 +11,7 @@ namespace AtomUI.DesignLanguages.PrimeNG.TokenEvaluation;
 /// <summary>
 /// The PrimeNG alias tokens: the Ant Design alias formulas (copied from components/theme/util/alias.ts) refined by the
 /// preset's alias rules. The three tokens the formulas write and read again (focus ring width, field glow width and
-/// colour) take the preset's values in place, so the input shadows follow them; the preset's other alias values are
+/// color) take the preset's values in place, so the input shadows follow them; the preset's other alias values are
 /// written after the formulas. This gives the result of the previous staged evaluation (formulas, preset step, formulas
 /// again with the preset's values kept, preset step again). Explicit Map and Alias values are frozen before this runs.
 /// </summary>
@@ -19,7 +19,7 @@ internal static class AliasTokenRules
 {
     internal static void Apply(in DesignVariant variant, PrimeNGPreset preset, PrimeNGToken language, DesignToken token)
     {
-        // A noir primary (see PrimeNGNoir) changes the contrast colour.
+        // A noir primary (see PrimeNGNoir) changes the contrast color.
         var rules = PrimeNGPresets.Rules(preset, variant.Appearance, language, token);
         var alias = preset.Alias;
         ApplyFormulas(rules, alias, token);
@@ -288,7 +288,7 @@ internal static class AliasTokenRules
     {
         var surface = rules.Surface.AsSpan();
 
-        // PrimeUIX focus.ring.color (the primary colour; Nora dark: the field border, see its table); the ring and the
+        // PrimeUIX focus.ring.color (the primary color; Nora dark: the field border, see its table); the ring and the
         // field glow widths come from the preset (Aura: a one-line ring, no glow; Lara: no ring, a three-line glow;
         // Nora: a two-line ring, no glow).
         token.ColorFocusBorder           = rules.FocusBorder(token);
@@ -341,7 +341,9 @@ internal static class AliasTokenRules
 
     /// <summary>
     /// A field padding whose vertical part is the control height left over around the text line, border and content
-    /// margin. An odd remainder goes to the bottom, so both sides are whole pixels and the height is exact at any scale.
+    /// margin. A negative leftover gives no vertical padding. Otherwise the top side is the lower half, rounded down,
+    /// and the rest goes to the bottom: with a whole-pixel leftover both sides are whole pixels and the height is
+    /// exact at any scale.
     /// </summary>
     private static Thickness FieldPadding(double horizontal, double vertical)
     {

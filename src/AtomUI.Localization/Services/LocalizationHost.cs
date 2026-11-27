@@ -1,5 +1,11 @@
 namespace AtomUI.Localization;
 
+/// <summary>
+/// Holds the objects that <see cref="LocalizationBuilder.Build" /> creates for one application: the
+/// <see cref="LanguageManager" />, the <see cref="Localizer" /> and the <see cref="LanguageResourceProvider" />,
+/// which all read one language context. AtomUI.Core stores the host in the application scope and reaches the
+/// three objects through it. Disposing the host disposes the <see cref="LanguageManager" />.
+/// </summary>
 internal sealed class LocalizationHost : IDisposable
 {
     private int _disposed;

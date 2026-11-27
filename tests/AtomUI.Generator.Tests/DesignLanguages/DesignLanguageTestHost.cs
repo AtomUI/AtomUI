@@ -317,7 +317,9 @@ internal static class DesignLanguageTestHost
         CSharpCompilation.Create(assemblyName, [Parse(source, assemblyName + ".cs")],
             PlatformReferences().AddRange(references), Options);
 
-    /// <summary>Runs every generator over <paramref name="compilation"/> and returns it as a reference for the next package.</summary>
+    /// <summary>
+    /// Runs every generator over <paramref name="compilation" /> and returns it as a reference for the next package.
+    /// </summary>
     internal static MetadataReference Reference(CSharpCompilation compilation, string description)
     {
         var output = Run(compilation, out var diagnostics);

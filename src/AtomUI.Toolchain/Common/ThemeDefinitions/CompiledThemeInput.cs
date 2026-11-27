@@ -12,11 +12,17 @@ internal sealed class CompiledThemeInput
     internal string Id = "";
     internal string Name = "";
     internal string Language = "";
-    /// <summary>The fixed style; an empty string leaves it open.</summary>
+    /// <summary>
+    /// The fixed style; an empty string leaves it open.
+    /// </summary>
     internal string Style = "";
-    /// <summary>The fixed appearance: -1 open, otherwise the numeric <c>ThemeAppearance</c>.</summary>
+    /// <summary>
+    /// The fixed appearance: -1 open, otherwise the numeric <c>ThemeAppearance</c>.
+    /// </summary>
     internal int Appearance = -1;
-    /// <summary>The fixed density; an empty string leaves it open.</summary>
+    /// <summary>
+    /// The fixed density; an empty string leaves it open.
+    /// </summary>
     internal string Density = "";
     internal ThemeSectionInput Base = new();
     internal ThemeConditionInput[] Conditions = Array.Empty<ThemeConditionInput>();
@@ -94,7 +100,9 @@ internal sealed class CompiledThemeInput
     }
 }
 
-/// <summary>The values of one section: global tokens, language tokens and controls.</summary>
+/// <summary>
+/// The values of one section: global tokens, language tokens and controls.
+/// </summary>
 internal sealed class ThemeSectionInput
 {
     internal ThemeLiteralInput[] Tokens = Array.Empty<ThemeLiteralInput>();
@@ -186,9 +194,13 @@ internal sealed class ThemeControlInput
 {
     internal string Catalog = "";
     internal string Id = "";
-    /// <summary>-1 when the control does not fix its appearance.</summary>
+    /// <summary>
+    /// -1 when the control does not fix its appearance.
+    /// </summary>
     internal int Appearance = -1;
-    /// <summary>Empty when the control does not fix its density.</summary>
+    /// <summary>
+    /// Empty when the control does not fix its density.
+    /// </summary>
     internal string Density = "";
     internal ThemeLiteralInput[] Tokens = Array.Empty<ThemeLiteralInput>();
     internal int Line;

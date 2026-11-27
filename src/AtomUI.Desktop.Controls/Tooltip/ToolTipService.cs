@@ -9,6 +9,12 @@ using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
 
+/// <summary>
+/// Shows and hides tooltips as the pointer moves over controls that carry an attached <c>ToolTip.Tip</c> value.
+/// It opens the tooltip after the host's <c>ToolTip.ShowDelay</c> and closes it when the pointer leaves the host,
+/// a pointer button is pressed or the pointer leaves the window. Hosts whose <c>ToolTip.ServiceEnabled</c> is
+/// <see langword="false" /> and hosts that set <c>ToolTip.IsCustomShowAndHide</c> are skipped.
+/// </summary>
 public sealed class ToolTipService : IDisposable
 {
     private readonly IDisposable _subscriptions;
@@ -19,6 +25,10 @@ public sealed class ToolTipService : IDisposable
     private ulong _lastTipEventTime;
     private ulong _lastWindowEventTime;
 
+    /// <summary>
+    /// Starts handling pointer input at once: subscribes to the raw events of <paramref name="inputManager" /> and to
+    /// changes of <c>ToolTip.ServiceEnabled</c> and <c>ToolTip.Tip</c> until <see cref="Dispose" /> is called.
+    /// </summary>
     public ToolTipService(IInputManager inputManager)
     {
         _subscriptions = new CompositeDisposable([
@@ -27,6 +37,10 @@ public sealed class ToolTipService : IDisposable
             ToolTip.TipProperty.Changed.Subscribe(TipChanged)]);
     }
 
+    /// <summary>
+    /// Stops the pending show timer, drops the current tooltip host and disposes the input and property
+    /// subscriptions, after which the service no longer reacts to pointer input. A tooltip that is open is left open.
+    /// </summary>
     public void Dispose()
     {
         StopTimer();
@@ -91,6 +105,23 @@ public sealed class ToolTipService : IDisposable
         }
     }
 
+    /// <summary>
+    /// Makes the tooltip host under the pointer the current host. That is the nearest <c>Control</c> among
+    /// <paramref name="candidateToolTipHost" /> and its visual parents that carries a <c>ToolTip.Tip</c> and is
+    /// enabled or sets <c>ToolTip.ShowOnDisabled</c>. A change of host closes the previous host's tooltip when
+    /// it is open and shows the new host's tooltip at once when one closed with this call or within
+    /// <c>ToolTip.BetweenShowDelay</c> milliseconds, otherwise after <c>ToolTip.ShowDelay</c>; a tooltip that is
+    /// already open stays as it is. Nothing changes while the pointer is over the current tooltip, or when the
+    /// walk meets a control that clears <c>ToolTip.ServiceEnabled</c> or sets <c>ToolTip.IsCustomShowAndHide</c>.
+    /// </summary>
+    /// <param name="root">
+    /// The input root of the pointer event. When this is the input root of a current tooltip that is shown in a
+    /// different root than its host, the call returns at once. A host found under another root counts as no host.
+    /// </param>
+    /// <param name="candidateToolTipHost">
+    /// The visual under the pointer; the host is looked up on it and on its visual parents. Pass
+    /// <see langword="null" /> when nothing was hit: that selects no host and closes the current host's tooltip.
+    /// </param>
     public void Update(IInputRoot root, Visual? candidateToolTipHost)
     {
         var currentToolTip = _tipControl?.GetValue(ToolTip.ToolTipProperty);

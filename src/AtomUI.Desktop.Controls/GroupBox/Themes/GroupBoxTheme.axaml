@@ -12,9 +12,11 @@
                     <DockPanel LastChildFill="True">
                         <Panel Name="PART_HeaderContainer"
                                DockPanel.Dock="Top">
-                            <!-- Border（而非 Decorator）用于承载 Semantic Part header：
-                                 Decorator 没有 Background，无法满足“给标题区域一个背景”的定制诉求。
-                                 Border 继承 Decorator，PART_HeaderContent 的查找路径与缺口 Bounds 语义不变。 -->
+                            <!-- A Border (rather than a Decorator) hosts the Semantic Part header: Decorator has no
+                            Background and cannot satisfy the customization request of giving the title area a
+                            background. Border derives from Decorator, so the lookup path of PART_HeaderContent and
+                            the Bounds semantics of the notch are unchanged.
+                            -->
                             <Border Name="PART_HeaderContent"
                                     Classes.semantic-header="True"
                                     VerticalAlignment="Center">

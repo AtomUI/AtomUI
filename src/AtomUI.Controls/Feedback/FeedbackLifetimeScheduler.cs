@@ -3,7 +3,9 @@ using Avalonia.Threading;
 
 namespace AtomUI.Controls;
 
-/// <summary>Coordinates feedback lifetimes through one lazily-created dispatcher timer.</summary>
+/// <summary>
+/// Coordinates feedback lifetimes through one lazily-created dispatcher timer.
+/// </summary>
 internal sealed class FeedbackLifetimeScheduler : IDisposable
 {
     private static readonly TimeSpan MinimumWakeup = TimeSpan.FromMilliseconds(1);

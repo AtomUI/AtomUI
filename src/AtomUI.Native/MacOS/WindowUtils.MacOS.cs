@@ -8,7 +8,9 @@ using Avalonia.Controls;
 
 namespace AtomUI.Native;
 
-/// <summary>单个 standard window button 在其 superview 中的矩形 (Cocoa 坐标，原点左下)。</summary>
+/// <summary>
+/// The frame of one standard window button in its superview, in Cocoa coordinates (origin at the bottom left).
+/// </summary>
 internal readonly record struct ButtonFrame(double X, double Y, double Width, double Height);
 
 [SupportedOSPlatform("macos")]
@@ -75,9 +77,12 @@ internal static partial class WindowUtilsMacOS
     }
 
     /// <summary>
-    /// 读取某个 standard window button 的当前 frame (Cocoa 坐标，原点在 superview 左下)。
+    /// Reads the current frame of one standard window button, in Cocoa coordinates with the origin at the bottom left
+    /// of its superview.
     /// </summary>
-    /// <returns>非 macOS、无 NSWindow 句柄或按钮不存在时返回 <c>null</c>。</returns>
+    /// <returns>
+    /// <c>null</c> when not on macOS, when the window has no NSWindow handle or when the button does not exist.
+    /// </returns>
     public static ButtonFrame? GetStandardWindowButtonFrame(this Window window, WindowUtilsInterop.NSWindowButton button)
     {
         if (!OperatingSystem.IsMacOS())
@@ -97,10 +102,19 @@ internal static partial class WindowUtilsMacOS
     }
 
     /// <summary>
-    /// 以红色关闭按钮作为 macOS 标准按钮组的可见性哨兵。
-    /// 录屏/窗口共享期间 AppKit 会暂时隐藏整组标准按钮；关闭按钮恢复时才允许重新布局。
-    /// 这能避免把隐藏按钮的位置写回到 macOS 自己显示的共享控件状态。
+    /// Gets whether the macOS standard window buttons are visible, with the red close button as the sentinel
+    /// of the whole group.
     /// </summary>
+    /// <returns>
+    /// <see langword="true" /> when the close button exists and is not hidden, and
+    /// <see langword="false" /> otherwise, which is also the result when not on macOS or when the window has no
+    /// NSWindow handle.
+    /// </returns>
+    /// <remarks>
+    /// During screen recording or window sharing AppKit hides the whole standard button group for a while.
+    /// Lay the buttons out again only once the close button is back. This avoids writing the positions of the
+    /// hidden buttons back into the sharing control state that macOS itself displays.
+    /// </remarks>
     public static bool IsStandardWindowButtonsVisible(this Window window)
     {
         if (!OperatingSystem.IsMacOS())
@@ -119,14 +133,25 @@ internal static partial class WindowUtilsMacOS
     }
 
     /// <summary>
-    /// 监听标准窗口按钮的 AppKit 原生通知。
-    /// <c>NSViewFrameDidChangeNotification</c> 只有在
-    /// <c>postsFrameChangedNotifications</c> 打开时才会发布；这里为每个按钮开启该选项，
-    /// 覆盖录屏结束后 AppKit 重新布局按钮的路径。
+    /// Listens to the AppKit native notifications of the standard window buttons.
+    /// <c>NSViewFrameDidChangeNotification</c> is posted only while <c>postsFrameChangedNotifications</c> is on,
+    /// so this method turns the option on for every button. This covers the path on which AppKit lays the
+    /// buttons out again after a screen recording ends.
     /// </summary>
+    /// <param name="window">
+    /// The window whose standard window buttons are observed.
+    /// </param>
+    /// <param name="callback">
+    /// Invoked when a button changes its frame or its <c>hidden</c> state.
+    /// </param>
+    /// <returns>
+    /// A disposable that removes the observers and restores the previous
+    /// <c>postsFrameChangedNotifications</c> value of every button, or <c>null</c> when the buttons cannot be
+    /// observed: when not on macOS, when the window has no NSWindow handle or when no button exists.
+    /// </returns>
     /// <remarks>
-    /// 返回的 disposable 必须在窗口关闭时释放，否则 NotificationCenter 会继续持有原生 observer，
-    /// 同时也会保留托管回调和窗口实例。
+    /// Dispose the result when the window closes. Otherwise <c>NSNotificationCenter</c> keeps the native observer,
+    /// and with it the managed callback and the window instance.
     /// </remarks>
     public static IDisposable? ObserveStandardWindowButtonChanges(this Window window, Action callback)
     {
@@ -257,7 +282,9 @@ internal static partial class WindowUtilsMacOS
         registration.Notify();
     }
 
-    /// <summary>Receives the notifications delivered to one native observer instance.</summary>
+    /// <summary>
+    /// Receives the notifications delivered to one native observer instance.
+    /// </summary>
     private interface INativeNotificationTarget
     {
         void Notify();
@@ -385,7 +412,8 @@ internal static partial class WindowUtilsMacOS
             }
             catch (Exception ex)
             {
-                // Objective-C 不允许异常穿过消息分发边界；窗口回调会在 UI 线程重新投递工作。
+                // Objective-C does not let an exception cross a message dispatch boundary.
+                // The window callback re-posts its work on the UI thread.
                 Debug.WriteLine($"AtomUI macOS window notification callback failed: {ex}");
             }
         }
@@ -435,10 +463,13 @@ internal static partial class WindowUtilsMacOS
     }
 
     /// <summary>
-    /// 获取 macOS 系统默认的标题栏高度。
-    /// 通过 superview 高度和 contentView 高度的差值来计算。
+    /// Gets the default height of the macOS system title bar, in points, as the window frame height minus the
+    /// height of the <c>contentLayoutRect</c> of the window.
     /// </summary>
-    /// <returns>非 macOS 或无窗口句柄时返回 <c>null</c>。</returns>
+    /// <returns>
+    /// <c>null</c> when not on macOS, when the window has no NSWindow handle or when the difference is not
+    /// positive.
+    /// </returns>
     public static double? GetSystemTitleBarHeightMacOS(Window window)
     {
         if (!OperatingSystem.IsMacOS())
@@ -452,23 +483,26 @@ internal static partial class WindowUtilsMacOS
             return null;
         }
 
-        // 获取 window 的 frame (包含标题栏)
+        // The window frame includes the title bar.
         var windowFrame = WindowUtilsInterop.GetFrame(ns);
 
-        // 获取 contentLayoutRect：这是不包含标题栏的内容区域
+        // The content layout rect is the content area without the title bar.
         var selContentLayoutRect = WindowUtilsInterop.sel_registerName("contentLayoutRect");
         var contentRect = WindowUtilsInterop.GetRect(ns, selContentLayoutRect);
 
-        // 标题栏高度 = 窗口总高度 - 内容布局区域高度
+        // Title bar height = window frame height - content layout rect height.
         var titleBarHeight = windowFrame.Size.Height - contentRect.Size.Height;
         return titleBarHeight > 0 ? titleBarHeight : null;
     }
 
     /// <summary>
-    /// 获取 Standard window buttons 的原始位置（未调整前的默认位置）。
-    /// 返回 close 按钮的 X 和 Y 坐标 (Cocoa 坐标，原点左下)。
+    /// Gets the original position of the standard window buttons, that is their default position before any
+    /// adjustment, as the X and Y of the close button in Cocoa coordinates with the origin at the bottom left.
     /// </summary>
-    /// <returns>非 macOS、无 NSWindow 句柄或按钮不存在时返回 <c>null</c>。</returns>
+    /// <returns>
+    /// <c>(0, 0)</c> when the frame of the close button cannot be read: when not on macOS, when the window has
+    /// no NSWindow handle or when the button does not exist.
+    /// </returns>
     public static (double X, double Y) GetStandardWindowButtonsOriginalPosition(this Window window)
     {
         var closeFrame = window.GetStandardWindowButtonFrame(WindowUtilsInterop.NSWindowButton.CloseButton);
@@ -481,12 +515,19 @@ internal static partial class WindowUtilsMacOS
     }
 
     /// <summary>
-    /// 获取 Standard window buttons 占用的总宽度（从最左边的按钮到最右边的按钮）。
-    /// 用于计算自定义标题栏需要为按钮预留的左侧 margin。
+    /// Gets the total width occupied by the standard window buttons in points, from the left edge of the leftmost
+    /// button to the right edge of the rightmost one. A custom title bar reserves this much width on its left.
     /// </summary>
-    /// <param name="window">目标窗口。</param>
-    /// <param name="spacing">按钮之间的间距，默认为 20pt（AppKit 原生值）。</param>
-    /// <returns>按钮占用的总宽度（包括间距），如果无法获取则返回 <c>null</c>。</returns>
+    /// <param name="window">
+    /// The window whose standard window buttons are measured.
+    /// </param>
+    /// <param name="spacing">
+    /// The gap between adjacent buttons. It is not read; the width comes from the current button frames only.
+    /// The default of 20 points is the AppKit native value.
+    /// </param>
+    /// <returns>
+    /// The total width, gaps included, or <c>null</c> when the frame of one of the three buttons cannot be read.
+    /// </returns>
     public static double? GetStandardWindowButtonsTotalWidth(this Window window, double spacing = 20.0)
     {
         if (!OperatingSystem.IsMacOS())
@@ -503,8 +544,8 @@ internal static partial class WindowUtilsMacOS
             return null;
         }
 
-        // 计算从最左边按钮的左边缘到最右边按钮的右边缘的总宽度
-        // 通常顺序是：Close, Miniaturize, Zoom
+        // The total width runs from the left edge of the leftmost button to the right edge of the rightmost one.
+        // The usual order is Close, Miniaturize, Zoom.
         double leftMost = Math.Min(Math.Min(cf.X, mf.X), zf.X);
         double rightMost = Math.Max(Math.Max(cf.X + cf.Width, mf.X + mf.Width), zf.X + zf.Width);
 
@@ -512,13 +553,24 @@ internal static partial class WindowUtilsMacOS
     }
 
     /// <summary>
-    /// 获取自定义标题栏内容应该从左边缘偏移多少距离，以避免与 Standard window buttons 重叠。
-    /// 这个值包括了按钮的宽度、按钮之间的间距，以及按钮右侧的额外间距。
+    /// Gets how far the content of a custom title bar must be offset from the left edge of the window so that
+    /// it does not overlap the standard window buttons, in points. The value covers the buttons, the gaps between
+    /// them and the extra margin to their right.
     /// </summary>
-    /// <param name="window">目标窗口。</param>
-    /// <param name="spacing">按钮之间的间距，默认为 20pt。</param>
-    /// <param name="extraMargin">按钮右侧的额外间距，默认为 8pt。</param>
-    /// <returns>建议的左侧 margin 值，如果无法获取则返回 <c>null</c>。</returns>
+    /// <param name="window">
+    /// The window whose standard window buttons must be avoided.
+    /// </param>
+    /// <param name="spacing">
+    /// The gap between adjacent buttons. It is not read; the result comes from the current button frames and
+    /// <paramref name="extraMargin" /> only. The default is 20 points.
+    /// </param>
+    /// <param name="extraMargin">
+    /// Extra space to the right of the buttons. The default is 8 points.
+    /// </param>
+    /// <returns>
+    /// The recommended left margin, or <c>null</c> when the frame of the close button or of the zoom button
+    /// cannot be read.
+    /// </returns>
     public static double? GetRecommendedTitleBarContentLeftMargin(this Window window, double spacing = 20.0, double extraMargin = 8.0)
     {
         var closeFrame = window.GetStandardWindowButtonFrame(WindowUtilsInterop.NSWindowButton.CloseButton);
@@ -529,19 +581,23 @@ internal static partial class WindowUtilsMacOS
             return null;
         }
 
-        // 找到最右边按钮的右边缘
+        // The right edge of the rightmost button.
         double rightEdge = Math.Max(cf.X + cf.Width, zf.X + zf.Width);
 
-        // 加上额外的间距
+        // Add the extra margin.
         return rightEdge + extraMargin;
     }
 
     /// <summary>
-    /// 读取按钮 superview (约为 NSThemeFrame) 的高度，近似等于窗口总高度 (含标题栏)。
-    /// 用于 Cocoa 底部原点 Y 与 Avalonia 顶部原点 Y 的换算：
-    /// <c>cocoaY = superHeight - topY - buttonHeight</c>。
+    /// Reads the height, in points, of the superview of the standard window buttons (usually <c>NSThemeFrame</c>),
+    /// which approximates the total height of the window including the title bar. It converts a Y measured from the
+    /// bottom in Cocoa into a Y measured from the top in Avalonia:
+    /// <c>cocoaY = superHeight - topY - buttonHeight</c>.
     /// </summary>
-    /// <returns>非 macOS 或无窗口句柄时返回 <c>null</c>。</returns>
+    /// <returns>
+    /// <c>null</c> when not on macOS, when the window has no NSWindow handle, or when the close button or its
+    /// superview cannot be found.
+    /// </returns>
     public static double? GetStandardWindowButtonSuperviewHeight(this Window window)
     {
         if (!OperatingSystem.IsMacOS())
@@ -566,19 +622,19 @@ internal static partial class WindowUtilsMacOS
     }
 
     /// <summary>
-    /// 把某个 standard window button 移到 (<paramref name="x"/>, <paramref name="y"/>)，
-    /// 坐标为 Cocoa 原生语义 (原点左下)。
-    /// 非 macOS、全屏状态或按钮不存在时直接 no-op。
+    /// Moves one standard window button to the origin (<paramref name="x" />, <paramref name="y" />), in
+    /// Cocoa coordinates with the origin at the bottom left.
+    /// Does nothing when not on macOS, when the window is full screen or when the button cannot be found.
     /// </summary>
     /// <remarks>
-    /// 典型用法（顶部原点换算）：
-    /// <code>
-    /// var superH = window.GetStandardWindowButtonSuperviewHeight();
-    /// var frame  = window.GetStandardWindowButtonFrame(WindowUtilsInterop.NSWindowButton.CloseButton);
-    /// if (superH is double h &amp;&amp; frame is { } f)
-    ///     window.SetStandardWindowButtonOrigin(WindowUtilsInterop.NSWindowButton.CloseButton,
-    ///         x: 12, y: h - topY - f.Height);
-    /// </code>
+    ///     Typical use, converting a Y measured from the top:
+    ///     <code>
+    ///     var superH = window.GetStandardWindowButtonSuperviewHeight();
+    ///     var frame  = window.GetStandardWindowButtonFrame(WindowUtilsInterop.NSWindowButton.CloseButton);
+    ///     if (superH is double h &amp;&amp; frame is { } f)
+    ///         window.SetStandardWindowButtonOrigin(WindowUtilsInterop.NSWindowButton.CloseButton,
+    ///             x: 12, y: h - topY - f.Height);
+    ///     </code>
     /// </remarks>
     public static void SetStandardWindowButtonOrigin(this Window window, WindowUtilsInterop.NSWindowButton button, double x, double y)
     {
@@ -602,21 +658,31 @@ internal static partial class WindowUtilsMacOS
     }
 
     /// <summary>
-    /// 把三个 standard window buttons 按一行布局：close 放到 (<paramref name="x"/>, <paramref name="y"/>)，
-    /// miniaturize 放到 (x + spacing, y)，zoom 放到 (x + 2·spacing, y)。
-    /// 坐标为 Cocoa 原生语义 (原点左下)。非 macOS、全屏或无 NSWindow 时 no-op。
+    /// Places the three standard window buttons in one row: close at
+    /// (<paramref name="x" />, <paramref name="y" />), miniaturize at (x + spacing, y) and zoom at
+    /// (x + 2 * spacing, y), in Cocoa coordinates with the origin at the bottom left.
+    /// Does nothing when not on macOS, when the window is full screen or when the close button cannot be found.
+    /// A call that leaves the close button within 0.5 points of its target moves nothing at all.
     /// </summary>
-    /// <param name="window">目标窗口。</param>
-    /// <param name="x">close 按钮距窗口左边缘的 X (points)。</param>
-    /// <param name="y">所有按钮共用的 Y，Cocoa 坐标 (从窗口底部向上量)。</param>
-    /// <param name="spacing">相邻按钮左边缘间距，AppKit 原生为 20 pt。</param>
+    /// <param name="window">
+    /// The window whose standard window buttons are placed.
+    /// </param>
+    /// <param name="x">
+    /// The X of the close button, in points, measured from the left edge of the window.
+    /// </param>
+    /// <param name="y">
+    /// The Y shared by all buttons, in Cocoa coordinates, measured upward from the bottom of the window.
+    /// </param>
+    /// <param name="spacing">
+    /// The distance between the left edges of adjacent buttons. The AppKit native value is 20 points.
+    /// </param>
     /// <remarks>
-    /// 内部等价于：
-    /// <code>
-    /// window.SetStandardWindowButtonOrigin(NSWindowButton.CloseButton,       x,               y);
-    /// window.SetStandardWindowButtonOrigin(NSWindowButton.MiniaturizeButton, x +     spacing, y);
-    /// window.SetStandardWindowButtonOrigin(NSWindowButton.ZoomButton,        x + 2 * spacing, y);
-    /// </code>
+    ///     Equivalent to:
+    ///     <code>
+    ///     window.SetStandardWindowButtonOrigin(NSWindowButton.CloseButton,       x,               y);
+    ///     window.SetStandardWindowButtonOrigin(NSWindowButton.MiniaturizeButton, x +     spacing, y);
+    ///     window.SetStandardWindowButtonOrigin(NSWindowButton.ZoomButton,        x + 2 * spacing, y);
+    ///     </code>
     /// </remarks>
     public static void SetStandardWindowButtonsLayout(this Window window, double x, double y, double spacing = 20.0)
     {
@@ -636,9 +702,10 @@ internal static partial class WindowUtilsMacOS
             return;
         }
 
-        // live resize 期间 AppKit 的 autoresizing 会自动把按钮维持在相同位置，
-        // 这时再触发按钮移动 + tracking area 刷新会和 macOS 的 resize 渲染路径竞争，
-        // 造成标题栏/内容区可见抖动。若按钮已在目标位置，直接跳过。
+        // During a live resize the autoresizing of AppKit keeps the buttons at the same position by itself.
+        // Moving the buttons and refreshing the tracking areas at that point competes with the resize rendering
+        // path of macOS and makes the title bar and the content area flicker visibly, so a button that is already
+        // at the target position is skipped.
         var currentFrame = WindowUtilsInterop.GetFrame(closeBtn);
         if (Math.Abs(currentFrame.Origin.X - x) <= 0.5 &&
             Math.Abs(currentFrame.Origin.Y - y) <= 0.5)
@@ -651,26 +718,36 @@ internal static partial class WindowUtilsMacOS
             window.SetStandardWindowButtonOrigin((WindowUtilsInterop.NSWindowButton)i, x + spacing * i, y);
         }
 
-        // 按钮确实被移动了才刷新 tracking areas，保证 hover 事件命中新位置。
-        // setFrameOrigin 已经正确 invalidate 了按钮的新旧 frame，不再额外对 superview
-        // (NSThemeFrame，覆盖整个窗体) 做 setNeedsDisplay:YES — 那是 6.0 resize 抖动根因。
+        // The tracking areas are refreshed only after the buttons really moved, so that hover events hit the new
+        // position. setFrameOrigin already invalidates the old and new frames of the button, so the superview
+        // (NSThemeFrame, which covers the whole window) gets no setNeedsDisplay:YES. That was the root cause of the
+        // resize flicker in 6.0.
         var superview = WindowUtilsInterop.GetSuperview(closeBtn);
         WindowUtilsInterop.UpdateTrackingAreas(superview);
     }
 
     /// <summary>
-    /// 把三个 standard window buttons 垂直居中到高度为 <paramref name="titleBarHeight"/>
-    /// 的扩展标题栏里。本方法是 <see cref="SetStandardWindowButtonsLayout"/> 上的封装 —— 自动读 superview 高度和
-    /// close 按钮尺寸，算出居中的 Y 后委托给 <see cref="SetStandardWindowButtonsLayout"/>。
+    /// Vertically centers the three standard window buttons in an extended title bar of the height
+    /// <paramref name="titleBarHeight" />.
+    /// This is a wrapper over <see cref="SetStandardWindowButtonsLayout" />. It reads the superview height
+    /// and the close button size itself, computes the centered Y and delegates to
+    /// <see cref="SetStandardWindowButtonsLayout" />.
+    /// Does nothing when not on macOS, when the window is full screen, or when the superview height or the close
+    /// button frame cannot be read.
     /// </summary>
-    /// <param name="window">目标窗口。</param>
-    /// <param name="titleBarHeight">扩展后的标题栏高度 (即 <c>ExtendClientAreaTitleBarHeightHint</c>)。</param>
+    /// <param name="window">
+    /// The window whose standard window buttons are centered.
+    /// </param>
+    /// <param name="titleBarHeight">
+    /// The height of the extended title bar, that is <c>ExtendClientAreaTitleBarHeightHint</c>.
+    /// </param>
     /// <param name="leftInset">
-    /// 可选：close 按钮距窗口左边缘的 X 像素偏移。<c>null</c> 时沿用 close 当前的 X
-    /// (即 AppKit 默认的约 7–8 pt)。
+    /// Optional X offset of the close button from the left edge of the window, in points. When <c>null</c>, the
+    /// current X of the close button is kept, which is about 7 to 8 points by AppKit default.
     /// </param>
     /// <param name="spacing">
-    /// 可选：相邻按钮左边缘间距。<c>null</c> 时使用 AppKit 原生值 20 pt。
+    /// Optional distance between the left edges of adjacent buttons. When <c>null</c>, the AppKit native value of
+    /// 20 points is used.
     /// </param>
     public static void CenterStandardWindowButtons(this Window window, double titleBarHeight, double? leftInset = null,
                                                    double? spacing = null)

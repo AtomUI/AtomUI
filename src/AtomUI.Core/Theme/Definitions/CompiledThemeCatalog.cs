@@ -30,10 +30,14 @@ internal sealed class CompiledThemeCatalog
 
     internal IReadOnlyList<CompiledThemeDefinition> OrderedDefinitions { get; }
 
-    /// <summary>The implicit entry of every enabled language, then the named themes in resolver order.</summary>
+    /// <summary>
+    /// The implicit entry of every enabled language, then the named themes in resolver order.
+    /// </summary>
     internal IReadOnlyList<ThemeInfo> Themes { get; }
 
-    /// <summary>The enabled design languages.</summary>
+    /// <summary>
+    /// The enabled design languages.
+    /// </summary>
     internal IReadOnlyList<DesignLanguageInfo> Languages { get; }
     internal IReadOnlyList<ThemeResolverCatalogSlice> ResolverSlices => _resolverSlices;
 
@@ -227,7 +231,9 @@ internal sealed class CompiledThemeCatalog
             diagnostics);
     }
 
-    /// <summary>The implicit entry of every enabled language: its default appearance, without a theme file.</summary>
+    /// <summary>
+    /// The implicit entry of every enabled language: its default appearance, without a theme file.
+    /// </summary>
     private static void AddLanguageDefaults(ThemeSchemaRegistry registry,
         Dictionary<string, CompiledThemeDefinition> definitions, List<CompiledThemeDefinition> orderedDefinitions)
     {
@@ -551,7 +557,9 @@ internal sealed class CompiledThemeCatalog
             diagnostics);
     }
 
-    /// <summary>The catalog entry of a bound definition: its language, fixed axes, locked seeds and declared primary colour.</summary>
+    /// <summary>
+    /// The catalog entry of a bound definition: its language, fixed axes, locked seeds and declared primary color.
+    /// </summary>
     internal static ThemeInfo Describe(PreparedThemeDefinition definition) =>
         new(definition.Id, definition.Name, definition.Language.Id)
         {

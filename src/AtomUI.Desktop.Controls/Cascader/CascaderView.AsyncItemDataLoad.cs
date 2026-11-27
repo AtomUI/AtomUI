@@ -10,10 +10,19 @@ namespace AtomUI.Desktop.Controls;
 public partial class CascaderView
 {
     #region 公开属性定义
+    /// <summary>
+    /// Identifies the <see cref="AsyncLoadTimeout" /> property.
+    /// </summary>
     public static readonly StyledProperty<TimeSpan> AsyncLoadTimeoutProperty =
         AvaloniaProperty.Register<CascaderView, TimeSpan>(nameof(AsyncLoadTimeout),
             TimeSpan.FromSeconds(30));
 
+    /// <summary>
+    /// Maximum time to wait for <see cref="DataLoader" /> to load the children of an option that is being expanded.
+    /// The default is 30 seconds. When the time elapses, the token passed to the loader is canceled and
+    /// <see cref="ItemAsyncLoaded" /> is raised for the item with a failed result whose <c>StatusCode</c> is
+    /// <c>RpcStatusCode.Timeout</c>.
+    /// </summary>
     public TimeSpan AsyncLoadTimeout
     {
         get => GetValue(AsyncLoadTimeoutProperty);

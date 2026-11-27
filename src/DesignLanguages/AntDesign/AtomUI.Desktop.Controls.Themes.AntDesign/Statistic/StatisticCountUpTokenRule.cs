@@ -3,7 +3,9 @@ using AtomUI.Theme.Languages;
 
 namespace AtomUI.Desktop.Controls.Themes.AntDesign;
 
-/// <summary>The AntDesign view of <see cref="StatisticCountUpToken"/>.</summary>
+/// <summary>
+/// The AntDesign view of <see cref="StatisticCountUpToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class StatisticCountUpTokenRule : IControlTokenRule<AntDesignToken, StatisticCountUpToken>
 {

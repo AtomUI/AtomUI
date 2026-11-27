@@ -1,7 +1,7 @@
 namespace AtomUI.Desktop.Controls;
 
 /// <summary>
-/// Declares how <see cref="Masonry"/> assigns items to columns.
+/// Declares how <see cref="Masonry" /> assigns items to columns.
 /// </summary>
 public enum MasonryLayoutStrategy
 {

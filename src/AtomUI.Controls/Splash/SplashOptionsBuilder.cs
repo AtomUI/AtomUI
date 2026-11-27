@@ -5,7 +5,11 @@ using Avalonia.Platform;
 
 namespace AtomUI.Controls;
 
-/// <summary>Splash 内容与主题配置。图片只保存工厂：配置回调执行时平台尚未初始化，无法创建位图。</summary>
+/// <summary>
+/// Collects the content and the theme of the <see cref="Splash" /> in the callback passed to
+/// <c>UseSplash</c>. Images are stored as factories, because bitmaps cannot be created at that time: the platform
+/// is not initialized yet.
+/// </summary>
 public sealed class SplashOptionsBuilder
 {
     internal Func<IImage>? Logo { get; private set; }
@@ -14,7 +18,13 @@ public sealed class SplashOptionsBuilder
     internal string? Message { get; private set; }
     internal Func<ResourceDictionary>? CreateControlTheme { get; private set; }
 
-    /// <summary>Logo 来源：avares:// 或文件 URI。在显示 Splash 时于 UI 线程加载（配置回调执行时还无法创建位图）。</summary>
+    /// <summary>
+    /// Sets the logo, the image shown above the title of the splash card. The bitmap is loaded on the UI thread
+    /// when the splash is shown.
+    /// </summary>
+    /// <param name="source">
+    /// An <c>avares://</c> URI or a file URI.
+    /// </param>
     public SplashOptionsBuilder WithLogo(Uri source)
     {
         ArgumentNullException.ThrowIfNull(source);
@@ -22,13 +32,23 @@ public sealed class SplashOptionsBuilder
         return this;
     }
 
-    /// <summary>Logo 工厂（矢量图等自定义来源），在显示 Splash 时于 UI 线程调用。</summary>
+    /// <summary>
+    /// Sets the logo, the image shown above the title of the splash card, from a factory for custom sources such
+    /// as vector drawings. The factory is invoked on the UI thread when the splash is shown.
+    /// </summary>
     public SplashOptionsBuilder WithLogo(Func<IImage> factory)
     {
         Logo = factory ?? throw new ArgumentNullException(nameof(factory));
         return this;
     }
 
+    /// <summary>
+    /// Sets the background image, the image painted behind the content of the splash card. The bitmap is loaded
+    /// on the UI thread when the splash is shown.
+    /// </summary>
+    /// <param name="source">
+    /// An <c>avares://</c> URI or a file URI.
+    /// </param>
     public SplashOptionsBuilder WithBackgroundImage(Uri source)
     {
         ArgumentNullException.ThrowIfNull(source);
@@ -36,6 +56,10 @@ public sealed class SplashOptionsBuilder
         return this;
     }
 
+    /// <summary>
+    /// Sets the background image, the image painted behind the content of the splash card, from a factory for
+    /// custom sources. The factory is invoked on the UI thread when the splash is shown.
+    /// </summary>
     public SplashOptionsBuilder WithBackgroundImage(Func<IImage> factory)
     {
         BackgroundImage = factory ?? throw new ArgumentNullException(nameof(factory));
@@ -47,12 +71,19 @@ public sealed class SplashOptionsBuilder
             ? new Bitmap(AssetLoader.Open(source))
             : new Bitmap(source.IsFile ? source.LocalPath : source.ToString());
 
+    /// <summary>
+    /// Sets the heading shown below the logo of the splash card.
+    /// </summary>
     public SplashOptionsBuilder WithTitle(string title)
     {
         Title = title ?? throw new ArgumentNullException(nameof(title));
         return this;
     }
 
+    /// <summary>
+    /// Sets the initial status text shown below the title of the splash card. The message of a progress report
+    /// replaces it, and so does the error message when the startup fails.
+    /// </summary>
     public SplashOptionsBuilder WithMessage(string message)
     {
         Message = message ?? throw new ArgumentNullException(nameof(message));
@@ -60,9 +91,14 @@ public sealed class SplashOptionsBuilder
     }
 
     /// <summary>
-    /// 指定自定义 Splash 主题：x:Class 资源字典，内含 TargetType 为 Splash（可选 SplashWindow）的隐式 ControlTheme。
-    /// 只能使用 Splash 控件、Avalonia 基础元素与全局 Token；不能放 AtomUI 控件，不能依赖自定义字体。
+    /// Sets a custom theme for the splash. The dictionary is merged after the default theme, so its implicit
+    /// ControlTheme for <see cref="Splash" /> and, optionally, for <see cref="SplashWindow" /> replaces the default
+    /// one. It may only use the <see cref="Splash" /> and <see cref="SplashProgressBar" /> controls, Avalonia base
+    /// elements and global Tokens: it must not contain other AtomUI controls or depend on custom fonts.
     /// </summary>
+    /// <typeparam name="TTheme">
+    /// An x:Class resource dictionary that holds the custom themes.
+    /// </typeparam>
     public SplashOptionsBuilder WithControlTheme<TTheme>() where TTheme : ResourceDictionary, new()
     {
         CreateControlTheme = static () => new TTheme();

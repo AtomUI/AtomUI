@@ -1,7 +1,9 @@
 using AtomUI.Controls;
 namespace AtomUI.Desktop.Controls.Internal.DateViewer;
 
-/// <summary>One interaction cursor shared by all panels; selection remains with the host.</summary>
+/// <summary>
+/// One interaction cursor shared by all panels; selection remains with the host.
+/// </summary>
 internal sealed class DatePanelSession
 {
     public DateTime? FocusedValue { get; private set; }
@@ -220,7 +222,7 @@ internal sealed class DatePanelSession
 
     /// <summary>
     /// Moves focus for a navigation key forwarded from a picker input, which keeps keyboard focus. Unlike
-    /// <see cref="DatePanelAction.MoveFocus"/>, the shown pages follow focus, and the focused cell is hovered too so
+    /// <see cref="DatePanelAction.MoveFocus" />, the shown pages follow focus, and the focused cell is hovered too so
     /// it shows the hover look and previews the range. Returns false when focus cannot move.
     /// </summary>
     internal bool MoveKeyboardFocus(DateKeyboardMove move)
@@ -390,7 +392,9 @@ internal sealed class DatePanelSession
     }
 }
 
-/// <summary>Navigation keys a picker input forwards to its date panel.</summary>
+/// <summary>
+/// Navigation keys a picker input forwards to its date panel.
+/// </summary>
 internal enum DateKeyboardMove
 {
     Left,

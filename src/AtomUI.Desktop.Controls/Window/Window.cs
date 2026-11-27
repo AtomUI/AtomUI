@@ -28,6 +28,12 @@ namespace AtomUI.Desktop.Controls;
 
 using AvaloniaWindow = Avalonia.Controls.Window;
 
+/// <summary>
+/// Desktop window whose template draws an AtomUI frame: a default <see cref="WindowTitleBar" /> with
+/// caption buttons, logo and add-on areas, the content area, and optional decorative layers behind the
+/// window, the title bar and the content. Client-side decorations are always enabled on Windows, enabled
+/// on Linux only when the windowing platform needs managed decorations, and disabled on macOS.
+/// </summary>
 [global::System.Runtime.Versioning.UnsupportedOSPlatform("browser")]
 public partial class Window : AvaloniaWindow,
                               IOperationSystemAware,
@@ -36,119 +42,233 @@ public partial class Window : AvaloniaWindow,
     private const double WindowsCsdMinimumHeightInTitleBars = 2;
 
     #region 公共属性定义
+    /// <summary>
+    /// Identifies the <see cref="Logo" /> property.
+    /// </summary>
     public static readonly StyledProperty<object?> LogoProperty =
         WindowTitleBar.LogoProperty.AddOwner<Window>();
     
+    /// <summary>
+    /// Identifies the <see cref="LogoTemplate" /> property.
+    /// </summary>
     public static readonly StyledProperty<IDataTemplate?> LogoTemplateProperty =
         WindowTitleBar.LogoTemplateProperty.AddOwner<Window>();
 
+    /// <summary>
+    /// Identifies the <see cref="LogoVisibility" /> property.
+    /// </summary>
     public static readonly StyledProperty<WindowTitleBarLogoVisibility> LogoVisibilityProperty =
         WindowTitleBar.LogoVisibilityProperty.AddOwner<Window>();
 
+    /// <summary>
+    /// Identifies the <see cref="TitleAlignment" /> property.
+    /// </summary>
     public static readonly StyledProperty<WindowTitleBarTitleAlignment> TitleAlignmentProperty =
         WindowTitleBar.TitleAlignmentProperty.AddOwner<Window>();
 
+    /// <summary>
+    /// Identifies the <see cref="IsTitleVisible" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsTitleVisibleProperty =
         WindowTitleBar.IsTitleVisibleProperty.AddOwner<Window>();
 
+    /// <summary>
+    /// Identifies the <see cref="LeftAddOn" /> property.
+    /// </summary>
     public static readonly StyledProperty<object?> LeftAddOnProperty =
         WindowTitleBar.LeftAddOnProperty.AddOwner<Window>();
 
+    /// <summary>
+    /// Identifies the <see cref="LeftAddOnTemplate" /> property.
+    /// </summary>
     public static readonly StyledProperty<IDataTemplate?> LeftAddOnTemplateProperty =
         WindowTitleBar.LeftAddOnTemplateProperty.AddOwner<Window>();
 
+    /// <summary>
+    /// Identifies the <see cref="RightAddOn" /> property.
+    /// </summary>
     public static readonly StyledProperty<object?> RightAddOnProperty =
         WindowTitleBar.RightAddOnProperty.AddOwner<Window>();
 
+    /// <summary>
+    /// Identifies the <see cref="RightAddOnTemplate" /> property.
+    /// </summary>
     public static readonly StyledProperty<IDataTemplate?> RightAddOnTemplateProperty =
         WindowTitleBar.RightAddOnTemplateProperty.AddOwner<Window>();
     
+    /// <summary>
+    /// Identifies the <see cref="IsTitleBarVisible" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsTitleBarVisibleProperty =
         AvaloniaProperty.Register<Window, bool>(nameof(IsTitleBarVisible), defaultValue: true);
 
+    /// <summary>
+    /// Identifies the <see cref="FullScreenTitleBarMode" /> property.
+    /// </summary>
     public static readonly StyledProperty<FullScreenTitleBarMode> FullScreenTitleBarModeProperty =
         AvaloniaProperty.Register<Window, FullScreenTitleBarMode>(
             nameof(FullScreenTitleBarMode),
             FullScreenTitleBarMode.AutoHide);
 
+    /// <summary>
+    /// Identifies the <see cref="IsFullScreenTitleBarOpen" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsFullScreenTitleBarOpenProperty =
         AvaloniaProperty.Register<Window, bool>(
             nameof(IsFullScreenTitleBarOpen),
             defaultBindingMode: BindingMode.TwoWay,
             coerce: CoerceIsFullScreenTitleBarOpen);
 
+    /// <summary>
+    /// Identifies the <see cref="FullScreenTitleBar" /> property.
+    /// </summary>
     public static readonly StyledProperty<object?> FullScreenTitleBarProperty =
         AvaloniaProperty.Register<Window, object?>(nameof(FullScreenTitleBar));
 
+    /// <summary>
+    /// Identifies the <see cref="FullScreenTitleBarTemplate" /> property.
+    /// </summary>
     public static readonly StyledProperty<IDataTemplate?> FullScreenTitleBarTemplateProperty =
         AvaloniaProperty.Register<Window, IDataTemplate?>(nameof(FullScreenTitleBarTemplate));
 
+    /// <summary>
+    /// Identifies the <see cref="FullScreenTitleBarMouseEnterDelay" /> property.
+    /// </summary>
     public static readonly StyledProperty<int> FullScreenTitleBarMouseEnterDelayProperty =
         AvaloniaProperty.Register<Window, int>(nameof(FullScreenTitleBarMouseEnterDelay), 150);
 
+    /// <summary>
+    /// Identifies the <see cref="FullScreenTitleBarMouseLeaveDelay" /> property.
+    /// </summary>
     public static readonly StyledProperty<int> FullScreenTitleBarMouseLeaveDelayProperty =
         AvaloniaProperty.Register<Window, int>(nameof(FullScreenTitleBarMouseLeaveDelay), 300);
     
+    /// <summary>
+    /// Identifies the <see cref="WindowFrameLayer" /> property.
+    /// </summary>
     public static readonly StyledProperty<object?> WindowFrameLayerProperty =
         AvaloniaProperty.Register<Window, object?>(nameof(WindowFrameLayer));
     
+    /// <summary>
+    /// Identifies the <see cref="WindowFrameLayerTemplate" /> property.
+    /// </summary>
     public static readonly StyledProperty<IDataTemplate?> WindowFrameLayerTemplateProperty =
         AvaloniaProperty.Register<Window, IDataTemplate?>(nameof(WindowFrameLayerTemplate));
     
+    /// <summary>
+    /// Identifies the <see cref="WindowFrameLayerOpacity" /> property.
+    /// </summary>
     public static readonly StyledProperty<double> WindowFrameLayerOpacityProperty =
         AvaloniaProperty.Register<Window, double>(nameof(WindowFrameLayerOpacity), 1.0);
     
+    /// <summary>
+    /// Identifies the <see cref="ContentFrameLayer" /> property.
+    /// </summary>
     public static readonly StyledProperty<object?> ContentFrameLayerProperty =
         AvaloniaProperty.Register<Window, object?>(nameof(ContentFrameLayer));
     
+    /// <summary>
+    /// Identifies the <see cref="ContentFrameLayerTemplate" /> property.
+    /// </summary>
     public static readonly StyledProperty<IDataTemplate?> ContentFrameLayerTemplateProperty =
         AvaloniaProperty.Register<Window, IDataTemplate?>(nameof(ContentFrameLayerTemplate));
     
+    /// <summary>
+    /// Identifies the <see cref="ContentFrameLayerOpacity" /> property.
+    /// </summary>
     public static readonly StyledProperty<double> ContentFrameLayerOpacityProperty =
         AvaloniaProperty.Register<Window, double>(nameof(ContentFrameLayerOpacity), 1.0);
     
+    /// <summary>
+    /// Identifies the <see cref="ContentFrameBackground" /> property.
+    /// </summary>
     public static readonly StyledProperty<IBrush?> ContentFrameBackgroundProperty =
         AvaloniaProperty.Register<Window, IBrush?>(nameof(ContentFrameBackground));
     
+    /// <summary>
+    /// Identifies the <see cref="TitleBarFrameLayer" /> property.
+    /// </summary>
     public static readonly StyledProperty<object?> TitleBarFrameLayerProperty =
         AvaloniaProperty.Register<Window, object?>(nameof(TitleBarFrameLayer));
     
+    /// <summary>
+    /// Identifies the <see cref="TitleBarFrameLayerTemplate" /> property.
+    /// </summary>
     public static readonly StyledProperty<IDataTemplate?> TitleBarFrameLayerTemplateProperty =
         AvaloniaProperty.Register<Window, IDataTemplate?>(nameof(TitleBarFrameLayerTemplate));
     
+    /// <summary>
+    /// Identifies the <see cref="TitleBarFrameLayerOpacity" /> property.
+    /// </summary>
     public static readonly StyledProperty<double> TitleBarFrameLayerOpacityProperty =
         AvaloniaProperty.Register<Window, double>(nameof(TitleBarFrameLayerOpacity), 1.0);
     
+    /// <summary>
+    /// Identifies the <see cref="TitleBarFrameBackground" /> property.
+    /// </summary>
     public static readonly StyledProperty<IBrush?> TitleBarFrameBackgroundProperty =
         AvaloniaProperty.Register<Window, IBrush?>(nameof(TitleBarFrameBackground));
     
+    /// <summary>
+    /// Identifies the <see cref="IsMinimizeCaptionButtonVisible" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsMinimizeCaptionButtonVisibleProperty =
         AvaloniaProperty.Register<Window, bool>(nameof(IsMinimizeCaptionButtonVisible), true);
 
+    /// <summary>
+    /// Identifies the <see cref="IsMaximizeCaptionButtonVisible" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsMaximizeCaptionButtonVisibleProperty =
         AvaloniaProperty.Register<Window, bool>(nameof(IsMaximizeCaptionButtonVisible), true);
 
+    /// <summary>
+    /// Identifies the <see cref="IsCloseCaptionButtonVisible" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsCloseCaptionButtonVisibleProperty =
         AvaloniaProperty.Register<Window, bool>(nameof(IsCloseCaptionButtonVisible), true);
 
+    /// <summary>
+    /// Identifies the <see cref="IsFullScreenCaptionButtonVisible" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsFullScreenCaptionButtonVisibleProperty =
         AvaloniaProperty.Register<Window, bool>(nameof(IsFullScreenCaptionButtonVisible));
 
+    /// <summary>
+    /// Identifies the <see cref="IsPinCaptionButtonVisible" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsPinCaptionButtonVisibleProperty =
         AvaloniaProperty.Register<Window, bool>(nameof(IsPinCaptionButtonVisible));
     
+    /// <summary>
+    /// Identifies the <see cref="IsMoveEnabled" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsMoveEnabledProperty =
         AvaloniaProperty.Register<Window, bool>(nameof(IsMoveEnabled), defaultValue: true);
     
+    /// <summary>
+    /// Identifies the <see cref="MediaBreakPoint" /> property.
+    /// </summary>
     public static readonly StyledProperty<MediaBreakPoint> MediaBreakPointProperty = 
         MediaBreakAwareControlProperty.MediaBreakPointProperty.AddOwner<Window>();
     
+    /// <summary>
+    /// Identifies the <see cref="OsType" /> property.
+    /// </summary>
     public static readonly StyledProperty<OsType> OsTypeProperty =
         OperationSystemAwareControlProperty.OsTypeProperty.AddOwner<Window>();
     
+    /// <summary>
+    /// Identifies the <see cref="OsVersion" /> property.
+    /// </summary>
     public static readonly StyledProperty<Version> OsVersionProperty =
         OperationSystemAwareControlProperty.OsVersionProperty.AddOwner<Window>();
     
+    /// <summary>
+    /// Whether the title bar is presented. When it is <c>false</c>, the default title bar, the
+    /// <see cref="TitleBarFrameLayer" /> and the title bar parts of the drawn decorations are hidden, and
+    /// with client-side decorations enabled the content grows into the space that the title bar would have
+    /// occupied. The default is <c>true</c>.
+    /// </summary>
     public bool IsTitleBarVisible
     {
         get => GetValue(IsTitleBarVisibleProperty);
@@ -157,7 +277,7 @@ public partial class Window : AvaloniaWindow,
 
     /// <summary>
     /// How the title bar is presented while the window is full screen. Defaults to
-    /// <see cref="Controls.FullScreenTitleBarMode.AutoHide"/> on every platform.
+    /// <see cref="Controls.FullScreenTitleBarMode.AutoHide" /> on every platform.
     /// </summary>
     public FullScreenTitleBarMode FullScreenTitleBarMode
     {
@@ -167,7 +287,7 @@ public partial class Window : AvaloniaWindow,
 
     /// <summary>
     /// Whether the full-screen title bar is currently presented. Writing <c>true</c> or <c>false</c> opens or closes an
-    /// <see cref="Controls.FullScreenTitleBarMode.AutoHide"/> title bar; in every other state the value is coerced
+    /// <see cref="Controls.FullScreenTitleBarMode.AutoHide" /> title bar; in every other state the value is coerced
     /// (always open for Pinned and Docked, always closed when not full screen or Hidden).
     /// </summary>
     public bool IsFullScreenTitleBarOpen
@@ -177,7 +297,7 @@ public partial class Window : AvaloniaWindow,
     }
 
     /// <summary>
-    /// Custom content of the full-screen title bar. When this or <see cref="FullScreenTitleBarTemplate"/> is set it
+    /// Custom content of the full-screen title bar. When this or <see cref="FullScreenTitleBarTemplate" /> is set it
     /// replaces the default title bar in full screen.
     /// </summary>
     [DependsOn(nameof(FullScreenTitleBarTemplate))]
@@ -187,6 +307,10 @@ public partial class Window : AvaloniaWindow,
         set => SetValue(FullScreenTitleBarProperty, value);
     }
 
+    /// <summary>
+    /// Template used to present <see cref="FullScreenTitleBar" /> in the full-screen title bar. Setting only
+    /// this counts as a custom full-screen title bar and replaces the default title bar in full screen.
+    /// </summary>
     public IDataTemplate? FullScreenTitleBarTemplate
     {
         get => GetValue(FullScreenTitleBarTemplateProperty);
@@ -211,6 +335,12 @@ public partial class Window : AvaloniaWindow,
         set => SetValue(FullScreenTitleBarMouseLeaveDelayProperty, value);
     }
     
+    /// <summary>
+    /// Logo shown in the default title bar; <see cref="LogoVisibility" /> decides whether it appears. When
+    /// this and <see cref="LogoTemplate" /> are both <c>null</c>, the title bar shows the <c>Icon</c> of
+    /// this window instead, then the explicit logo of the main window and last the <c>Icon</c> of the main
+    /// window. Nothing is shown when all of them are absent.
+    /// </summary>
     [DependsOn(nameof(LogoTemplate))]
     public object? Logo
     {
@@ -218,30 +348,56 @@ public partial class Window : AvaloniaWindow,
         set => SetValue(LogoProperty, value);
     }
     
+    /// <summary>
+    /// Template used to present <see cref="Logo" /> in the default title bar. Setting it alone counts as an
+    /// explicit logo, so the icon fallback of <see cref="Logo" /> does not apply.
+    /// </summary>
     public IDataTemplate? LogoTemplate
     {
         get => GetValue(LogoTemplateProperty);
         set => SetValue(LogoTemplateProperty, value);
     }
 
+    /// <summary>
+    /// When the default title bar shows the logo. The default is <see cref="WindowTitleBarLogoVisibility.Auto" />,
+    /// which shows the logo when one is set, except on macOS when the title bar has no visible title.
+    /// <see cref="WindowTitleBarLogoVisibility.Always" /> shows it whenever a logo or logo template is set
+    /// and <see cref="WindowTitleBarLogoVisibility.Never" /> hides it.
+    /// </summary>
     public WindowTitleBarLogoVisibility LogoVisibility
     {
         get => GetValue(LogoVisibilityProperty);
         set => SetValue(LogoVisibilityProperty, value);
     }
 
+    /// <summary>
+    /// Horizontal placement of the title in the default title bar. The default is
+    /// <see cref="WindowTitleBarTitleAlignment.Auto" />, which follows the host operating system:
+    /// <see cref="WindowTitleBarTitleAlignment.WindowCenter" /> on macOS and
+    /// <see cref="WindowTitleBarTitleAlignment.Left" /> on Windows and Linux.
+    /// </summary>
     public WindowTitleBarTitleAlignment TitleAlignment
     {
         get => GetValue(TitleAlignmentProperty);
         set => SetValue(TitleAlignmentProperty, value);
     }
 
+    /// <summary>
+    /// Whether the default title bar shows the title text. The default is <c>true</c>. Setting <c>false</c>
+    /// hides only the text inside the title bar; the operating system still shows the window title in the
+    /// taskbar and window switching.
+    /// </summary>
     public bool IsTitleVisible
     {
         get => GetValue(IsTitleVisibleProperty);
         set => SetValue(IsTitleVisibleProperty, value);
     }
 
+    /// <summary>
+    /// Content of the left add-on area of the default title bar, meant for controls owned by the
+    /// application such as buttons. It is forwarded to the title bar at template priority, so a value set
+    /// directly on the title bar replaces it.
+    /// </summary>
     [DependsOn(nameof(LeftAddOnTemplate))]
     public object? LeftAddOn
     {
@@ -249,12 +405,20 @@ public partial class Window : AvaloniaWindow,
         set => SetValue(LeftAddOnProperty, value);
     }
 
+    /// <summary>
+    /// Template used to present <see cref="LeftAddOn" /> in the left add-on area of the default title bar.
+    /// </summary>
     public IDataTemplate? LeftAddOnTemplate
     {
         get => GetValue(LeftAddOnTemplateProperty);
         set => SetValue(LeftAddOnTemplateProperty, value);
     }
 
+    /// <summary>
+    /// Content of the right add-on area of the default title bar, meant for controls owned by the
+    /// application such as buttons. It is forwarded to the title bar at template priority, so a value set
+    /// directly on the title bar replaces it.
+    /// </summary>
     [DependsOn(nameof(RightAddOnTemplate))]
     public object? RightAddOn
     {
@@ -262,12 +426,20 @@ public partial class Window : AvaloniaWindow,
         set => SetValue(RightAddOnProperty, value);
     }
 
+    /// <summary>
+    /// Template used to present <see cref="RightAddOn" /> in the right add-on area of the default title bar.
+    /// </summary>
     public IDataTemplate? RightAddOnTemplate
     {
         get => GetValue(RightAddOnTemplateProperty);
         set => SetValue(RightAddOnTemplateProperty, value);
     }
     
+    /// <summary>
+    /// Decorative content drawn inside the window frame behind everything else. It covers the whole window
+    /// surface including the title bar and is clipped to the corner radius of the window. While it is set,
+    /// the window does not cache its content as a bitmap.
+    /// </summary>
     [DependsOn(nameof(WindowFrameLayerTemplate))]
     public object? WindowFrameLayer
     {
@@ -275,18 +447,30 @@ public partial class Window : AvaloniaWindow,
         set => SetValue(WindowFrameLayerProperty, value);
     }
     
+    /// <summary>
+    /// Template used to present <see cref="WindowFrameLayer" />.
+    /// </summary>
     public object? WindowFrameLayerTemplate
     {
         get => GetValue(WindowFrameLayerTemplateProperty);
         set => SetValue(WindowFrameLayerTemplateProperty, value);
     }
     
+    /// <summary>
+    /// Opacity of <see cref="WindowFrameLayer" />. The default is 1, fully opaque. It does not affect the
+    /// window background, the title bar or the content.
+    /// </summary>
     public double WindowFrameLayerOpacity
     {
         get => GetValue(WindowFrameLayerOpacityProperty);
         set => SetValue(WindowFrameLayerOpacityProperty, value);
     }
     
+    /// <summary>
+    /// Decorative content drawn behind the window content. Its area is the content area below the title
+    /// bar, minus the space that a Docked full-screen title bar reserves above the content, and it clips
+    /// the layer.
+    /// </summary>
     [DependsOn(nameof(ContentFrameLayerTemplate))]
     public object? ContentFrameLayer
     {
@@ -294,24 +478,40 @@ public partial class Window : AvaloniaWindow,
         set => SetValue(ContentFrameLayerProperty, value);
     }
     
+    /// <summary>
+    /// Template used to present <see cref="ContentFrameLayer" />.
+    /// </summary>
     public object? ContentFrameLayerTemplate
     {
         get => GetValue(ContentFrameLayerTemplateProperty);
         set => SetValue(ContentFrameLayerTemplateProperty, value);
     }
     
+    /// <summary>
+    /// Opacity of the layer behind the window content. The default is 1, fully opaque. It applies to
+    /// <see cref="ContentFrameLayer" /> and to <see cref="ContentFrameBackground" /> alike, because one
+    /// presenter carries both; the window content itself is not affected.
+    /// </summary>
     public double ContentFrameLayerOpacity
     {
         get => GetValue(ContentFrameLayerOpacityProperty);
         set => SetValue(ContentFrameLayerOpacityProperty, value);
     }
     
+    /// <summary>
+    /// Brush painted behind the window content, inside the area that <see cref="ContentFrameLayer" />
+    /// occupies. The default is <c>null</c>, which leaves the background of the window visible there.
+    /// </summary>
     public IBrush? ContentFrameBackground
     {
         get => GetValue(ContentFrameBackgroundProperty);
         set => SetValue(ContentFrameBackgroundProperty, value);
     }
     
+    /// <summary>
+    /// Decorative content drawn in the title bar row behind the default title bar, clipped to that row. It
+    /// is shown only while <see cref="IsTitleBarVisible" /> is <c>true</c>.
+    /// </summary>
     [DependsOn(nameof(TitleBarFrameLayerTemplate))]
     public object? TitleBarFrameLayer
     {
@@ -319,73 +519,134 @@ public partial class Window : AvaloniaWindow,
         set => SetValue(TitleBarFrameLayerProperty, value);
     }
     
+    /// <summary>
+    /// Template used to present <see cref="TitleBarFrameLayer" />.
+    /// </summary>
     public object? TitleBarFrameLayerTemplate
     {
         get => GetValue(TitleBarFrameLayerTemplateProperty);
         set => SetValue(TitleBarFrameLayerTemplateProperty, value);
     }
     
+    /// <summary>
+    /// Opacity of <see cref="TitleBarFrameLayer" />. The default is 1, fully opaque. It does not affect the
+    /// default title bar or the window content.
+    /// </summary>
     public double TitleBarFrameLayerOpacity
     {
         get => GetValue(TitleBarFrameLayerOpacityProperty);
         set => SetValue(TitleBarFrameLayerOpacityProperty, value);
     }
     
+    /// <summary>
+    /// Background of the title bar area. It is projected onto the default title bar at template priority,
+    /// so a value assigned directly on the title bar still wins, and the drawn decorations fill their title
+    /// bar background with it. The default is <c>null</c>, which leaves the theme background of the title
+    /// bar. On Linux with client-side decorations enabled, the default title bar stays transparent while it
+    /// is in the title bar row, because the drawn decorations paint the background there.
+    /// </summary>
     public IBrush? TitleBarFrameBackground
     {
         get => GetValue(TitleBarFrameBackgroundProperty);
         set => SetValue(TitleBarFrameBackgroundProperty, value);
     }
     
+    /// <summary>
+    /// Whether the default title bar shows the minimize caption button. The default is <c>true</c>. The
+    /// window also forwards <c>CanMinimize</c> to the title bar, so this is a request rather than a
+    /// guarantee.
+    /// </summary>
     public bool IsMinimizeCaptionButtonVisible
     {
         get => GetValue(IsMinimizeCaptionButtonVisibleProperty);
         set => SetValue(IsMinimizeCaptionButtonVisibleProperty, value);
     }
 
+    /// <summary>
+    /// Whether the default title bar shows the maximize caption button. The default is <c>true</c>. The
+    /// window also forwards <c>CanMaximize</c> to the title bar, so this is a request rather than a
+    /// guarantee.
+    /// </summary>
     public bool IsMaximizeCaptionButtonVisible
     {
         get => GetValue(IsMaximizeCaptionButtonVisibleProperty);
         set => SetValue(IsMaximizeCaptionButtonVisibleProperty, value);
     }
 
+    /// <summary>
+    /// Whether the default title bar shows the close caption button. The default is <c>true</c>.
+    /// </summary>
     public bool IsCloseCaptionButtonVisible
     {
         get => GetValue(IsCloseCaptionButtonVisibleProperty);
         set => SetValue(IsCloseCaptionButtonVisibleProperty, value);
     }
 
+    /// <summary>
+    /// Whether the default title bar shows the full-screen caption button. The default is <c>false</c>.
+    /// The button also needs the platform to support full screen, and it runs the same operation as
+    /// <see cref="ToggleFullScreen" />.
+    /// </summary>
     public bool IsFullScreenCaptionButtonVisible
     {
         get => GetValue(IsFullScreenCaptionButtonVisibleProperty);
         set => SetValue(IsFullScreenCaptionButtonVisibleProperty, value);
     }
 
+    /// <summary>
+    /// Whether the default title bar shows the pin caption button, which toggles <c>Topmost</c>. The
+    /// default is <c>false</c>. The button also needs the platform to support pinning.
+    /// </summary>
     public bool IsPinCaptionButtonVisible
     {
         get => GetValue(IsPinCaptionButtonVisibleProperty);
         set => SetValue(IsPinCaptionButtonVisibleProperty, value);
     }
     
+    /// <summary>
+    /// Whether dragging the default title bar moves the window. The default is <c>true</c>. Dragging is
+    /// refused while the window is full screen whatever the value, and changing the value cancels a drag in
+    /// progress.
+    /// </summary>
     public bool IsMoveEnabled
     {
         get => GetValue(IsMoveEnabledProperty);
         set => SetValue(IsMoveEnabledProperty, value);
     }
     
+    /// <summary>
+    /// Responsive breakpoint that matches the window width. Applications only read it: the framework
+    /// updates it from the media query indicator of the template and raises
+    /// <see cref="MediaBreakPointChanged" />.
+    /// </summary>
     public MediaBreakPoint MediaBreakPoint
     {
         get => GetValue(MediaBreakPointProperty);
         internal set => SetValue(MediaBreakPointProperty, value);
     }
     
+    /// <summary>
+    /// Operating system the window is styled for; the theme selects its template by it. The default is the
+    /// running system, or <c>Unknown</c> on any other system. <c>IOperationSystemAware.SetOsType</c>
+    /// changes it.
+    /// </summary>
     public OsType OsType => GetValue(OsTypeProperty);
+    /// <summary>
+    /// Version of <see cref="OsType" />. The default is <c>Environment.OSVersion.Version</c>; together
+    /// with <see cref="OsType" /> it decides whether the drawn top border of Windows 10 is used.
+    /// <c>IOperationSystemAware.SetOsVersion</c> changes it.
+    /// </summary>
     public Version OsVersion => GetValue(OsVersionProperty);
     
     #endregion
     
     #region 公共事件定义
     
+    /// <summary>
+    /// Raised after the first layout pass with the breakpoint measured then, and afterwards whenever the
+    /// breakpoint of the window changes. <see cref="MediaBreakPoint" /> already holds the new value when
+    /// handlers run.
+    /// </summary>
     public event EventHandler<MediaBreakPointChangedEventArgs>? MediaBreakPointChanged;
 
     #endregion
@@ -581,8 +842,9 @@ public partial class Window : AvaloniaWindow,
     private bool _isLegacyWindowsFrameBorderVisible;
 
     /// <summary>
-    /// Windows 10 CSD 的客户区顶边需要自绘 1px 边框：Avalonia 在该平台把客户区顶到窗口最上沿，
-    /// DWM 的顶边边框因此被遮住。Windows 11 由 DWM 的可见边框承担，不再自绘。
+    /// Whether the top edge of the client area needs a drawn 1px border under Windows 10 client-side
+    /// decorations: Avalonia extends the client area to the very top of the window there, which hides the
+    /// top border of the DWM. On Windows 11 the visible DWM border covers it, so nothing is drawn.
     /// </summary>
     internal bool IsLegacyWindowsFrameBorderVisible
     {
@@ -596,8 +858,8 @@ public partial class Window : AvaloniaWindow,
     private double _legacyWindowsFrameBorderThickness = 1;
 
     /// <summary>
-    /// 自绘顶边边框的 DIP 厚度：原生 DWM 边框是 1 个物理像素，
-    /// 这里按 RenderScaling 折算，避免高 DPI 下画成 2 个像素。
+    /// Thickness of the drawn top border in DIPs. The native DWM border is one physical pixel, so the value
+    /// is converted by the render scaling to keep it at one pixel on high-DPI displays.
     /// </summary>
     internal double LegacyWindowsFrameBorderThickness
     {
@@ -655,7 +917,7 @@ public partial class Window : AvaloniaWindow,
     private FullScreenTitleBarMode _effectiveFullScreenTitleBarMode = FullScreenTitleBarMode.Hidden;
 
     /// <summary>
-    /// The presented full-screen title bar mode; <see cref="Controls.FullScreenTitleBarMode.Hidden"/> whenever no
+    /// The presented full-screen title bar mode; <see cref="Controls.FullScreenTitleBarMode.Hidden" /> whenever no
     /// managed full-screen title bar is presented.
     /// </summary>
     internal FullScreenTitleBarMode EffectiveFullScreenTitleBarMode
@@ -745,7 +1007,7 @@ public partial class Window : AvaloniaWindow,
 
     /// <summary>
     /// The visible native or drawn frame border around the client surface.
-    /// This is separate from <see cref="FrameShadowThickness"/>, which only
+    /// This is separate from <see cref="FrameShadowThickness" />, which only
     /// describes AtomUI's shadow/transparent expansion area.
     /// </summary>
     internal Thickness VisibleFrameBorderThickness
@@ -760,6 +1022,10 @@ public partial class Window : AvaloniaWindow,
 
     private Thickness _visibleFrameBorderThickness;
     
+    /// <summary>
+    /// Selects the control theme of <see cref="Window" />, so that a derived window is styled by the AtomUI
+    /// window theme unless it overrides this member.
+    /// </summary>
     protected override Type StyleKeyOverride { get; } = typeof(Window);
     private protected bool CloseByClickCloseCaptionButton;
     private WindowTitleBar? _moveDragTitleBar;
@@ -779,7 +1045,8 @@ public partial class Window : AvaloniaWindow,
     private ThemeContextLease? _themeContextLease;
     private WindowState _windowStateBeforeFullScreen = WindowState.Normal;
 
-    // macOS 下 ConfigureMacOsWindow 的输入缓存，用于在 live resize 时短路，避免重复 P/Invoke
+    // Cache of the inputs of the last ConfigureMacOsWindow pass on macOS. It lets a live resize with unchanged
+    // inputs return early and so avoids repeated P/Invoke calls.
     private double? _macOsCachedTitleBarHeight;
     private double? _macOsCachedOffsetX;
     private double? _macOsCachedSpacing;
@@ -857,6 +1124,13 @@ public partial class Window : AvaloniaWindow,
         }
     }
 
+    /// <summary>
+    /// Shows a non-modal window. Before the native window is shown, it adopts the theme context resolved
+    /// from the window itself, primes the window background and the transparency fallback with the theme's
+    /// default window background until the theme is applied, lets the platform chrome manager prepare its
+    /// initial state, and applies the Windows client-side decoration frame theme. When showing fails, the
+    /// theme context adopted here is released again.
+    /// </summary>
     public override void Show()
     {
         var newThemeContextLease = PrepareThemeContextLease(this);
@@ -879,6 +1153,16 @@ public partial class Window : AvaloniaWindow,
         }
     }
 
+    /// <summary>
+    /// Shows a non-modal window owned by <paramref name="owner" />, with the same background, frame and
+    /// initial state preparation as <see cref="Show()" />. The window adopts the theme context of the owner
+    /// when the owner has one and the window does not follow it already. This member hides the base member:
+    /// a caller that holds the window as <c>Avalonia.Controls.Window</c> gets the base implementation
+    /// without that preparation.
+    /// </summary>
+    /// <param name="owner">
+    /// The window that owns this window and provides its theme context.
+    /// </param>
     public new void Show(AvaloniaWindow owner)
     {
         var newThemeContextLease = PrepareThemeContextLease(owner);
@@ -901,6 +1185,17 @@ public partial class Window : AvaloniaWindow,
         }
     }
 
+    /// <summary>
+    /// Shows the window modally, owned by <paramref name="owner" />, with the same preparation as
+    /// <c>Show(owner)</c>. This member hides the base member: a caller that holds the window as
+    /// <c>Avalonia.Controls.Window</c> gets the base implementation without that preparation.
+    /// </summary>
+    /// <param name="owner">
+    /// The window that owns this window and provides its theme context.
+    /// </param>
+    /// <returns>
+    /// A task that completes when the window is closed.
+    /// </returns>
     public new Task ShowDialog(AvaloniaWindow owner)
     {
         var newThemeContextLease = PrepareThemeContextLease(owner);
@@ -923,6 +1218,17 @@ public partial class Window : AvaloniaWindow,
         }
     }
 
+    /// <summary>
+    /// Shows the window modally, owned by <paramref name="owner" />, with the same preparation as
+    /// <c>Show(owner)</c>. This member hides the base member: a caller that holds the window as
+    /// <c>Avalonia.Controls.Window</c> gets the base implementation without that preparation.
+    /// </summary>
+    /// <param name="owner">
+    /// The window that owns this window and provides its theme context.
+    /// </param>
+    /// <returns>
+    /// A task that completes when the window is closed and yields the dialog result.
+    /// </returns>
     public new Task<TResult> ShowDialog<TResult>(AvaloniaWindow owner)
     {
         var newThemeContextLease = PrepareThemeContextLease(owner);
@@ -1113,6 +1419,12 @@ public partial class Window : AvaloniaWindow,
         CloseByClickCloseCaptionButton = true;
     }
     
+    /// <summary>
+    /// Locates the template parts and connects them to the window: the transparency fallback border, the
+    /// content cache parts, the chrome layer, the full-screen title bar host, the default title bar, the
+    /// media breakpoint indicator and the resizer. It also enforces the minimum height of Windows
+    /// client-side decorations. Derived classes call the base member to keep the window working.
+    /// </summary>
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         _transparencyFallbackBorder = null;
@@ -1445,8 +1757,9 @@ public partial class Window : AvaloniaWindow,
         WindowDecorations decorations,
         WindowState windowState)
     {
-        // Win10 的 DWM 在扩展客户区下把窗口顶边让给客户区，导致可见边框只剩左右下三边。
-        // Win11 的 DWM 会在窗口内部绘制 1px 可见边框，不需要客户区补偿。
+        // With an extended client area, the DWM of Windows 10 hands the top edge of the window to the client area,
+        // so a visible border remains on the left, right and bottom sides only.
+        // The DWM of Windows 11 draws a 1px visible border inside the window, so the client area needs no compensation.
         return osType == OsType.Windows &&
                isCsdEnabled &&
                extendClientAreaToDecorations &&
@@ -1575,6 +1888,18 @@ public partial class Window : AvaloniaWindow,
         }
     }
 
+    /// <summary>
+    /// Connects a newly created default title bar to this window. The title, logo, logo visibility, title
+    /// alignment and title visibility are forwarded to it; the left and right add-ons are forwarded at
+    /// template priority, so a value set directly on the title bar in an override replaces them; and
+    /// <see cref="TitleBarFrameBackground" /> is projected onto it. It is called for each title bar that
+    /// <see cref="NotifyCreateTitleBar" /> supplies when the template is applied. The base member first
+    /// discards the forwarding it created for the previous title bar, so an override that wants the default
+    /// forwarding calls it.
+    /// </summary>
+    /// <param name="titleBar">
+    /// The title bar that replaces the previous one.
+    /// </param>
     protected virtual void NotifyConfigureTitleBar(WindowTitleBar titleBar)
     {
         _defaultTitleBarBindings?.Dispose();
@@ -1604,15 +1929,16 @@ public partial class Window : AvaloniaWindow,
                 WindowTitleBar.RightAddOnTemplateProperty,
                 this.GetObservable(RightAddOnTemplateProperty),
                 BindingPriority.Template),
-            // TitleBarFrameBackground 不能放进 ControlTheme：默认标题栏由 Window 在
-            // OnApplyTemplate 中创建，且属性为 null 时必须回退到 ControlTheme 的
-            // ColorBgContainer DynamicResource。Template 优先级可覆盖 ControlTheme，
-            // 同时保留用户 LocalValue 的优先级。
+            // TitleBarFrameBackground cannot live in the ControlTheme: Window creates the default title bar in
+            // OnApplyTemplate, and a null value must fall back to the ColorBgContainer DynamicResource of the
+            // ControlTheme. Template priority overrides the ControlTheme while a LocalValue set by the user keeps
+            // its priority.
             this.GetObservable(TitleBarFrameBackgroundProperty).Subscribe(
                 brush => ProjectTitleBarFrameBackground(titleBar, brush)),
             this.GetObservable(IsCsdEnabledProperty).Subscribe(
                 _ => ProjectTitleBarFrameBackground(titleBar, TitleBarFrameBackground)),
-            // 默认标题栏在普通槽与全屏槽之间迁移时，背景的绘制方随之切换。
+            // When the default title bar migrates between the normal slot and the full-screen slot, the painter of
+            // its background changes with it.
             this.GetObservable(NormalSlotTitleBarProperty).Subscribe(
                 _ => ProjectTitleBarFrameBackground(titleBar, TitleBarFrameBackground))
         };
@@ -1622,11 +1948,12 @@ public partial class Window : AvaloniaWindow,
     {
         _titleBarFrameBackgroundProjection?.Dispose();
 
-        // Linux CSD 的标题栏背景由 drawn decorations overlay 的
-        // WindowTitleBarShadowBackground 按 frame 裁剪绘制；默认标题栏必须保持透明，
-        // 否则不透明背景会盖住该绘制层。该绘制层只服务普通槽：全屏时标题栏迁入
-        // 全屏标题栏宿主，drawn decorations 不再为它绘制背景，标题栏必须自行绘制，
-        // 否则全屏标题栏透出下方内容。其他平台由默认标题栏直接绘制。
+        // Under Linux client-side decorations the title bar background is painted, clipped to the frame, by the
+        // WindowTitleBarShadowBackground of the drawn decorations overlay, so the default title bar must stay
+        // transparent; an opaque background would cover that layer. That layer serves the normal slot only: in
+        // full screen the title bar moves into the full-screen title bar host and the drawn decorations no
+        // longer paint its background, so the title bar must paint it itself, otherwise the full-screen title
+        // bar shows the content beneath it. On the other platforms the default title bar paints it directly.
         if (OsType == OsType.Linux && IsCsdEnabled && ReferenceEquals(NormalSlotTitleBar, titleBar))
         {
             _titleBarFrameBackgroundProjection = titleBar.SetValue(
@@ -1696,6 +2023,17 @@ public partial class Window : AvaloniaWindow,
         IsFullScreenSupported       = _platformChromeManager?.SupportsFullScreen != false;
     }
 
+    /// <summary>
+    /// Creates the default title bar of the window. It is called when the template is applied and replaces
+    /// the title bar presented so far. The base member returns a new <see cref="WindowTitleBar" /> named
+    /// <c>PART_TitleBar</c>.
+    /// </summary>
+    /// <param name="oldTitleBar">
+    /// The title bar presented so far, already detached, or <c>null</c>.
+    /// </param>
+    /// <returns>
+    /// The title bar to present, or <c>null</c> to present no default title bar.
+    /// </returns>
     protected virtual WindowTitleBar? NotifyCreateTitleBar(WindowTitleBar? oldTitleBar)
     {
         return new WindowTitleBar
@@ -1704,6 +2042,14 @@ public partial class Window : AvaloniaWindow,
         };
     }
     
+    /// <summary>
+    /// Returns the main window of the application when it is an AtomUI <see cref="Window" />, otherwise
+    /// <c>null</c>.
+    /// </summary>
+    /// <returns>
+    /// The main window, or <c>null</c> when the application has no classic desktop lifetime or its main
+    /// window is of another type.
+    /// </returns>
     public static Window? GetMainWindow()
     {
         var lifetime = Application.Current?.ApplicationLifetime;
@@ -1736,8 +2082,9 @@ public partial class Window : AvaloniaWindow,
             return;
         }
 
-        // AppKit 在录屏/窗口共享期间会暂时隐藏标准按钮。隐藏期间不写回坐标，
-        // 等收到恢复通知后再执行一次完整布局，避免覆盖 AppKit 的共享控件状态。
+        // AppKit hides the standard buttons temporarily while the screen is recorded or the window is shared.
+        // While they are hidden the button positions are not written back; the restore notification runs a full
+        // layout again later, so that the sharing controls of AppKit are not overwritten.
         if (!this.IsStandardWindowButtonsVisible())
         {
             return;
@@ -1764,10 +2111,10 @@ public partial class Window : AvaloniaWindow,
         var effectSpacing = spacing ?? 20;
         var currentClientSize = ClientSize;
 
-        // live resize 期间，除 ClientSize 外的输入都不变化；即使高度变了，AppKit 的 autoresizing
-        // 会把按钮维持在相对标题栏的同一视觉位置。当 4 个输入都和上次完全一致时，
-        // 底层 SetStandardWindowButtonsLayout 的 GetFrame 短路也会命中，这里提前返回，
-        // 避免一次 P/Invoke 往返。
+        // During a live resize every input except ClientSize stays unchanged, and even when the height changes, the
+        // autoresizing of AppKit keeps the buttons at the same visual position relative to the title bar. When all
+        // four inputs equal the previous ones, the GetFrame short circuit of the underlying
+        // SetStandardWindowButtonsLayout would hit as well, so return here early and save one P/Invoke round trip.
         if (_macOsCacheValid &&
             Nullable.Equals(_macOsCachedTitleBarHeight, titleBarHeight) &&
             Nullable.Equals(_macOsCachedOffsetX, offsetX) &&
@@ -1810,6 +2157,13 @@ public partial class Window : AvaloniaWindow,
         _macOsCacheValid           = true;
     }
 
+    /// <summary>
+    /// Calls the base member, then refreshes everything that needs the native window: caption button
+    /// capabilities, the Windows client-side decoration frame theme, the frame geometry, the content frame
+    /// margin and the effective logo. On macOS it also queues the layout of the standard window buttons and
+    /// starts observing them. The media breakpoint is published after the first layout pass. Derived classes
+    /// call the base member to keep this behavior.
+    /// </summary>
     protected override void OnOpened(EventArgs e)
     {
         base.OnOpened(e);
@@ -1831,6 +2185,12 @@ public partial class Window : AvaloniaWindow,
         }
     }
 
+    /// <summary>
+    /// Releases what the window attached while it was open: the default title bar with its bindings, the
+    /// full-screen title bar, the observer of the macOS standard window buttons and the theme context adopted
+    /// when the window was shown. It runs before the <c>Closed</c> event is raised. Derived classes call the
+    /// base member to keep this cleanup.
+    /// </summary>
     protected override void OnClosed(EventArgs e)
     {
         _isOpened = false;
@@ -1902,10 +2262,12 @@ public partial class Window : AvaloniaWindow,
         _mainWindowLogoFallbackLease = null;
     }
 
-    // Logo 回退解析（纯函数）：显式 Logo/LogoTemplate 优先；都未设置时依次回退到
-    // 本窗口 Icon → 主窗口显式 Logo/LogoTemplate → 主窗口 Icon。
-    // 回退结果只进 EffectiveLogo/EffectiveLogoTemplate 供渲染使用，绝不写回公开属性，
-    // 避免"运行时设置 Logo 时残留框架注入模板"之类的状态污染。
+    // Resolves the effective logo as a pure function: an explicit Logo/LogoTemplate wins; when neither is set, it
+    // falls back in turn to the Icon of the window, then to the explicit Logo/LogoTemplate of the main window, then
+    // to the Icon of the main window.
+    // The result only feeds EffectiveLogo/EffectiveLogoTemplate for rendering and is never written back to the
+    // public properties, so that state such as a template injected by the framework does not linger after the
+    // application sets Logo at run time.
     internal static (object? Logo, IDataTemplate? Template) ResolveEffectiveLogo(
         Window window,
         Window? mainWindow)
@@ -1960,6 +2322,10 @@ public partial class Window : AvaloniaWindow,
         }
     }
 
+    /// <summary>
+    /// Calls the base member, then queues a new layout of the macOS standard window buttons, because their
+    /// target position depends on the window size.
+    /// </summary>
     protected override void OnSizeChanged(SizeChangedEventArgs e)
     {
         base.OnSizeChanged(e);
@@ -1969,6 +2335,15 @@ public partial class Window : AvaloniaWindow,
         }
     }
 
+    /// <summary>
+    /// Calls the base member, then keeps the state derived from the properties in step. A full-screen state
+    /// that the platform cannot honour is rejected. Later changes to the transparency fallback, the window
+    /// state, the size hints, the client-side decoration status, the title bar settings, the logo and the
+    /// theme variant update the caption buttons, the macOS button layout, the Windows frame theme and
+    /// border, the minimum height, the content frame margin, the move drag and the effective logo, and every
+    /// change is forwarded to the platform chrome manager and the full-screen title bar. Derived classes call
+    /// the base member to keep this.
+    /// </summary>
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
@@ -2024,9 +2399,9 @@ public partial class Window : AvaloniaWindow,
         {
             if (OperatingSystem.IsMacOS())
             {
-                // WindowState / Title / WindowDecorations 变化都可能让 AppKit 重置 standard button frame。
-                // 即使 AtomUI 的布局输入没有变化，原生按钮当前位置也可能已经偏离目标，
-                // 所以必须先让缓存失效再重新下发布局。
+                // A change of WindowState, Title or WindowDecorations can make AppKit reset the standard button
+                // frames. Even when the layout inputs of AtomUI are unchanged, the native buttons may have moved away
+                // from their target position, so the cache must be invalidated before the layout is published again.
                 QueueMacOsWindowConfiguration();
                 if (change.Property == TitleProperty ||
                     change.Property == WindowDecorationsProperty)

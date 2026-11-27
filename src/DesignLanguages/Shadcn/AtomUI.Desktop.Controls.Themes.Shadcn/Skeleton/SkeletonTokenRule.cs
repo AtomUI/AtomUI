@@ -6,7 +6,9 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls.Themes.Shadcn;
 
-/// <summary>The shadcn view of <see cref="SkeletonToken"/>.</summary>
+/// <summary>
+/// The shadcn view of <see cref="SkeletonToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class SkeletonTokenRule : IControlTokenRule<ShadcnToken, SkeletonToken>
 {
@@ -19,12 +21,14 @@ internal sealed class SkeletonTokenRule : IControlTokenRule<ShadcnToken, Skeleto
         token.GradientToColor = global.ColorFill;
         token.ParagraphLineHeight = global.ControlHeight / 2;
 
+        // Ant Design formula kept as is: no registry value is merged into the skeleton tokens.
         token.ParagraphMarginTop    = new Thickness(0, global.UniformlyMarginLG + global.UniformlyMarginXXS, 0, 0);
         token.AvatarMarginRight = new Thickness(0, 0, global.UniformlyMargin, 0);
         token.ParagraphLineRoundCornerRadius = new CornerRadius(token.ParagraphLineHeight / 2);
         token.LoadingBackgroundStart  = CreateLoadingBackground(-3.0, 1.0, token.GradientFromColor, token.GradientToColor);
         token.LoadingBackgroundMiddle = CreateLoadingBackground(-1.5, 2.5, token.GradientFromColor, token.GradientToColor);
         token.LoadingBackgroundEnd    = CreateLoadingBackground(0.0, 4.0, token.GradientFromColor, token.GradientToColor);
+        // Ant Design fixes the image placeholder fill to #bfbfbf.
         token.ImageColor              = Color.FromRgb(0xbf, 0xbf, 0xbf);
 
         var imageSizeBase = global.ControlHeight * 1.5;

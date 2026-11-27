@@ -7,8 +7,27 @@ using Avalonia.VisualTree;
 
 namespace AtomUI.Data;
 
+/// <summary>
+/// Code-created relays that keep one Avalonia property following the value of another object.
+/// Dispose the object that a relay returns to end it.
+/// </summary>
 public static class BindUtils
 {
+    /// <summary>
+    /// Relays the value of <paramref name="sourceProperty" /> on <paramref name="source" /> to a property on
+    /// <paramref name="target" />, in the direction that <paramref name="mode" /> selects.
+    /// <see cref="BindingMode.Default" /> uses the default binding mode of the target property, and a
+    /// <see langword="null" /> <paramref name="targetProperty" /> selects <paramref name="sourceProperty" />.
+    /// <see cref="BindingMode.OneTime" /> copies the current source value once, at
+    /// <paramref name="priority" />.
+    /// <see cref="BindingMode.TwoWay" /> and <see cref="BindingMode.OneWayToSource" /> also copy every change
+    /// the target reports afterwards to the source property at <see cref="BindingPriority.LocalValue" />.
+    /// A read-only source property is not written, and the value the target has when the relay is created is
+    /// not copied to the source.
+    /// </summary>
+    /// <exception cref="ArgumentException">
+    /// Thrown when a property that is not attached is not registered on the object that carries it.
+    /// </exception>
     public static IDisposable RelayBind(AvaloniaObject source, 
                                         AvaloniaProperty sourceProperty, 
                                         AvaloniaObject target,
@@ -45,6 +64,20 @@ public static class BindUtils
         };
     }
 
+    /// <summary>
+    /// Binds <paramref name="targetProperty" /> on <paramref name="target" /> to the ancestor of
+    /// <paramref name="relativeTo" /> in the visual tree whose type is <paramref name="ancestorType" />.
+    /// The value follows later changes of that ancestor and is <see langword="null" /> while no such
+    /// ancestor exists. <paramref name="ancestorLevel" /> 1 selects the nearest matching ancestor, 2 the
+    /// one above it, and so on. Values are written at <paramref name="priority" />.
+    /// </summary>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// Thrown when <paramref name="ancestorLevel" /> is less than 1.
+    /// </exception>
+    /// <exception cref="ArgumentException">
+    /// Thrown when <paramref name="ancestorType" /> is not assignable to <typeparamref name="TResult" />, or
+    /// when a target property that is not attached is not registered on <paramref name="target" />.
+    /// </exception>
     public static IDisposable BindVisualAncestor<TResult>(
         Visual relativeTo,
         AvaloniaObject target,
@@ -140,6 +173,11 @@ public static class BindUtils
             : Disposable.Empty;
     }
     
+    /// <summary>
+    /// Removed string-path overload. Reflecting on a property name is not AOT-safe, so using it is a compile
+    /// error and a call always throws <see cref="NotSupportedException" />. Use the overload that takes an
+    /// <see cref="AvaloniaProperty" />, or the one that takes a getter delegate.
+    /// </summary>
     [Obsolete("String-path relay binding is not AOT-safe. Use an AvaloniaProperty overload or the strongly typed getter overload.", true)]
     public static IDisposable RelayBind(object source,
                                         string sourcePropertyName,
@@ -152,6 +190,15 @@ public static class BindUtils
             "String-path relay binding is not AOT-safe. Use an AvaloniaProperty overload or the strongly typed getter overload.");
     }
 
+    /// <summary>
+    /// Binds <paramref name="targetProperty" /> on <paramref name="target" /> one-way to the value that
+    /// <paramref name="valueGetter" /> returns for <paramref name="source" />, at
+    /// <paramref name="priority" />. The getter runs once when the relay is created. When
+    /// <paramref name="source" /> implements <see cref="INotifyPropertyChanged" />, it runs again after each
+    /// change the source reports with the name <paramref name="sourcePropertyName" />, or with an empty name,
+    /// which stands for all properties. A source that does not implement it produces the initial value only.
+    /// The name is only compared with the reported name and is never resolved by reflection.
+    /// </summary>
     public static IDisposable RelayBind<TSource, TResult>(TSource source,
                                                           string sourcePropertyName,
                                                           Func<TSource, TResult> valueGetter,
@@ -176,6 +223,15 @@ public static class BindUtils
             priority);
     }
 
+    /// <summary>
+    /// Binds <paramref name="targetProperty" /> on <paramref name="target" /> one-way to
+    /// <paramref name="sourceProperty" /> on <paramref name="source" />, passing each value to
+    /// <paramref name="converter" /> as a <typeparamref name="TSource" />. Values are written at
+    /// <paramref name="priority" />.
+    /// </summary>
+    /// <exception cref="ArgumentException">
+    /// Thrown when the source or target property is not registered on the object that carries it.
+    /// </exception>
     public static IDisposable RelayBind<TSource, TResult>(AvaloniaObject source,
                                                           AvaloniaProperty<TSource> sourceProperty,
                                                           AvaloniaObject target,
@@ -197,6 +253,15 @@ public static class BindUtils
         return target.Bind(targetProperty, source.GetObservable(sourceProperty, converter), priority);
     }
 
+    /// <summary>
+    /// Binds <paramref name="targetProperty" /> on <paramref name="target" /> one-way to the untyped
+    /// <paramref name="sourceProperty" /> on <paramref name="source" />, passing each value to
+    /// <paramref name="converter" /> as an <see langword="object" />. Values are written at
+    /// <paramref name="priority" />.
+    /// </summary>
+    /// <exception cref="ArgumentException">
+    /// Thrown when the source or target property is not registered on the object that carries it.
+    /// </exception>
     public static IDisposable RelayBind<TResult>(AvaloniaObject source,
                                                  AvaloniaProperty sourceProperty,
                                                  AvaloniaObject target,

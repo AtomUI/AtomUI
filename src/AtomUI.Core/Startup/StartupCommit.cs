@@ -9,10 +9,13 @@ namespace AtomUI;
 internal static class StartupCommit
 {
     /// <summary>
-    /// 单次提交：本地化、主题、自有服务、初始化器。<paramref name="initialSystemAppearance"/> 与选取
-    /// 启动全局层用的是同一次系统外观读取，避免两次读取之间外观切换导致不一致。
-    /// <paramref name="resolveStartupGlobalParent"/> 在初始化主题前才调用：此前不依赖全局层的提交步骤可与后台
-    /// Prepare 并行，调用本身可以阻塞等待 Prepare。
+    /// Commits localization, the theme, the owned services and the initializers in a single pass.
+    /// <paramref name="initialSystemAppearance" /> and the startup global layer chosen with it come from the same
+    /// reading of the system appearance, so an appearance switch between two readings cannot make them disagree.
+    /// <paramref name="resolveStartupGlobalParent" /> is invoked only right before the theme is initialized: the
+    /// commit steps before that do not depend on the global layer and can overlap the background Prepare, and the
+    /// call itself may block until Prepare has finished. When a step fails, the parts built so far are disposed
+    /// and the original exception is rethrown, inside an <see cref="AggregateException" /> when cleanup fails too.
     /// </summary>
     internal static ApplicationScope Commit(Application application, AtomUIBuilder builder,
         StartupProcess process, ThemeAppearance? initialSystemAppearance, Func<ThemeSnapshot?>? resolveStartupGlobalParent)
@@ -34,7 +37,8 @@ internal static class StartupCommit
         List<IAtomUIOwnedService>? ownedServices = null;
         try
         {
-            // 应用级语言注册需要 Application 实例，在此执行；目录与 bundle 由 registry 排序，与注册顺序无关。
+            // Application-level language registration needs the Application instance, so it runs here. The registry
+            // sorts the catalog and bundles, so the registration order does not matter.
             if (application is IGeneratedApplicationLanguageBootstrap bootstrap)
             {
                 bootstrap.RegisterApplicationLanguages(builder.Localization);

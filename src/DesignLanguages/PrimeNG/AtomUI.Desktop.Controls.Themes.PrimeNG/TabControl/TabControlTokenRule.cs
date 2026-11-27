@@ -4,7 +4,9 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 
-/// <summary>The PrimeNG view of <see cref="TabControlToken"/>.</summary>
+/// <summary>
+/// The PrimeNG view of <see cref="TabControlToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class TabControlTokenRule : IControlTokenRule<PrimeNGToken, TabControlToken>
 {
@@ -12,7 +14,8 @@ internal sealed class TabControlTokenRule : IControlTokenRule<PrimeNGToken, TabC
     {
         var token  = target.Own;
         var global = target.Global;
-        // PrimeNG: the control-global overrides, read by the formulas below.
+        // PrimeNG: writes MotionDurationSlow, read by the TabControl theme (the ink bar transition), and
+        // ColorBorderSecondary, which neither the formulas below nor the theme of the control reads.
         PrimeNGTabControlTokens.EvaluateGlobal(in context, global);
         LineTabTokenCalculator.Calculate(in context, global, token);
         token.MenuEdgeThickness = global.ControlHeight;

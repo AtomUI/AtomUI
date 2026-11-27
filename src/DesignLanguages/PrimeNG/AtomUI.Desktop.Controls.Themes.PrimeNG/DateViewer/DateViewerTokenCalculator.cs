@@ -6,15 +6,25 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 
-/// <summary>The PrimeNG values of the shared <see cref="AbstractDateViewerToken"/> layer.</summary>
+/// <summary>
+/// The PrimeNG values of the shared <see cref="AbstractDateViewerToken" /> layer.
+/// </summary>
 public static class DateViewerTokenCalculator
 {
+    /// <summary>
+    /// Writes the PrimeNG values of the date panel into the shared <see cref="AbstractDateViewerToken" /> layer: the
+    /// panel width, the cell sizes and colors, the header metrics, the content insets and the week number opacity.
+    /// <see cref="CalculateCellRowHeight" /> derives the row height from the cell height.
+    /// </summary>
     public static void Calculate(in TokenEvaluationContext<PrimeNGToken> context, DesignToken global, AbstractDateViewerToken token)
     {
         token.PanelBg = global.ColorBgContainer;
         token.CellHoverBg = global.ControlItemBgHover;
         token.CellRangeBg = global.ControlItemBgActive;
         token.CellCornerRadius     = global.BorderRadiusSM;
+        // Ant Design formula kept as is: the date panel stages replace the cell size and radius, the row height,
+        // the panel width, the today fill, the title weight and the week-day row (PrimeUIX datepicker); the rest
+        // keeps the Ant Design formula.
         token.CellTodayBg          = Colors.Transparent;
         token.CellTodayColor       = global.ColorText;
         token.CellTodayBorderColor = global.ColorPrimary;
@@ -41,9 +51,14 @@ token.CellWidth = global.ControlHeightSM;
         token.HeaderHorizontalPadding = new Thickness(global.UniformlyPaddingXS, 0);
         token.DateBodyPadding = new Thickness(bodyHorizontalPadding, global.UniformlyPaddingXS);
         token.HeaderBorderThickness = new Thickness(0, 0, 0, global.LineWidth);
+        // antd dims the week number of the selected row to half alpha.
         token.WeekNumberOpacity = 0.5;
     }
 
+    /// <summary>
+    /// Returns <c>CellRowHeight</c>, the height of one row of date cells: <paramref name="cellHeight" /> plus three
+    /// times <c>UniformlyPaddingXXS</c>.
+    /// </summary>
     public static double CalculateCellRowHeight(AbstractDateViewerToken token, DesignToken global, double cellHeight) =>
         cellHeight + global.UniformlyPaddingXXS * 3;
 }

@@ -106,7 +106,10 @@ internal partial class TimePickerPresenter : PickerPresenterBase
         CandidateChanged?.Invoke(this, EventArgs.Empty);
     }
 
-    /// <summary>Steps the time columns for a navigation key pressed in the picker input; false for other keys.</summary>
+    /// <summary>
+    /// Steps or switches the time columns for a navigation key pressed in the picker input, only while
+    /// <c>IsEditing</c> is true; returns false for other keys and when not editing.
+    /// </summary>
     internal bool NavigateByKey(Key key) => IsEditing && _timeView?.HandleForwardedKey(key) == true;
 
     internal TimeSpan? EndEditing()

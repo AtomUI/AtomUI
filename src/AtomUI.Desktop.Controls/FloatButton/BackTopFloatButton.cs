@@ -16,16 +16,34 @@ internal static class BackTopRingResources
         ControlTokenResourceKey.Global(BackTopFloatButtonTokens.Identity, SharedTokenKind.ColorPrimary));
 }
 
+/// <summary>
+/// A back-to-top button for desktop applications: a float button that appears when <see cref="AbstractBackTopFloatButton.Target" /> is
+/// scrolled down by <see cref="AbstractBackTopFloatButton.VisibilityHeight" /> and scrolls it back to the top when clicked.
+/// <see cref="BackTopFloatButtonHost" /> creates its own button and floats it in the scoped overlay layer; an
+/// embedded button is laid out by its parent. The description, set through <see cref="Avalonia.Controls.ContentControl" />, is shown
+/// only in the Square shape.
+/// </summary>
 public partial class BackTopFloatButton : AbstractBackTopFloatButton
 {
     private FloatButtonAppearanceBinding? _themeInputs;
 
+    /// <summary>
+    /// Called when the button is attached to a logical tree. It creates the binding that reads the outline tokens of
+    /// the active theme and writes the resulting values to the attached properties of
+    /// <c>FloatButtonAppearanceBinding</c>, which the theme of the button reads. Overrides must call the base
+    /// implementation, otherwise the button ignores the outline look.
+    /// </summary>
     protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
     {
         base.OnAttachedToLogicalTree(e);
         _themeInputs = new FloatButtonAppearanceBinding(this);
     }
 
+    /// <summary>
+    /// Called when the button is detached from its logical tree. It disposes the binding created in
+    /// <see cref="OnAttachedToLogicalTree" />, which stops the theme subscription and clears the attached values.
+    /// Overrides must call the base implementation, otherwise the button stays subscribed to theme changes.
+    /// </summary>
     protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
     {
         _themeInputs?.Dispose();
@@ -33,6 +51,12 @@ public partial class BackTopFloatButton : AbstractBackTopFloatButton
         base.OnDetachedFromLogicalTree(e);
     }
 
+    /// <summary>
+    /// Called when the value of a property of the button changes. After the base implementation, when <see
+    /// cref="AbstractFloatButton.Tooltip" /> or <see cref="AbstractFloatButton.TooltipColor" /> changes, it writes the
+    /// new value to the attached <c>ToolTip.Tip</c> or <c>ToolTip.Color</c> property of the button. Overrides must call
+    /// the base implementation, otherwise the tooltip does not follow these properties.
+    /// </summary>
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
@@ -46,6 +70,20 @@ public partial class BackTopFloatButton : AbstractBackTopFloatButton
         }
     }
     
+    /// <summary>
+    /// Creates the badge that matches <see cref="AbstractFloatButton.IsBadgeEnabled" /> and
+    /// <see cref="AbstractFloatButton.IsDotBadge" />, adds it to <c>PART_BadgeLayout</c> and positions it. The badge
+    /// is a <c>DotBadgeAdorner</c>, or a <c>CountBadgeAdorner</c> when the badge is not a dot, and it is bound to
+    /// the badge properties of the button. When the badge is disabled, the existing badge is removed instead.
+    /// Nothing happens before a template supplies <c>PART_BadgeLayout</c>.
+    /// </summary>
+    /// <remarks>
+    /// The base class calls it after the control template is applied and whenever
+    /// <see cref="AbstractFloatButton.IsBadgeEnabled" /> or <see cref="AbstractFloatButton.IsDotBadge" /> changes.
+    /// The base class positions the control that <c>_badge</c> references, so an override must leave <c>_badge</c>
+    /// pointing at the badge it added, or set it to <see langword="null" />. The member is abstract in the base
+    /// class, so there is no base implementation to call.
+    /// </remarks>
     private protected override void ConfigureBadge()
     {
         if (_badgeLayout != null)

@@ -29,7 +29,9 @@
                                                  IsVisible="{TemplateBinding HasStickyContent}"
                                                  Padding="{TemplateBinding StickyContentPadding}"
                                                  ZIndex="1">
-                            <!-- layer: 表面宿主（规则 3）。吸顶 Tab 提升到 T3 层后，Tab 的焦点描边、Badge 仍紧贴吸顶表面。 -->
+                            <!-- layer: surface host. After the sticky tab is promoted to the T3 layer, the focus
+                            strokes and badges of the tab still sit right next to the sticky surface.
+                            -->
                             <VisualLayerManager atom:LayerLadder.IsSurfaceHost="True">
                                 <ContentPresenter Content="{TemplateBinding StickyContent}" />
                             </VisualLayerManager>

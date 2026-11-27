@@ -4,7 +4,9 @@ using AtomUI.Theme.Languages;
 
 namespace AtomUI.Desktop.Controls.Themes.AntDesign;
 
-/// <summary>The AntDesign view of <see cref="ArrowDecoratedBoxToken"/>.</summary>
+/// <summary>
+/// The AntDesign view of <see cref="ArrowDecoratedBoxToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class ArrowDecoratedBoxTokenRule : IControlTokenRule<AntDesignToken, ArrowDecoratedBoxToken>
 {

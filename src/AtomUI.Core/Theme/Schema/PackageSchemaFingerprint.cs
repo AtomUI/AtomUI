@@ -1,7 +1,9 @@
 namespace AtomUI.Theme.Schema;
 
 /// <summary>
-/// 一个注册包的编译期 schema 指纹（生成器 emit 的常量）。仅参与启动 Revision 的组合计算；
-/// 值不要求与全量遍历算法跨域可比，只需编译期确定性与内容区分度。
+/// The compile-time schema fingerprint of one registration package, emitted as a constant by the generator.
+/// It only feeds the composition of the startup <c>Revision</c>. Its value need not be comparable with the
+/// result of the full-traversal algorithm; it only has to be deterministic at compile time and to differ
+/// whenever the content differs.
 /// </summary>
 internal readonly record struct PackageSchemaFingerprint(string PackageId, ulong Fingerprint);

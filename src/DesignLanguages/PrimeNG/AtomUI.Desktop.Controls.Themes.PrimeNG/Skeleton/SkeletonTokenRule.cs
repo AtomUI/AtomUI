@@ -6,7 +6,9 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 
-/// <summary>The PrimeNG view of <see cref="SkeletonToken"/>.</summary>
+/// <summary>
+/// The PrimeNG view of <see cref="SkeletonToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class SkeletonTokenRule : IControlTokenRule<PrimeNGToken, SkeletonToken>
 {
@@ -14,19 +16,24 @@ internal sealed class SkeletonTokenRule : IControlTokenRule<PrimeNGToken, Skelet
     {
         var token  = target.Own;
         var global = target.Global;
-        // PrimeNG: the control-global overrides, read by the formulas below.
+        // PrimeNG: the control-global overrides (BorderRadiusSM), read by the formulas below (SkeletonTokenCalculator)
+        // and by the Skeleton theme (CornerRadius).
         PrimeNGSkeletonTokens.EvaluateGlobal(in context, global);
         SkeletonTokenCalculator.Calculate(in context, global, token);
         token.GradientFromColor = global.ColorFillContent;
         token.GradientToColor = global.ColorFill;
         token.ParagraphLineHeight = global.ControlHeight / 2;
 
+        // Ant Design formula kept as is: the skeleton stage (PrimeNGSkeletonTokens) replaces the gradient colors,
+        // the block radius and the motion duration (PrimeUIX skeleton); the paragraph and image metrics keep the
+        // Ant Design formula.
         token.ParagraphMarginTop    = new Thickness(0, global.UniformlyMarginLG + global.UniformlyMarginXXS, 0, 0);
         token.AvatarMarginRight = new Thickness(0, 0, global.UniformlyMargin, 0);
         token.ParagraphLineRoundCornerRadius = new CornerRadius(token.ParagraphLineHeight / 2);
         token.LoadingBackgroundStart  = CreateLoadingBackground(-3.0, 1.0, token.GradientFromColor, token.GradientToColor);
         token.LoadingBackgroundMiddle = CreateLoadingBackground(-1.5, 2.5, token.GradientFromColor, token.GradientToColor);
         token.LoadingBackgroundEnd    = CreateLoadingBackground(0.0, 4.0, token.GradientFromColor, token.GradientToColor);
+        // antd fixes the image placeholder fill to #bfbfbf.
         token.ImageColor              = Color.FromRgb(0xbf, 0xbf, 0xbf);
 
         var imageSizeBase = global.ControlHeight * 1.5;

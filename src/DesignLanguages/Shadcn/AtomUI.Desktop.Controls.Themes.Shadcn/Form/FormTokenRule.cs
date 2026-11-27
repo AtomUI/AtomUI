@@ -4,7 +4,9 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls.Themes.Shadcn;
 
-/// <summary>The shadcn view of <see cref="FormToken"/>.</summary>
+/// <summary>
+/// The shadcn view of <see cref="FormToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class FormTokenRule : IControlTokenRule<ShadcnToken, FormToken>
 {
@@ -12,6 +14,7 @@ internal sealed class FormTokenRule : IControlTokenRule<ShadcnToken, FormToken>
     {
         var token  = target.Own;
         var global = target.Global;
+        // Ant Design formula kept as is: no registry value is merged into the form tokens.
         token.LabelRequiredMarkColor = global.ColorError;
         token.LabelColor             = global.ColorTextHeading;
         token.LabelFontSize          = global.FontSize;

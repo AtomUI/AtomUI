@@ -6,7 +6,7 @@ namespace AtomUI.Desktop.Controls;
 /// <summary>
 /// Arranges Breadcrumb item containers and their sibling separators in one horizontal flow:
 /// container 0, separator 0, container 1, separator 1, ..., container N - 1.
-/// Item containers stay in <see cref="Panel.Children"/> so the item generator keeps full
+/// Item containers stay in <see cref="Panel.Children" /> so the item generator keeps full
 /// ownership of that collection; separator visuals are appended to the panel's visual
 /// children so they render without polluting the generator's index mapping.
 /// </summary>

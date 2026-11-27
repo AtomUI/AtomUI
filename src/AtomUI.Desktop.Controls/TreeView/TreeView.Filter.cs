@@ -80,6 +80,13 @@ public partial class TreeView
         return count;
     }
     
+    /// <summary>
+    /// Applies the filter (<c>Filter</c>) with the current <c>FilterValue</c> to the nodes and updates
+    /// <see cref="FilterResultCount" />. Nodes are collapsed first; unless <see cref="FilterStrategy" /> includes
+    /// <see cref="TreeFilterStrategy.ExpandPath" />, the nodes that were expanded before are expanded again. The call
+    /// clears the filter instead when no filter or no filter value is set, when the value is blank, or when the
+    /// control is not loaded yet.
+    /// </summary>
     public void FilterTreeNode()
     {
         if (Filter != null && FilterValue != null && IsLoaded)

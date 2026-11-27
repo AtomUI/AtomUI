@@ -12,30 +12,55 @@ using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
 
+/// <summary>
+/// A text block whose text the user can select with the pointer or with the select-all shortcut, and copy with
+/// the platform's copy shortcut. The selection is painted with <see cref="SelectionBrush" />.
+/// </summary>
 public class SelectableTextBlock : TextBlock
 {
     #region 公共属性定义
 
+    /// <summary>
+    /// Identifies the <see cref="SelectionStart" /> property.
+    /// </summary>
     public static readonly StyledProperty<int> SelectionStartProperty =
         Avalonia.Controls.TextBox.SelectionStartProperty.AddOwner<SelectableTextBlock>();
 
+    /// <summary>
+    /// Identifies the <see cref="SelectionEnd" /> property.
+    /// </summary>
     public static readonly StyledProperty<int> SelectionEndProperty =
         Avalonia.Controls.TextBox.SelectionEndProperty.AddOwner<SelectableTextBlock>();
 
+    /// <summary>
+    /// Identifies the <see cref="SelectedText" /> property.
+    /// </summary>
     public static readonly DirectProperty<SelectableTextBlock, string> SelectedTextProperty =
         AvaloniaProperty.RegisterDirect<SelectableTextBlock, string>(
             nameof(SelectedText),
             o => o.SelectedText);
 
+    /// <summary>
+    /// Identifies the <see cref="SelectionBrush" /> property.
+    /// </summary>
     public static readonly StyledProperty<IBrush?> SelectionBrushProperty =
         Avalonia.Controls.TextBox.SelectionBrushProperty.AddOwner<SelectableTextBlock>();
 
+    /// <summary>
+    /// Identifies the <see cref="SelectionForegroundBrush" /> property.
+    /// </summary>
     public static readonly StyledProperty<IBrush?> SelectionForegroundBrushProperty =
         Avalonia.Controls.TextBox.SelectionForegroundBrushProperty.AddOwner<SelectableTextBlock>();
 
+    /// <summary>
+    /// Identifies the <see cref="CanCopy" /> property.
+    /// </summary>
     public static readonly DirectProperty<SelectableTextBlock, bool> CanCopyProperty =
         Avalonia.Controls.TextBox.CanCopyProperty.AddOwner<SelectableTextBlock>(o => o.CanCopy);
 
+    /// <summary>
+    /// Identifies the <see cref="CopyingToClipboard" /> routed event.
+    /// </summary>
     public static readonly RoutedEvent<RoutedEventArgs> CopyingToClipboardEvent =
         RoutedEvent.Register<SelectableTextBlock, RoutedEventArgs>(
             nameof(CopyingToClipboard), RoutingStrategies.Bubble);
@@ -46,6 +71,10 @@ public class SelectableTextBlock : TextBlock
         AffectsRender<SelectableTextBlock>(SelectionStartProperty, SelectionEndProperty, SelectionBrushProperty);
     }
 
+    /// <summary>
+    /// Raised before the selected text is written to the clipboard, when a copy finds a non-empty selection.
+    /// Handling the bubbling event prevents the clipboard write.
+    /// </summary>
     public event EventHandler<RoutedEventArgs>? CopyingToClipboard
     {
         add => AddHandler(CopyingToClipboardEvent, value);
@@ -62,7 +91,8 @@ public class SelectableTextBlock : TextBlock
     }
 
     /// <summary>
-    /// Gets or sets a brush that is used for the foreground of selected text
+    /// Gets or sets the brush of the selected text. While it is <see langword="null" />, the selected text
+    /// keeps the <c>Foreground</c> brush.
     /// </summary>
     public IBrush? SelectionForegroundBrush
     {
@@ -97,7 +127,7 @@ public class SelectableTextBlock : TextBlock
     }
 
     /// <summary>
-    /// Property for determining if the Copy command can be executed.
+    /// Gets whether <see cref="CopyAsync" /> can copy, which is the case when the current selection is not empty.
     /// </summary>
     public bool CanCopy
     {
@@ -111,7 +141,11 @@ public class SelectableTextBlock : TextBlock
     private int _wordSelectionStart = -1;
 
     /// <summary>
-    /// Copies the current selection to the Clipboard.
+    /// Copies the current selection to the clipboard. Nothing is copied while <see cref="CanCopy" /> is
+    /// <see langword="false" />, while the selection is empty, or when a handler of
+    /// <see cref="CopyingToClipboard" /> marks the event as handled. The returned task completes when the
+    /// clipboard write has finished; an exception thrown on the way is caught and written to the debug output,
+    /// so the task still completes normally.
     /// </summary>
     public async Task CopyAsync()
     {
@@ -155,7 +189,7 @@ public class SelectableTextBlock : TextBlock
     }
     
     /// <summary>
-    /// Select all text in the TextBox
+    /// Selects the whole text: the text of the inlines when they are set, otherwise <c>Text</c>.
     /// </summary>
     public void SelectAll()
     {
@@ -173,6 +207,9 @@ public class SelectableTextBlock : TextBlock
         SetCurrentValue(SelectionEndProperty, SelectionStart);
     }
 
+    /// <summary>
+    /// Calls the base member and then updates <see cref="CanCopy" /> to match the current selection.
+    /// </summary>
     protected override void OnGotFocus(FocusChangedEventArgs e)
     {
         base.OnGotFocus(e);
@@ -180,6 +217,11 @@ public class SelectableTextBlock : TextBlock
         UpdateCommandStates();
     }
 
+    /// <summary>
+    /// Clears the selection when the control loses focus while its context menu and its context flyout are
+    /// closed, so that the selection survives while one of them is open. Calls the base member first and then
+    /// updates <see cref="CanCopy" />.
+    /// </summary>
     protected override void OnLostFocus(FocusChangedEventArgs e)
     {
         base.OnLostFocus(e);
@@ -193,6 +235,11 @@ public class SelectableTextBlock : TextBlock
         UpdateCommandStates();
     }
 
+    /// <summary>
+    /// Creates the text layout without calling the base member. The text from <see cref="SelectionStart" /> to
+    /// <see cref="SelectionEnd" /> is drawn in <see cref="SelectionForegroundBrush" /> when the range is not
+    /// empty and the brush is set; all other text uses the text properties of the control.
+    /// </summary>
     protected override TextLayout CreateTextLayout(string? text)
     {
         var typeface = new Typeface(FontFamily, FontStyle, FontWeight, FontStretch);
@@ -247,6 +294,11 @@ public class SelectableTextBlock : TextBlock
             MaxLines);
     }
 
+    /// <summary>
+    /// Paints the selection highlight with <see cref="SelectionBrush" /> behind the text and then calls the base
+    /// member to render the text. Nothing is painted when the selection is empty or the brush is
+    /// <see langword="null" />.
+    /// </summary>
     protected override void RenderTextLayout(DrawingContext context, Point origin)
     {
         var selectionStart = SelectionStart;
@@ -272,6 +324,11 @@ public class SelectableTextBlock : TextBlock
         base.RenderTextLayout(context, origin);
     }
 
+    /// <summary>
+    /// Calls the base member and then handles the platform's copy shortcut, which starts
+    /// <see cref="CopyAsync" />, and its select-all shortcut, which calls <see cref="SelectAll" />.
+    /// The key event ends up handled only when one of the two shortcuts matched.
+    /// </summary>
     protected override void OnKeyDown(KeyEventArgs e)
     {
         base.OnKeyDown(e);
@@ -305,6 +362,12 @@ public class SelectableTextBlock : TextBlock
         return false;
     }
 
+    /// <summary>
+    /// Calls the base member and then keeps the derived state in step with the change: a new
+    /// <see cref="SelectionStart" /> or <see cref="SelectionEnd" /> raises a change of
+    /// <see cref="SelectedText" />, updates <see cref="CanCopy" /> and invalidates the text layout; a new
+    /// <see cref="SelectionForegroundBrush" /> invalidates the text layout.
+    /// </summary>
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
@@ -323,6 +386,12 @@ public class SelectableTextBlock : TextBlock
         }
     }
 
+    /// <summary>
+    /// Sets the selection at the pressed text position for a press of the left button: a single click collapses
+    /// the selection to that position, or extends it from the selection start while Shift is held; a double click
+    /// selects the word under the pointer; a triple click selects all text. Every press, whatever its button,
+    /// captures the pointer and marks the event as handled. The base member is called first.
+    /// </summary>
     protected override void OnPointerPressed(PointerPressedEventArgs e)
     {
         base.OnPointerPressed(e);
@@ -402,6 +471,11 @@ public class SelectableTextBlock : TextBlock
         e.Handled = true;
     }
 
+    /// <summary>
+    /// Moves the selection end to the text position under the pointer, or to the word boundary there after a
+    /// double click, while this control holds the pointer and the left button is pressed. Calls the base member
+    /// first.
+    /// </summary>
     protected override void OnPointerMoved(PointerEventArgs e)
     {
         base.OnPointerMoved(e);
@@ -447,6 +521,12 @@ public class SelectableTextBlock : TextBlock
         }
     }
 
+    /// <summary>
+    /// Releases the pointer capture after the base member handled the event. When the right button was pressed,
+    /// it first collapses the selection to the text position under the pointer unless that position lies inside
+    /// the current selection. A release of a pointer that this control does not capture does nothing more than
+    /// the base member.
+    /// </summary>
     protected override void OnPointerReleased(PointerReleasedEventArgs e)
     {
         base.OnPointerReleased(e);

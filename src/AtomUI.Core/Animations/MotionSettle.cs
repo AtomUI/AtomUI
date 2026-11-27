@@ -32,7 +32,9 @@ internal sealed class MotionSettle
 
     internal bool IsSettling => _depth > 0;
 
-    /// <summary>Opens (or nests into) the settle window; the scope ends it.</summary>
+    /// <summary>
+    /// Opens (or nests into) the settle window; the scope ends it.
+    /// </summary>
     internal IDisposable Begin()
     {
         Dispatcher.UIThread.VerifyAccess();
@@ -43,7 +45,9 @@ internal sealed class MotionSettle
         return new Scope(this);
     }
 
-    /// <summary>Completes the animations started since the window opened.</summary>
+    /// <summary>
+    /// Completes the animations started since the window opened.
+    /// </summary>
     internal void SettleStarted()
     {
         if (_clock is { } clock)
@@ -53,10 +57,11 @@ internal sealed class MotionSettle
     }
 
     /// <summary>
-    /// Disposes <paramref name="scope"/> once the next rendered frame has been laid out and committed. A job
+    /// Disposes <paramref name="scope" /> once the next rendered frame has been laid out and committed. A job
     /// posted directly would run before that frame, since the render loop is driven by a timer rather than
     /// queued, so the release is posted from the frame's clock pulse at Loaded priority, right after the render
-    /// job that pulse belongs to.
+    /// job that pulse belongs to. When settling is unavailable or the window is not open, there is no frame
+    /// probe and the scope is disposed at once.
     /// </summary>
     internal void EndAfterNextFrame(IDisposable scope)
     {

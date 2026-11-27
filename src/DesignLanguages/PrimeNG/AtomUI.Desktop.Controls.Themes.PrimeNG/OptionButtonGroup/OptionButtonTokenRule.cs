@@ -6,7 +6,9 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 
-/// <summary>The PrimeNG view of <see cref="OptionButtonToken"/>.</summary>
+/// <summary>
+/// The PrimeNG view of <see cref="OptionButtonToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class OptionButtonTokenRule : IControlTokenRule<PrimeNGToken, OptionButtonToken>
 {
@@ -17,8 +19,10 @@ internal sealed class OptionButtonTokenRule : IControlTokenRule<PrimeNGToken, Op
     {
         var token  = target.Own;
         var global = target.Global;
-        // PrimeNG: the control-global overrides, read by the formulas below.
+        // PrimeNG: no control-global overrides; EvaluateGlobal writes nothing.
         PrimeNGOptionButtonTokens.EvaluateGlobal(in context, global);
+        // Ant Design formula kept as is; the PrimeNG stage, at the end of the method, replaces the outline checked
+        // values (ButtonOutlineChecked*) under Nora only.
         token.ButtonSolidCheckedColor            = global.ColorTextLightSolid;
         token.ButtonSolidCheckedBackground       = global.ColorPrimary;
         token.ButtonSolidCheckedHoverBackground  = global.ColorPrimaryHover;

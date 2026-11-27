@@ -39,12 +39,19 @@ internal static class PopupUtils
         PlacementGeometry.FlipDirection(direction, isHorizontalFlip, isVerticalFlip);
 
     /// <summary>
-    /// 判断是否可以启用箭头，有些组合是不能启用箭头绘制的，因为没有意义
+    /// Determines whether an arrow can be drawn for a placement. Center and Pointer never get one, and
+    /// AnchorAndGravity gets one only for a pair of anchor and gravity that
+    /// <c>PlacementGeometry.IsCanonicalAnchorType</c> accepts.
     /// </summary>
-    /// <param name="placement"></param>
-    /// <param name="anchor"></param>
-    /// <param name="gravity"></param>
-    /// <returns></returns>
+    /// <param name="placement">
+    /// The requested placement of the popup.
+    /// </param>
+    /// <param name="anchor">
+    /// The custom anchor. It is read only for AnchorAndGravity.
+    /// </param>
+    /// <param name="gravity">
+    /// The custom gravity. It is read only for AnchorAndGravity.
+    /// </param>
     internal static bool CanEnabledArrow(PlacementMode placement, PopupAnchor? anchor = null,
         PopupGravity? gravity = null)
     {
@@ -109,11 +116,16 @@ internal static class PopupUtils
     }
 
     /// <summary>
-    /// 判断在给定的自定义放置参数下，<c>PopupRoot</c>（独立窗口弹窗）最终会在 X / Y 轴上发生翻转。
-    /// 实现与 Avalonia 的 <c>ManagedPopupPositioner.Calculate</c> 完全一致。
+    /// Determines on which axes a popup hosted in a separate window (<c>PopupRoot</c>) finally flips for the given
+    /// custom placement. The decision follows Avalonia's <c>ManagedPopupPositioner.Calculate</c>.
     /// </summary>
-    /// <param name="placement">自定义放置参数（来源于 <c>Popup.CustomPopupPlacementCallback</c>）。</param>
-    /// <returns>X 轴是否翻转、Y 轴是否翻转。</returns>
+    /// <param name="placement">
+    /// The custom placement to check.
+    /// </param>
+    /// <returns>
+    /// Whether the popup flips on the X axis and whether it flips on the Y axis. Both are
+    /// <see langword="false" /> when the popup has no size or its screen cannot be determined.
+    /// </returns>
     internal static (bool flipX, bool flipY) CalculatePopupRootFlipInfo(CustomPopupPlacement placement)
     {
         var target = placement.Target;
@@ -129,12 +141,13 @@ internal static class PopupUtils
             return (false, false);
         }
 
-        // —— 与 Avalonia ManagedPopupPositioner 保持单位一致 ——
-        // 关键：使用 DesktopScaling（不是 RenderScaling），原因：
-        //   * Win32:  DesktopScaling == RenderScaling，整套换算到物理像素；
-        //   * macOS:  DesktopScaling == 1（原生硬编码），PointToScreen 与 NSScreen.frame 都是 Cocoa 逻辑点，
-        //             ManagedPopupPositionerPopupImplHelper.Scaling 用的也是 DesktopScaling，整套在逻辑点系。
-        // 这样保证 anchorRect、clientScreenPos、screen.Bounds 三者单位完全一致。
+        // Keep the same units as the Avalonia ManagedPopupPositioner.
+        // DesktopScaling is used on purpose instead of RenderScaling:
+        //   * Win32: DesktopScaling == RenderScaling, so the whole calculation runs in physical pixels.
+        //   * macOS: DesktopScaling == 1 (hard-coded in the native layer). PointToScreen and NSScreen.frame work in
+        //           Cocoa logical points, and ManagedPopupPositionerPopupImplHelper.Scaling also uses DesktopScaling,
+        //           so the whole calculation runs in logical points.
+        // This keeps anchorRectPx, clientScreenPos and screen.Bounds in the same unit.
         var scaling         = topLevel.PlatformImpl?.DesktopScaling ?? 1.0;
         var clientScreenPos = topLevel.PointToScreen(default);
         var anchorRectPx    = new Rect(
@@ -145,7 +158,8 @@ internal static class PopupUtils
         var popupSizePx = placement.PopupSize.Deflate(placement.Deflate) * scaling;
         var offsetPx    = placement.Offset    * scaling;
 
-        // —— 选屏：与 ManagedPopupPositioner.GetBounds 优先级一致：先 anchor 所在屏，再 TopLevel 所在屏，再主屏 ——
+        // Screen selection follows the priority of ManagedPopupPositioner.GetBounds: the screen that contains the
+        // anchor first, then the screen of the TopLevel, then the primary screen.
         var anchorPixelRect = new PixelRect(
             (int)anchorRectPx.X, (int)anchorRectPx.Y,
             (int)anchorRectPx.Width, (int)anchorRectPx.Height);
@@ -173,12 +187,17 @@ internal static class PopupUtils
     }
 
     /// <summary>
-    /// 判断在给定的自定义放置参数下，<c>OverlayPopupHost</c>（Overlay 层弹窗）最终会在 X / Y 轴上发生翻转。
-    /// 调整顺序与 Avalonia 的 <c>OverlayPopupHost + ManagedPopupPositioner.Calculate</c> 一致；
-    /// 可用区域还会排除 AtomUI CSD 阴影和 SafeAreaPadding。
+    /// Determines on which axes a popup hosted in an overlay (<c>OverlayPopupHost</c>) finally flips for the given
+    /// custom placement. The adjustment order follows Avalonia's <c>OverlayPopupHost</c> with
+    /// <c>ManagedPopupPositioner.Calculate</c>. The available area excludes the AtomUI CSD shadow and SafeAreaPadding.
     /// </summary>
-    /// <param name="placement">自定义放置参数（来源于 <c>Popup.CustomPopupPlacementCallback</c>）。</param>
-    /// <returns>X 轴是否翻转、Y 轴是否翻转。</returns>
+    /// <param name="placement">
+    /// The custom placement to check.
+    /// </param>
+    /// <returns>
+    /// Whether the popup flips on the X axis and whether it flips on the Y axis. Both are
+    /// <see langword="false" /> when the popup has no size or the top level is unknown.
+    /// </returns>
     internal static (bool flipX, bool flipY) CalculateOverlayPopupHostFlipInfo(CustomPopupPlacement placement)
     {
         var target = placement.Target;
@@ -571,8 +590,9 @@ internal static class PopupUtils
                     var (shadowOffsetX, shadowOffsetY) = CalculateShadowOffset(arrowPosition.Value,
                         shadowThickness, arrowIndicatorLayoutBounds);
 
-                    // 主轴：窗口在朝向 anchor 的一侧仍保留“阴影厚度 - 箭头占用”的残余阴影，
-                    // 内容（箭头尖）需要向 anchor 回退这段距离，再留出 marginToAnchor
+                    // Main axis: the window keeps a residual shadow of "shadow thickness minus the space taken by the
+                    // arrow" on the side that faces the anchor, so the content (the arrow tip) moves back toward the
+                    // anchor by that distance and then keeps marginToAnchor on top of it.
                     var primaryMargin = marginToAnchor -
                                         GetAnchorSideResidualShadow(direction, shadowThickness, arrowIndicatorLayoutBounds);
                     var primaryIsHorizontal = direction is Direction.Left or Direction.Right;
@@ -611,9 +631,19 @@ internal static class PopupUtils
     }
 
     /// <summary>
-    /// 窗口型 Popup 朝向 anchor 一侧的残余阴影厚度，与 ShadowsAwareContainer 的有效阴影厚度一致：
-    /// 箭头可见时扣除箭头占用，箭头隐藏或不存在（arrowIndicatorLayoutBounds 为空）时为完整阴影厚度。
+    /// Returns the residual shadow thickness on the side of a window popup that faces the anchor. It matches the
+    /// effective shadow thickness of ShadowsAwareContainer: the space taken by the arrow is deducted while the arrow
+    /// is visible, and the full shadow thickness is returned when the arrow is hidden or absent.
     /// </summary>
+    /// <param name="direction">
+    /// The side of the popup relative to the anchor, after flipping. <see langword="null" /> returns 0.
+    /// </param>
+    /// <param name="shadowThickness">
+    /// The shadow thickness around the popup.
+    /// </param>
+    /// <param name="arrowIndicatorLayoutBounds">
+    /// The layout bounds of the arrow indicator, or an empty rect when no arrow is shown.
+    /// </param>
     internal static double GetAnchorSideResidualShadow(Direction? direction, Thickness shadowThickness, Rect arrowIndicatorLayoutBounds)
     {
         return direction switch
@@ -655,15 +685,30 @@ internal static class PopupUtils
     }
 
     /// <summary>
-    /// 判断 <paramref name="visual"/> 是否落在 <paramref name="anchor"/> + <paramref name="popupChild"/>
-    /// 组成的 popup 作用域内（含嵌套 popup）。
+    /// Determines whether <paramref name="visual" /> lies inside the popup scope formed by
+    /// <paramref name="anchor" /> and <paramref name="popupChild" />, nested popups included.
     /// </summary>
+    /// <param name="visual">
+    /// The visual to test.
+    /// </param>
+    /// <param name="anchor">
+    /// The control the popup is anchored to.
+    /// </param>
+    /// <param name="popupChild">
+    /// The popup content, or <see langword="null" /> to test the anchor only.
+    /// </param>
+    /// <returns>
+    /// <see langword="true" /> when the visual is the anchor or one of its visual descendants, the popup child or
+    /// one of its logical or visual descendants, or lies in a nested popup whose placement target leads back to the
+    /// anchor or the popup child.
+    /// </returns>
     /// <remarks>
-    /// 用于 anchor 控件的 Click handler（过滤 popup 内部点击）和 Hover 模式的全局指针追踪
-    /// （判断指针是否仍在作用域内）。Avalonia 的 popup 连接走 visual/logical/InteractiveParent
-    /// 三条线叠加，单棵树检查会漏嵌套 popup 场景（popup 里开 ComboBox/Select 等）。
-    /// 本方法沿 <c>popup host → Popup → PlacementTarget</c> 跳跃模拟事件路由。
-    /// 详见 <c>docs/engineering/development/popup-anchor-scope.md</c>。
+    /// Anchor controls call it from their click handlers to drop clicks inside the popup, and from the global pointer
+    /// tracking of hover mode to test whether the pointer is still inside the scope.
+    /// An Avalonia popup is connected through the visual tree, the logical tree and the interactive parent at the
+    /// same time, so checking a single tree misses nested popups such as a ComboBox or Select opened inside a popup.
+    /// The method walks from the popup host over its Popup to the PlacementTarget, at most eight levels, which
+    /// mirrors the event route.
     /// </remarks>
     internal static bool IsVisualInPopupScope(Visual? visual, Visual anchor, Visual? popupChild)
     {
@@ -722,9 +767,10 @@ internal static class PopupUtils
     }
 
     /// <summary>
-    /// 从 <paramref name="visual"/> 向上查找承载它的 <see cref="OverlayPopupHost"/> 或
-    /// <see cref="PopupRoot"/>，再取对应的 <see cref="Avalonia.Controls.Primitives.Popup"/> 控件。
-    /// 用于 <see cref="IsVisualInPopupScope"/> 的嵌套 popup 跳跃。
+    /// Finds the <see cref="OverlayPopupHost" /> or <see cref="PopupRoot" /> that hosts <paramref name="visual" />
+    /// and returns the <see cref="Avalonia.Controls.Primitives.Popup" /> control that owns it, or
+    /// <see langword="null" /> when no owning popup is found. Used by <see cref="IsVisualInPopupScope" /> to jump
+    /// across a nested popup.
     /// </summary>
     internal static Avalonia.Controls.Primitives.Popup? FindOwningPopup(Visual visual)
     {
@@ -737,8 +783,8 @@ internal static class PopupUtils
         {
             return null;
         }
-        // OverlayPopupHost.LogicalParent 在 Popup.Open 里通过
-        // ((ISetLogicalParent)popupHost).SetParent(this) 被设成 Popup 控件本身
+        // Popup.Open sets the logical parent of the OverlayPopupHost to the Popup control itself, through
+        // ((ISetLogicalParent)popupHost).SetParent(this).
         return logical.LogicalParent as Avalonia.Controls.Primitives.Popup
                ?? (host as StyledElement)?.FindLogicalAncestorOfType<Avalonia.Controls.Primitives.Popup>();
     }

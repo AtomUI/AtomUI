@@ -168,12 +168,14 @@ internal sealed class WindowDialogPresenter : IDialogPresenter
             HostWindow.Show();
         }
 
-        // 语义部件契约：窗口已显示即成为跨根，通知语义预览重新解析（Overlay 宿主在挂层时同样上报）。
+        // Semantic part contract: once the window is shown it is a cross root, so the semantic preview is told to
+        // resolve again. The overlay host reports the same when it attaches to its layer.
         _dialog.NotifyCrossRootsChanged();
 
         await _openedSource.Task.WaitAsync(openingCancellationToken);
         openingCancellationToken.ThrowIfCancellationRequested();
-        // Opened 后模板已应用，宿主表面就绪，再通知一次覆盖“窗口先显示、模板后应用”的顺序。
+        // After Opened the template is applied and the host surface is ready. Notifying again covers the order in
+        // which the window is shown first and the template is applied afterwards.
         _dialog.NotifyCrossRootsChanged();
     }
 
@@ -617,7 +619,8 @@ internal sealed class WindowDialogPresenter : IDialogPresenter
                 firstException ??= ex;
             }
 
-            // 宿主窗口回收后跨根消失，通知语义预览清空该根下的高亮。
+            // Once the host window is recycled the cross root is gone. Tell the semantic preview so it clears the
+            // highlights under that root.
             _dialog.NotifyCrossRootsChanged();
         });
 

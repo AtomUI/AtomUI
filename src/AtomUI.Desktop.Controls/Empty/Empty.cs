@@ -7,6 +7,11 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
 
+/// <summary>
+/// The empty-state placeholder: a built-in or custom illustration, a description and an optional footer.
+/// With the palette tokens enabled, the built-in illustration takes its colors from the shared palette
+/// tokens and follows their changes; an explicitly set color property still wins.
+/// </summary>
 public partial class Empty : AbstractEmpty
 {
     private static readonly object[] s_presetPaletteKeys =
@@ -41,6 +46,12 @@ public partial class Empty : AbstractEmpty
     {
     }
 
+    /// <summary>
+    /// Calls the base handler, then mirrors a changed description into the effective description, with
+    /// <see langword="null" /> becoming an empty string, and keeps the preset illustration in step: switching
+    /// UsePresetPaletteTokenResources rebuilds the illustration and, when switched off, releases the palette
+    /// token subscription, which is also released when PresetImage is cleared.
+    /// </summary>
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
@@ -62,6 +73,10 @@ public partial class Empty : AbstractEmpty
         }
     }
 
+    /// <summary>
+    /// Releases the palette token subscription of the preset illustration before the control leaves the logical
+    /// tree. The subscription is created again on demand when the illustration colors are next resolved.
+    /// </summary>
     protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
     {
         ReleasePresetPaletteTokenSubscription();
@@ -74,6 +89,25 @@ public partial class Empty : AbstractEmpty
         _presetPalette = null;
     }
 
+    /// <summary>
+    /// Resolves the colors the preset illustration is drawn with. While
+    /// <see cref="UsePresetPaletteTokenResources" /> is off, it returns the result of the base implementation.
+    /// While it is on, each of <c>BorderColor</c>, <c>BorderColorSecondary</c>, <c>ShadowColor</c>,
+    /// <c>ContentColor</c> and <c>BgColor</c> comes from that property when it was set explicitly, and otherwise
+    /// from the shared tokens <c>ColorFill</c>, <c>ColorBorderSecondary</c>, <c>ColorFillTertiary</c>,
+    /// <c>ColorFillQuaternary</c> and <c>ColorBgElevated</c> respectively. Calling it while
+    /// <see cref="UsePresetPaletteTokenResources" /> is on creates the palette token subscription on demand; the
+    /// subscription rebuilds the illustration when a token changes.
+    /// </summary>
+    /// <param name="colors">
+    /// The resolved colors when this method returns <see langword="true" />; <see langword="default" /> otherwise.
+    /// </param>
+    /// <returns>
+    /// <see langword="true" /> when all five colors were resolved. While
+    /// <see cref="UsePresetPaletteTokenResources" /> is on, a value of one of these properties that is neither a
+    /// <c>Color</c>, a solid brush nor a text that parses as a color makes it return
+    /// <see langword="false" />, and the illustration that is shown is left unchanged.
+    /// </returns>
     private protected override bool TryResolvePresetColors(out PresetImageColors colors)
     {
         if (!UsePresetPaletteTokenResources)

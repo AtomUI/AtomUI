@@ -621,9 +621,10 @@ internal class DrawerContainer : ContentControl
             currentParent.Children.Remove(this);
         }
 
-        // 语义部件契约：容器必须逻辑挂到 Drawer owner 下，owner 嵌套的生成
-        // Semantic Style 才能命中容器子树。必须在 Children.Add 之前设置：
-        // Panel 收集子项不会覆盖已显式设置的逻辑父（先例：ImagePreviewer 的 OverlayHost）。
+        // Semantic part contract: the container must be attached logically under the Drawer owner, so that the
+        // generated Semantic Styles nested under the owner can reach the container subtree. Set the parent
+        // before Children.Add: when the Panel collects a child it leaves a logical parent that was set
+        // explicitly in place (same approach as the OverlayHost of ImagePreviewer).
         if (Drawer is not null && Drawer.TryGetTarget(out var drawer))
         {
             ((ISetLogicalParent)this).SetParent(drawer);

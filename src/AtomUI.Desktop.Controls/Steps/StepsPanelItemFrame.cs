@@ -6,7 +6,8 @@ using AvaloniaFlowDirection = Avalonia.Media.FlowDirection;
 namespace AtomUI.Desktop.Controls;
 
 /// <summary>
-/// Draws the Panel item frame and applies the Filled variant's leading notch.
+/// Draws the Panel item frame and applies the Filled variant's leading notch
+/// to every item except the first.
 /// </summary>
 internal sealed class StepsPanelItemFrame : Border
 {

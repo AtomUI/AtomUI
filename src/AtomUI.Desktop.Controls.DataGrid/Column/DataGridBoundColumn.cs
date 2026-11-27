@@ -14,6 +14,10 @@ using Avalonia.Data.Converters;
 
 namespace AtomUI.Desktop.Controls;
 
+/// <summary>
+/// The base class of columns whose cells read their value from a binding to a property of the data item.
+/// When a cell is edited, the editor that the derived column creates is bound to <see cref="Binding" />.
+/// </summary>
 public abstract class DataGridBoundColumn : DataGridColumn
 {
     #region 公共属性定义
@@ -21,7 +25,15 @@ public abstract class DataGridBoundColumn : DataGridColumn
     /// <summary>
     /// Gets or sets the binding that associates the column with a property in the data source.
     /// </summary>
-    //TODO Binding
+    /// <remarks>
+    /// A binding in <see cref="BindingMode.OneWayToSource" /> mode is rejected with an
+    /// <see cref="InvalidOperationException" />. A binding in the default mode becomes two-way when it has a
+    /// path, and a binding without a converter and without a string format uses <c>DataGridValueConverter.Instance</c>.
+    /// Assigning a different binding while a row is being edited commits that edit first, or cancels it when
+    /// the commit fails, then applies the new binding to the existing rows and drops the cached editing element.
+    /// </remarks>
+    // TODO Binding: verify that this member handles every binding option that a caller can set and complete it
+    // where it is missing. Remove this TODO when that is done.
     [AssignBinding]
     public virtual BindingBase? Binding
     {
@@ -84,8 +96,28 @@ public abstract class DataGridBoundColumn : DataGridColumn
 
     #endregion
 
-    //TODO Rename
-    //TODO Validation
+    /// <summary>
+    /// Creates the editing element of a cell through <see cref="GenerateEditingElementDirect" /> and binds
+    /// <see cref="BindingTarget" /> on it to a one-way copy of <see cref="Binding" />. The copy is created
+    /// once per column and reused for every cell.
+    /// </summary>
+    /// <param name="cell">
+    /// The cell that will contain the editing element.
+    /// </param>
+    /// <param name="dataItem">
+    /// The data item of the row that owns the cell.
+    /// </param>
+    /// <param name="editBinding">
+    /// The binding expression that connects the element to the column's binding, or <see langword="null" />
+    /// when the column has no <see cref="Binding" />.
+    /// </param>
+    /// <returns>
+    /// The editing element of the cell.
+    /// </returns>
+    // TODO Rename: verify that the name of this member still describes what it does and rename it where it does
+    // not. Remove this TODO when that is done.
+    // TODO Validation: verify that this member handles validation of the value that the editor produces and
+    // complete it where it is missing. Remove this TODO when that is done.
     protected sealed override Control GenerateEditingElement(DataGridCell cell, object dataItem, out BindingExpressionBase? editBinding)
     {
         Control element = GenerateEditingElementDirect(cell, dataItem);
@@ -102,8 +134,25 @@ public abstract class DataGridBoundColumn : DataGridColumn
         return element;
     } 
 
+    /// <summary>
+    /// When overridden in a derived class, creates the editing element of a cell without binding it.
+    /// <see cref="GenerateEditingElement" /> binds <see cref="BindingTarget" /> on the returned element.
+    /// </summary>
+    /// <param name="cell">
+    /// The cell that will contain the editing element.
+    /// </param>
+    /// <param name="dataItem">
+    /// The data item of the row that owns the cell.
+    /// </param>
+    /// <returns>
+    /// The editing element of the cell.
+    /// </returns>
     protected abstract Control GenerateEditingElementDirect(DataGridCell cell, object dataItem);
 
+    /// <summary>
+    /// The property of the editing element that is bound to <see cref="Binding" /> and from which the edited
+    /// value is read. A derived column assigns it in its constructor.
+    /// </summary>
     protected AvaloniaProperty? BindingTarget { get; set; }
 
     private BindingBase? _binding;

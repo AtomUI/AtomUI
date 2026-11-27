@@ -13,100 +13,191 @@ using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
 
+/// <summary>
+/// An input field for a range of times of day. Each of its two text boxes, the start and the end, takes a
+/// typed time or picks it in a popup with hour, minute, second and AM/PM columns; the results are
+/// <see cref="RangeStartSelectedTime" /> and <see cref="RangeEndSelectedTime" />.
+/// </summary>
 public partial class RangeTimePicker : RangeInfoPickerInput
 {
     #region 公共属性定义
 
+    /// <summary>
+    /// Identifies the <see cref="RangeStartSelectedTime" /> property.
+    /// </summary>
     public static readonly StyledProperty<TimeSpan?> RangeStartSelectedTimeProperty =
         AvaloniaProperty.Register<RangeTimePicker, TimeSpan?>(nameof(RangeStartSelectedTime),
             defaultBindingMode: BindingMode.TwoWay,
             enableDataValidation: true);
 
+    /// <summary>
+    /// Identifies the <see cref="RangeEndSelectedTime" /> property.
+    /// </summary>
     public static readonly StyledProperty<TimeSpan?> RangeEndSelectedTimeProperty =
         AvaloniaProperty.Register<RangeTimePicker, TimeSpan?>(nameof(RangeEndSelectedTime),
             defaultBindingMode: BindingMode.TwoWay,
             enableDataValidation: true);
 
+    /// <summary>
+    /// Identifies the <see cref="RangeStartDefaultTime" /> property.
+    /// </summary>
     public static readonly StyledProperty<TimeSpan?> RangeStartDefaultTimeProperty =
         AvaloniaProperty.Register<RangeTimePicker, TimeSpan?>(nameof(RangeStartDefaultTime),
             enableDataValidation: true);
 
+    /// <summary>
+    /// Identifies the <see cref="RangeEndDefaultTime" /> property.
+    /// </summary>
     public static readonly StyledProperty<TimeSpan?> RangeEndDefaultTimeProperty =
         AvaloniaProperty.Register<RangeTimePicker, TimeSpan?>(nameof(RangeEndDefaultTime),
             enableDataValidation: true);
     
+    /// <summary>
+    /// Identifies the <see cref="MinuteIncrement" /> property.
+    /// </summary>
     public static readonly StyledProperty<int> MinuteIncrementProperty =
         AvaloniaProperty.Register<RangeTimePicker, int>(nameof(MinuteIncrement), 1, coerce: CoerceMinuteIncrement);
 
+    /// <summary>
+    /// Identifies the <see cref="SecondIncrement" /> property.
+    /// </summary>
     public static readonly StyledProperty<int> SecondIncrementProperty =
         AvaloniaProperty.Register<RangeTimePicker, int>(nameof(SecondIncrement), 1, coerce: CoerceSecondIncrement);
     
+    /// <summary>
+    /// Identifies the <see cref="ClockIdentifier" /> property.
+    /// </summary>
     public static readonly StyledProperty<ClockIdentifierType> ClockIdentifierProperty =
         AvaloniaProperty.Register<RangeTimePicker, ClockIdentifierType>(nameof(ClockIdentifier), ClockIdentifierType.HourClock24);
     
+    /// <summary>
+    /// Identifies the <see cref="IsNeedConfirm" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsNeedConfirmProperty =
         AvaloniaProperty.Register<RangeTimePicker, bool>(nameof(IsNeedConfirm), true);
     
+    /// <summary>
+    /// Identifies the <see cref="IsChangeOnScroll" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsChangeOnScrollProperty =
         TimePicker.IsChangeOnScrollProperty.AddOwner<RangeTimePicker>();
 
+    /// <summary>
+    /// Identifies the <see cref="IsShowNow" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsShowNowProperty =
         AvaloniaProperty.Register<RangeTimePicker, bool>(nameof(IsShowNow), true);
 
+    /// <summary>
+    /// Gets or sets the picked start time of day, or <see langword="null" /> when the start is not selected.
+    /// Setting it rewrites the start input with the value formatted for <see cref="ClockIdentifier" /> and
+    /// notifies a hosting form of the new value. Clearing it makes the start input show the formatted
+    /// <see cref="RangeStartDefaultTime" />, or nothing when no default is set. While the popup is open, the
+    /// start input follows the time the popup shows for the start, and the popup writes the start time it
+    /// confirms here. Binds two-way by default.
+    /// </summary>
     public TimeSpan? RangeStartSelectedTime
     {
         get => GetValue(RangeStartSelectedTimeProperty);
         set => SetValue(RangeStartSelectedTimeProperty, value);
     }
 
+    /// <summary>
+    /// Gets or sets the picked end time of day, or <see langword="null" /> when the end is not selected.
+    /// Setting it rewrites the end input with the value formatted for <see cref="ClockIdentifier" /> and
+    /// notifies a hosting form of the new value. Clearing it makes the end input show the formatted
+    /// <see cref="RangeEndDefaultTime" />, or nothing when no default is set. While the popup is open, the end
+    /// input follows the time the popup shows for the end, and the popup writes the end time it confirms here.
+    /// Binds two-way by default.
+    /// </summary>
     public TimeSpan? RangeEndSelectedTime
     {
         get => GetValue(RangeEndSelectedTimeProperty);
         set => SetValue(RangeEndSelectedTimeProperty, value);
     }
 
+    /// <summary>
+    /// Gets or sets the time that becomes the selected start time when the picker joins the logical tree with
+    /// no selected start time, that <see cref="Reset" /> restores and that the start input shows while no start
+    /// time is selected. <see cref="Clear" /> does not apply it. The default is <see langword="null" />.
+    /// </summary>
     public TimeSpan? RangeStartDefaultTime
     {
         get => GetValue(RangeStartDefaultTimeProperty);
         set => SetValue(RangeStartDefaultTimeProperty, value);
     }
 
+    /// <summary>
+    /// Gets or sets the time that becomes the selected end time when the picker joins the logical tree with
+    /// no selected end time, that <see cref="Reset" /> restores and that the end input shows while no end time
+    /// is selected. <see cref="Clear" /> does not apply it. The default is <see langword="null" />.
+    /// </summary>
     public TimeSpan? RangeEndDefaultTime
     {
         get => GetValue(RangeEndDefaultTimeProperty);
         set => SetValue(RangeEndDefaultTimeProperty, value);
     }
     
+    /// <summary>
+    /// Gets or sets the step, in minutes, between the minute options offered in the popup. The Now button also
+    /// rounds the current minute down to a multiple of it. Valid values are 1 to 59; any other value throws an
+    /// <see cref="ArgumentOutOfRangeException" />. The default is 1.
+    /// </summary>
     public int MinuteIncrement
     {
         get => GetValue(MinuteIncrementProperty);
         set => SetValue(MinuteIncrementProperty, value);
     }
 
+    /// <summary>
+    /// Gets or sets the step, in seconds, between the second options offered in the popup. The Now button also
+    /// rounds the current second down to a multiple of it. Valid values are 1 to 59; any other value throws an
+    /// <see cref="ArgumentOutOfRangeException" />. The default is 1.
+    /// </summary>
     public int SecondIncrement
     {
         get => GetValue(SecondIncrementProperty);
         set => SetValue(SecondIncrementProperty, value);
     }
 
+    /// <summary>
+    /// Gets or sets the hour notation of the popup, of the two input texts and of the parsing of typed text.
+    /// The default is <see cref="ClockIdentifierType.HourClock24" />.
+    /// </summary>
     public ClockIdentifierType ClockIdentifier
     {
         get => GetValue(ClockIdentifierProperty);
         set => SetValue(ClockIdentifierProperty, value);
     }
     
+    /// <summary>
+    /// Gets or sets whether the popup has an OK button that commits the time it shows for the active endpoint.
+    /// When <see langword="true" />, the footer shows that button, and closing the popup or switching to the
+    /// other endpoint leaves the selected times unchanged. When <see langword="false" />, there is no OK button,
+    /// the Now button is centered, and closing the popup or switching to the other endpoint commits the time the
+    /// popup shows for the active endpoint; a close that reverts the edit commits nothing.
+    /// </summary>
     public bool IsNeedConfirm
     {
         get => GetValue(IsNeedConfirmProperty);
         set => SetValue(IsNeedConfirmProperty, value);
     }
     
+    /// <summary>
+    /// Gets or sets whether turning the mouse wheel over a column of the popup changes the time picked for the
+    /// active endpoint. The default is <see langword="false" />, which keeps scrolling from changing it.
+    /// </summary>
     public bool IsChangeOnScroll
     {
         get => GetValue(IsChangeOnScrollProperty);
         set => SetValue(IsChangeOnScrollProperty, value);
     }
 
+    /// <summary>
+    /// Gets or sets whether the popup footer shows a Now button, which moves the time shown for the active
+    /// endpoint to the current time with the minutes and seconds rounded down to <see cref="MinuteIncrement" />
+    /// and <see cref="SecondIncrement" />. The default is <see langword="true" />.
+    /// </summary>
     public bool IsShowNow
     {
         get => GetValue(IsShowNowProperty);
@@ -186,7 +277,9 @@ public partial class RangeTimePicker : RangeInfoPickerInput
     }
     
     /// <summary>
-    /// 清除时间选择器的值，不考虑默认值
+    /// Clears the selected start time and end time and empties both inputs. Unlike <see cref="Reset" />, the
+    /// default times are not applied. An edit in progress in the popup is ended first, and the popup is closed
+    /// unless it is pinned open.
     /// </summary>
     public override void Clear()
     {
@@ -202,7 +295,8 @@ public partial class RangeTimePicker : RangeInfoPickerInput
     }
     
     /// <summary>
-    /// 重置时间选择器的值，当有默认值设置的时候，会将当前的值设置成默认值
+    /// Sets the selected start time and end time to <see cref="RangeStartDefaultTime" /> and
+    /// <see cref="RangeEndDefaultTime" />, so an endpoint without a default time ends up not selected.
     /// </summary>
     public void Reset()
     {
@@ -210,6 +304,14 @@ public partial class RangeTimePicker : RangeInfoPickerInput
         RangeEndSelectedTime = RangeEndDefaultTime;
     }
     
+    /// <summary>
+    /// Called by the base class to create the control shown in the popup. Returns a new
+    /// <see cref="TimePickerPresenter" /> that follows this picker's <see cref="IsChangeOnScroll" />,
+    /// <see cref="MinuteIncrement" />, <see cref="SecondIncrement" />, <see cref="ClockIdentifier" />,
+    /// <see cref="IsNeedConfirm" />, <see cref="IsShowNow" /> and <c>IsMotionEnabled</c> through bindings. The
+    /// selected time of the active endpoint is handed to it by <see cref="NotifyRangeActivatedPartChanged" />
+    /// instead of a binding.
+    /// </summary>
     protected override Control CreatePickerPresenter()
     {
         // This presenter is created in an independent Content subtree. The owner's
@@ -225,18 +327,34 @@ public partial class RangeTimePicker : RangeInfoPickerInput
         return timePickerPresenter;
     }
 
+    /// <summary>
+    /// Called by the base class with the popup presenter it created. After calling the base implementation, the
+    /// presenter is stored as the <see cref="TimePickerPresenter" /> that edits the active endpoint while the
+    /// popup is open.
+    /// </summary>
     protected override void NotifyPickerPresenterCreated(Control pickerPresenter)
     {
         base.NotifyPickerPresenterCreated(pickerPresenter);
         _pickerPresenter = pickerPresenter as TimePickerPresenter;
     }
 
+    /// <summary>
+    /// Called by the base class before it releases the popup presenter it created. After calling the base
+    /// implementation, the picker drops its reference to the <see cref="TimePickerPresenter" />.
+    /// </summary>
     protected override void NotifyPickerPresenterCleared(Control pickerPresenter)
     {
         base.NotifyPickerPresenterCleared(pickerPresenter);
         _pickerPresenter = null;
     }
 
+    /// <summary>
+    /// Called by the base class when the popup opens. It activates the start endpoint when no endpoint is
+    /// active and, for this open session, marks every endpoint that has a time as confirmed unless both do.
+    /// After calling the base implementation, the picker subscribes to the <see cref="TimePickerPresenter" />
+    /// events that drive the preview text, the confirmation, the dismissal and the focus handling, hands the
+    /// active endpoint's time to the presenter and resets the presenter's panel state for the new opening.
+    /// </summary>
     protected override void NotifyPickerOpened()
     {
         if (RangeActivatedPart == RangeActivatedPart.None)
@@ -260,6 +378,16 @@ public partial class RangeTimePicker : RangeInfoPickerInput
         }
     }
 
+    /// <summary>
+    /// Called when the popup is about to close, before <see cref="NotifyPickerClosed" />. While the presenter is
+    /// editing, it ends the editing and, when <see cref="IsNeedConfirm" /> is <see langword="false" /> and the
+    /// edit is not canceled, commits the time the popup shows as the selected time of the active endpoint. This
+    /// happens before the base call because the base implementation deactivates the active endpoint; an override
+    /// must keep that order.
+    /// </summary>
+    /// <param name="selectedIsValid">
+    /// Whether the selection of the closing session is valid. This implementation does not use it.
+    /// </param>
     protected override void NotifyFlyoutAboutToClose(bool selectedIsValid)
     {
         // RangeInfoPickerInput clears the active endpoint here. Finalize the draft
@@ -287,6 +415,12 @@ public partial class RangeTimePicker : RangeInfoPickerInput
         }
     }
 
+    /// <summary>
+    /// Called by the base class when the popup closes. After calling the base implementation, the picker
+    /// unsubscribes from the <see cref="TimePickerPresenter" />, ends its editing and rewrites both input texts
+    /// from the selected times. The time of the active endpoint is committed before this, in
+    /// <see cref="NotifyFlyoutAboutToClose" />.
+    /// </summary>
     protected override void NotifyPickerClosed()
     {
         base.NotifyPickerClosed();
@@ -389,6 +523,18 @@ public partial class RangeTimePicker : RangeInfoPickerInput
         return value;
     }
     
+    /// <summary>
+    /// Calls the base implementation and keeps the popup, the input texts and the preferred width in step with
+    /// the changed property. Before the base call: when the active endpoint changes while the presenter is
+    /// editing, the editing ends and, when <see cref="IsNeedConfirm" /> is <see langword="false" />, its time is
+    /// committed as the selected time of the endpoint that was active before; both input texts are rewritten.
+    /// After the base call: when the selected time of the active endpoint changes while the popup is open and
+    /// the presenter is editing, the presenter shows that time; a change of <see cref="ClockIdentifier" /> or of
+    /// the AM/PM text updates both input texts and the preferred width, a change of a font, size, width or
+    /// alignment property updates only the preferred width, and while the control is attached to the visual tree
+    /// a changed selected time rewrites its input text, which then shows the default time when the selected time
+    /// was cleared and a default time is set.
+    /// </summary>
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         if (change.Property == RangeActivatedPartProperty && _pickerPresenter is { IsEditing: true })
@@ -535,6 +681,11 @@ public partial class RangeTimePicker : RangeInfoPickerInput
         return Math.Max(formatWidth, defaultInputBaselineWidth);
     }
     
+    /// <summary>
+    /// Rewrites the start input with <see cref="RangeStartDefaultTime" /> formatted for
+    /// <see cref="ClockIdentifier" />, or with nothing when no default start time is set. The selected start
+    /// time is not changed; the method only gives the start input its text while no start time is selected.
+    /// </summary>
     protected void ResetRangeStartTimeValue()
     {
         if (RangeStartDefaultTime is not null)
@@ -548,6 +699,11 @@ public partial class RangeTimePicker : RangeInfoPickerInput
         }
     }
     
+    /// <summary>
+    /// Rewrites the end input with <see cref="RangeEndDefaultTime" /> formatted for
+    /// <see cref="ClockIdentifier" />, or with nothing when no default end time is set. The selected end time
+    /// is not changed; the method only gives the end input its text while no end time is selected.
+    /// </summary>
     protected void ResetRangeEndTimeValue()
     {
         if (RangeEndDefaultTime is not null)
@@ -561,6 +717,12 @@ public partial class RangeTimePicker : RangeInfoPickerInput
         }
     }
     
+    /// <summary>
+    /// Calls the base implementation, then makes the popup show the selected time of the active endpoint, or no
+    /// time when no endpoint is active, and, while the picker is open with an active endpoint, resets the panel
+    /// state of the <see cref="TimePickerPresenter" /> for that endpoint. Call the base method from an override
+    /// to keep the popup placement and the range indicator.
+    /// </summary>
     protected override void NotifyRangeActivatedPartChanged()
     {
         base.NotifyRangeActivatedPartChanged();
@@ -580,6 +742,13 @@ public partial class RangeTimePicker : RangeInfoPickerInput
         }
     }
 
+    /// <summary>
+    /// Measures the content with the base implementation and, while <c>PreferredWidth</c> is positive and both
+    /// input boxes are present, widens the result so that each input box can get <c>PreferredWidth</c> instead
+    /// of the width it asked for: the width becomes the base width minus the desired widths of the two input
+    /// boxes plus twice <c>PreferredWidth</c>, or stays the base width when that is larger. The height is
+    /// unchanged.
+    /// </summary>
     protected override Size MeasureOverride(Size availableSize)
     {
         var size   = base.MeasureOverride(availableSize);
@@ -597,11 +766,23 @@ public partial class RangeTimePicker : RangeInfoPickerInput
         return new Size(width, height);
     }
 
+    /// <summary>
+    /// Whether the start time or the end time is selected. The base class does not call this predicate; it
+    /// drives the clear button through <see cref="RangeInfoPickerInput.ConfigureIsClearButtonVisible" /> instead.
+    /// </summary>
+    /// <returns>
+    /// <see langword="true" /> when <see cref="RangeStartSelectedTime" /> or <see cref="RangeEndSelectedTime" />
+    /// is not <see langword="null" />.
+    /// </returns>
     protected override bool ShowClearButtonPredicate()
     {
         return RangeStartSelectedTime is not null || RangeEndSelectedTime is not null;
     }
 
+    /// <summary>
+    /// Calls the base implementation, then applies the default times: an endpoint whose selected time is
+    /// <see langword="null" /> while its default time is set gets that default time as its selected time.
+    /// </summary>
     protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
     {
         base.OnAttachedToLogicalTree(e);
@@ -668,11 +849,28 @@ public partial class RangeTimePicker : RangeInfoPickerInput
         }
     }
 
+    /// <summary>
+    /// Whether the popup still holds text forwarded from one of the two inputs, including an empty string
+    /// after an input was emptied; a confirmation, a cancel, a close or a reset of the popup drops it. While
+    /// this is <see langword="true" />, the base class does not forward navigation keys to the popup.
+    /// </summary>
     private protected override bool HasPendingInputText => _pickerPresenter?.InputText is not null;
 
+    /// <summary>
+    /// Forwards a key pressed without modifiers to the popup panel, which steps or switches its time columns,
+    /// and returns whether the panel used the key. A key pressed with a modifier returns
+    /// <see langword="false" />.
+    /// </summary>
     private protected override bool NotifyNavigationKey(Key key, KeyModifiers modifiers) =>
         modifiers == KeyModifiers.None && _pickerPresenter?.NavigateByKey(key) == true;
 
+    /// <summary>
+    /// Enter in the open picker. When the user emptied the input of the active endpoint in this open session,
+    /// clears both selected times as <see cref="Clear" /> does; otherwise the popup confirms the time it shows
+    /// for the active endpoint, which makes it the selected time of that endpoint and then hands over to the
+    /// other endpoint or closes the popup unless it is pinned open. It does nothing while the popup cannot
+    /// confirm its candidate. The base implementation is not called, so Enter alone does not close the popup.
+    /// </summary>
     private protected override void NotifyInputSubmit()
     {
         if (_pickerPresenter?.InputText is { Length: 0 })
@@ -685,22 +883,37 @@ public partial class RangeTimePicker : RangeInfoPickerInput
         }
     }
 
-    // The active endpoint's candidate and input text return to its committed value now, so a pinned popup that stays
-    // open shows the reverted value too.
+    /// <summary>
+    /// Reverts the edit in the popup at once: the typed text and the candidate are dropped and the popup
+    /// shows the selected time of the active endpoint again, so a popup that stays open because it is pinned
+    /// shows the reverted value in its input too.
+    /// </summary>
     private protected override void NotifyEditCanceled() => _pickerPresenter?.ResetOpenPanelState();
 
+    /// <summary>
+    /// Calls the base implementation, then subscribes to text changes of both input boxes. A typed text
+    /// activates its endpoint, opens the popup and becomes the candidate of that endpoint in the popup.
+    /// </summary>
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
         AttachInputHandlers();
     }
 
+    /// <summary>
+    /// Unsubscribes from the text changes of the input boxes, then calls the base implementation.
+    /// </summary>
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         ReleaseInputHandlers();
         base.OnDetachedFromVisualTree(e);
     }
 
+    /// <summary>
+    /// Calls the base implementation and subscribes again to text changes of the input boxes of the new
+    /// template. It then sets a clock icon as the info icon when none is set, and updates both input texts and
+    /// the preferred width from the current values.
+    /// </summary>
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         ReleaseInputHandlers();
@@ -715,6 +928,14 @@ public partial class RangeTimePicker : RangeInfoPickerInput
     }
     
     #region 实现 FormItem 接口
+    /// <summary>
+    /// Applies a value passed in by the owning form item. The value is a tuple of the start time and the end
+    /// time, <c>(TimeSpan?, TimeSpan?)</c>, whose items become the selected times; <see langword="null" /> or a
+    /// value of another type leaves the selection unchanged.
+    /// </summary>
+    /// <param name="value">
+    /// The value supplied by the form item.
+    /// </param>
     protected override void NotifySetFormValue(object? value)
     {
         var rangeValue = value as (TimeSpan?, TimeSpan?)?;
@@ -725,6 +946,13 @@ public partial class RangeTimePicker : RangeInfoPickerInput
         }
     }
 
+    /// <summary>
+    /// Returns the value of the picker for the owning form item: a boxed tuple of the selected start time and
+    /// end time, or <see langword="null" /> when either is <see langword="null" />.
+    /// </summary>
+    /// <returns>
+    /// A boxed <c>(TimeSpan?, TimeSpan?)</c> tuple, or <see langword="null" /> when the range is incomplete.
+    /// </returns>
     protected override object? NotifyGetFormValue()
     {
         if (RangeStartSelectedTime is null || RangeEndSelectedTime is null)
@@ -734,6 +962,11 @@ public partial class RangeTimePicker : RangeInfoPickerInput
         return (RangeStartSelectedTime, RangeEndSelectedTime);
     }
 
+    /// <summary>
+    /// Clears the value of the picker at the request of the owning form item: sets both selected times to
+    /// <see langword="null" />. Unlike <see cref="Clear" />, it neither ends an edit in the popup nor closes the
+    /// popup.
+    /// </summary>
     protected override void NotifyClearFormValue()
     {
         RangeStartSelectedTime = null;

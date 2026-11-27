@@ -4,26 +4,100 @@ using Avalonia.Animation.Easings;
 
 namespace AtomUI.Animations;
 
+/// <summary>
+/// Receives the declaration of a motion while <see cref="AbstractMotion.Build" /> runs.
+/// </summary>
+/// <remarks>
+/// A new builder is created for every request, and it rejects every write once the build has ended. Each channel
+/// property returns the same channel throughout the build, so a channel is declared once.
+/// </remarks>
 public sealed class MotionBuilder
 {
+    /// <summary>
+    /// The channel for the opacity of the target, from 0 to 1. Values outside that range are clamped when applied.
+    /// </summary>
     public MotionChannel Opacity => Channel(MotionKind.Opacity);
+    /// <summary>
+    /// The channel for the horizontal offset of the target in DIPs. Positive values move the target to the right.
+    /// </summary>
     public MotionChannel TranslateX => Channel(MotionKind.TranslateX);
+    /// <summary>
+    /// The channel for the vertical offset of the target in DIPs. Positive values move the target down.
+    /// </summary>
     public MotionChannel TranslateY => Channel(MotionKind.TranslateY);
+    /// <summary>
+    /// The channel for scaling the target equally on both axes, where 1 is its original size. It cannot be combined
+    /// with <see cref="ScaleX" /> or <see cref="ScaleY" />.
+    /// </summary>
     public MotionChannel Scale => Channel(MotionKind.Scale);
+    /// <summary>
+    /// The channel for the horizontal scale factor of the target, where 1 is its original width.
+    /// </summary>
     public MotionChannel ScaleX => Channel(MotionKind.ScaleX);
+    /// <summary>
+    /// The channel for the vertical scale factor of the target, where 1 is its original height.
+    /// </summary>
     public MotionChannel ScaleY => Channel(MotionKind.ScaleY);
+    /// <summary>
+    /// The channel for the rotation of the target around <see cref="Origin" />, in degrees.
+    /// </summary>
     public MotionChannel Rotation => Channel(MotionKind.Rotation);
 
+    /// <summary>
+    /// Declares a layout transition that reveals the content of the target: its share of the layout grows to the size
+    /// of the content while the motion plays.
+    /// </summary>
+    /// <param name="direction">
+    /// The side of the target where space is added. The default is <see cref="Direction.Bottom" />.
+    /// </param>
+    /// <remarks>
+    /// The target must implement <see cref="IMotionLayout" />. Playing the motion on another target throws a
+    /// <see cref="NotSupportedException" />, and a motion declares at most one layout transition.
+    /// </remarks>
     public void Expand(Direction direction = Direction.Bottom)
     {
         DeclareLayout(direction, true);
     }
 
+    /// <summary>
+    /// Declares a layout transition that hides the content of the target: its share of the layout shrinks to zero while
+    /// the motion plays.
+    /// </summary>
+    /// <param name="direction">
+    /// The side of the target where space is removed. The default is <see cref="Direction.Bottom" />.
+    /// </param>
+    /// <remarks>
+    /// The target must implement <see cref="IMotionLayout" />. Playing the motion on another target throws a
+    /// <see cref="NotSupportedException" />, and a motion declares at most one layout transition.
+    /// </remarks>
     public void Collapse(Direction direction = Direction.Bottom)
     {
         DeclareLayout(direction, false);
     }
 
+    /// <summary>
+    /// Declares a channel that animates a styled property of the target.
+    /// </summary>
+    /// <typeparam name="T">
+    /// The type of the value of the property.
+    /// </typeparam>
+    /// <param name="property">
+    /// The property to animate. It must be registered on the target or be an attached property, and it can be declared
+    /// once. <c>Opacity</c>, <c>RenderTransform</c>, <c>RenderTransformOrigin</c>, <c>IsVisible</c> and
+    /// <c>Transitions</c> are rejected: use the built-in channels and <see cref="Motion.IsVisibleProperty" /> for them.
+    /// </param>
+    /// <param name="interpolate">
+    /// Returns the value for a position between two keyframe values. It receives the earlier value, the later value and
+    /// the eased progress of the segment, which lies outside 0 to 1 when an easing overshoots.
+    /// </param>
+    /// <returns>
+    /// The channel on which the keyframes of the property are declared.
+    /// </returns>
+    /// <remarks>
+    /// While the motion plays, the property is driven at animation priority, so a binding or style on it stays in
+    /// place. The channel cannot be combined with <see cref="MotionBuilder.Sequence" /> or
+    /// <see cref="MotionBuilder.Parallel" />.
+    /// </remarks>
     public MotionPropertyChannel<T> Property<T>(StyledProperty<T> property, Func<T, T, double, T> interpolate)
     {
         VerifyOpen();
@@ -49,16 +123,53 @@ public sealed class MotionBuilder
         return channel;
     }
 
+    /// <summary>
+    /// Plays the child motions one after another. A child starts when the previous child, including its delay, has
+    /// ended.
+    /// </summary>
+    /// <param name="children">
+    /// The motions to compose. Each must keep the fill mode <c>Both</c>.
+    /// </param>
+    /// <remarks>
+    /// A child without a <see cref="AbstractMotion.Duration" /> plays with the default duration. An explicit duration
+    /// of this motion scales the whole timeline, and its <see cref="AbstractMotion.Delay" /> is applied once, before
+    /// the first child. The easing of this motion must be a <see cref="LinearEasing" />, and a composition cannot be
+    /// combined with direct channels, property channels or a layout transition. A violation throws an
+    /// <see cref="InvalidOperationException" /> while the motion is built.
+    /// </remarks>
     public void Sequence(IEnumerable<AbstractMotion> children)
     {
         Compose(children, false);
     }
 
+    /// <summary>
+    /// Plays the child motions at the same time. The composition lasts as long as the longest child, counting its
+    /// delay.
+    /// </summary>
+    /// <param name="children">
+    /// The motions to compose. Each must keep the fill mode <c>Both</c>. Two children cannot write the same channel
+    /// or property, whatever their delays. For consecutive writes use <see cref="MotionBuilder.Sequence" />.
+    /// </param>
+    /// <remarks>
+    /// A child without a <see cref="AbstractMotion.Duration" /> plays with the default duration. An explicit duration
+    /// of this motion scales the whole timeline, and its <see cref="AbstractMotion.Delay" /> is applied once, before
+    /// the children. The easing of this motion must be a <see cref="LinearEasing" />, and a composition cannot be
+    /// combined with direct channels, property channels or a layout transition. A violation throws an
+    /// <see cref="InvalidOperationException" /> while the motion is built.
+    /// </remarks>
     public void Parallel(IEnumerable<AbstractMotion> children)
     {
         Compose(children, true);
     }
 
+    /// <summary>
+    /// The pivot of scale and rotation, as a point in the bounds of the target. The default is the center.
+    /// </summary>
+    /// <remarks>
+    /// <see cref="AbstractMotion.Origin" /> replaces this value when the motion definition sets it. When the children
+    /// of a composition scale or rotate around different origins, the origin must be set here or on the motion
+    /// definition, or building the motion throws an <see cref="InvalidOperationException" />.
+    /// </remarks>
     public RelativePoint Origin
     {
         get => _origin;

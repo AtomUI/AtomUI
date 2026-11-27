@@ -4,6 +4,60 @@ using AtomUI.Desktop.Controls.Internal.DateViewer;
 
 namespace AtomUI.Desktop.Controls;
 
+/// <summary>
+/// Binding context of a date viewer header: the caption text, the step sizes of the navigation buttons and the
+/// commands they call. The default header and a custom header template both bind to it.
+/// </summary>
+/// <param name="DisplayDate">
+/// The date the panel under the header is anchored to. <see cref="DisplayText" /> is formatted from it.
+/// </param>
+/// <param name="PanelKind">
+/// The kind of the panel under the header: date, month, quarter or year.
+/// </param>
+/// <param name="SelectionUnit">
+/// The selection unit of the viewer. It decides which panel kinds <see cref="ChangePanelCommand" /> accepts.
+/// </param>
+/// <param name="DisplayText">
+/// The caption of the header: month and year for a date panel, a decade range for a year panel and a year for
+/// any other panel.
+/// </param>
+/// <param name="ParentPanelKind">
+/// The panel kind that the caption button switches to: month for a date panel and year for any other panel.
+/// </param>
+/// <param name="PreviousPage">
+/// The step of the previous-page button, in periods of <see cref="PanelKind" />: <c>-12</c> for a date panel and
+/// <c>-1</c> for any other panel.
+/// </param>
+/// <param name="PreviousPeriod">
+/// The step of the previous-period button: <c>-1</c>. The button is visible only while
+/// <see cref="ShowPeriodNavigation" /> is <see langword="true" />.
+/// </param>
+/// <param name="NextPeriod">
+/// The step of the next-period button: <c>1</c>. The button is visible only while
+/// <see cref="ShowPeriodNavigation" /> is <see langword="true" />.
+/// </param>
+/// <param name="NextPage">
+/// The step of the next-page button, in periods of <see cref="PanelKind" />: <c>12</c> for a date panel and
+/// <c>1</c> for any other panel.
+/// </param>
+/// <param name="ShowPeriodNavigation">
+/// Whether the previous-period and next-period buttons are visible. This is <see langword="true" /> only for a
+/// date panel.
+/// </param>
+/// <param name="ShowPreviousNavigation">
+/// Whether the buttons that step back are visible. A viewer with several panels shows them on its first panel only.
+/// </param>
+/// <param name="ShowNextNavigation">
+/// Whether the buttons that step forward are visible. A viewer with several panels shows them on its last panel only.
+/// </param>
+/// <param name="NavigateCommand">
+/// Moves the viewer by the number of periods passed as the command parameter. The command can execute only when
+/// the parameter is an integer.
+/// </param>
+/// <param name="ChangePanelCommand">
+/// Switches the viewer to the panel kind passed as the command parameter. It accepts the year panel, the panel that
+/// matches <see cref="SelectionUnit" />, and the month panel while the selection unit is date or week.
+/// </param>
 public sealed record DateViewerHeaderContext(
     DateTime DisplayDate,
     DateViewerPanelKind PanelKind,

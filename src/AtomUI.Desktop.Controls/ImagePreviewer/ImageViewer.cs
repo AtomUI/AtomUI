@@ -599,8 +599,8 @@ internal partial class ImageViewer : TemplatedControl, IMotionAwareControl
         if (change.Property == CurrentImageProperty ||
             change.Property == IsCurrentImageLoadingProperty)
         {
-            // 与 ImagePreviewerCover/AsyncImage 相同的视觉门控契约：
-            // 有图显示时不呈现加载指示器
+            // Same visual gating contract as ImagePreviewerCover and AsyncImage: the loading indicator is not
+            // shown while an image is displayed.
             PseudoClasses.Set(":has-image", CurrentImage is not null);
             PseudoClasses.Set(":loading", IsCurrentImageLoading);
         }

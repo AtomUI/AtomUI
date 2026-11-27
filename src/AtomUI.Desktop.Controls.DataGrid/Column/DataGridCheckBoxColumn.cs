@@ -15,13 +15,17 @@ using Avalonia.Threading;
 
 namespace AtomUI.Desktop.Controls;
 
+/// <summary>
+/// A column that displays the bound value as a check box in each cell. Only the check box of the current
+/// cell is enabled.
+/// </summary>
 public class DataGridCheckBoxColumn : DataGridBoundColumn
 {
     private CheckBox? _currentCheckBox;
     private DataGrid? _owningGrid;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="T:System.Windows.Controls.DataGridCheckBoxColumn" /> class. 
+    /// Initializes a new instance of the <see cref="DataGridCheckBoxColumn" /> class.
     /// </summary>
     public DataGridCheckBoxColumn()
     {
@@ -30,7 +34,7 @@ public class DataGridCheckBoxColumn : DataGridBoundColumn
     }
 
     /// <summary>
-    /// Defines the <see cref="IsThreeState"/> property.
+    /// Defines the <see cref="IsThreeState" /> property.
     /// </summary>
     public static readonly StyledProperty<bool> IsThreeStateProperty =
         CheckBox.IsThreeStateProperty.AddOwner<DataGridCheckBoxColumn>();
@@ -47,6 +51,10 @@ public class DataGridCheckBoxColumn : DataGridBoundColumn
         set => SetValue(IsThreeStateProperty, value);
     }
 
+    /// <summary>
+    /// Calls the base implementation, and reports a change of <see cref="IsThreeState" /> through
+    /// <c>NotifyPropertyChanged</c>.
+    /// </summary>
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
@@ -313,7 +321,9 @@ public class DataGridCheckBoxColumn : DataGridBoundColumn
                 CheckBox? checkBox = GetCellContent(row) as CheckBox;
                 if (checkBox == _currentCheckBox)
                 {
-                    // TODO 需要审查
+                    // TODO Review: verify that Space on the current cell is meant to start editing through BeginEdit,
+                    // with the event sender as the routed event source, and correct it where it is not. Remove this
+                    // TODO when that is done.
                     OwningGrid.BeginEdit(new RoutedEventArgs()
                     {
                         Source = sender
@@ -346,6 +356,10 @@ public class DataGridCheckBoxColumn : DataGridBoundColumn
         }
     }
 
+    /// <summary>
+    /// Calls the base implementation, then releases the handlers this column attached to the owning grid
+    /// through <c>ReleaseOwningGrid</c>.
+    /// </summary>
     protected internal override void NotifyOwningGridAboutToDetached()
     {
         base.NotifyOwningGridAboutToDetached();

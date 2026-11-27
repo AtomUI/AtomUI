@@ -1,108 +1,174 @@
 namespace AtomUI.Controls;
 
+/// <summary>
+/// Category of the failure or cancellation of an upload.
+/// A result carries <see cref="None" /> unless it failed or was canceled.
+/// </summary>
 public enum FileUploadErrorCode
 {
-    None = 0,           // 无错误
-    NetworkError,       // 网络连接/超时问题
-    ServerError,        // 服务器5xx错误
-    ClientError,        // 服务器4xx错误（如认证失败、参数错误）
-    FileError,          // 本地文件错误（找不到、无权限）
-    ValidationFailed,   // 验证失败（如文件类型、大小不符）
-    Cancelled,          // 操作被取消
-    Unknown             // 未知错误
+    /// <summary>
+    /// No error. The default of a result that neither failed nor was canceled.
+    /// </summary>
+    None = 0,
+    /// <summary>
+    /// The connection to the server failed or timed out.
+    /// </summary>
+    NetworkError,
+    /// <summary>
+    /// The server answered with a 5xx status.
+    /// </summary>
+    ServerError,
+    /// <summary>
+    /// The server rejected the request with a 4xx status, for example because
+    /// authentication failed or a parameter was invalid.
+    /// </summary>
+    ClientError,
+    /// <summary>
+    /// The local file could not be read, for example because it is missing or access is denied.
+    /// </summary>
+    FileError,
+    /// <summary>
+    /// The file failed validation, for example because its type or size is not allowed.
+    /// </summary>
+    ValidationFailed,
+    /// <summary>
+    /// The upload was canceled before it finished.
+    /// </summary>
+    Cancelled,
+    /// <summary>
+    /// An error that belongs to none of the other categories.
+    /// The scheduler reports it when the transport throws an exception.
+    /// </summary>
+    Unknown
 }
 
+/// <summary>
+/// Life-cycle state of one upload. Upload list items expose it to their theme to select the appearance.
+/// </summary>
 public enum FileUploadStatus
 {
+    /// <summary>
+    /// The upload is queued and has not started.
+    /// </summary>
     Pending,
+    /// <summary>
+    /// The transport is sending the file.
+    /// </summary>
     Uploading,
+    /// <summary>
+    /// The transport returned a result whose <see cref="FileUploadResult.IsSuccess" /> is <see langword="true" />.
+    /// </summary>
     Success,
+    /// <summary>
+    /// The transport returned an unsuccessful result or threw an exception that is not a cancellation.
+    /// </summary>
     Failed,
+    /// <summary>
+    /// The upload was canceled, while it was running or while it was still queued.
+    /// </summary>
     Cancelled
 }
 
+/// <summary>
+/// Outcome of one upload. The transport returns it, the scheduler stores it on the task
+/// and passes it to the handlers of the finished task.
+/// </summary>
 public record FileUploadResult
 {
     /// <summary>
-    /// 上传的最终状态
+    /// Final state of the upload. A result created without the factory methods keeps the default
+    /// <see cref="FileUploadStatus.Pending" />.
     /// </summary>
     public FileUploadStatus Status { get; init; } = FileUploadStatus.Pending;
     
     /// <summary>
-    /// 是否完全成功（Status == FileUploadStatus.Success 的便捷属性）
+    /// Is <see langword="true" /> when <see cref="Status" /> is <see cref="FileUploadStatus.Success" />.
     /// </summary>
     public bool IsSuccess => Status == FileUploadStatus.Success;
     
     /// <summary>
-    /// 分类的错误码
+    /// Category of the failure or cancellation. <see cref="FileUploadErrorCode.None" /> when neither happened.
     /// </summary>
     public FileUploadErrorCode ErrorCode { get; init; } = FileUploadErrorCode.None;
     
     /// <summary>
-    /// 可读的错误消息（适合显示给用户）
+    /// Message that describes the failure or cancellation and is suitable to show to the user.
+    /// <see langword="null" /> when none was supplied.
     /// </summary>
     public string? UserFriendlyMessage { get; init; }
     
     /// <summary>
-    /// 详细的内部错误信息（用于调试和日志）
+    /// Detailed error text for debugging and logging.
+    /// <see langword="null" /> unless the transport supplied one.
     /// </summary>
     public string? InternalErrorMessage { get; init; }
     
     /// <summary>
-    /// 关联的异常（如果有）
+    /// The exception that caused the failure, when the transport supplied one; otherwise <see langword="null" />.
     /// </summary>
     public Exception? Exception { get; init; }
     
     /// <summary>
-    /// 文件在服务器上的最终访问地址（HTTP/HTTPS URL）
+    /// HTTP or HTTPS address where the uploaded file can be accessed on the server.
+    /// <see langword="null" /> on failed and canceled results.
     /// </summary>
     public Uri? RemoteUrl { get; init; }
     
     /// <summary>
-    /// 服务器返回的唯一文件标识（可能用于后续删除、查询等操作）
+    /// Identifier the server assigned to the stored file, for later requests such as deleting or querying it.
+    /// <see langword="null" /> when the transport did not supply one.
     /// </summary>
     public string? FileId { get; init; }
     
     /// <summary>
-    /// 服务器返回的ETag或文件哈希（用于完整性校验）
+    /// ETag or hash of the file as returned by the server, for integrity checks.
+    /// <see langword="null" /> when the transport did not supply one.
     /// </summary>
     public string? FileHash { get; init; }
 
-    // ---------- 性能与元数据 ----------
+    // ---------- Performance and metadata ----------
     /// <summary>
-    /// 文件总大小（字节）
+    /// Total size of the file in bytes.
     /// </summary>
     public long FileSize { get; init; }
     
     /// <summary>
-    /// 实际上传耗时
+    /// Time the upload took, as reported by the transport.
     /// </summary>
     public TimeSpan ElapsedTime { get; init; }
     
     /// <summary>
-    /// 平均上传速度（字节/秒）
+    /// Average upload speed in bytes per second, computed from <see cref="FileSize" />
+    /// and <see cref="ElapsedTime" />. <c>0</c> when either of them is not positive.
     /// </summary>
     public double AverageSpeed => FileSize > 0 && ElapsedTime.TotalSeconds > 0 
         ? FileSize / ElapsedTime.TotalSeconds : 0;
     
     /// <summary>
-    /// 用于断点续传的会话标识
+    /// Session identifier for resuming an interrupted upload.
+    /// <see cref="SuccessResult" /> does not set it, so it is <see langword="null" /> unless set directly.
     /// </summary>
     public string? ResumableSessionId { get; init; }
     
     /// <summary>
-    /// 已成功上传的字节数（对于分片上传）
+    /// Number of bytes that were uploaded successfully in a chunked upload.
+    /// <see cref="SuccessResult" /> does not set it, so it is <c>0</c> unless set directly.
     /// </summary>
     public long BytesUploaded { get; init; }
     
     /// <summary>
-    /// 服务器返回的自定义元数据（如：图片宽度、高度、时长等）
+    /// Custom metadata returned by the server, such as the width and height of an image or the duration of a video.
+    /// <see langword="null" /> when the server returned none.
     /// </summary>
     public Dictionary<string, object>? Metadata { get; init; }
     
     /// <summary>
-    /// 创建成功结果
+    /// Creates the result of a successful upload.
     /// </summary>
+    /// <returns>
+    /// A result whose <see cref="Status" /> is <see cref="FileUploadStatus.Success" />. It carries the given
+    /// address, size in bytes and duration, plus the server data that was supplied.
+    /// </returns>
     public static FileUploadResult SuccessResult(
         Uri remoteUrl, 
         long fileSize, 
@@ -124,8 +190,12 @@ public record FileUploadResult
     }
     
     /// <summary>
-    /// 创建失败结果
+    /// Creates the result of a failed upload.
     /// </summary>
+    /// <returns>
+    /// A result whose <see cref="Status" /> is <see cref="FileUploadStatus.Failed" />, carrying the given
+    /// error category, messages and exception.
+    /// </returns>
     public static FileUploadResult FailureResult(
         FileUploadErrorCode errorCode,
         string userFriendlyMessage,
@@ -143,8 +213,12 @@ public record FileUploadResult
     }
     
     /// <summary>
-    /// 创建取消结果
+    /// Creates the result of a canceled upload.
     /// </summary>
+    /// <returns>
+    /// A result whose <see cref="Status" /> is <see cref="FileUploadStatus.Cancelled" /> and whose
+    /// <see cref="ErrorCode" /> is <see cref="FileUploadErrorCode.Cancelled" />.
+    /// </returns>
     public static FileUploadResult CancelledResult(string userFriendlyMessage)
     {
         return new FileUploadResult

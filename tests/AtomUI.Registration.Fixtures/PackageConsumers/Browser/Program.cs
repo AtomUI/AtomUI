@@ -15,7 +15,8 @@ await AppBuilder.Configure<ConsumerApp>()
                 .StartBrowserAppAsync("out");
 public sealed class ConsumerApp : Application
 {
-    // 本工程不引用 AtomUI 生成器，按公开契约手写挂接。
+    // This project does not reference the AtomUI generator, so the hook is written by hand against the
+    // public contract.
     public override void RegisterServices()
     {
         base.RegisterServices();

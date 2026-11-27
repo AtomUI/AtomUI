@@ -43,9 +43,12 @@
                                                      SemanticOwnerType="{x:Type atom:Dialog}"
                                                      PreviewStageMinHeight="434">
                             <gallery:SemanticPartPreview.PreviewContent>
-                                <!-- 对齐上游 antd 语义演示的内联模态（getContainer={false} + 舞台内 mask）：
-                                 舞台承载一个 ScopeAwareOverlayLayerPanel，Dialog 经 OverlayScope 把 overlay 宿主
-                                 限定在该作用域，mask/居中随舞台；右侧部件卡因此仍可 hover。常开由 IsPinnedOpen 钉住。 -->
+                                <!-- Mirrors the inline modal of the upstream antd semantic demo (getContainer={false} +
+                                mask inside the stage): the stage hosts a ScopeAwareOverlayLayerPanel, and Dialog
+                                uses OverlayScope to confine the overlay host to that scope, so the mask and the
+                                centering follow the stage and the part cards on the right stay hoverable.
+                                Always-open is pinned by IsPinnedOpen.
+                                -->
                                 <Border Name="ModalSemanticStage"
                                         Width="420"
                                         Height="320"
@@ -61,8 +64,11 @@
                                                             TextWrapping="Wrap"
                                                             Foreground="{atom:SharedTokenResource ColorTextSecondary}"
                                                             Text="{gallery:ModalShowCaseLangResource SemanticStageHint}" />
-                                            <!-- owner 显式铺满舞台（420x320）：Dialog 主题默认零尺寸，而 resolver
-                                             对零尺寸目标不建 Adorner，不铺满则 root 部件无法高亮（先例：Drawer 舞台 Grid 拉伸）。 -->
+                                            <!-- The owner explicitly fills the stage (420x320): the Dialog theme is
+                                            zero-sized by default and the resolver creates no Adorner for a
+                                            zero-sized target, so the root part could not be highlighted otherwise
+                                            (precedent: the stretched Grid of the Drawer stage).
+                                            -->
                                             <atom:Dialog x:Name="ModalSemanticOwner"
                                                          Width="420"
                                                          Height="320"
@@ -111,8 +117,10 @@
                             </gallery:SemanticPartPreview.PartDescriptions>
                         </gallery:SemanticPartPreview>
 
-                        <!-- MessageBox 与 Dialog 公开同一组 Semantic Part，但拥有独立 descriptor 与
-                         MessageBox<Part>Style；这里以第二个预览并列展示（跨根同样经 GetCrossRoots 上报）。 -->
+                        <!-- MessageBox exposes the same Semantic Parts as Dialog but has its own descriptor and
+                        MessageBox[Part]Style types; it is shown here as a second preview side by side (cross-root
+                        reporting goes through GetCrossRoots as well).
+                        -->
                         <gallery:SemanticPartPreview Name="MessageBoxSemanticPreview"
                                                      Title="MessageBox"
                                                      SemanticOwner="{Binding #MessageBoxSemanticOwner}"
@@ -183,12 +191,17 @@
                             </gallery:SemanticPartPreview.PartDescriptions>
                         </gallery:SemanticPartPreview>
 
-                        <!-- 原生 Window 宿主预览（先例：ImagePreviewer 的 native dialog）：对话以独立系统窗口打开，
-                         舞台内按钮按需触发（不默认打开）；部件高亮落在该窗口自己的 AdornerLayer（跨根经
-                         Dialog.GetCrossRoots 上报 HostWindow）。modeless 是必须的：模态窗口会阻断 Gallery 输入。
-                         mask/wrapper/header/title/close 在该宿主不物化（原生 caption 独占标题栏），对应卡片无高亮。
-                         样式化窗口 Dialog 的触发按钮在样式卡片：owner 实例级 Semantic Style 经逻辑父链
-                         （HostWindow 挂在 owner 逻辑树下）在 Window 宿主同样命中（有控件级回归实证）。 -->
+                        <!-- Native Window host preview (precedent: the native dialog of ImagePreviewer): the dialog
+                        opens as a separate system window, triggered on demand by the button in the stage (not open
+                        by default). Part highlighting lands in that window's own AdornerLayer
+                        (Dialog.GetCrossRoots reports the HostWindow for the cross-root case). Modeless is
+                        required: a modal window would block input to the Gallery. mask/wrapper/header/title/close
+                        do not materialize in this host (the native caption owns the title bar), so the matching
+                        cards show no highlight. The trigger button of the styled-window Dialog lives in the style
+                        card: the instance-level semantic style of the owner also matches in the Window host
+                        through the logical parent chain (HostWindow is attached under the owner's logical tree); a
+                        control-level regression test confirms it.
+                        -->
                         <gallery:SemanticPartPreview Name="WindowDialogSemanticPreview"
                                                      Title="Window Dialog"
                                                      SemanticOwner="{Binding #WindowDialogSemanticOwner}"
@@ -215,7 +228,9 @@
                                                          ButtonType="Primary"
                                                          Content="{gallery:ModalShowCaseLangResource P2ContentOpenWindowDialog}" />
                                         </StackPanel>
-                                        <!-- owner 显式铺满舞台：Dialog 主题默认零尺寸，resolver 对零尺寸目标不建 Adorner。 -->
+                                        <!-- The owner explicitly fills the stage: the Dialog theme is zero-sized by
+                                        default and the resolver creates no Adorner for a zero-sized target.
+                                        -->
                                         <atom:Dialog x:Name="WindowDialogSemanticOwner"
                                                      Width="420"
                                                      Height="200"
@@ -721,9 +736,11 @@
                                              IsMotionEnabled="False"
                                              Title="{gallery:ModalShowCaseLangResource P2TitleBasicModal}">
                                     <atom:Dialog.Styles>
-                                        <!-- 专用 Semantic Part Style 是唯一定制入口；x:SetterTargetType 必须写 Part
-                                             的 ContractType（title 是 Avalonia TextBlock、close 是 Avalonia Button，
-                                             不带 atom: 前缀）。 -->
+                                        <!-- The dedicated semantic part styles are the only customization entry;
+                                        x:SetterTargetType must be the ContractType of the part (title is the
+                                        Avalonia TextBlock and close is the Avalonia Button, without the atom:
+                                        prefix).
+                                        -->
                                         <Style Selector="atom|Dialog.semantic-styles-demo">
                                             <atom:DialogMaskStyle x:SetterTargetType="Border">
                                                 <Setter Property="Background" Value="#661677ff" />
@@ -758,8 +775,10 @@
                                     </atom:Dialog.Styles>
                                     <atom:TextBlock Text="{gallery:ModalShowCaseLangResource P2TextSomeContents}" />
                                 </atom:Dialog>
-                                <!-- MessageBox 与 Dialog 公开同一组 Semantic Part，但使用自己的 MessageBox<Part>Style 类型；
-                                     同样只以生成 Style 定制，不使用 code-behind 属性回退。 -->
+                                <!-- MessageBox exposes the same Semantic Parts as Dialog but uses its own
+                                MessageBox[Part]Style types. It is likewise customized only with the generated
+                                styles, never with a code-behind property fallback.
+                                -->
                                 <atom:MessageBox Classes="messagebox-semantic-styles-demo"
                                                  IsOpen="{Binding IsMessageBoxSemanticStyleOpen}"
                                                  Title="{gallery:ModalShowCaseLangResource P2TitleNormal}"
@@ -813,11 +832,15 @@
                                              HostWidth="360"
                                              HostHeight="220">
                                     <atom:Dialog.Styles>
-                                        <!-- Window 宿主只物化 container/body/footer（mask/header/title/close 不存在，
-                                                                 对应 Setter 在该宿主无目标）；标题定制走 Title 属性。
-                                                                 按钮与正文文字经外层 owner Style 的嵌套样式定制：DialogButton 的 StyleKey
-                                                                 是 atom:Button（不能写 atom|DialogButton），内容文字是 atom:TextBlock；
-                                                                 嵌套样式必须直接挂外层 owner Style（生成 Part Style 内的二级嵌套不激活）。 -->
+                                        <!-- The Window host materializes only container/body/footer
+                                        (mask/header/title/close do not exist, so the matching setters have no
+                                        target in this host); the title is customized through the Title property.
+                                        The button and the body text are customized through nested styles of the
+                                        outer owner style: the StyleKey of DialogButton is atom:Button
+                                        (atom|DialogButton does not work) and the body text is atom:TextBlock. A
+                                        nested style must hang directly on the outer owner style (second-level
+                                        nesting inside a generated part style is not activated).
+                                        -->
                                         <Style Selector="atom|Dialog.window-semantic-styles-demo">
                                             <atom:DialogContainerStyle x:SetterTargetType="Border">
                                                 <Setter Property="Background" Value="{DynamicResource WindowDialogBackgroundBrush}" />

@@ -3,6 +3,12 @@ using Avalonia.Threading;
 
 namespace AtomUI.Localization;
 
+/// <summary>
+/// Runtime language state of the application behind <see cref="ILanguageManager" />: the supported languages,
+/// the translation snapshot of each of them and the language that <c>ChangeLanguage</c> commits. The
+/// <see cref="Localizer" /> and the <see cref="LanguageResourceProvider" /> read the same language context, so
+/// a change reaches both at once. AtomUI.Core exposes it as the language manager of the application scope.
+/// </summary>
 internal sealed partial class LanguageManager : ILanguageManager, IDisposable
 {
     private readonly LanguageContext _context;

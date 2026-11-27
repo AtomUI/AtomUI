@@ -3,7 +3,9 @@ using AtomUI.Theme.Languages;
 
 namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 
-/// <summary>The PrimeNG view of <see cref="SpaceToken"/>.</summary>
+/// <summary>
+/// The PrimeNG view of <see cref="SpaceToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class SpaceTokenRule : IControlTokenRule<PrimeNGToken, SpaceToken>
 {

@@ -4,7 +4,9 @@ using Xunit;
 
 namespace AtomUI.Core.Tests.Theme;
 
-/// <summary>The link manifest of a compiled theme package: every requirement scope round-trips, language tokens included.</summary>
+/// <summary>
+/// The link manifest of a compiled theme package: every requirement scope round-trips, language tokens included.
+/// </summary>
 public class CompiledThemeManifestTests
 {
     [Fact]

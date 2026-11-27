@@ -21,6 +21,10 @@ using AtomUI.Theme;
 namespace AtomUI.Desktop.Controls;
 
 // Visual container follows the DataGrid owner, including TokenTransitions in its template.
+/// <summary>
+/// One row of a <see cref="DataGrid" />: it holds the cells, the row header and the details section of one
+/// data item. The grid creates, fills and recycles its rows itself.
+/// </summary>
 [TokenOwnerTransparent]
 [PseudoClasses(StdPseudoClass.Selected, StdPseudoClass.Editing, StdPseudoClass.Invalid, DataGridPseudoClass.RowHover)]
 public partial class DataGridRow : TemplatedControl
@@ -33,38 +37,60 @@ public partial class DataGridRow : TemplatedControl
     public static readonly StyledProperty<object?> HeaderProperty =
         AvaloniaProperty.Register<DataGridRow, object?>(nameof(Header));
     
+    /// <summary>
+    /// Identifies the <see cref="IsSelected" /> property.
+    /// </summary>
     public static readonly DirectProperty<DataGridRow, bool> IsSelectedProperty =
         AvaloniaProperty.RegisterDirect<DataGridRow, bool>(
             nameof(IsSelected),
             o => o.IsSelected,
             (o, v) => o.IsSelected = v);
     
+    /// <summary>
+    /// Identifies the <see cref="IsValid" /> property.
+    /// </summary>
     public static readonly DirectProperty<DataGridRow, bool> IsValidProperty =
         AvaloniaProperty.RegisterDirect<DataGridRow, bool>(
             nameof(IsValid),
             o => o.IsValid);
 
+    /// <summary>
+    /// Identifies the <see cref="DetailsTemplate" /> property.
+    /// </summary>
     public static readonly StyledProperty<IDataTemplate?> DetailsTemplateProperty =
         AvaloniaProperty.Register<DataGridRow, IDataTemplate?>(nameof(DetailsTemplate));
     
+    /// <summary>
+    /// Identifies the <see cref="HeaderContentTemplate" /> property.
+    /// </summary>
     public static readonly StyledProperty<IDataTemplate?> HeaderContentTemplateProperty =
         AvaloniaProperty.Register<DataGridRow, IDataTemplate?>(nameof(HeaderContentTemplate));
     
+    /// <summary>
+    /// Identifies the <see cref="IsDetailsVisible" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsDetailsVisibleProperty =
         AvaloniaProperty.Register<DataGridRow, bool>(nameof(IsDetailsVisible));
     
+    /// <summary>
+    /// Identifies the <see cref="Index" /> property.
+    /// </summary>
     public static readonly DirectProperty<DataGridRow, int> IndexProperty =
         AvaloniaProperty.RegisterDirect<DataGridRow, int>(nameof(Index), 
             o => o.Index, 
             (o, v) => o.Index = v);
     
+    /// <summary>
+    /// Identifies the <see cref="LogicIndex" /> property.
+    /// </summary>
     public static readonly DirectProperty<DataGridRow, int> LogicIndexProperty =
         AvaloniaProperty.RegisterDirect<DataGridRow, int>(nameof(LogicIndex), 
             o => o.LogicIndex,
             (o, v) => o.LogicIndex = v);
     
     /// <summary>
-    /// Gets or sets the row header.
+    /// Content of the row header cell of the row, shown by its <see cref="DataGridRowHeader" />. A
+    /// <see langword="null" /> leaves the cell empty.
     /// </summary>
     public object? Header
     {
@@ -74,6 +100,10 @@ public partial class DataGridRow : TemplatedControl
     
     private bool _isSelected;
     
+    /// <summary>
+    /// Whether the row is selected. Setting it selects or deselects the row in the owning grid, and the grid
+    /// assigns it itself whenever it applies the state of the row, so it follows the selection of the grid.
+    /// </summary>
     public bool IsSelected
     {
         get => _isSelected;
@@ -127,6 +157,10 @@ public partial class DataGridRow : TemplatedControl
     }
     private int _index;
     
+    /// <summary>
+    /// The index of the row counted from 1, for display: always <see cref="Index" /> plus 1, so it is <c>0</c>
+    /// while the row has no slot.
+    /// </summary>
     public int LogicIndex
     {
         get => _logicIndex;
@@ -166,8 +200,11 @@ public partial class DataGridRow : TemplatedControl
     /// <summary>
     /// Returns the row which contains the given element
     /// </summary>
-    /// <param name="element">element contained in a row</param>
-    /// <returns>Row that contains the element, or null if not found
+    /// <param name="element">
+    /// element contained in a row
+    /// </param>
+    /// <returns>
+    /// Row that contains the element, or null if not found
     /// </returns>
     public static DataGridRow? GetRowContainingElement(Control element)
     {
@@ -185,12 +222,12 @@ public partial class DataGridRow : TemplatedControl
     /// <summary>
     /// Arranges the content of the <see cref="T:AtomUI.Desktop.Controls.DataGridRow" />.
     /// </summary>
-    /// <returns>
-    /// The actual size used by the <see cref="T:AtomUI.Desktop.Controls.DataGridRow" />.
-    /// </returns>
     /// <param name="finalSize">
     /// The final area within the parent that this element should use to arrange itself and its children.
     /// </param>
+    /// <returns>
+    /// The actual size used by the <see cref="T:AtomUI.Desktop.Controls.DataGridRow" />.
+    /// </returns>
     protected override Size ArrangeOverride(Size finalSize)
     {
         if (OwningGrid == null)
@@ -244,14 +281,15 @@ public partial class DataGridRow : TemplatedControl
     }
     
     /// <summary>
-    /// Measures the children of a <see cref="T:AtomUI.Desktop.Controls.DataGridRow" /> to
-    /// prepare for arranging them during the <see cref="M:System.Windows.FrameworkElement.ArrangeOverride(System.Windows.Size)" /> pass.
+    /// Measures the row and returns a desired width of at least the width of the cell area of the owning grid,
+    /// so that the row spans all columns.
     /// </summary>
     /// <param name="availableSize">
-    /// The available size that this element can give to child elements. Indicates an upper limit that child elements should not exceed.
+    /// The available size that the row can give to its children.
     /// </param>
     /// <returns>
-    /// The size that the <see cref="T:AtomUI.Desktop.Controls.DataGridRow" /> determines it needs during layout, based on its calculations of child object allocated sizes.
+    /// The measured size, with the width raised to the width of the cells of the grid, or the size measured by
+    /// the base class when the row has no owning grid.
     /// </returns>
     protected override Size MeasureOverride(Size availableSize)
     {
@@ -270,7 +308,9 @@ public partial class DataGridRow : TemplatedControl
     }
     
     /// <summary>
-    /// Builds the visual tree for the column header when a new template is applied.
+    /// Resolves the parts of the new row template and moves the existing content into them: the cells go into
+    /// the new cells presenter, a pending details template is applied, and the grid lines and the row header
+    /// are brought in line with the current state.
     /// </summary>
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
@@ -347,6 +387,9 @@ public partial class DataGridRow : TemplatedControl
         
     }
     
+    /// <summary>
+    /// Calls the base member, then sets <c>IsMouseOver</c>, which turns on the hover pseudo-class of the row.
+    /// </summary>
     protected override void OnPointerEntered(PointerEventArgs e)
     {
         base.OnPointerEntered(e);
@@ -379,12 +422,24 @@ public partial class DataGridRow : TemplatedControl
         }
     }
     
+    /// <summary>
+    /// Clears <c>IsMouseOver</c> and with it the hover pseudo-class of the row, then calls the base member.
+    /// </summary>
     protected override void OnPointerExited(PointerEventArgs e)
     {
         IsMouseOver = false;
         base.OnPointerExited(e);
     }
     
+    /// <summary>
+    /// Calls the base member, then keeps the row in step with changes of its own properties.
+    /// </summary>
+    /// <remarks>
+    /// A new <c>DataContext</c> refreshes the cell content of the template columns of a recycled row and
+    /// re-applies the header content template. A change of <see cref="IsSelected" /> is forwarded to the
+    /// selection of the owning grid, to the selected pseudo-class and to the state of the cells. A change of
+    /// <see cref="Index" /> sets <see cref="LogicIndex" /> to the new index plus 1.
+    /// </remarks>
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
@@ -423,8 +478,9 @@ public partial class DataGridRow : TemplatedControl
             }
 
             PseudoClasses.Set(StdPseudoClass.Selected, value);
-            // 行是选中状态的唯一权威：选中变化必须同步到全部单元格的 :selected 伪类，
-            // 否则单元格级样式（如排序列底色让位）无法跟随行选中状态
+            // The row is the only authority for the selected state: a selection change must be passed on to the
+            // :selected pseudo-class of every cell, otherwise cell-level styles (such as the background of the
+            // sorted column giving way to the selection) cannot follow the selected state of the row
             ApplyCellsState();
         }
         else if (change.Property == IndexProperty)

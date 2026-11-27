@@ -4,7 +4,9 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls.Themes.Shadcn;
 
-/// <summary>The shadcn view of <see cref="TreeSelectToken"/>.</summary>
+/// <summary>
+/// The shadcn view of <see cref="TreeSelectToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class TreeSelectTokenRule : IControlTokenRule<ShadcnToken, TreeSelectToken>
 {
@@ -14,6 +16,7 @@ internal sealed class TreeSelectTokenRule : IControlTokenRule<ShadcnToken, TreeS
         var global = target.Global;
         SelectInputTokenCalculator.Calculate(in context, global, token);
         var presentation = TreePresentationTokenCalculator.Calculate(global);
+        // Ant Design formula kept as is: shadcn has no TreeSelect, so the language has no values of its own.
         token.HeaderHeight = presentation.HeaderHeight;
         token.NodeHoverBg = presentation.NodeHoverBg;
         token.NodeSelectedBg = presentation.NodeSelectedBg;

@@ -4,7 +4,9 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls.Themes.Shadcn;
 
-/// <summary>The shadcn view of <see cref="DescriptionsToken"/>.</summary>
+/// <summary>
+/// The shadcn view of <see cref="DescriptionsToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class DescriptionsTokenRule : IControlTokenRule<ShadcnToken, DescriptionsToken>
 {
@@ -12,6 +14,7 @@ internal sealed class DescriptionsTokenRule : IControlTokenRule<ShadcnToken, Des
     {
         var token  = target.Own;
         var global = target.Global;
+        // Ant Design formula kept as is: shadcn has no descriptions, so only the dark label color below differs.
         token.LabelBg      = global.ColorFillAlter;
         token.LabelColor   = global.ColorTextTertiary;
         token.TitleColor   = global.ColorText;

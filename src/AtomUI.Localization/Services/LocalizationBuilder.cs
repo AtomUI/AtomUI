@@ -2,6 +2,17 @@ using AtomUI.Localization.Data;
 
 namespace AtomUI.Localization;
 
+/// <summary>
+/// Collects the language data of an application or of a package append and builds the
+/// <see cref="LocalizationHost" /> from it. AtomUI.Core owns it through <c>AtomUIBuilder.LocalizationBuilder</c>.
+/// </summary>
+/// <remarks>
+/// A builder created with <c>appendOnly</c> rejects <c>AddLanguageDefinition</c> and <c>ConfigureLanguages</c>
+/// with an <see cref="InvalidOperationException" />. From <see cref="Close" /> or the first
+/// <see cref="Build" /> on, every method that adds data throws the same kind of exception. During a package
+/// append <see cref="LanguageManager.PreparePackages" /> reads the module data, catalogs and translation bundles
+/// of the builder instead of building a host from them.
+/// </remarks>
 internal sealed class LocalizationBuilder : ILocalizationBuilder
 {
     private readonly List<LanguageCatalogDescriptor> _catalogs = [];
@@ -119,7 +130,11 @@ internal sealed class LocalizationBuilder : ILocalizationBuilder
         return _registry;
     }
 
-    /// <summary>构建本地化宿主；跨包的 bundle 引用必须闭合，否则抛出。</summary>
+    /// <summary>
+    /// Builds the localization host; a later call returns the same host. Every translation bundle must target
+    /// a registered catalog, also when the bundle comes from another package. The build also throws when a unit
+    /// of a supported language resolves only through the final en-US fallback and no build proof covers its module.
+    /// </summary>
     internal LocalizationHost Build(Func<bool>? checkAccess = null)
     {
         if (_host is not null)

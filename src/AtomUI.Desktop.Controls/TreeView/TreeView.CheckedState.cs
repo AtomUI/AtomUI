@@ -424,12 +424,12 @@ public partial class TreeView
     }
 
     /// <summary>
-    /// Counterpart of <see cref="RecursiveCheckNodePredicate"/> for a node whose container is not realized.
+    /// Counterpart of <see cref="RecursiveCheckNodePredicate" /> for a node whose container is not realized.
     /// </summary>
     private protected virtual bool RecursiveCheckNodeDataPredicate(object item) => true;
 
     /// <summary>
-    /// Counterpart of <see cref="RecursiveUnCheckNodePredicate"/> for a node whose container is not realized.
+    /// Counterpart of <see cref="RecursiveUnCheckNodePredicate" /> for a node whose container is not realized.
     /// </summary>
     private protected virtual bool RecursiveUnCheckNodeDataPredicate(object item) => true;
 

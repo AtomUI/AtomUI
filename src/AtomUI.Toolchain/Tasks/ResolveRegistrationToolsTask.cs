@@ -5,16 +5,51 @@ using Microsoft.Build.Framework;
 
 namespace AtomUI.Build.Tasks;
 
-/// <summary>Resolves complete build-tool bundles by identity and content, before analyzer/backend injection.</summary>
+/// <summary>
+/// Resolves complete build-tool bundles by identity and content, before analyzer/backend injection.
+/// </summary>
 public sealed class ResolveRegistrationToolsTask : ITask
 {
+    /// <summary>
+    /// Receives the errors of the task. It is <see langword="null" /> after construction and must be assigned before
+    /// <see cref="Execute" /> is called.
+    /// </summary>
     public IBuildEngine BuildEngine { get; set; } = null!;
+    /// <summary>
+    /// Satisfies <see cref="ITask" />. This task never reads it.
+    /// </summary>
     public ITaskHost HostObject { get; set; } = null!;
+    /// <summary>
+    /// The tool assemblies to choose from. Each item's path is the main assembly of a bundle and its <c>Kind</c>
+    /// metadata is <c>Generator</c>, <c>Backend</c>, <c>Net8Backend</c> or <c>Tasks</c>. All candidates of a kind
+    /// must be the same bundle; the first one in ordinal path order is selected.
+    /// </summary>
     public ITaskItem[] Candidates { get; set; } = [];
+    /// <summary>
+    /// <see langword="true" /> makes the <c>Backend</c> kind required and resolves it: the Mono TypeMap backend
+    /// (<c>AtomUI.TypeMap.Linker.dll</c>). While it is <see langword="false" />, <c>Backend</c> candidates are
+    /// ignored. The task fails with <c>ATOMUIREG006</c> when it is <see langword="true" /> and no
+    /// <c>Backend</c> candidate remains.
+    /// </summary>
     public bool IncludeBackend { get; set; }
+    /// <summary>
+    /// <see langword="true" /> makes the <c>Net8Backend</c> kind required and resolves it: the .NET 8
+    /// conditional registration backend (<c>AtomUI.Registration.ILLink8.dll</c>). It follows
+    /// <see cref="IncludeBackend" /> in every other respect.
+    /// </summary>
     public bool IncludeNet8Backend { get; set; }
+    /// <summary>
+    /// Path of the selected <c>AtomUI.Generator.dll</c>, or empty when no <c>Generator</c> candidate was given.
+    /// </summary>
     [Output] public string GeneratorAssembly { get; set; } = string.Empty;
+    /// <summary>
+    /// Path of the selected <c>AtomUI.TypeMap.Linker.dll</c>, or empty when no <c>Backend</c> candidate was given.
+    /// </summary>
     [Output] public string BackendAssembly { get; set; } = string.Empty;
+    /// <summary>
+    /// Path of the selected <c>AtomUI.Registration.ILLink8.dll</c>, or empty when no <c>Net8Backend</c> candidate
+    /// was given.
+    /// </summary>
     [Output] public string Net8BackendAssembly { get; set; } = string.Empty;
 
     internal static readonly string[] GeneratorFiles = ["AtomUI.Generator.dll", "System.Reflection.Metadata.dll",
@@ -24,6 +59,15 @@ public sealed class ResolveRegistrationToolsTask : ITask
     internal static readonly string[] Net8BackendFiles = ["AtomUI.Registration.ILLink8.dll"];
     internal static readonly string[] TaskFiles = ["AtomUI.Build.Tasks.dll", "AtomUI.Build.Tasks.deps.json", "AtomUI.Build.Tasks.runtimeconfig.json", "Microsoft.Build.Framework.dll"];
 
+    /// <summary>
+    /// Groups the candidates by kind, checks that each kind is one complete bundle and selects one path per kind.
+    /// Candidates of one kind with different identities or file content fail with <c>ATOMUIREG005</c>; an unknown
+    /// kind, a wrong file name or a missing bundle file fails with <c>ATOMUIREG006</c>.
+    /// </summary>
+    /// <returns>
+    /// <see langword="true" /> when every kind passed and the required backends were resolved; otherwise
+    /// <see langword="false" />.
+    /// </returns>
     public bool Execute()
     {
         try

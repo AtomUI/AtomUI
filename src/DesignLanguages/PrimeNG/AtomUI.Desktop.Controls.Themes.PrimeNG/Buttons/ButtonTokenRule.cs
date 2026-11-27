@@ -4,7 +4,9 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 
-/// <summary>The PrimeNG view of <see cref="ButtonToken"/>.</summary>
+/// <summary>
+/// The PrimeNG view of <see cref="ButtonToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class ButtonTokenRule : IControlTokenRule<PrimeNGToken, ButtonToken>
 {
@@ -12,7 +14,8 @@ internal sealed class ButtonTokenRule : IControlTokenRule<PrimeNGToken, ButtonTo
     {
         var token  = target.Own;
         var global = target.Global;
-        // PrimeNG: the control-global overrides, read by the formulas below.
+        // PrimeNG: the control-global overrides (ColorBgSolid by the formulas below; BorderRadiusSM, BorderRadiusLG,
+        // OpacityLoading by the Button theme (CornerRadius, Opacity); the other six by neither).
         var colors = PrimeNGButtonFamilyTokens<ButtonToken>.EvaluateGlobal(in context, global);
         StandardButtonTokenCalculator.Calculate(in context, global, token);
         token.GroupBorderColor = global.ColorPrimaryHover;

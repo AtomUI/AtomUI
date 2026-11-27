@@ -1,5 +1,14 @@
 namespace AtomUI.Controls;
 
+/// <summary>
+/// One upload that <c>FileUploadScheduler</c> carries out: the file to upload, its status and progress, and the
+/// handlers that receive its progress and outcome. <c>UploadQueue</c> in AtomUI.Desktop.Controls keeps its tasks.
+/// </summary>
+/// <remarks>
+/// Each task receives a new <c>Id</c>. <c>Progress</c> is the uploaded percentage reported by the transport. The
+/// scheduler sets <c>Status</c>, <c>Result</c>, <c>CancellationTokenSource</c> and <c>ExecutionTask</c>, and invokes
+/// exactly one of the completed, canceled or failed handlers when the upload has ended.
+/// </remarks>
 internal class FileUploadTask
 {
     public Guid Id { get; set; }

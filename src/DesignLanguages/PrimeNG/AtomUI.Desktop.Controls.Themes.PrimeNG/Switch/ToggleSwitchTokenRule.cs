@@ -6,7 +6,9 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 
-/// <summary>The PrimeNG view of <see cref="ToggleSwitchToken"/>.</summary>
+/// <summary>
+/// The PrimeNG view of <see cref="ToggleSwitchToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class ToggleSwitchTokenRule : IControlTokenRule<PrimeNGToken, ToggleSwitchToken>
 {
@@ -14,8 +16,11 @@ internal sealed class ToggleSwitchTokenRule : IControlTokenRule<PrimeNGToken, To
     {
         var token  = target.Own;
         var global = target.Global;
-        // PrimeNG: the control-global overrides, read by the formulas below.
+        // PrimeNG: the control-global overrides (MotionDurationMid), read by the ToggleSwitch theme (the knob
+        // transitions) and not by the formulas below.
         PrimeNGToggleSwitchTokens.EvaluateGlobal(in context, global);
+        // Ant Design formula kept as is: the PrimeNG toggle switch stage at the end of the method replaces the
+        // geometry (track, padding, handle sizes, inner margins), the track and handle colors and the handle shadow.
         var fontSize      = global.FontSize;
         var lineHeight    = global.RelativeLineHeight;
         var controlHeight = global.ControlHeight;
@@ -69,7 +74,7 @@ internal sealed class ToggleSwitchTokenRule : IControlTokenRule<PrimeNGToken, To
 
         token.ContentIconSize            = token.TrackHeightSM;
         token.ContentIconSizeSM          = token.TrackHeightSM - global.UniformlyPaddingXXS;
-        token.LoadingAnimationDuration   = TimeSpan.FromMilliseconds(1200); // 毫秒
+        token.LoadingAnimationDuration   = TimeSpan.FromMilliseconds(1200); // milliseconds
         token.OffStateLoadIndicatorColor = ColorUtils.FromRgbF(0.4,0.0, 0.0, 0.0);
         // PrimeNG: the preset's control values, over the formulas.
         PrimeNGToggleSwitchTokens.EvaluateOwn(in context, global, token);

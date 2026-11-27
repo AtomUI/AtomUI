@@ -11,7 +11,9 @@ using AtomUI.Generated.AtomUIDesktopControls;
 
 namespace AtomUI.Desktop.Controls.Internal.DateViewer;
 
-/// <summary>Common interaction container; templates replace content, never selection ownership.</summary>
+/// <summary>
+/// Common interaction container; templates replace content, never selection ownership.
+/// </summary>
 internal partial class DateViewerCell : TemplatedControl
 {
     public static readonly DirectProperty<DateViewerCell, string> DisplayTextProperty =

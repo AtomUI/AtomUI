@@ -4,7 +4,9 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls.Themes.Shadcn;
 
-/// <summary>The shadcn view of <see cref="SegmentedToken"/>.</summary>
+/// <summary>
+/// The shadcn view of <see cref="SegmentedToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class SegmentedTokenRule : IControlTokenRule<ShadcnToken, SegmentedToken>
 {
@@ -22,6 +24,8 @@ internal sealed class SegmentedTokenRule : IControlTokenRule<ShadcnToken, Segmen
         token.ItemActiveBg      = global.ColorFill;
         token.ItemSelectedColor = global.ColorText;
         var lineWidth = global.LineWidth;
+        // shadcn has no segmented control: the item values keep the Ant formula. Only the track background takes a
+        // language value (--muted), at the end of the method.
         token.SegmentedItemPadding = new Thickness(
             Math.Max(global.ControlPaddingHorizontal - lineWidth, 0),
             0,
@@ -37,8 +41,8 @@ internal sealed class SegmentedTokenRule : IControlTokenRule<ShadcnToken, Segmen
         token.ItemMinHeightLG = global.ControlHeightLG - token.TrackPadding.Top - token.TrackPadding.Bottom;
         token.ItemMinHeight   = global.ControlHeight - token.TrackPadding.Top - token.TrackPadding.Bottom;
         token.ItemMinHeightSM = global.ControlHeightSM - token.TrackPadding.Top - token.TrackPadding.Bottom;
-        // The default track reads ColorBgLayout, which is the page itself under shadcn: use --muted, the grey the antd track
-        // renders in.
+        // The default track reads ColorBgLayout, which is the page itself under shadcn: use --muted, the gray the antd
+        // track renders in.
         token.TrackBg = context.Language.Muted;
     }
 }

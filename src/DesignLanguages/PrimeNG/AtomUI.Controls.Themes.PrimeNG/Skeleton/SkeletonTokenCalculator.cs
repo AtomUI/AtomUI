@@ -5,9 +5,15 @@ using AtomUI.Theme.Languages;
 
 namespace AtomUI.Controls.Themes.PrimeNG;
 
-/// <summary>The PrimeNG values of the shared <see cref="AbstractSkeletonToken"/> layer.</summary>
+/// <summary>
+/// The PrimeNG values of the shared <see cref="AbstractSkeletonToken" /> layer.
+/// </summary>
 public static class SkeletonTokenCalculator
 {
+    /// <summary>
+    /// Writes the PrimeNG values into the shared skeleton layer: the title block at half the control height, the
+    /// small radius on every block and a 1.4s loading sweep.
+    /// </summary>
     public static void Calculate(in TokenEvaluationContext<PrimeNGToken> context, DesignToken global, AbstractSkeletonToken token)
     {
         // GradientFromColor, GradientToColor and ParagraphLineHeight feed values derived in the terminal, which

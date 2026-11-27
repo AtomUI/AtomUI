@@ -32,8 +32,27 @@ public sealed class CompiledThemeBindingBuilder
         ? throw new InvalidOperationException("A compiled theme section must be opened before its values.")
         : _sections.Count - 1;
 
-    /// <summary>Opens a section: 0 is the base section, later ones are condition sections in document order.</summary>
-    /// <param name="appearance">The condition's appearance as its numeric value, or -1 when the condition does not name one.</param>
+    /// <summary>
+    /// Opens a section: 0 is the base section, later ones are condition sections in document order.
+    /// The base section takes no condition. A condition section must name at least one axis and applies to the variants
+    /// that match every axis it names. Each axis value it names must be declared by the program's language.
+    /// </summary>
+    /// <param name="index">
+    /// The section's position, which must equal the number of sections opened so far.
+    /// </param>
+    /// <param name="style">
+    /// The style the condition applies to, or <see langword="null" /> when the condition does not name one.
+    /// </param>
+    /// <param name="appearance">
+    /// The condition's appearance as its numeric value: 0 is <see cref="ThemeAppearance.Light" /> and 1 is
+    /// <see cref="ThemeAppearance.Dark" />. Pass -1 when the condition does not name one.
+    /// </param>
+    /// <param name="density">
+    /// The density the condition applies to, or <see langword="null" /> when the condition does not name one.
+    /// </param>
+    /// <param name="idiom">
+    /// The idiom the condition applies to, or <see langword="null" /> when the condition does not name one.
+    /// </param>
     public void BeginSection(int index, string? style, int appearance, string? density, string? idiom)
     {
         EnsureOpen();
@@ -60,10 +79,55 @@ public sealed class CompiledThemeBindingBuilder
             boundIdiom));
     }
 
+    /// <summary>
+    /// Declares that the program writes the global token <paramref name="expectedTokenName" /> in the open section.
+    /// A global token may be declared once per section; declaring it again in a condition section overrides the
+    /// earlier value. A declaration that does not match the registered token throws <c>ThemeSchemaException</c>.
+    /// </summary>
+    /// <typeparam name="T">
+    /// The token's value type, which must be the registered value type.
+    /// </typeparam>
+    /// <param name="tokenId">
+    /// The id the value is written under. It must be nonnegative and unique among all tokens of the program.
+    /// </param>
+    /// <param name="resourceKey">
+    /// The enum member that keys the token among the registered global tokens.
+    /// </param>
+    /// <param name="expectedTokenName">
+    /// The name the token is registered under.
+    /// </param>
+    /// <param name="stage">
+    /// The stage the token is registered with. <see cref="TokenStage.Control" /> is rejected.
+    /// </param>
+    /// <param name="valueContractVersion">
+    /// The version of the value contract the token's codec must support. Pass 1; it is the only version that lets a
+    /// compiled program write a token value.
+    /// </param>
     public void RequireGlobal<T>(int tokenId, object resourceKey, string expectedTokenName,
         TokenStage stage, int valueContractVersion) =>
         RequireToken<T>(-1, tokenId, resourceKey, expectedTokenName, stage, valueContractVersion, CompiledTokenKind.Global);
 
+    /// <summary>
+    /// Declares that the program writes the language token <paramref name="expectedTokenName" /> of the program's
+    /// language in the open section. A language token may be declared once per section, and it may share its name with
+    /// a global token. A declaration that does not match the language's token throws <c>ThemeSchemaException</c>.
+    /// </summary>
+    /// <typeparam name="T">
+    /// The token's value type, which must be the value type the language gives the token.
+    /// </typeparam>
+    /// <param name="tokenId">
+    /// The id the value is written under. It must be nonnegative and unique among all tokens of the program.
+    /// </param>
+    /// <param name="expectedTokenName">
+    /// The name the language registered the token under.
+    /// </param>
+    /// <param name="stage">
+    /// The stage the language registered the token with.
+    /// </param>
+    /// <param name="valueContractVersion">
+    /// The version of the value contract the token's codec must support. Pass 1; it is the only version that lets a
+    /// compiled program write a token value.
+    /// </param>
     public void RequireLanguage<T>(int tokenId, string expectedTokenName, TokenStage stage, int valueContractVersion)
     {
         EnsureOpen();
@@ -77,15 +141,101 @@ public sealed class CompiledThemeBindingBuilder
         Add(tokenId, -1, expectedTokenName, descriptor, CompiledTokenKind.Language);
     }
 
+    /// <summary>
+    /// Declares that the control <paramref name="controlId" /> overrides the global token
+    /// <paramref name="expectedTokenName" /> with a value of its own; the value applies to that control only. A
+    /// declaration that does not match the registered token throws <c>ThemeSchemaException</c>.
+    /// Under the global-only registry of startup preparation the declaration has no effect.
+    /// </summary>
+    /// <typeparam name="T">
+    /// The token's value type, which must be the registered value type.
+    /// </typeparam>
+    /// <param name="controlId">
+    /// The id given to the control by <see cref="RequireControl" />.
+    /// </param>
+    /// <param name="tokenId">
+    /// The id the value is written under. It must be nonnegative and unique among all tokens of the program.
+    /// </param>
+    /// <param name="resourceKey">
+    /// The enum member that keys the token among the registered global tokens.
+    /// </param>
+    /// <param name="expectedTokenName">
+    /// The name the token is registered under.
+    /// </param>
+    /// <param name="stage">
+    /// The stage the token is registered with. <see cref="TokenStage.Control" /> is rejected.
+    /// </param>
+    /// <param name="valueContractVersion">
+    /// The version of the value contract the token's codec must support. Pass 1; it is the only version that lets a
+    /// compiled program write a token value.
+    /// </param>
     public void RequireControlGlobal<T>(int controlId, int tokenId, object resourceKey, string expectedTokenName,
         TokenStage stage, int valueContractVersion) =>
         RequireToken<T>(controlId, tokenId, resourceKey, expectedTokenName, stage, valueContractVersion, CompiledTokenKind.ControlGlobal);
 
+    /// <summary>
+    /// Declares that the control <paramref name="controlId" /> sets its own token
+    /// <paramref name="expectedTokenName" />, which is looked up among the tokens the control owns. A declaration that
+    /// does not match that token throws <c>ThemeSchemaException</c>.
+    /// Under the global-only registry of startup preparation the declaration has no effect.
+    /// </summary>
+    /// <typeparam name="T">
+    /// The token's value type, which must be the value type the control gives the token.
+    /// </typeparam>
+    /// <param name="controlId">
+    /// The id given to the control by <see cref="RequireControl" />.
+    /// </param>
+    /// <param name="tokenId">
+    /// The id the value is written under. It must be nonnegative and unique among all tokens of the program.
+    /// </param>
+    /// <param name="resourceKey">
+    /// The enum member that keys the token among the tokens the control owns.
+    /// </param>
+    /// <param name="expectedTokenName">
+    /// The name the control registered the token under.
+    /// </param>
+    /// <param name="valueContractVersion">
+    /// The version of the value contract the token's codec must support. Pass 1; it is the only version that lets a
+    /// compiled program write a token value.
+    /// </param>
     public void RequireOwn<T>(int controlId, int tokenId, object resourceKey, string expectedTokenName,
         int valueContractVersion) =>
         RequireToken<T>(controlId, tokenId, resourceKey, expectedTokenName, TokenStage.Control, valueContractVersion, CompiledTokenKind.Own);
 
-    /// <param name="appearance">The fixed appearance as its numeric value, or -1 when the control does not fix one.</param>
+    /// <summary>
+    /// Declares a control that the open section configures and checks it against the registry: it must be registered
+    /// for the owner given here, or a <c>ThemeSchemaException</c> is thrown. A control may be declared once per
+    /// section, and only in the base section may it fix an appearance or a density.
+    /// Under the global-only registry of startup preparation the control is recorded without a descriptor, and the
+    /// tokens declared for it are ignored.
+    /// </summary>
+    /// <param name="controlId">
+    /// The id the program uses for the control in <see cref="RequireControlGlobal" />, <see cref="RequireOwn" /> and
+    /// the control overloads of <c>CompiledThemeValueWriter.Set*</c>. It must be nonnegative and unique in the program.
+    /// </param>
+    /// <param name="identity">
+    /// The control's identity, such as the <c>Identity</c> of its token class. Its catalog, id and owner type must
+    /// match the <c>expected</c> and <c>owner</c> arguments.
+    /// </param>
+    /// <param name="expectedCatalog">
+    /// The catalog the control is expected to belong to.
+    /// </param>
+    /// <param name="expectedId">
+    /// The id the control is expected to have in that catalog.
+    /// </param>
+    /// <param name="ownerAssemblyIdentity">
+    /// The display name of the assembly that owns the control type. Only its simple name is compared.
+    /// </param>
+    /// <param name="ownerMetadataName">
+    /// The full name of the type that owns the control, such as <c>My.Controls.MyButton</c>.
+    /// </param>
+    /// <param name="appearance">
+    /// The fixed appearance as its numeric value: 0 is <see cref="ThemeAppearance.Light" /> and 1 is
+    /// <see cref="ThemeAppearance.Dark" />. Pass -1 when the control does not fix one.
+    /// </param>
+    /// <param name="density">
+    /// The fixed density as the language declares it, or <see langword="null" /> when the control does not fix one.
+    /// </param>
     public void RequireControl(int controlId, ControlTokenIdentity identity, string expectedCatalog, string expectedId,
         string ownerAssemblyIdentity, string ownerMetadataName, int appearance, string? density)
     {
@@ -226,7 +376,9 @@ internal enum CompiledTokenKind : byte
 
 internal sealed record CompiledTokenBinding(TokenDescriptor Descriptor, int Section, int ControlId, CompiledTokenKind Kind);
 
-/// <summary>A declared control; its descriptor is <see langword="null"/> under the global-only startup registry.</summary>
+/// <summary>
+/// A declared control; its descriptor is <see langword="null" /> under the global-only startup registry.
+/// </summary>
 internal sealed record CompiledControlBinding(ControlTokenDescriptor? Descriptor, int Section, ThemeAppearance? Appearance,
     DesignDensity? Density);
 

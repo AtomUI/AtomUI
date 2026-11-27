@@ -4,7 +4,9 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 
-/// <summary>The PrimeNG view of <see cref="MenuItemGroupToken"/>.</summary>
+/// <summary>
+/// The PrimeNG view of <see cref="MenuItemGroupToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class MenuItemGroupTokenRule : IControlTokenRule<PrimeNGToken, MenuItemGroupToken>
 {
@@ -12,7 +14,7 @@ internal sealed class MenuItemGroupTokenRule : IControlTokenRule<PrimeNGToken, M
     {
         var token  = target.Own;
         var global = target.Global;
-        // PrimeNG: the control-global overrides, read by the formulas below.
+        // PrimeNG: no control-global overrides; EvaluateGlobal writes nothing.
         PrimeNGMenuItemGroupTokens.EvaluateGlobal(in context, global);
         token.TitleFontWeight = FontWeight.Normal;
         // PrimeNG: the preset's control values, over the formulas.

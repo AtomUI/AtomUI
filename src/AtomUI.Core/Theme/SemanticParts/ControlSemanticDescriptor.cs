@@ -2,8 +2,18 @@ using Avalonia.Controls;
 
 namespace AtomUI.Theme.Schema;
 
+/// <summary>
+/// Describes the Semantic Parts of one control type for the theme system: the control type, its token identity
+/// and its parts.
+/// </summary>
 public sealed class ControlSemanticDescriptor
 {
+    /// <summary>
+    /// Creates the descriptor for a control from its parts. <paramref name="parts" /> must contain exactly one part
+    /// named <c>root</c> whose <see cref="SemanticPartDescriptor.ContractType" /> is
+    /// <paramref name="controlType" />, and the names, paths and selector routes of the parts must be unique. The
+    /// parts are stored root first and then by path.
+    /// </summary>
     public ControlSemanticDescriptor(
         Type controlType,
         ControlTokenIdentity identity,
@@ -39,8 +49,8 @@ public sealed class ControlSemanticDescriptor
 
         EnsureUnique(partArray, static part => part.Name, "name");
         EnsureUnique(partArray, static part => part.Path, "path");
-        // 限定部件（如 source.header）与未限定部件共享终端 selector class，
-        // 去重键使用解析路由：真正需要防重的是完全相同的路由声明。
+        // A qualified part (such as source.header) and an unqualified part can share the terminal selector class, so
+        // the key is the resolved route: only identical route declarations must be rejected.
         EnsureUnique(
             partArray.Where(static part => part.SelectorClass is not null),
             static part => part.SelectorRoute ?? $"/template/ .{part.SelectorClass}",
@@ -51,8 +61,19 @@ public sealed class ControlSemanticDescriptor
         Parts = Array.AsReadOnly(partArray);
     }
 
+    /// <summary>
+    /// The type of the control the parts belong to. It must derive from <see cref="Control" /> and is the contract
+    /// type of the root part.
+    /// </summary>
     public Type ControlType { get; }
+    /// <summary>
+    /// The <see cref="ControlTokenIdentity" /> of the control. <c>SemanticPartRegistry</c> looks descriptors up by
+    /// it as well as by <see cref="ControlType" />.
+    /// </summary>
     public ControlTokenIdentity Identity { get; }
+    /// <summary>
+    /// The Semantic Parts of the control, the root first and the rest in ordinal path order.
+    /// </summary>
     public IReadOnlyList<SemanticPartDescriptor> Parts { get; }
 
     private static void EnsureUnique(

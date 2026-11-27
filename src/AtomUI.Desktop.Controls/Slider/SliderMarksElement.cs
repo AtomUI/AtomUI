@@ -6,8 +6,9 @@ using Avalonia.Media;
 namespace AtomUI.Desktop.Controls;
 
 /// <summary>
-/// 承载 mark 点与 mark 标签绘制的内部子元素。它只负责渲染，几何与文本数据由 <see cref="SliderTrack"/>
-/// 在布局与状态变化时推入，使 rail → tracks → track → mark → thumb 的视觉层级在元素化后保持不变。
+/// Internal child element that paints the mark dots and mark labels. It only renders: <see cref="SliderTrack" />
+/// pushes the geometry and text data in on layout and state changes, so that the visual stacking order
+/// rail → tracks → track → mark → thumb stays the same after the marks became an element.
 /// </summary>
 internal class SliderMarksElement : Control
 {

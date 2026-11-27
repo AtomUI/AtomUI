@@ -10,9 +10,9 @@ namespace AtomUI.Desktop.Controls.Primitives;
 /// Contains and allows modification of Red, Green and Blue components.
 /// </summary>
 /// <remarks>
-///   The is a specialized struct optimized for performance and memory:
+///   This is a specialized struct optimized for performance and memory:
 ///   <list type="bullet">
-///     <item>This is not a read-only struct like <see cref="Color"/> and allows editing the fields</item>
+///     <item>This is not a read-only struct like <see cref="Color" /> and allows editing the fields</item>
 ///     <item>Removes the alpha component unnecessary in core calculations</item>
 ///     <item>Normalizes RGB components in the range of 0..1 to simplify calculations.</item>
 ///     <item>No component bounds checks or clamping is done.</item>
@@ -36,11 +36,17 @@ internal struct Rgb
     public double B;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="Rgb"/> struct.
+    /// Initializes a new instance of the <see cref="Rgb" /> struct.
     /// </summary>
-    /// <param name="r">The Red component in the range from 0..1.</param>
-    /// <param name="g">The Green component in the range from 0..1.</param>
-    /// <param name="b">The Blue component in the range from 0..1.</param>
+    /// <param name="r">
+    /// The Red component in the range from 0..1.
+    /// </param>
+    /// <param name="g">
+    /// The Green component in the range from 0..1.
+    /// </param>
+    /// <param name="b">
+    /// The Blue component in the range from 0..1.
+    /// </param>
     public Rgb(double r, double g, double b)
     {
         R = r;
@@ -49,9 +55,11 @@ internal struct Rgb
     }
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="Rgb"/> struct.
+    /// Initializes a new instance of the <see cref="Rgb" /> struct.
     /// </summary>
-    /// <param name="color">An existing <see cref="Color"/> to convert to <see cref="Rgb"/>.</param>
+    /// <param name="color">
+    /// An existing <see cref="Color" /> to convert to <see cref="Rgb" />.
+    /// </param>
     public Rgb(Color color)
     {
         R = color.R / 255.0;
@@ -60,10 +68,14 @@ internal struct Rgb
     }
 
     /// <summary>
-    /// Converts this <see cref="Rgb"/> struct into a standard <see cref="Color"/>.
+    /// Converts this <see cref="Rgb" /> struct into a standard <see cref="Color" />.
     /// </summary>
-    /// <param name="alpha">The Alpha component in the range from 0..1.</param>
-    /// <returns>A new <see cref="Color"/> representing this <see cref="Rgb"/> struct.</returns>
+    /// <param name="alpha">
+    /// The Alpha component in the range from 0..1.
+    /// </param>
+    /// <returns>
+    /// A new <see cref="Color" /> representing this <see cref="Rgb" /> struct.
+    /// </returns>
     public Color ToColor(double alpha = 1.0)
     {
         return Color.FromArgb(
@@ -74,9 +86,11 @@ internal struct Rgb
     }
 
     /// <summary>
-    /// Returns the <see cref="Hsv"/> color model equivalent of this <see cref="Rgb"/> color.
+    /// Returns the <see cref="Hsv" /> color model equivalent of this <see cref="Rgb" /> color.
     /// </summary>
-    /// <returns>The <see cref="Hsv"/> equivalent color.</returns>
+    /// <returns>
+    /// The <see cref="Hsv" /> equivalent color.
+    /// </returns>
     public Hsv ToHsv()
     {
         // Instantiating an HsvColor is unfortunately necessary to use existing conversions

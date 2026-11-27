@@ -140,7 +140,7 @@
         <Style Selector="^ /template/ Label#MessageLabel">
             <Setter Property="TextBox.LineHeight" Value="{atom:AlertTokenResource FontHeight}" />
         </Style>
-         <!-- 根据是否显示 MarqueeLabel 是指对应的样式 -->
+         <!-- Selects the matching style depending on whether the MarqueeLabel is shown. -->
          <Style Selector="^[IsMessageMarqueeEnabled=True]">
              <Style Selector="^ /template/ Label#MessageLabel">
                  <Setter Property="IsVisible" Value="False" />

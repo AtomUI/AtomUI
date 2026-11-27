@@ -3,8 +3,9 @@ using System.Windows.Input;
 namespace AtomUI.Desktop.Controls.Internal.Calendar;
 
 /// <summary>
-/// Calendar Header Context 使用的轻量 <see cref="ICommand"/>。参数校验交给 <c>canExecute</c>，
-/// 非法参数时 <see cref="CanExecute"/> 返回 false 且 <see cref="Execute"/> 不动作。
+/// A lightweight <see cref="ICommand" /> for the <see cref="CalendarHeaderContext" />.
+/// Argument validation is left to <c>canExecute</c>: <see cref="CanExecute" /> returns <see langword="false" />
+/// for an invalid argument, and <see cref="Execute" /> does nothing for it.
 /// </summary>
 internal sealed class CalendarRelayCommand : ICommand
 {

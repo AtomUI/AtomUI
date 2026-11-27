@@ -6,9 +6,15 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 
-/// <summary>The PrimeNG values of the shared <see cref="AbstractColorPickerToken"/> layer.</summary>
+/// <summary>
+/// The PrimeNG values of the shared <see cref="AbstractColorPickerToken" /> layer.
+/// </summary>
 public static class ColorPickerTokenCalculator
 {
+    /// <summary>
+    /// Writes the PrimeNG values into the shared color picker layer: the inset edge of the color blocks and the opacity
+    /// of a disabled one, the size of the transparent background and the padding and text margin of the trigger.
+    /// </summary>
     public static void Calculate(in TokenEvaluationContext<PrimeNGToken> context, DesignToken global, AbstractColorPickerToken token)
     {
         token.ColorBlockDisabledOpacity = 0.4;

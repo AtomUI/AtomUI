@@ -3,10 +3,20 @@ using System.Globalization;
 
 namespace AtomUI.Controls;
 
+/// <summary>
+/// The spacing around the columns of a <see cref="Row" />, set on <see cref="Row.Gutter" />. Each part is a
+/// <see cref="GridGutterInfo" />, so the spacing can be one width or one width per breakpoint.
+/// </summary>
 [TypeConverter(typeof(GridGutterConverter))]
 public record GridGutter
 {
+    /// <summary>
+    /// The gutter between adjacent columns. A <see cref="Row" /> puts half of it on both sides of each column.
+    /// </summary>
     public GridGutterInfo Horizontal { get; init; }
+    /// <summary>
+    /// The gutter between adjacent lines of a <see cref="Row" />.
+    /// </summary>
     public GridGutterInfo Vertical { get; init; }
 
     public GridGutter()
@@ -14,12 +24,39 @@ public record GridGutter
     {
     }
 
+    /// <summary>
+    /// Initializes a gutter from its horizontal and its vertical part.
+    /// </summary>
+    /// <param name="horizontal">
+    /// The gutter between adjacent columns.
+    /// </param>
+    /// <param name="vertical">
+    /// The gutter between adjacent lines.
+    /// </param>
     public GridGutter(GridGutterInfo horizontal, GridGutterInfo vertical)
     {
         Horizontal = horizontal;
         Vertical   = vertical;
     }
 
+    /// <summary>
+    /// Parses the text of a <see cref="Row.Gutter" /> value.
+    /// </summary>
+    /// <param name="input">
+    /// One of these forms. A number such as <c>16</c> sets the horizontal gutter at every breakpoint and leaves
+    /// the vertical gutter at zero. Two numbers such as <c>16, 24</c> set the horizontal and the vertical gutter
+    /// at every breakpoint. A breakpoint list such as <c>xs: 8, md: 16</c> sets the horizontal gutter per
+    /// breakpoint. Two parts separated by <c>;</c> such as <c>xs: 8, md: 16; 24</c> set the horizontal and the
+    /// vertical gutter; each part is read by <see cref="GridGutterInfo.Parse(string)" />. White space around a
+    /// value or separator is ignored.
+    /// </param>
+    /// <returns>
+    /// The parsed gutter.
+    /// </returns>
+    /// <exception cref="FormatException">
+    /// The input is empty, does not match one of the forms, has a negative number in the two-number form, or
+    /// contains a part that <see cref="GridGutterInfo.Parse(string)" /> rejects.
+    /// </exception>
     public static GridGutter Parse(string input)
     {
         var trimmed = input.AsSpan().Trim();
@@ -131,8 +168,17 @@ public record GridGutter
     }
 }
 
+/// <summary>
+/// Converts strings and numbers to <see cref="GridGutter" /> for XAML, and converts a <see cref="GridGutter" />
+/// back to text.
+/// </summary>
 public class GridGutterConverter : TypeConverter
 {
+    /// <summary>
+    /// Returns whether a value of <paramref name="sourceType" /> can be converted to a <see cref="GridGutter" />,
+    /// which is the case for <see cref="string" />, <c>decimal</c>, <c>float</c>, <c>double</c> and the signed and
+/// unsigned integer types of 16, 32 and 64 bits.
+    /// </summary>
     public override bool CanConvertFrom(ITypeDescriptorContext? context, Type sourceType)
     {
         var typeCode = Type.GetTypeCode(sourceType);
@@ -152,11 +198,30 @@ public class GridGutterConverter : TypeConverter
         };
     }
 
+    /// <summary>
+    /// Returns whether a <see cref="GridGutter" /> can be converted to <paramref name="destinationType" />, which is
+    /// only the case for <see cref="string" />.
+    /// </summary>
     public override bool CanConvertTo(ITypeDescriptorContext? context, Type? destinationType)
     {
         return destinationType == typeof(string);
     }
 
+    /// <summary>
+    /// Converts <paramref name="value" /> to a <see cref="GridGutter" />: a <see cref="GridGutter" /> is returned
+    /// as it is, a string is parsed with <see cref="GridGutter.Parse(string)" />, and a number becomes the
+    /// horizontal gutter at every breakpoint with a vertical gutter of zero.
+    /// </summary>
+    /// <returns>
+    /// The converted gutter.
+    /// </returns>
+    /// <exception cref="NotSupportedException">
+    /// <paramref name="value" /> is <see langword="null" />, or is neither a <see cref="GridGutter" />, a string
+    /// nor a number.
+    /// </exception>
+    /// <exception cref="FormatException">
+    /// <paramref name="value" /> is a string that <see cref="GridGutter.Parse(string)" /> rejects.
+    /// </exception>
     public override object ConvertFrom(ITypeDescriptorContext? context, CultureInfo? culture, object value)
     {
         if (value == null)
@@ -183,6 +248,19 @@ public class GridGutterConverter : TypeConverter
         throw new NotSupportedException($"Cannot convert value '{value}' to GridGutter.");
     }
 
+    /// <summary>
+    /// Converts <paramref name="value" /> to text in a form that <see cref="GridGutter.Parse(string)" /> reads:
+    /// the horizontal gutter, or the horizontal and the vertical gutter separated by a comma when the vertical
+    /// gutter is not zero at every breakpoint.
+    /// </summary>
+    /// <returns>
+    /// The text. It holds only the width of the <see cref="MediaBreakPoint.ExtraSmall" /> breakpoint of each part,
+    /// so a part that varies per breakpoint is not preserved. It is an empty string when <paramref name="value" />
+    /// is <see langword="null" /> or not a <see cref="GridGutter" />.
+    /// </returns>
+    /// <exception cref="NotSupportedException">
+    /// <paramref name="destinationType" /> is not <see cref="string" />.
+    /// </exception>
     public override object ConvertTo(ITypeDescriptorContext? context, CultureInfo? culture, object? value, Type destinationType)
     {
         if (destinationType != typeof(string))

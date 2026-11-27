@@ -5,13 +5,44 @@ using AtomUI.Controls;
 
 namespace AtomUI.Icons;
 
+/// <summary>
+/// Base class of the generators for the common package layout, where the SVG files sit in folders that
+/// are named after their theme. It writes the icon kind enum, the provider factory and the catalog.
+/// The source of the icon classes is left to the derived class.
+/// </summary>
 public abstract class DefaultIconPackageGenerator : AbstractIconPackageGenerator
 {
+    /// <summary>
+    /// Creates a generator that scans <paramref name="sourcePath" /> and writes into <paramref name="targetPath" />.
+    /// </summary>
+    /// <param name="sourcePath">
+    /// Directory that is scanned for SVG source files.
+    /// </param>
+    /// <param name="targetPath">
+    /// Directory of the icon package project that receives the generated files.
+    /// </param>
+    /// <param name="generatedIconsDir">
+    /// Name of the directory under <paramref name="targetPath" /> that holds the generated icon class files,
+    /// or <see langword="null" /> to use <see cref="AbstractIconPackageGenerator.DefaultSavedDirectory" />.
+    /// </param>
     public DefaultIconPackageGenerator(string sourcePath, string targetPath, string? generatedIconsDir = null)
         : base(sourcePath, targetPath, generatedIconsDir)
     {
     }
     
+    /// <summary>
+    /// Enumerates every <c>.svg</c> file of the directory and of its subdirectories.
+    /// </summary>
+    /// <param name="sourcePath">
+    /// Directory to scan.
+    /// </param>
+    /// <remarks>
+    /// <see cref="IconFileInfo.Name" /> is the file name without extension in PascalCase: a hyphen before a
+    /// letter or digit is dropped and that letter or digit is upper-cased.
+    /// <see cref="IconFileInfo.ThemeType" /> is parsed from the name of the folder that holds the file,
+    /// ignoring case; a folder with any other name counts as <see cref="IconThemeType.Filled" />.
+    /// <see cref="IconFileInfo.Category" /> is left <see langword="null" />.
+    /// </remarks>
     protected override IEnumerable<IconFileInfo> ScanIconFilesRecursively(string sourcePath)
     {
         foreach (var svgFilePath in Directory.EnumerateFiles(sourcePath,  "*.svg"))
@@ -49,6 +80,15 @@ public abstract class DefaultIconPackageGenerator : AbstractIconPackageGenerator
         return name;
     }
 
+    /// <summary>
+    /// Writes the enum that lists every icon: one member per entry of
+    /// <see cref="AbstractIconPackageGenerator.IconFiles" />, with values from 1 on.
+    /// </summary>
+    /// <remarks>
+    /// The file is <c>{PackageName}IconKind.g.cs</c> in
+    /// <see cref="AbstractIconPackageGenerator.GeneratedIconsPath" />, and an existing file is overwritten.
+    /// A member is named after the icon name followed by the theme.
+    /// </remarks>
     protected override async Task GenerateIconPackageKindAsync()
     {
         await using var output = new FileStream(Path.Combine(GeneratedIconsPath, $"{PackageName}IconKind.g.cs"), FileMode.Create, FileAccess.Write);
@@ -69,6 +109,16 @@ public abstract class DefaultIconPackageGenerator : AbstractIconPackageGenerator
         await output.WriteAsync(Encoding.UTF8.GetBytes(sourceText.ToString()));
     }
 
+    /// <summary>
+    /// Writes the factory part of the <c>{PackageName}IconProvider</c> partial class, which maps an icon
+    /// kind to the type of the icon class and creates the instance.
+    /// </summary>
+    /// <remarks>
+    /// The file is <c>{PackageName}IconProvider.Factory.g.cs</c> in
+    /// <see cref="AbstractIconPackageGenerator.TargetPath" />, and an existing file is overwritten.
+    /// The lookups are split into switch methods that each handle 64 icons. In the generated code, a kind
+    /// that matches no icon throws <see cref="InvalidOperationException" />.
+    /// </remarks>
     protected override async Task GenerateIconProviderFactoryAsync()
     {
         const int iconFactoryChunkSize = 64;
@@ -177,6 +227,18 @@ public abstract class DefaultIconPackageGenerator : AbstractIconPackageGenerator
         await output.WriteAsync(Encoding.UTF8.GetBytes(sourceText.ToString()));
     }
 
+    /// <summary>
+    /// Writes the catalog that lists every icon with its class name, theme, kind, class type and a delegate
+    /// that creates the instance.
+    /// </summary>
+    /// <remarks>
+    /// The file is <c>{PackageName}IconCatalog.g.cs</c> in
+    /// <see cref="AbstractIconPackageGenerator.TargetPath" />, and an existing file is overwritten.
+    /// It declares the record <c>{PackageName}IconInfo</c> and the static class
+    /// <c>{PackageName}IconCatalog</c>, whose <c>GetIcons()</c> method returns the icons in the order of
+    /// <see cref="AbstractIconPackageGenerator.IconFiles" />. Every 64 entries are created together when
+    /// they are first used.
+    /// </remarks>
     protected override async Task GenerateIconCatalogAsync()
     {
         const int iconCatalogChunkSize = 64;

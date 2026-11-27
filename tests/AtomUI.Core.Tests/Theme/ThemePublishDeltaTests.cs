@@ -8,7 +8,9 @@ using Xunit;
 
 namespace AtomUI.Core.Tests.Theme;
 
-/// <summary>What a publish delta reports for global, owner-global and Own keys between two compiled snapshots.</summary>
+/// <summary>
+/// What a publish delta reports for global, owner-global and Own keys between two compiled snapshots.
+/// </summary>
 public class ThemePublishDeltaTests
 {
     private static readonly ControlTokenIdentity s_button = new("AtomUI", CompilerButtonToken.ID);

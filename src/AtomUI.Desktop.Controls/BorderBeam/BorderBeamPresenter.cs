@@ -218,7 +218,7 @@ internal class BorderBeamPresenter : Control
         // Steady-state caches: the progress animation re-enters Render at the refresh rate, and rebuilding the
         // clip geometry (two stream geometries + combine), the path metrics (four arc integrals) and the gradient
         // brush on every frame is pure allocation churn - the GC pauses read as a periodic hitch. Everything is
-        // keyed on its inputs, so a size, outset, thickness, radius or colour change simply misses and rebuilds.
+        // keyed on its inputs, so a size, outset, thickness, radius or color change simply misses and rebuilds.
         var geometryKey = (renderBounds.Size, outset, borderThickness, radius);
         if (_geometryCacheKey != geometryKey || _borderGeometryCache is null)
         {

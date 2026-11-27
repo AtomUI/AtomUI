@@ -2,9 +2,12 @@
                     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
                     xmlns:atom="https://atomui.net"
                     x:Class="AtomUI.Controls.SplashDefaultTheme">
-    <!-- 只使用全局 Token 与基础元素：本主题在内核提交之前加载。不要在此引用 AtomUI 控件或控件 Token。
-         模板只描述结构，尺寸、颜色、字号等外观值一律写在样式里：模板内的本地值优先级高于样式，
-         写在模板里的值无法被"合并本字典 + BasedOn"的自定义主题覆盖。 -->
+    <!-- Uses only global Tokens and base elements: this theme loads before the kernel is committed. Do not reference
+    AtomUI controls or control Tokens here; SplashProgressBar is the one exception, a control without a template
+    that needs no theme. The template describes structure only; appearance values such as sizes, colors and font
+    sizes always go into the styles: a local value in the template outranks styles, so a value written in the
+    template cannot be overridden by a custom theme that merges this dictionary and uses BasedOn.
+    -->
     <ControlTheme x:Key="{x:Type atom:SplashWindow}" TargetType="atom:SplashWindow">
         <Setter Property="WindowDecorations" Value="None"/>
         <Setter Property="SizeToContent" Value="WidthAndHeight"/>
@@ -20,7 +23,7 @@
             </ControlTemplate>
         </Setter>
         <Style Selector="^ /template/ ContentPresenter#PART_ContentPresenter">
-            <!-- 给卡片阴影留出的透明边距。 -->
+            <!-- Transparent margin reserved for the card shadow. -->
             <!-- layout: fixed template or platform geometry; preserve existing dimensions and hit regions. -->
             <Setter Property="Margin" Value="48"/>
         </Style>
@@ -31,10 +34,12 @@
         <Setter Property="Template">
             <ControlTemplate>
                 <Panel>
-                    <!-- Setter 的编译绑定不能按名字跨入模板作用域；Shadow 按下方固定顺序读取 Card 的有效值。
-                         阴影缓存与内容分离，Card 保留现有的裁剪和外观定制入口。 -->
+                    <!-- A compiled binding in a setter cannot reach into the template scope by name, so Shadow reads
+                    the effective values of Card in the fixed order below. The shadow cache is separate from the
+                    content, and Card keeps its existing clipping and appearance customization entries.
+                    -->
                     <Canvas>
-                        <!-- Canvas 不以阴影的布局结果反向撑大卡片。 -->
+                        <!-- The canvas does not grow the card from the shadow's layout result. -->
                         <Border Name="Shadow" IsHitTestVisible="False"/>
                     </Canvas>
                     <Border Name="Card" ClipToBounds="True">

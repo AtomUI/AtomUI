@@ -4,6 +4,16 @@ using System.Runtime.ExceptionServices;
 
 namespace AtomUI.Controls;
 
+/// <summary>
+/// Queueing <c>IFileUploadScheduler</c>: queues upload tasks and runs at most <c>maxConcurrentTasks</c> of them at
+/// the same time through <c>Transport</c>. <c>UploadQueue</c> in AtomUI.Desktop.Controls owns one.
+/// </summary>
+/// <remarks>
+/// <c>EnqueueTask</c> requires a transport and starts pending tasks as long as scheduling is enabled and a slot is
+/// free. A started task is marked <c>Uploading</c>, receives its cancellation token source and an
+/// <c>ExecutionTask</c> that completes when the upload has ended, and reports progress and outcome only through
+/// the handlers of the task.
+/// </remarks>
 internal class FileUploadScheduler : IFileUploadScheduler
 {
     private readonly object _scheduleSyncRoot = new();

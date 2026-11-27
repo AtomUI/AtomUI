@@ -6,7 +6,9 @@ using Avalonia.VisualTree;
 
 namespace AtomUI.Animations;
 
-/// <summary>Template-build registration for state-animation targets owned by the templated control.</summary>
+/// <summary>
+/// Template-build registration for state-animation targets owned by the templated control.
+/// </summary>
 internal sealed class TransitionInitialization
 {
     #region 公共属性定义

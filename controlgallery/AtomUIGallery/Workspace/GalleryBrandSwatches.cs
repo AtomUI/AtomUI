@@ -5,8 +5,12 @@ namespace AtomUIGallery.Workspace;
 /// <summary>
 /// A named brand color offered by the Gallery theme menu.
 /// </summary>
-/// <param name="Name">The display name of the swatch.</param>
-/// <param name="Color">The brand color.</param>
+/// <param name="Name">
+/// The display name of the swatch.
+/// </param>
+/// <param name="Color">
+/// The brand color.
+/// </param>
 internal sealed record GalleryBrandSwatch(string Name, Color Color);
 
 /// <summary>

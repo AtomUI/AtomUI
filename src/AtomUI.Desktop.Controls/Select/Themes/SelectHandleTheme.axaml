@@ -40,9 +40,9 @@
              registered IconPresenter (it would resolve owner reads to itself), so its size is resolved here and bound down. -->
         <Setter Property="IconSize" Value="{atom:OwnerTokenResource IconSize}" />
 
-        <!--
-            箭头颜色跟随 suffix 语义容器的 TextElement.Foreground 继承值（用户可用 suffix Part Style 覆写），
-            默认值由 AddOnDecoratedBox 后缀区设置为 owner 的 ColorTextQuaternary。
+        <!-- The arrow color follows the TextElement.Foreground value inherited by the suffix semantic container (a user
+        may override it with a suffix part style); the default is set by the suffix area of AddOnDecoratedBox to
+        the owner's ColorTextQuaternary.
         -->
         <Style Selector="^ /template/ atom|IconPresenter">
             <Setter Property="IconBrush"

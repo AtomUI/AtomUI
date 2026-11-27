@@ -5,9 +5,9 @@ using Avalonia.Controls.Primitives;
 namespace AtomUI.Desktop.Controls;
 
 /// <summary>
-/// Shows the themed keyboard focus outline (<see cref="AdornerLayer.DefaultFocusAdorner"/>) on an element
+/// Shows the themed keyboard focus outline (<see cref="AdornerLayer.DefaultFocusAdorner" />) on an element
 /// that does not own keyboard focus itself, such as the keyboard active item of a host that keeps focus.
-/// The owner must call <see cref="Hide"/> when the target leaves the visual tree.
+/// The owner must call <see cref="Hide" /> when the target leaves the visual tree.
 /// </summary>
 internal sealed class ManagedFocusOutline
 {

@@ -3,7 +3,9 @@ using AtomUI.Theme.Languages;
 
 namespace AtomUI.Desktop.Controls.Themes.Shadcn;
 
-/// <summary>The shadcn view of <see cref="TabStripToken"/>.</summary>
+/// <summary>
+/// The shadcn view of <see cref="TabStripToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class TabStripTokenRule : IControlTokenRule<ShadcnToken, TabStripToken>
 {

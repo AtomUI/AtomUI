@@ -7,17 +7,56 @@ using Microsoft.Build.Framework;
 
 namespace AtomUI.Build.Tasks;
 
+/// <summary>
+/// Converts theme definition documents into the encoded <c>CompiledThemeInput</c> intermediates for the compiled
+/// theme generator, and reports document diagnostics to the build log.
+/// </summary>
 public sealed class GenerateCompiledThemeInputTask : ITask
 {
     // Scalar inputs remain useful to direct task callers. MSBuild supplies the whole item
     // batch so output-path collisions are checked within one build, not against old builds.
+    /// <summary>
+    /// Path of the theme document to compile when <see cref="ThemeInputs" /> is empty. With item inputs it only
+    /// locates the error for an input that lacks a path, an identity or an output path.
+    /// </summary>
     public string SourcePath { get; set; } = "";
+    /// <summary>
+    /// Logical identity of the theme document when <see cref="ThemeInputs" /> is empty. The build targets pass the
+    /// assembly name followed by the document's logical path. The reader receives it as given; the compiled input
+    /// stores it with backslashes replaced by <c>/</c>.
+    /// </summary>
     public string SourceIdentity { get; set; } = "";
+    /// <summary>
+    /// Path of the intermediate to write when <see cref="ThemeInputs" /> is empty. The file is replaced only when
+    /// its content differs, and it is deleted when the input fails.
+    /// </summary>
     public string OutputPath { get; set; } = "";
+    /// <summary>
+    /// Theme documents to compile in one run. When it is empty, the task compiles the single document described by
+    /// <see cref="SourcePath" />, <see cref="SourceIdentity" /> and <see cref="OutputPath" /> instead.
+    /// An item is read from its full path; its <c>SourceIdentity</c> and <c>InputPath</c> metadata give the
+    /// identity and the intermediate to write.
+    /// </summary>
     public ITaskItem[] ThemeInputs { get; set; } = [];
+    /// <summary>
+    /// Receives the errors and warnings of the task. It is <see langword="null" /> after construction and must be
+    /// assigned before <see cref="Execute" /> is called.
+    /// </summary>
     public IBuildEngine BuildEngine { get; set; } = null!;
+    /// <summary>
+    /// Satisfies <see cref="ITask" />. This task never reads it.
+    /// </summary>
     public ITaskHost HostObject { get; set; } = null!;
 
+    /// <summary>
+    /// Compiles every input, logging document diagnostics as build warnings and errors. Two inputs that resolve to
+    /// the same output path fail the run and the shared output is deleted. Every input is processed even after one
+    /// fails.
+    /// </summary>
+    /// <returns>
+    /// <see langword="true" /> when each intermediate was written or was already identical; otherwise
+    /// <see langword="false" />.
+    /// </returns>
     public bool Execute()
     {
         _literalCache.Clear();

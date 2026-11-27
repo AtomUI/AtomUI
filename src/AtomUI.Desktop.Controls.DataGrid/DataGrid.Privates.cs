@@ -163,8 +163,9 @@ public partial class DataGrid
 
     internal double HorizontalMaximizeOffset => _hScrollBar?.Maximum ?? 0.0d;
 
-    // 冻结列阴影的唯一判定：表头、分组表头与单元格共用，按 3 位小数比较以忽略浮点残差，
-    // 避免各自用不同数据源与精度判断而在滚动边缘出现表头与单元格不一致。
+    // The single decision for the frozen column shadow, shared by the header, the group headers and the cells.
+    // It compares at 3 decimal places to ignore floating point residue, so that the header and the cells never
+    // disagree at the scroll edge because each one judges with a different data source or precision.
     internal bool IsLeftFrozenShadowVisible =>
         DataGridHelper.AreLessAt3Decimals(0, HorizontalOffset);
 
@@ -291,7 +292,8 @@ public partial class DataGrid
     private int _desiredCurrentColumnIndex;
     private int _editingColumnIndex;
 
-    // 整行编辑（操作列“编辑”）：EditingRow 的全部可编辑单元格同时持有编辑器，_editingColumnIndex 保持 -1
+    // Whole row editing (the Edit action of an action column): every editable cell of EditingRow holds an
+    // editor at the same time, and _editingColumnIndex stays -1.
     private bool _isEditingWholeRow;
 
     // this is a workaround only for the scenarios where we need it, it is not all encompassing nor always updated
@@ -564,7 +566,7 @@ public partial class DataGrid
             {
                 if (cell.Content is StyledElement cellContent)
                 {
-                    // TODO need review 需要审查是否正常
+                    // TODO review: verify this notification works correctly. Remove this TODO when that is done.
                     DataContextProperty.InvokeNotifying(cellContent, arg2);
                 }
             }
@@ -586,8 +588,9 @@ public partial class DataGrid
         }
 
         row.Cells.Insert(column.Index, newCell);
-        // 新建单元格在选中行等场景下没有机会经过回收/当前格刷新路径，
-        // 创建时按行与网格的当前状态初始化伪类，保证 :selected 等状态不缺失
+        // A newly created cell, for example in a selected row, does not pass through the recycling or the current
+        // cell refresh paths, so its pseudo classes are initialized from the current state of the row and the grid
+        // to keep states such as :selected from being lost.
         newCell.UpdatePseudoClasses();
     }
 
@@ -771,7 +774,7 @@ public partial class DataGrid
         }
     }
 
-    //TODO: Check
+    // TODO IsEnabled: verify this handler handles the IsEnabled change completely. Remove this TODO when that is done.
     private void HandleIsEnabledChanged(AvaloniaPropertyChangedEventArgs change)
     {
         if (!IsEnabled)
@@ -826,7 +829,7 @@ public partial class DataGrid
 
     private void HandleHeadersVisibilityChanged(AvaloniaPropertyChangedEventArgs change)
     {
-        // TODO 需要审查
+        // TODO HeadersVisibility: review this handler and fix any defect found. Remove this TODO when that is done.
         var oldValue = (DataGridHeadersVisibility)(change.OldValue ?? DataGridHeadersVisibility.All);
         var newValue = (DataGridHeadersVisibility)(change.NewValue ?? DataGridHeadersVisibility.All);
         bool HasFlags(DataGridHeadersVisibility value, DataGridHeadersVisibility flags) => ((value & flags) == flags);

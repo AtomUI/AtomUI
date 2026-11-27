@@ -193,8 +193,9 @@ internal abstract class NavMenuInteractionHandlerBase : INavMenuInteractionHandl
         _pressedItem          = menuItem;
         _pressedPointer       = pointer;
         _pressedCaptureTarget = captureTarget;
-        // PointerCaptureLostEvent 是 Direct 路由：平台捕获丢失只派发给捕获目标自身，
-        // 因此事务期间直接订阅捕获目标，而不是挂接到菜单根上。
+        // PointerCaptureLostEvent is routed directly: a lost platform capture is delivered only to the capture target
+        // itself. The capture target is therefore subscribed directly for the duration of the transaction instead of
+        // attaching the handler to the menu root.
         captureTarget.PointerCaptureLost += PressedItemCaptureLost;
         SetPointerHoldItem(menuItem);
         pointer.Capture(captureTarget);

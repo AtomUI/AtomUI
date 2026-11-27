@@ -8,23 +8,23 @@ using Avalonia.Data.Core.Plugins;
 namespace AtomUI.Theme.Resources;
 
 /// <summary>
-/// Per-target binding source behind <see cref="TokenTransitions"/>.
+/// Per-target binding source behind <see cref="TokenTransitions" />.
 /// </summary>
 /// <remarks>
 /// <para>
-/// Like <see cref="OwnerTokenBinding"/>, the markup returns a public <see cref="CompiledBinding"/> rooted at the target
-/// (<c>$self</c>) whose single path element is this accessor, so Avalonia creates one accessor per target. A Setter
-/// instances the binding per styled control, which is what makes per-control durations possible although the
+/// Like <see cref="OwnerTokenBinding" />, the markup returns a public <see cref="CompiledBinding" /> rooted at the
+/// target (<c>$self</c>) whose single path element is this accessor, so Avalonia creates one accessor per target. A
+/// Setter instances the binding per styled control, which is what makes per-control durations possible although the
 /// transitions themselves are not in the visual tree and have no resource host.
 /// </para>
 /// <para>
 /// The accessor resolves every declared duration Token on the target: the owner's unbound Effective Global key when the
-/// inherited <see cref="ThemeScope.TokenOwnerProperty"/> names a registered control, the plain
-/// <see cref="SharedTokenKind"/> otherwise. It refreshes on <see cref="StyledElement.ResourcesChanged"/> (theme publish,
-/// local scope changes, attach), <see cref="StyledElement.ActualThemeVariantChanged"/> and owner changes (observed
-/// through <see cref="TokenOwnerListeners"/>), and publishes the factory's <see cref="Avalonia.Animation.Transitions"/>
-/// for the resolved durations. A <c>ResourcesChanged</c> raised by a theme publish whose
-/// <see cref="ThemePublishDelta"/> shows none of the declared durations changed for this owner resolves nothing. When a
+/// inherited <see cref="ThemeScope.TokenOwnerProperty" /> names a registered control, the plain <see
+/// cref="SharedTokenKind" /> otherwise. It refreshes on <see cref="StyledElement.ResourcesChanged" /> (theme publish,
+/// local scope changes, attach), <see cref="StyledElement.ActualThemeVariantChanged" /> and owner changes (observed
+/// through <see cref="TokenOwnerListeners" />), and publishes the factory's <see cref="Avalonia.Animation.Transitions"
+/// /> for the resolved durations. A <c>ResourcesChanged</c> raised by a theme publish whose <see
+/// cref="ThemePublishDelta" /> shows none of the declared durations changed for this owner resolves nothing. When a
 /// declared Token does not resolve (the target is not attached yet) no transitions are published. A refresh that
 /// resolves the published durations again does not allocate and does not republish.
 /// </para>
@@ -58,7 +58,9 @@ internal sealed class TransitionDurationBinding : IPropertyAccessor, ITokenOwner
 
     public object? Value => _value;
 
-    /// <summary>How often the accessor resolved its durations; contract tests pin the publish early-exit with it.</summary>
+    /// <summary>
+    /// How often the accessor resolved its durations; contract tests pin the publish early-exit with it.
+    /// </summary>
     internal int ResolveCount { get; private set; }
 
     internal static BindingBase Create(TokenTransitionsFactory factory, BindingPriority priority)
@@ -128,7 +130,9 @@ internal sealed class TransitionDurationBinding : IPropertyAccessor, ITokenOwner
         }
     }
 
-    /// <summary>Re-resolves the durations and publishes the transitions if they changed.</summary>
+    /// <summary>
+    /// Re-resolves the durations and publishes the transitions if they changed.
+    /// </summary>
     internal void Refresh()
     {
         if (_target is { } target)

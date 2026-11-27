@@ -271,7 +271,9 @@ internal sealed class FrameTestPrimitive : TemplatedControl
 {
 }
 
-/// <summary>A registered, owner-transparent container (the role of the AtomUI Popup).</summary>
+/// <summary>
+/// A registered, owner-transparent container (the role of the AtomUI Popup).
+/// </summary>
 [TokenOwnerTransparent]
 internal sealed class TransparentContainerTestControl : TemplatedControl
 {

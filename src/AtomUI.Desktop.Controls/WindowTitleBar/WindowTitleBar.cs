@@ -12,6 +12,17 @@ using Avalonia.Metadata;
 
 namespace AtomUI.Desktop.Controls;
 
+/// <summary>
+/// Title bar for a desktop window: the logo, the title, optional add-on content on both sides of the title and
+/// the caption buttons, laid out for the host operating system.
+/// </summary>
+/// <remarks>
+/// Once attached to the logical tree, the bar binds to the nearest ancestor <see cref="Window" />, exposed as
+/// <c>HostWindow</c>. The host keeps <see cref="IsWindowActive" />, the window state and the caption button
+/// settings of the bar current, and the bar falls back to the logo of the host when neither
+/// <see cref="Logo" /> nor <see cref="LogoTemplate" /> is set. Without a host window the bar renders with its
+/// own values.
+/// </remarks>
 [PseudoClasses(StdPseudoClass.Active)]
 [PseudoClasses(StdPseudoClass.Normal, StdPseudoClass.Minimized, StdPseudoClass.Maximized, StdPseudoClass.Fullscreen)]
 [global::System.Runtime.Versioning.UnsupportedOSPlatform("browser")]
@@ -21,55 +32,107 @@ public class WindowTitleBar : TemplatedControl,
 {
     #region 公共属性定义
 
+    /// <summary>
+    /// Identifies the <see cref="Logo" /> property.
+    /// </summary>
     public static readonly StyledProperty<object?> LogoProperty =
         AvaloniaProperty.Register<WindowTitleBar, object?>(nameof(Logo));
     
+    /// <summary>
+    /// Identifies the <see cref="LogoTemplate" /> property.
+    /// </summary>
     public static readonly StyledProperty<IDataTemplate?> LogoTemplateProperty =
         AvaloniaProperty.Register<WindowTitleBar, IDataTemplate?>(nameof(LogoTemplate));
 
+    /// <summary>
+    /// Identifies the <see cref="LogoVisibility" /> property.
+    /// </summary>
     public static readonly StyledProperty<WindowTitleBarLogoVisibility> LogoVisibilityProperty =
         AvaloniaProperty.Register<WindowTitleBar, WindowTitleBarLogoVisibility>(
             nameof(LogoVisibility),
             WindowTitleBarLogoVisibility.Auto);
     
+    /// <summary>
+    /// Identifies the <see cref="Title" /> property.
+    /// </summary>
     public static readonly StyledProperty<object?> TitleProperty =
         AvaloniaProperty.Register<WindowTitleBar, object?>(nameof(Title));
     
+    /// <summary>
+    /// Identifies the <see cref="TitleTemplate" /> property.
+    /// </summary>
     public static readonly StyledProperty<IDataTemplate?> TitleTemplateProperty = 
         AvaloniaProperty.Register<WindowTitleBar, IDataTemplate?>(nameof (TitleTemplate));
 
+    /// <summary>
+    /// Identifies the <see cref="TitleAlignment" /> property.
+    /// </summary>
     public static readonly StyledProperty<WindowTitleBarTitleAlignment> TitleAlignmentProperty =
         AvaloniaProperty.Register<WindowTitleBar, WindowTitleBarTitleAlignment>(
             nameof(TitleAlignment),
             WindowTitleBarTitleAlignment.Auto);
 
+    /// <summary>
+    /// Identifies the <see cref="IsTitleVisible" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsTitleVisibleProperty =
         AvaloniaProperty.Register<WindowTitleBar, bool>(nameof(IsTitleVisible), true);
     
+    /// <summary>
+    /// Identifies the <see cref="LeftAddOn" /> property.
+    /// </summary>
     public static readonly StyledProperty<object?> LeftAddOnProperty =
         AvaloniaProperty.Register<WindowTitleBar, object?>(nameof(LeftAddOn));
 
+    /// <summary>
+    /// Identifies the <see cref="LeftAddOnTemplate" /> property.
+    /// </summary>
     public static readonly StyledProperty<IDataTemplate?> LeftAddOnTemplateProperty =
         AvaloniaProperty.Register<WindowTitleBar, IDataTemplate?>(nameof(LeftAddOnTemplate));
     
+    /// <summary>
+    /// Identifies the <see cref="RightAddOn" /> property.
+    /// </summary>
     public static readonly StyledProperty<object?> RightAddOnProperty =
         AvaloniaProperty.Register<WindowTitleBar, object?>(nameof(RightAddOn));
 
+    /// <summary>
+    /// Identifies the <see cref="RightAddOnTemplate" /> property.
+    /// </summary>
     public static readonly StyledProperty<IDataTemplate?> RightAddOnTemplateProperty =
         AvaloniaProperty.Register<WindowTitleBar, IDataTemplate?>(nameof(RightAddOnTemplate));
     
+    /// <summary>
+    /// Identifies the <see cref="IsWindowActive" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsWindowActiveProperty = 
         AvaloniaProperty.Register<WindowTitleBar, bool>(nameof(IsWindowActive));
     
+    /// <summary>
+    /// Identifies the <see cref="IsMotionEnabled" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsMotionEnabledProperty = 
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<WindowTitleBar>();
     
+    /// <summary>
+    /// Identifies the <see cref="OsType" /> property.
+    /// </summary>
     public static readonly StyledProperty<OsType> OsTypeProperty =
         OperationSystemAwareControlProperty.OsTypeProperty.AddOwner<WindowTitleBar>();
     
+    /// <summary>
+    /// Identifies the <see cref="OsVersion" /> property.
+    /// </summary>
     public static readonly StyledProperty<Version> OsVersionProperty =
         OperationSystemAwareControlProperty.OsVersionProperty.AddOwner<WindowTitleBar>();
 
+    /// <summary>
+    /// Logo shown at the leading end of the title bar, before the left add-on and the title.
+    /// </summary>
+    /// <remarks>
+    /// <see cref="LogoTemplate" /> builds the content. When both are <see langword="null" />, the logo of the host
+    /// window is used instead. <see cref="LogoVisibility" /> decides whether the logo region is shown.
+    /// </remarks>
     [DependsOn(nameof(LogoTemplate))]
     public object? Logo
     {
@@ -77,18 +140,42 @@ public class WindowTitleBar : TemplatedControl,
         set => SetValue(LogoProperty, value);
     }
     
+    /// <summary>
+    /// Template that builds <see cref="Logo" />.
+    /// </summary>
+    /// <remarks>
+    /// As soon as this template is set, the bar stops using the logo of the host window, even while
+    /// <see cref="Logo" /> is <see langword="null" />.
+    /// </remarks>
     public IDataTemplate? LogoTemplate
     {
         get => GetValue(LogoTemplateProperty);
         set => SetValue(LogoTemplateProperty, value);
     }
 
+    /// <summary>
+    /// When the logo region of the title bar is shown.
+    /// </summary>
+    /// <remarks>
+    /// <see cref="WindowTitleBarLogoVisibility.Always" /> shows the logo whenever one is available and
+    /// <see cref="WindowTitleBarLogoVisibility.Never" /> hides it. The default,
+    /// <see cref="WindowTitleBarLogoVisibility.Auto" />, shows the logo if one is available, except on macOS when
+    /// the title bar has no visible title.
+    /// </remarks>
     public WindowTitleBarLogoVisibility LogoVisibility
     {
         get => GetValue(LogoVisibilityProperty);
         set => SetValue(LogoVisibilityProperty, value);
     }
     
+    /// <summary>
+    /// Title shown in the title bar; <see cref="TitleTemplate" /> builds the content.
+    /// </summary>
+    /// <remarks>
+    /// The title is hidden while this value is <see langword="null" />. A null value or a blank string counts as
+    /// having no title for the <c>Auto</c> mode of <see cref="LogoVisibility" />. The default template trims long
+    /// text with an ellipsis instead of wrapping it.
+    /// </remarks>
     [DependsOn(nameof(TitleTemplate))]
     public object? Title
     {
@@ -96,24 +183,53 @@ public class WindowTitleBar : TemplatedControl,
         set => SetValue(TitleProperty, value);
     }
     
+    /// <summary>
+    /// Template that builds <see cref="Title" />.
+    /// </summary>
+    /// <remarks>
+    /// The title stays hidden while <see cref="Title" /> is <see langword="null" />, even when a template is set.
+    /// </remarks>
     public IDataTemplate? TitleTemplate
     {
         get => GetValue(TitleTemplateProperty);
         set => SetValue(TitleTemplateProperty, value);
     }
 
+    /// <summary>
+    /// Alignment of the title within the title bar.
+    /// </summary>
+    /// <remarks>
+    /// The default, <see cref="WindowTitleBarTitleAlignment.Auto" />, follows the host operating system: centered
+    /// on macOS and left-aligned on Windows and Linux.
+    /// </remarks>
     public WindowTitleBarTitleAlignment TitleAlignment
     {
         get => GetValue(TitleAlignmentProperty);
         set => SetValue(TitleAlignmentProperty, value);
     }
 
+    /// <summary>
+    /// Whether the title is shown in the title bar.
+    /// </summary>
+    /// <remarks>
+    /// <see langword="false" /> hides the title region of this bar only; the window title itself is unaffected.
+    /// The title also stays hidden while <see cref="Title" /> is <see langword="null" />.
+    /// </remarks>
     public bool IsTitleVisible
     {
         get => GetValue(IsTitleVisibleProperty);
         set => SetValue(IsTitleVisibleProperty, value);
     }
 
+    /// <summary>
+    /// Content shown between the logo and the title.
+    /// </summary>
+    /// <remarks>
+    /// <see cref="LeftAddOnTemplate" /> builds the content. The region is hidden while this value is
+    /// <see langword="null" />. The theme provides the active state, the motion setting and the operating system
+    /// of the host to this region through <c>WindowTitleBarHostContext</c> attached values for the title bar
+    /// buttons placed in it.
+    /// </remarks>
     [DependsOn(nameof(LeftAddOnTemplate))]
     public object? LeftAddOn
     {
@@ -121,12 +237,24 @@ public class WindowTitleBar : TemplatedControl,
         set => SetValue(LeftAddOnProperty, value);
     }
 
+    /// <summary>
+    /// Template that builds <see cref="LeftAddOn" />.
+    /// </summary>
     public IDataTemplate? LeftAddOnTemplate
     {
         get => GetValue(LeftAddOnTemplateProperty);
         set => SetValue(LeftAddOnTemplateProperty, value);
     }
     
+    /// <summary>
+    /// Content shown after the title and before the caption buttons.
+    /// </summary>
+    /// <remarks>
+    /// <see cref="RightAddOnTemplate" /> builds the content. The region is hidden while this value is
+    /// <see langword="null" />. The theme provides the active state, the motion setting and the operating system
+    /// of the host to this region through <c>WindowTitleBarHostContext</c> attached values for the title bar
+    /// buttons placed in it.
+    /// </remarks>
     [DependsOn(nameof(RightAddOnTemplate))]
     public object? RightAddOn
     {
@@ -134,25 +262,59 @@ public class WindowTitleBar : TemplatedControl,
         set => SetValue(RightAddOnProperty, value);
     }
 
+    /// <summary>
+    /// Template that builds <see cref="RightAddOn" />.
+    /// </summary>
     public IDataTemplate? RightAddOnTemplate
     {
         get => GetValue(RightAddOnTemplateProperty);
         set => SetValue(RightAddOnTemplateProperty, value);
     }
 
+    /// <summary>
+    /// Whether the host window is active.
+    /// </summary>
+    /// <remarks>
+    /// <see langword="true" /> sets the <see cref="StdPseudoClass.Active" /> pseudo-class; the caption buttons and
+    /// the title bar buttons in the add-on regions use it to choose their active and inactive appearance. For a
+    /// bar bound to a host window the value follows the window, and an explicitly set value is replaced.
+    /// </remarks>
     public bool IsWindowActive
     {
         get => GetValue(IsWindowActiveProperty);
         set => SetValue(IsWindowActiveProperty, value);
     }
     
+    /// <summary>
+    /// Whether motion is enabled for the caption buttons and the title bar buttons in the add-on regions.
+    /// </summary>
+    /// <remarks>
+    /// <see langword="false" /> turns their motion off. The value is passed to the caption button group and,
+    /// through <c>WindowTitleBarHostContext</c>, to the add-on regions.
+    /// </remarks>
     public bool IsMotionEnabled
     {
         get => GetValue(IsMotionEnabledProperty);
         set => SetValue(IsMotionEnabledProperty, value);
     }
     
+    /// <summary>
+    /// Operating system the title bar is laid out for.
+    /// </summary>
+    /// <remarks>
+    /// It selects the template of the theme and the default title alignment of
+    /// <see cref="WindowTitleBarTitleAlignment.Auto" />, and the <c>Auto</c> logo visibility depends on it. The
+    /// operating system detection sets it through <see cref="IOperationSystemAware.SetOsType" />, not the
+    /// application.
+    /// </remarks>
     public OsType OsType => GetValue(OsTypeProperty);
+    /// <summary>
+    /// Version of the operating system the title bar runs on.
+    /// </summary>
+    /// <remarks>
+    /// The operating system detection sets it through <see cref="IOperationSystemAware.SetOsVersion" />. This
+    /// class does not use the value itself.
+    /// </remarks>
     public Version OsVersion => GetValue(OsVersionProperty);
     #endregion
 
@@ -372,6 +534,14 @@ public class WindowTitleBar : TemplatedControl,
 
     #region 公共事件定义
 
+    /// <summary>
+    /// Occurs when the user double-clicks the title bar with the left mouse button.
+    /// </summary>
+    /// <remarks>
+    /// It is raised when the second click is released, and only when the pointer capture was not lost in between.
+    /// The bar does not change the window state itself; the host window switches between maximized and normal
+    /// when it can be resized.
+    /// </remarks>
     public event EventHandler? MaximizeWindowRequested;
 
     #endregion
@@ -427,6 +597,12 @@ public class WindowTitleBar : TemplatedControl,
         }
     }
 
+    /// <summary>
+    /// Calls the base member and then binds the bar to the nearest ancestor <see cref="Window" /> as its host.
+    /// </summary>
+    /// <remarks>
+    /// An override must call the base member, otherwise the bar does not follow the state of its window.
+    /// </remarks>
     protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
     {
         base.OnAttachedToLogicalTree(e);
@@ -436,6 +612,12 @@ public class WindowTitleBar : TemplatedControl,
         }
     }
 
+    /// <summary>
+    /// Releases the host window before calling the base member.
+    /// </summary>
+    /// <remarks>
+    /// An override must call the base member, otherwise the bar keeps its subscriptions on the window.
+    /// </remarks>
     protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
     {
         ReleaseHost();
@@ -468,6 +650,15 @@ public class WindowTitleBar : TemplatedControl,
         UpdateEffectiveLogo();
     }
 
+    /// <summary>
+    /// Calls the base member, then refreshes the effective title and logo state and the pseudo-classes when a
+    /// related property changes.
+    /// </summary>
+    /// <remarks>
+    /// This keeps the effective title and logo values, the window state pseudo-classes and
+    /// <see cref="StdPseudoClass.Active" /> up to date. An override must call the base member for these to stay in
+    /// sync.
+    /// </remarks>
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
@@ -577,21 +768,37 @@ public class WindowTitleBar : TemplatedControl,
     
     private bool _doubleClickPending;
 
+    /// <summary>
+    /// Calls the base member and records a left double-click for <see cref="MaximizeWindowRequested" /> without
+    /// changing the window state.
+    /// </summary>
+    /// <remarks>
+    /// The press of the second click is marked handled. An override must call the base member, otherwise a
+    /// double-click does not raise the event.
+    /// </remarks>
     protected override void OnPointerPressed(PointerPressedEventArgs e)
     {
         base.OnPointerPressed(e);
         if (e.ClickCount == 2 && e.Properties.IsLeftButtonPressed)
         {
-            // 不在 PointerPressed 里直接修改 WindowState：在 Windows 上，maximized → normal
-            // 的切换由 DWM 同步执行 resize，而 Avalonia 在 PointerPressed 阶段对 source 做了
-            // 隐式 pointer capture，resize 会破坏当前 pointer 事件链，导致 PointerReleased /
-            // 后续 hover 失效（必须再点一次才会恢复）。把动作延后到 PointerReleased，
-            // 跟点击最大化按钮的路径一致，可彻底规避此问题。
+            // The window state is not changed in PointerPressed: on Windows, switching from maximized to normal
+            // makes DWM resize the window synchronously, while Avalonia has already captured the pointer
+            // implicitly on the source during PointerPressed. The resize breaks the current pointer event chain:
+            // PointerReleased and the following hover events are lost until the user clicks again. Deferring the
+            // action to PointerReleased, as the maximize button does, avoids this.
             _doubleClickPending = true;
             e.Handled           = true;
         }
     }
 
+    /// <summary>
+    /// Calls the base member, then raises <see cref="MaximizeWindowRequested" /> when the release completes a
+    /// recorded left double-click.
+    /// </summary>
+    /// <remarks>
+    /// Any other release discards the record. An override must call the base member, otherwise the event is never
+    /// raised.
+    /// </remarks>
     protected override void OnPointerReleased(PointerReleasedEventArgs e)
     {
         base.OnPointerReleased(e);
@@ -606,6 +813,13 @@ public class WindowTitleBar : TemplatedControl,
         }
     }
 
+    /// <summary>
+    /// Calls the base member and discards a recorded double-click.
+    /// </summary>
+    /// <remarks>
+    /// An override must call the base member, otherwise a later release still raises
+    /// <see cref="MaximizeWindowRequested" />.
+    /// </remarks>
     protected override void OnPointerCaptureLost(PointerCaptureLostEventArgs e)
     {
         base.OnPointerCaptureLost(e);

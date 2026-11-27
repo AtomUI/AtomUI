@@ -4,7 +4,9 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 
-/// <summary>The PrimeNG view of <see cref="PopupConfirmToken"/>.</summary>
+/// <summary>
+/// The PrimeNG view of <see cref="PopupConfirmToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class PopupConfirmTokenRule : IControlTokenRule<PrimeNGToken, PopupConfirmToken>
 {
@@ -12,7 +14,8 @@ internal sealed class PopupConfirmTokenRule : IControlTokenRule<PrimeNGToken, Po
     {
         var token  = target.Own;
         var global = target.Global;
-        // PrimeNG: the control-global overrides, read by the formulas below.
+        // PrimeNG: the control-global overrides (MotionDurationMid, IconSizeLG), read by the PopupConfirm theme
+        // (MotionDuration, the icon Width and Height) and not by the formulas below.
         PrimeNGPopupConfirmTokens.EvaluateGlobal(in context, global);
         token.ButtonSpacing          = global.UniformlyMarginXS;
         token.IconMargin             = new Thickness(0, global.UniformlyMarginXS / 2, global.UniformlyMarginXS, 0);

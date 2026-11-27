@@ -1,6 +1,8 @@
 namespace AtomUI.Animations;
 
-/// <summary>Presentation timing reported by the platform renderer, in Stopwatch ticks.</summary>
+/// <summary>
+/// Presentation timing reported by the platform renderer, in Stopwatch ticks.
+/// </summary>
 internal interface IMotionPresentationClock
 {
     /// <summary>
@@ -8,7 +10,9 @@ internal interface IMotionPresentationClock
     /// </summary>
     event Action? FrameStarted;
 
-    /// <summary>The earliest presentation that content sampled at <paramref name="now"/> can reach, or null.</summary>
+    /// <summary>
+    /// The earliest presentation that content sampled at <paramref name="now" /> can reach, or null.
+    /// </summary>
     long? PredictPresentation(long now);
 
     /// <summary>
@@ -16,7 +20,9 @@ internal interface IMotionPresentationClock
     /// </summary>
     bool RequiresInitialCompositorPulse => false;
 
-    /// <summary>The fixed refresh interval, or zero when unknown or variable.</summary>
+    /// <summary>
+    /// The fixed refresh interval, or zero when unknown or variable.
+    /// </summary>
     long RefreshInterval { get; }
 
     /// <summary>
@@ -24,19 +30,27 @@ internal interface IMotionPresentationClock
     /// </summary>
     long TransitionSamplingInterval => RefreshInterval;
 
-    /// <summary>Frames whose draw has started; content committed before a later start is in that frame.</summary>
+    /// <summary>
+    /// Frames whose draw has started; content committed before a later start is in that frame.
+    /// </summary>
     long FramesStarted { get; }
 
-    /// <summary>Frames drawn or waiting for the compositor and not yet submitted.</summary>
+    /// <summary>
+    /// Frames drawn or waiting for the compositor and not yet submitted.
+    /// </summary>
     int FramesInFlight { get; }
 }
 
-/// <summary>Optional platform presentation timing installed by the desktop host.</summary>
+/// <summary>
+/// Optional platform presentation timing installed by the desktop host.
+/// </summary>
 internal static class MotionFrameTiming
 {
     private static IMotionPresentationClock? s_clock;
 
-    /// <summary>Read on the UI thread; null when the platform offers no reliable presentation timing.</summary>
+    /// <summary>
+    /// Read on the UI thread; null when the platform offers no reliable presentation timing.
+    /// </summary>
     internal static IMotionPresentationClock? Clock
     {
         get => Volatile.Read(ref s_clock);

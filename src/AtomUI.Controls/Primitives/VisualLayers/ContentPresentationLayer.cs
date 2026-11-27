@@ -7,26 +7,31 @@ using Avalonia.VisualTree;
 namespace AtomUI.Controls.Primitives;
 
 /// <summary>
-/// T5 内容呈现层：承载作用域 Drawer 与作用域 Dialog（<c>OverlayScope</c>）。
-/// 位于同一宿主的 T3 内容覆盖层（Watermark）与 T4 内容浮动层（FloatButton）之上，每个宿主最多一个实例。
-/// 同一实例中的作用域 Drawer 与作用域 Dialog 按打开顺序排列（后打开的在上，与 antd DOM 顺序一致）。
-/// 本层与 T3 一样遵循 FlowDirection 策略随宿主镜像，RTL 下作用域 Drawer 才能贴合其 target。
+/// T5 content presentation layer: hosts scoped Drawers and scoped Dialogs (<c>OverlayScope</c>).
+/// It sits above the T3 content overlay layer (Watermark) and the T4 content floating layer (FloatButton) of
+/// the same host, with at most one instance per host. Within one instance, scoped Drawers and scoped Dialogs
+/// follow the order in which they were opened (the later one on top, as in the antd DOM order).
+/// Like T3, this layer mirrors its FlowDirection with the host, so that a scoped Drawer can align with its
+/// target under RTL.
 /// </summary>
 internal sealed class ContentPresentationLayer : ScopeAwareAdornerLayer
 {
     /// <summary>
-    /// 最近一次排列得到的尺寸。作用域 Dialog 需要在 Bounds 尚未更新时就知道整层尺寸。
+    /// The size of the most recent arrange pass. A scoped Dialog needs the size of the whole layer before
+    /// Bounds is updated.
     /// </summary>
     internal Size AvailableSize { get; private set; }
 
     /// <summary>
-    /// Drawer 入口：落在 <see cref="ScopeAwareAdornerLayer.GetLayer"/> 会解析出的同一个宿主
-    /// （滚动内容包裹面板 / 内容 <see cref="VisualLayerManager"/>），随滚动移动。
+    /// Drawer entry point: lands on the same host that <see cref="ScopeAwareAdornerLayer.GetLayer" /> resolves
+    /// (the scroll content wrapping panel or the content <see cref="VisualLayerManager" />) and moves with
+    /// scrolling.
     /// </summary>
     internal static new ContentPresentationLayer? GetLayer(Visual visual)
     {
-        // 先解析（必要时注入）同宿主的 T3 层：它的视觉父级就是作用域宿主。滚动内容的包裹面板
-        // 只由 T3 注入创建，这样两层共用同一个包裹面板，宿主解析规则也只保留一份。
+        // Resolve (injecting when needed) the T3 layer of the same host first: its visual parent is the scope
+        // host. Only the T3 injection creates the wrapping panel of scrolled content, so both layers share that
+        // panel and the rule that resolves the host is kept in one place.
         var overlayLayer = ScopeAwareAdornerLayer.GetLayer(visual);
         if (overlayLayer?.GetVisualParent() is not Layoutable host)
         {
@@ -37,13 +42,15 @@ internal sealed class ContentPresentationLayer : ScopeAwareAdornerLayer
     }
 
     /// <summary>
-    /// 作用域 Dialog 入口：落在 <see cref="ScopeAwareOverlayLayer.GetLayer"/> 会解析出的同一个宿主
-    /// （<see cref="ScopeAwareOverlayLayerPanel"/> / 内容 <see cref="VisualLayerManager"/>），固定在视口。
+    /// Scoped Dialog entry point: lands on the same host that <see cref="ScopeAwareOverlayLayer.GetLayer" />
+    /// resolves (<see cref="ScopeAwareOverlayLayerPanel" /> or the content <see cref="VisualLayerManager" />)
+    /// and stays fixed in the viewport.
     /// </summary>
     internal static ContentPresentationLayer? GetViewportLayer(Visual visual)
     {
         Layoutable? host = visual.FindAncestorOfType<ScopeAwareOverlayLayerPanel>(true);
-        // 规则 2：比视口面板更近的表面宿主优先（滚动内容中 Drawer 内的作用域 Dialog 留在 Drawer 表面内）。
+        // Nearest scope wins: a surface host nearer than the viewport panel takes precedence (a scoped Dialog
+        // inside a Drawer within scrolled content stays inside the Drawer surface).
         host =   LayerLadder.PreferNearerSurfaceHost(visual, host);
         host ??= LayerLadder.FindContentLayerManager(visual);
         if (host == null)

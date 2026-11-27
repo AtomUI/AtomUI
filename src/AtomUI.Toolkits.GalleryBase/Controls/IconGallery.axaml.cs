@@ -12,6 +12,12 @@ using ScrollViewer = AtomUI.Desktop.Controls.ScrollViewer;
 
 namespace AtomUI.Toolkits.GalleryBase.Controls;
 
+/// <summary>
+/// Lists the icons of the Ant Design icon package, sorted by name, in a searchable list.
+/// Icon instances are created in batches: the first 96 at once, then 96 more whenever 240 or fewer pixels are
+/// left to scroll. Typing in the search box filters the list by icon name.
+/// The template supplies the scroll viewer <c>PART_ScrollViewer</c> and the search box <c>PART_SearchInput</c>.
+/// </summary>
 public class IconGallery : TemplatedControl
 {
     private const int InitialIconLoadCount = 96;
@@ -21,9 +27,16 @@ public class IconGallery : TemplatedControl
     private const string SearchInputPart = "PART_SearchInput";
     private static readonly TimeSpan SearchDebounceDelay = TimeSpan.FromMilliseconds(120);
 
+    /// <summary>
+    /// Identifies the <see cref="IconThemeType" /> property.
+    /// </summary>
     public static readonly StyledProperty<IconThemeType?> IconThemeTypeProperty =
         AvaloniaProperty.Register<IconGallery, IconThemeType?>(nameof(IconThemeType));
 
+    /// <summary>
+    /// Restricts the list to the icons of this theme; <see langword="null" /> lists the icons of every theme.
+    /// The list is reloaded when this value changes while the control is attached to a visual tree.
+    /// </summary>
     public IconThemeType? IconThemeType
     {
         get => GetValue(IconThemeTypeProperty);
@@ -53,6 +66,10 @@ public class IconGallery : TemplatedControl
 
     private bool HasMoreIconInfos => _loadedIconCount < _matchedIconInfos.Count;
 
+    /// <summary>
+    /// Takes the scroll viewer and the search box of the applied template, subscribes to them and reloads the icons.
+    /// The base method is called first.
+    /// </summary>
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
@@ -65,6 +82,10 @@ public class IconGallery : TemplatedControl
         ReLoadIcons();
     }
 
+    /// <summary>
+    /// Subscribes to the scroll viewer and the search box when the control is attached to a visual tree, and loads
+    /// the icons when the list is still empty. The base method is called first.
+    /// </summary>
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
@@ -77,6 +98,10 @@ public class IconGallery : TemplatedControl
         }
     }
 
+    /// <summary>
+    /// Unsubscribes from the scroll viewer and the search box and releases the created icons when the control is
+    /// detached from a visual tree. The base method is called last.
+    /// </summary>
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         DetachTemplateEvents();
@@ -85,6 +110,10 @@ public class IconGallery : TemplatedControl
         base.OnDetachedFromVisualTree(e);
     }
 
+    /// <summary>
+    /// Reloads the icons when <see cref="IconThemeType" /> changes while the control is attached to a visual tree.
+    /// The base method is called first.
+    /// </summary>
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);

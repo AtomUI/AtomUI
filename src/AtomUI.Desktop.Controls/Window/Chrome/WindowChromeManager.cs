@@ -10,7 +10,9 @@ internal interface IWindowChromeManager
 
     bool SupportsPinCaptionButton { get; }
 
-    /// <summary>Whether the platform can currently take this window into full screen.</summary>
+    /// <summary>
+    /// Whether the platform can currently take this window into full screen.
+    /// </summary>
     bool SupportsFullScreen { get; }
 
     Action? PrepareInitialShowState();
@@ -26,7 +28,13 @@ internal interface IWindowChromeManager
     /// <summary>
     /// Starts tracking the chrome the platform presents by itself over a full-screen window.
     /// </summary>
-    /// <returns><c>null</c> when the platform presents no chrome of its own in full screen.</returns>
+    /// <param name="metricsChanged">
+    /// Invoked on the UI thread whenever <see cref="IFullScreenNativeChrome.Metrics" /> changes; it is never
+    /// invoked when <see langword="null" /> is returned.
+    /// </param>
+    /// <returns>
+    /// <c>null</c> when the platform presents no chrome of its own in full screen.
+    /// </returns>
     IFullScreenNativeChrome? AttachFullScreenNativeChrome(Action metricsChanged);
 }
 

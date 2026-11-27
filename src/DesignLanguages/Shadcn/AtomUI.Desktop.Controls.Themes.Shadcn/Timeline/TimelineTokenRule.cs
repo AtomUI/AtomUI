@@ -4,7 +4,9 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls.Themes.Shadcn;
 
-/// <summary>The shadcn view of <see cref="TimelineToken"/>.</summary>
+/// <summary>
+/// The shadcn view of <see cref="TimelineToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class TimelineTokenRule : IControlTokenRule<ShadcnToken, TimelineToken>
 {
@@ -25,6 +27,7 @@ internal sealed class TimelineTokenRule : IControlTokenRule<ShadcnToken, Timelin
         token.IndicatorEndModeMargin    = new Thickness(global.UniformlyMargin, 0, 0, 0);
         token.IndicatorMiddleModeMargin = new Thickness(global.UniformlyMargin, 0);
 
+        // Ant Design formula kept as is: shadcn has no Timeline, so the language has no values of its own.
         token.IndicatorSize            = global.SizeMS;
         token.IndicatorDotSize         = 8;
     }

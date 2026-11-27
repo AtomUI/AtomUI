@@ -291,7 +291,7 @@ internal partial class DataGridColumnHeader : ContentControl
     private static double s_originalWidth;
     private static Point? s_dragStart;
     private static DataGridColumn? s_dragColumn;
-    // 右冻结列的宽度向左扩展：拖拽向左移动时列变宽
+    // A right-frozen column grows to the left: the column becomes wider when the drag moves leftward.
     private static bool s_dragColumnGrowsLeftward;
     private static DataGridColumn? s_currentDraggingOverColumn;
     private static DataGridColumnHeader? s_dragOwner;
@@ -406,10 +406,12 @@ internal partial class DataGridColumnHeader : ContentControl
         }
     }
     
-    //TODO DragDrop
+    // TODO DragDrop: verify that the column header handles drag and drop of its column and complete it where
+    // it is missing. Remove this TODO when that is done.
 
-    // 表头对表格属性的绑定会订阅表格的属性变更；列离开表格时必须释放，否则表格会一直持有已移除的列。
-    // 由列在 OwningGrid 变化时成对调用。
+    // The bindings to the grid's properties subscribe to the grid's property changes. They must be released when
+    // the column leaves the grid, because otherwise the grid keeps the removed column alive. The column calls
+    // this in pairs when its OwningGrid changes.
     internal void BindOwningGridProperties(DataGrid owningGrid)
     {
         _owningGridBindings?.Dispose();
@@ -457,8 +459,10 @@ internal partial class DataGridColumnHeader : ContentControl
         }
     }
 
-    //TODO DragEvents
-    //TODO MouseCapture
+    // TODO DragEvents: verify that this member handles the drag events and complete it where it is missing.
+    // Remove this TODO when that is done.
+    // TODO MouseCapture: verify that this member handles the pointer capture taken for dragging and complete it
+    // where it is missing. Remove this TODO when that is done.
     internal void HandleMouseLeftButtonUp(ref bool handled, PointerEventArgs args, Point mousePosition, Point mousePositionHeaders)
     {
         IsPressed = false;
@@ -496,7 +500,8 @@ internal partial class DataGridColumnHeader : ContentControl
         }
     }
 
-    //TODO DragEvents
+    // TODO DragEvents: verify that this member handles the drag events and complete it where it is missing.
+    // Remove this TODO when that is done.
     internal void HandleMouseMove(PointerEventArgs args, Point mousePosition, Point mousePositionHeaders)
     {
         var handled = args.Handled;
@@ -556,8 +561,12 @@ internal partial class DataGridColumnHeader : ContentControl
     /// 1. The column is the last visible column.
     /// 2. All columns are constrained by either their maximum or minimum values.
     /// </summary>
-    /// <param name="column">Column to check.</param>
-    /// <returns>Whether or not the column can be resized by dragging its header.</returns>
+    /// <param name="column">
+    /// Column to check.
+    /// </param>
+    /// <returns>
+    /// Whether or not the column can be resized by dragging its header.
+    /// </returns>
     private static bool CanResizeColumn(DataGridColumn column)
     {
         if (column.OwningGrid != null && column.OwningGrid.UsesStarSizing &&
@@ -702,10 +711,15 @@ internal partial class DataGridColumnHeader : ContentControl
     /// <summary>
     /// Returns the column against whose top-left the reordering caret should be positioned
     /// </summary>
-    /// <param name="mousePositionHeaders">Mouse position within the ColumnHeadersPresenter</param>
-    /// <param name="scroll">Whether or not to scroll horizontally when a column is dragged out of bounds</param>
-    /// <param name="scrollAmount">If scroll is true, returns the horizontal amount that was scrolled</param>
-    /// <returns></returns>
+    /// <param name="mousePositionHeaders">
+    /// Mouse position within the ColumnHeadersPresenter
+    /// </param>
+    /// <param name="scroll">
+    /// Whether or not to scroll horizontally when a column is dragged out of bounds
+    /// </param>
+    /// <param name="scrollAmount">
+    /// If scroll is true, returns the horizontal amount that was scrolled
+    /// </param>
     private DataGridColumn? GetReorderingTargetColumn(Point mousePositionHeaders, bool scroll, out double scrollAmount)
     {
         scrollAmount = 0;
@@ -776,8 +790,9 @@ internal partial class DataGridColumnHeader : ContentControl
     /// <summary>
     /// Returns the display index to set the column to
     /// </summary>
-    /// <param name="mousePositionHeaders">Mouse position relative to the column headers presenter</param>
-    /// <returns></returns>
+    /// <param name="mousePositionHeaders">
+    /// Mouse position relative to the column headers presenter
+    /// </param>
     private int GetReorderingTargetDisplayIndex(Point mousePositionHeaders)
     {
         Debug.Assert(OwningGrid != null);
@@ -848,7 +863,9 @@ internal partial class DataGridColumnHeader : ContentControl
     /// <summary>
     /// Sets up the DataGridColumnHeader for the MouseEnter event
     /// </summary>
-    /// <param name="mousePosition">mouse position relative to the DataGridColumnHeader</param>
+    /// <param name="mousePosition">
+    /// mouse position relative to the DataGridColumnHeader
+    /// </param>
     private void HandleMouseEnter(Point mousePosition)
     {
         IsMouseOver = true;
@@ -876,7 +893,7 @@ internal partial class DataGridColumnHeader : ContentControl
             IsVisible = false
         };
         dragIndicator.PseudoClasses.Add(StdPseudoClass.DragIndicator);
-        // 拖拽 ghost 只是列头预览，不属于表头单元格语义部件。
+        // The drag ghost is only a preview of the column header. It is not a header cell semantic part.
         dragIndicator.Classes.Remove(DataGridSemanticParts.HeaderCellClass);
         
         // pass the caret's data template to the user for modification
@@ -948,7 +965,8 @@ internal partial class DataGridColumnHeader : ContentControl
         return content;
     }
     
-    //TODO DragEvents
+    // TODO DragEvents: verify that this member handles the drag events and complete it where it is missing.
+    // Remove this TODO when that is done.
     private void HandleMouseMoveReorder(ref bool handled, Point mousePosition, Point mousePositionHeaders)
     {
         if (handled)

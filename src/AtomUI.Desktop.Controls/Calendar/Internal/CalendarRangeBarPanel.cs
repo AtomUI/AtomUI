@@ -79,14 +79,20 @@ internal sealed class CalendarRangeBarPanel : Panel
         set => SetValue(RangeBarTopOffsetProperty, value);
     }
 
-    /// <summary>Gap between range bars stacked in the same cell (the theme binds the Calendar's RangeBarGap).</summary>
+    /// <summary>
+    /// Gap between range bars stacked in the same cell (the theme binds the Calendar's RangeBarGap).
+    /// </summary>
     public double RangeBarGap
     {
         get => GetValue(RangeBarGapProperty);
         set => SetValue(RangeBarGapProperty, value);
     }
 
-    /// <summary>Font size of the range bar label, defaulting to the owner's FontSizeSM.</summary>
+    /// <summary>
+    /// Font size of the range bar label. Without an explicit value it is the owner's FontSizeSM while
+    /// <see cref="UseRangeBarTokenResources" /> is <see langword="true" />, which the Calendar template sets, otherwise
+    /// the default <see cref="TextBlock" /> font size. An explicit value cannot be cleared.
+    /// </summary>
     public double RangeBarLabelFontSize
     {
         get => _labelFontSizeOverride ?? _themeLabelFontSize;
@@ -101,14 +107,20 @@ internal sealed class CalendarRangeBarPanel : Panel
         }
     }
 
-    /// <summary>Padding of the range bar label inside its bar (the theme binds the Calendar's RangeBarLabelPadding).</summary>
+    /// <summary>
+    /// Padding of the range bar label inside its bar (the theme binds the Calendar's RangeBarLabelPadding).
+    /// </summary>
     public Thickness RangeBarLabelPadding
     {
         get => GetValue(RangeBarLabelPaddingProperty);
         set => SetValue(RangeBarLabelPaddingProperty, value);
     }
 
-    /// <summary>Text colour of the range bar label, defaulting to the owner's ColorTextLightSolid.</summary>
+    /// <summary>
+    /// Text color of the range bar label. Without an explicit value it is the owner's ColorTextLightSolid while
+    /// <see cref="UseRangeBarTokenResources" /> is <see langword="true" />, which the Calendar template sets, otherwise
+    /// <see langword="null" />. An explicit value cannot be cleared, and setting <see langword="null" /> counts as one.
+    /// </summary>
     public IBrush? RangeBarLabelForeground
     {
         get => _labelForegroundOverride.IsSet ? _labelForegroundOverride.Value : _themeLabelForeground;
@@ -506,8 +518,8 @@ internal sealed class CalendarRangeBarPanel : Panel
 
     private Border CreateRangeBarElement()
     {
-        // No per-child bindings to the panel: a removed bar would stay rooted by the panel's observables. The themed padding,
-        // label colour and size are applied in ApplySegment and re-applied when they change (LayoutTriggers).
+        // No per-child bindings to the panel: a removed bar would stay rooted by the panel's observables. The themed
+        // padding, label color and size are applied in ApplySegment and re-applied when they change (LayoutTriggers).
         return new Border
         {
             ClipToBounds = true,
@@ -576,7 +588,10 @@ internal sealed class CalendarRangeBarPanel : Panel
         }
     }
 
-    /// <summary>The label colour and size follow the panel's themed values (owner ColorTextLightSolid / FontSizeSM).</summary>
+    /// <summary>
+    /// Applies <see cref="RangeBarLabelForeground" /> and <see cref="RangeBarLabelFontSize" /> to a label, so an
+    /// explicit value wins over the themed one.
+    /// </summary>
     private void ApplyLabelStyle(TextBlock label)
     {
         var foreground = RangeBarLabelForeground;

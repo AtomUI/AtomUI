@@ -4,26 +4,42 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
 
+/// <summary>
+/// Design tokens of the <see cref="Window" />: its default surface fill and foreground, the corner radius, shadow
+/// and strokes of its frame, the title bar height and the system bar brush.
+/// </summary>
 [ControlDesignToken]
 public sealed partial class WindowToken : AbstractControlDesignToken
 {
 
-    /// <summary>Default fill of the window surface. Pair with <see cref="DefaultForeground"/>.</summary>
+    /// <summary>
+    /// Default fill of the window surface. Pair with <see cref="DefaultForeground" />.
+    /// </summary>
     public partial Color DefaultBackground { get; set; }
 
-    /// <summary>Default foreground inherited by window content on <see cref="DefaultBackground"/>.</summary>
+    /// <summary>
+    /// Default foreground inherited by window content on <see cref="DefaultBackground" />.
+    /// </summary>
     public partial Color DefaultForeground { get; set; }
     
-    /// <summary>Corner radius of the window frame.</summary>
+    /// <summary>
+    /// Corner radius of the window frame.
+    /// </summary>
     public partial CornerRadius CornerRadius { get; set; }
     
-    /// <summary>Height of the window title bar area.</summary>
+    /// <summary>
+    /// Height of the window title bar area.
+    /// </summary>
     public partial double TitleBarHeight { get; set; }
     
-    /// <summary>Brush supplied to the platform system bar by the top-level theme.</summary>
+    /// <summary>
+    /// Brush supplied to the platform system bar by the top-level theme.
+    /// </summary>
     public partial SolidColorBrush? SystemBarColor { get; set; }
     
-    /// <summary>Elevation shadow of the window frame.</summary>
+    /// <summary>
+    /// Elevation shadow of the window frame.
+    /// </summary>
     public partial BoxShadows FrameShadows { get; set; }
     
     /// <summary>
@@ -31,7 +47,9 @@ public sealed partial class WindowToken : AbstractControlDesignToken
     /// </summary>
     public partial BoxShadows FullscreenPopoverShadows { get; set; }
     
-    /// <summary>Top-edge stroke drawn in the client area of an active Windows 10 window with client-side decorations.</summary>
+    /// <summary>
+    /// Top-edge stroke drawn in the client area of an active Windows 10 window with client-side decorations.
+    /// </summary>
     public partial Color FrameBorderActive { get; set; }
 
     /// <summary>

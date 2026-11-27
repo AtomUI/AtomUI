@@ -1,8 +1,8 @@
 namespace AtomUI.Desktop.Controls;
 
 /// <summary>
-/// Defines how <see cref="Window"/> presents its title bar while the window is in
-/// <see cref="Avalonia.Controls.WindowState.FullScreen"/>.
+/// Defines how <see cref="Window" /> presents its title bar while the window is in
+/// <see cref="Avalonia.Controls.WindowState.FullScreen" />.
 /// </summary>
 public enum FullScreenTitleBarMode
 {
@@ -19,7 +19,7 @@ public enum FullScreenTitleBarMode
 
     /// <summary>
     /// The title bar stays open and overlays the content. The content area keeps the same size as in
-    /// <see cref="AutoHide"/>.
+    /// <see cref="AutoHide" />.
     /// </summary>
     Pinned,
 

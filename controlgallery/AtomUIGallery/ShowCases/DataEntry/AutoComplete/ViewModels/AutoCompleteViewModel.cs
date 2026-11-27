@@ -83,8 +83,8 @@ public class AutoCompleteViewModel : ReactiveObject, IRoutableViewModel
 }
 
 /// <summary>
-/// antd basic / status / variant / allowClear / custom demos 共用的 mockVal 逻辑：
-/// 由输入文本生成 [text, text 重复 2 次, text 重复 3 次] 三个选项。
+/// Shared mockVal logic of the antd basic, status, variant, allowClear and custom demos:
+/// the input text yields the three options [text, text repeated twice, text repeated three times].
 /// </summary>
 public class MockValOptionsAsyncLoader : ICompleteOptionsAsyncLoader
 {
@@ -112,7 +112,7 @@ public class MockValOptionsAsyncLoader : ICompleteOptionsAsyncLoader
 }
 
 /// <summary>
-/// antd options demo：由输入文本构造 value@domain 结构的邮箱选项。
+/// antd options demo: builds the value@domain email options from the input text.
 /// </summary>
 public class EmailOptionsAsyncLoader : ICompleteOptionsAsyncLoader
 {
@@ -141,8 +141,8 @@ public class EmailOptionsAsyncLoader : ICompleteOptionsAsyncLoader
 }
 
 /// <summary>
-/// antd uncertain-category demo：随机数量的 "Found {query} on {category}" 条目，
-/// 每条附带随机的结果数量。
+/// antd uncertain-category demo: a random number of "Found {query} on {category}" entries,
+/// each carrying a random result count.
 /// </summary>
 public class UncertainCategoryOptionsAsyncLoader : ICompleteOptionsAsyncLoader
 {
@@ -179,8 +179,8 @@ public record CustomAutoCompleteOption : AutoCompleteOption
 }
 
 /// <summary>
-/// antd certain-category demo 的分组选项：IsGroupHeader 为 true 的条目渲染为类目标题行，
-/// 其余条目渲染为标题 + 引用计数。
+/// Grouped options of the antd certain-category demo: an item with IsGroupHeader true renders as the
+/// category title row; every other item renders a title and a citation count.
 /// </summary>
 public record CategoryAutoCompleteOption : AutoCompleteOption
 {

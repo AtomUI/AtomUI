@@ -17,6 +17,13 @@ using Avalonia.Threading;
 
 namespace AtomUI.Theme;
 
+/// <summary>
+/// The application-wide theme owner, exposed through <see cref="IThemeManager" />. It registers the control
+/// themes, Token descriptors, theme assets and scopes of the startup configuration and of control packages,
+/// compiles the selected theme into a <see cref="ThemeSnapshot" />, and applies theme and system appearance
+/// changes as transitions that complete with a <c>ThemeTransitionResult</c>. AtomUI.Desktop.Controls consumes
+/// it in the media break point bootstrapper.
+/// </summary>
 internal partial class ThemeManager : Styles, IThemeManager, IDisposable
 {
     public FontFamily? FontFamily { get; internal set; }
@@ -52,11 +59,14 @@ internal partial class ThemeManager : Styles, IThemeManager, IDisposable
         ControlThemeResolved?.Invoke(key, theme);
     }
 
-    // 注册控件的默认 ControlTheme 首次按 Type 键解析时，注入 ThemeScope.TokenOwner：
-    // 有效值参与继承，模板内的共享基元沿继承链读到宿主控件身份。
-    // 注入为仅匹配该 StyleKey 的嵌套 Style，而不是主题的普通 Setter：未注册的派生部件主题可能
-    // BasedOn 这个已解析的默认主题（NumericUpDownSpinner 基于 ButtonSpinner 默认主题，以承接应用对它的替换），
-    // 普通 Setter 会随 BasedOn 把注册控件的身份带给部件，使部件不再继承宿主身份。
+    // When the default ControlTheme of a registered control is first resolved by its Type key, ThemeScope.TokenOwner
+    // is injected. The effective value takes part in value inheritance, so a shared primitive inside the template
+    // reads the identity of its host control along the inheritance chain.
+    // It is injected as a nested Style that matches only that StyleKey, not as an ordinary Setter of the theme. An
+    // unregistered derived part theme may be BasedOn this resolved default theme (NumericUpDownSpinner is based on
+    // the default ButtonSpinner theme, so that an application's replacement of it is picked up), and an ordinary
+    // Setter would carry the registered control's identity down to the part along BasedOn; the part would then no
+    // longer inherit the identity of its host.
     private void EnsureTokenOwnerSetter(object key, ControlTheme theme)
     {
         // Owner-transparent containers (Popup) keep the host's owner flowing into the content they host.
@@ -123,7 +133,8 @@ internal partial class ThemeManager : Styles, IThemeManager, IDisposable
     private readonly Dictionary<IControlThemesProvider, IReadOnlyList<IResourceProvider>>
         _controlThemeProviderBaseResources = new(ReferenceEqualityComparer.Instance);
     private StaticThemeResourceProvider? _staticResourceProvider;
-    // 语义部件描述符登记表（提交时由 BuildCore 一次写入）：SemanticParts 由其按需重建。
+    // Staged semantic part descriptors, written once by BuildCore at commit.
+    // SemanticParts is rebuilt from them on demand.
     private readonly List<ControlSemanticDescriptor> _stagedSemanticControls = [];
     private ThemeSchemaRegistry? _startupRegistry;
     // The design languages and control rules handed over by the builder.
@@ -298,7 +309,8 @@ internal partial class ThemeManager : Styles, IThemeManager, IDisposable
             _startupPackageIndex = StartupPackageIndex.Create([], null, _startupRegistry,
                 SemanticParts.Controls, _controlThemeAssetDescriptors);
         }
-        // 注册终态之后，查询由 registry、SemanticParts 和稳定资源表承担，不保留第二套构建数据库。
+        // Once registration is final, queries are served by the registry, SemanticParts and the stable resource
+        // tables, so no second build database is kept.
         _controlTokenDescriptors.Clear();
         _controlThemeAssetDescriptors.Clear();
         _stagedSemanticControls.Clear();
@@ -544,8 +556,10 @@ internal partial class ThemeManager : Styles, IThemeManager, IDisposable
                     return new ThemeCatalogReloadResult(reloadGeneration, ThemeCatalogReloadStatus.Superseded,
                         Themes, _currentTheme, [], [], null);
                 }
-                // 排队期间可能有新的主题变更提交，使本次请求的代际过期。进入执行门后一起捕获完整基线，
-                // 避免旧目录静态切片与新 resolver 集合混代；请求代际仍保留调用顺序。
+                // Another theme change may be committed while this request waits in the queue, which makes this
+                // request's generation stale. The complete baseline is captured here, inside the execution gate, so
+                // that the static slice of the old catalog and the new resolver set are never mixed across
+                // generations; the generation of the request itself still follows the call order.
                 scopeCapture = _scopeGraph.CaptureAll();
                 currentCatalog = _compiledThemeCatalog!;
                 currentSnapshot = _currentSnapshot!;
@@ -717,7 +731,7 @@ internal partial class ThemeManager : Styles, IThemeManager, IDisposable
         }
 
         var catalog = catalogResult.Catalog!;
-        // A selected theme that disappeared falls back to its language's default with the same variant (spec 7.9).
+        // A selected theme that disappeared falls back to its language's default with the same variant.
         var targetThemeId = catalog.Contains(currentRequest.ThemeId)
             ? currentRequest.ThemeId
             : ThemeInfo.LanguageDefaultId(_currentSnapshot?.Language.Id ?? catalog.Languages[0].Id);
@@ -817,8 +831,9 @@ internal partial class ThemeManager : Styles, IThemeManager, IDisposable
         try
         {
             transaction.Phase = ThemeTransactionPhase.Prepare;
-            // 启动首次编译时 CurrentSnapshot 为空：使用后台 Prepare 的全局层作为 ReusableParent，
-            // ThemeCompiler.CanReuseGlobal 成立时直接复用全局 Token 值表与资源表。
+            // CurrentSnapshot is null for the first compilation at startup, so the global layer produced by the
+            // background Prepare serves as the ReusableParent; when ThemeCompiler.CanReuseGlobal holds, the global
+            // Token value table and resource table are reused directly.
             var preparation = await _prepareTheme(
                 transaction.Request,
                 CurrentSnapshot ?? _startupGlobalParent,
@@ -1393,7 +1408,8 @@ internal partial class ThemeManager : Styles, IThemeManager, IDisposable
     }
 
     /// <summary>
-    /// 语义部件描述符登记：BuildCore 一次登记全部包贡献。SemanticParts 由其按需重建。
+    /// Stages the semantic part descriptors of every package contribution, which BuildCore hands over with a single
+    /// call. <see cref="SemanticParts" /> is rebuilt from them on demand.
     /// </summary>
     internal void StageSemanticControlDescriptors(IReadOnlyList<ControlSemanticDescriptor> descriptors)
     {
@@ -2031,8 +2047,9 @@ internal partial class ThemeManager : Styles, IThemeManager, IDisposable
     }
 
     /// <summary>
-    /// 全部生成包携带的编译期 schema 指纹；null 表示至少一个包缺失（启动 Revision 走全量算法）。
-    /// 必须在 PrepareRegistrationSchema 之前调用。
+    /// Sets the compile-time schema fingerprints carried by all generated packages. Pass
+    /// <see langword="null" /> when at least one package carries none; the startup Revision then takes the full
+    /// algorithm. Must be called before <see cref="PrepareRegistrationSchema" />.
     /// </summary>
     internal void SetPackageSchemaFingerprints(IReadOnlyList<PackageSchemaFingerprint>? packageFingerprints) =>
         _packageSchemaFingerprints = packageFingerprints;
@@ -2064,9 +2081,11 @@ internal partial class ThemeManager : Styles, IThemeManager, IDisposable
     {
         ArgumentNullException.ThrowIfNull(provider);
         ArgumentNullException.ThrowIfNull(resources);
-        // 提交一次：每个 provider 只登记一次（Builder 按完整排序键准备好资源）。Build() 每次新建 ThemeManager，
-        // 表在本次提交内不会出现第二个输入，故直接登记，不做归并。Provider 必须在登记资源前进入注册表，
-        // 因为静态资源表按已注册 provider 构建。
+        // Committed once: each provider is registered only once (the Builder prepares the resources in full
+        // sort-key order). Build() creates a new ThemeManager each time, so the table receives no second input
+        // within this commit; the resources are stored directly, without merging. The provider must be in the
+        // registry before its resources are registered, because the static resource table is built from the
+        // registered providers.
         RegisterControlThemesProvider(provider);
         _stagedThemeResources[provider] = resources.ToList();
     }
@@ -2078,7 +2097,8 @@ internal partial class ThemeManager : Styles, IThemeManager, IDisposable
         {
             Resources.MergedDictionaries.Add(_startupResourceProvider);
         }
-        // 即使没有任何包也先固定静态层，保证它相对 Token provider 的优先级稳定。
+        // The static layer is fixed first even when there is no package, so that its priority relative to the
+        // Token providers stays stable.
         if (_staticResourceProvider is null)
         {
             _staticResourceProvider = new StaticThemeResourceProvider(this);
@@ -2118,9 +2138,10 @@ internal partial class ThemeManager : Styles, IThemeManager, IDisposable
             {
                 foreach (var registration in registrations)
                 {
-                    // 惰性挂载：注册工厂推迟到首次资源查找执行。wrapper 字典的构造即编译期
-                    // populate（急切构建合并主题），直接执行会让启动为全部资产付费；代理保持
-                    // 合并位置与查找顺序不变，空窗口为零消费资产零付费。
+                    // Lazy mounting: the registration factory is deferred until the first resource lookup.
+                    // Constructing the wrapper dictionary is the compile-time populate (it eagerly builds the merged
+                    // themes), so running it directly would make startup pay for every asset. The proxy keeps the
+                    // merge position and the lookup order unchanged, and assets that nobody consumes cost nothing.
                     provider.ControlThemes.Add(existingDeferred.TryGetValue(registration.AssetId, out var existing)
                         ? existing
                         : new DeferredControlThemeResourceProvider(

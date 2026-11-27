@@ -18,7 +18,9 @@ internal class MenuItemTheme : ControlTheme
     public static readonly PlatformKeyGestureConverter KeyGestureConverter = new();
     public static readonly ToggleItemsLayoutVisibleConverter ToggleItemsLayoutVisibleConverter = new();
 
-    /// <summary>Projects the icon's inline-end spacing (ItemIconMarginInlineEnd) onto the icon margin.</summary>
+    /// <summary>
+    /// Projects the icon's inline-end spacing (ItemIconMarginInlineEnd) onto the icon margin.
+    /// </summary>
     public static readonly IValueConverter InlineEndMarginConverter =
         new FuncValueConverter<double, Thickness>(static value => new Thickness(0, 0, value, 0));
 }

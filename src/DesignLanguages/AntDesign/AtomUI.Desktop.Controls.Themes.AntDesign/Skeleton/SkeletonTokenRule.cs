@@ -6,7 +6,9 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls.Themes.AntDesign;
 
-/// <summary>The AntDesign view of <see cref="SkeletonToken"/>.</summary>
+/// <summary>
+/// The AntDesign view of <see cref="SkeletonToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class SkeletonTokenRule : IControlTokenRule<AntDesignToken, SkeletonToken>
 {
@@ -25,6 +27,7 @@ internal sealed class SkeletonTokenRule : IControlTokenRule<AntDesignToken, Skel
         token.LoadingBackgroundStart  = CreateLoadingBackground(-3.0, 1.0, token.GradientFromColor, token.GradientToColor);
         token.LoadingBackgroundMiddle = CreateLoadingBackground(-1.5, 2.5, token.GradientFromColor, token.GradientToColor);
         token.LoadingBackgroundEnd    = CreateLoadingBackground(0.0, 4.0, token.GradientFromColor, token.GradientToColor);
+        // antd fixes the image placeholder fill to #bfbfbf.
         token.ImageColor              = Color.FromRgb(0xbf, 0xbf, 0xbf);
 
         var imageSizeBase = global.ControlHeight * 1.5;

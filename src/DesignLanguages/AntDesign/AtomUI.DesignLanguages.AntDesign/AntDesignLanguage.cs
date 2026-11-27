@@ -7,13 +7,15 @@ namespace AtomUI.DesignLanguages.AntDesign;
 
 /// <summary>
 /// The Ant Design language (https://ant.design/docs/react/customize-theme): one style, the default and compact
-/// densities, the desktop and mobile idioms; the primary colour is the seed an end user may adjust. The dark and
+/// densities, the desktop and mobile idioms; the primary color is the seed an end user may adjust. The dark and
 /// compact algorithms of antd are this language's rules for the dark appearance and the compact density.
 /// </summary>
 [DesignLanguage]
 public sealed class AntDesignLanguage : DesignLanguage<AntDesignToken>
 {
-    /// <summary>Ant Design's single style.</summary>
+    /// <summary>
+    /// Ant Design's single style.
+    /// </summary>
     public static DesignStyle DefaultStyle { get; } = new("Default");
 
     private static readonly DesignLanguageAxes s_axes = new(
@@ -23,14 +25,25 @@ public sealed class AntDesignLanguage : DesignLanguage<AntDesignToken>
         [DesignIdiom.Desktop, DesignIdiom.Mobile],
         AdjustableSeeds());
 
+    /// <summary>
+    /// The stable id of the language, <c>AntDesign</c>.
+    /// </summary>
     public override string Id => "AntDesign";
 
+    /// <summary>
+    /// The single style <see cref="DefaultStyle" />, which is also the default style; the default and compact
+    /// densities; the desktop and mobile idioms; and the primary color as the only adjustable seed.
+    /// </summary>
     public override DesignLanguageAxes Axes => s_axes;
 
     private static readonly IReadOnlyDictionary<string, string> s_defaultThemeSeeds =
         new System.Collections.ObjectModel.ReadOnlyDictionary<string, string>(
             new Dictionary<string, string> { [nameof(DesignToken.ColorPrimary)] = "#1677FF" });
 
+    /// <summary>
+    /// The seed values of the default theme that the theme catalog lists for this language before any evaluation:
+    /// <c>ColorPrimary</c> set to <c>#1677FF</c>, which is also the accent color of that theme.
+    /// </summary>
     public override IReadOnlyDictionary<string, string> DefaultThemeSeeds => s_defaultThemeSeeds;
 
     /// <summary>
@@ -41,6 +54,10 @@ public sealed class AntDesignLanguage : DesignLanguage<AntDesignToken>
     {
     }
 
+    /// <summary>
+    /// Leaves <paramref name="language" /> untouched: Ant Design derives no language token of its own. Its
+    /// derivation runs in <see cref="DeriveGlobal" /> over the global tokens.
+    /// </summary>
     public override void DeriveLanguage(in DesignVariant variant, DesignToken seed, AntDesignToken language)
     {
     }

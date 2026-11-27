@@ -23,7 +23,7 @@ public sealed class TabOverflowPopupContext : INotifyPropertyChanged
     public IReadOnlyList<TabOverflowItem> Items => _items;
 
     /// <summary>
-    /// Gets the selected overflow item, or <see langword="null"/> when the selected tab is fully visible.
+    /// Gets the selected overflow item, or <see langword="null" /> when the selected tab is fully visible.
     /// </summary>
     public TabOverflowItem? SelectedItem => _selectedItem;
 
@@ -33,6 +33,14 @@ public sealed class TabOverflowPopupContext : INotifyPropertyChanged
     /// <summary>
     /// Attempts to activate a tab from the current overflow session.
     /// </summary>
+    /// <returns>
+    /// <see langword="true" /> when the owning control accepted the request;
+    /// <see langword="false" /> when no overflow session is open, the owning control is no longer alive,
+    /// or it declined the request.
+    /// </returns>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown when <paramref name="item" /> is <see langword="null" />.
+    /// </exception>
     public bool TryActivate(TabOverflowItem item)
     {
         ArgumentNullException.ThrowIfNull(item);
@@ -42,6 +50,14 @@ public sealed class TabOverflowPopupContext : INotifyPropertyChanged
     /// <summary>
     /// Attempts to close a tab through its owning control's closing contract.
     /// </summary>
+    /// <returns>
+    /// <see langword="true" /> when the owning control accepted the request;
+    /// <see langword="false" /> when no overflow session is open, the owning control is no longer alive,
+    /// or it declined the request.
+    /// </returns>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown when <paramref name="item" /> is <see langword="null" />.
+    /// </exception>
     public bool TryClose(TabOverflowItem item)
     {
         ArgumentNullException.ThrowIfNull(item);

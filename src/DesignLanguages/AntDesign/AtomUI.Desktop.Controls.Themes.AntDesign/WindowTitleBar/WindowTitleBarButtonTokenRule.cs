@@ -4,7 +4,9 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls.Themes.AntDesign;
 
-/// <summary>The AntDesign view of <see cref="WindowTitleBarButtonToken"/>.</summary>
+/// <summary>
+/// The AntDesign view of <see cref="WindowTitleBarButtonToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class WindowTitleBarButtonTokenRule : IControlTokenRule<AntDesignToken, WindowTitleBarButtonToken>
 {

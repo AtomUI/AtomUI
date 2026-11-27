@@ -6,7 +6,9 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls.Themes.Shadcn;
 
-/// <summary>The shadcn view of <see cref="MenuToken"/>.</summary>
+/// <summary>
+/// The shadcn view of <see cref="MenuToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class MenuTokenRule : IControlTokenRule<ShadcnToken, MenuToken>
 {
@@ -42,6 +44,7 @@ internal sealed class MenuTokenRule : IControlTokenRule<ShadcnToken, MenuToken>
         token.TopLevelItemHoverBg    = colorBgTextHover;
         token.TopLevelItemSelectedBg = colorBgTextHover;
 
+        // The menu bar items keep the Ant formula; the registry values of the menu are merged into its popup only.
         token.TopLevelItemBorderRadiusSM = global.BorderRadiusSM;
         token.TopLevelItemBorderRadius   = global.BorderRadius;
         token.TopLevelItemBorderRadiusLG = global.BorderRadiusLG;
@@ -60,6 +63,7 @@ internal sealed class MenuTokenRule : IControlTokenRule<ShadcnToken, MenuToken>
             Math.Max((controlHeightLG - token.TopLevelItemLineHeightLG) / 2, 0));
 
         token.TopLevelItemPopupMarginToAnchor = global.UniformlyMarginXXS;
+        // The popup of a menu bar item: the outline ring ahead of the menu shadow of the style.
         token.MenuPopupShadows = context.Language.GetMenuOverlayRecipe(global).ShadowsWithOutline;
         // Square presets still need space between the first and last hover fills and the popup edges.
         var menuPadding = token.MenuPopupContentPadding;

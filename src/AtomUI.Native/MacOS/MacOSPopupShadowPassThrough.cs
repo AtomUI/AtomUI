@@ -10,40 +10,52 @@ using Avalonia.VisualTree;
 namespace AtomUI.Native.MacOS;
 
 /// <summary>
-/// macOS 窗口型 Popup 的输入状态。
+/// The input state of a window-based popup on macOS.
 /// </summary>
 internal enum MacOSPopupInputState
 {
-    /// <summary>窗口正常接收鼠标事件，不轮询光标。</summary>
+    /// <summary>
+    /// The window receives mouse events as usual and the cursor is not polled.
+    /// </summary>
     Receive,
 
-    /// <summary>动效期间整窗穿透，不轮询；动效结束由 <see cref="IPopupShadowHitTest.Invalidate"/> 重新判定。</summary>
+    /// <summary>
+    /// The whole window passes events through while a motion plays and the cursor is not polled. When the motion
+    /// ends, <see cref="IPopupShadowHitTest.Invalidate" /> decides the state again.
+    /// </summary>
     Suspended,
 
-    /// <summary>光标位于阴影上：整窗穿透并轮询光标，回到内容或离开窗口时恢复。</summary>
+    /// <summary>
+    /// The cursor is on the shadow: the whole window passes events through and the cursor is polled. Receiving
+    /// resumes when the cursor returns to the content or leaves the window.
+    /// </summary>
     PassThrough
 }
 
 /// <summary>
-/// macOS 窗口型 Popup 的阴影穿透。
+/// Shadow pass-through for window-based popups on macOS.
 /// <para>
-/// AppKit 没有独立于可见内容的输入区域，透明窗口中 alpha 大于 0 的阴影像素仍会接收鼠标，只能整窗切换
-/// <c>ignoresMouseEvents</c>：指针移到阴影上时整窗穿透，事件交给下方窗口（同进程与跨进程一致）；
-/// 穿透后 Popup 收不到鼠标事件，改为按帧读取 <c>mouseLocationOutsideOfEventStream</c>，
-/// 光标回到内容形状或离开窗口时恢复接收。
+/// AppKit has no input region that is independent of the visible content, so in a transparent window the shadow
+/// pixels with an alpha greater than 0 still receive mouse events. The only switch is the window-wide
+/// <c>ignoresMouseEvents</c> flag: when the pointer moves onto the shadow the whole window passes the events
+/// through to the window below, in the same process or in another one. The popup then receives no mouse events,
+/// so the cursor is read once per frame from <c>mouseLocationOutsideOfEventStream</c>, and receiving resumes
+/// when the cursor returns to the content shape or leaves the window.
 /// </para>
 /// <para>
-/// 进入阴影的判定监听 Popup 窗口的原始指针移动（<see cref="IInputManager.Process"/>），不用路由事件：
-/// 阴影不参与命中，指针位于阴影上时 Avalonia 找不到目标元素，不会引发 <c>PointerMoved</c>。
+/// Entering the shadow is detected from the raw pointer moves of the popup window
+/// (<see cref="IInputManager.Process" />) and not from routed events: the shadow takes no part in hit testing,
+/// so while the pointer is on the shadow Avalonia finds no target element and raises no <c>PointerMoved</c>.
 /// </para>
 /// <para>
-/// Avalonia.Native 的 <c>SetHitTestVisible</c> 同样通过 <c>setIgnoresMouseEvents:</c> 实现整窗不可命中，
-/// 因此 <see cref="TopLevel.IsHitTestVisible"/> 为 false 时按暂停处理，恢复时也以它为准，不覆盖 Avalonia 的设置。
+/// Avalonia.Native implements <c>SetHitTestVisible</c> through <c>setIgnoresMouseEvents:</c> as well, so a false
+/// <see cref="InputElement.IsHitTestVisible" /> is handled as the suspended state. That flag also decides when
+/// receiving resumes, which leaves the setting of Avalonia untouched.
 /// </para>
 /// </summary>
 internal sealed class MacOSPopupShadowPassThrough : IPopupShadowHitTest
 {
-    // 按帧轮询光标，约 60Hz，与 Windows 第二层一致
+    // Polls the cursor once per frame, about 60 Hz, the same as the second layer on Windows.
     private static readonly TimeSpan PassThroughPollInterval = TimeSpan.FromMilliseconds(16);
 
     private const RawInputModifiers MouseButtonsMask =
@@ -56,7 +68,7 @@ internal sealed class MacOSPopupShadowPassThrough : IPopupShadowHitTest
     private readonly Func<Point, bool> _isInContentShape;
     private readonly IDisposable? _rawInputSubscription;
     private DispatcherTimer? _passThroughTimer;
-    // null 表示尚未下发：首次状态必定下发，不依赖读取窗口当前值
+    // null means that no value was sent yet, so the first state is always sent and the window is never read.
     private bool? _isIgnoringMouseEvents;
     private bool _isDisposed;
 
@@ -101,9 +113,30 @@ internal sealed class MacOSPopupShadowPassThrough : IPopupShadowHitTest
         }
     }
 
-    /// <param name="isDragging">
-    /// 本窗口持有按键拖拽（在内容内按下）。拖拽期间 AppKit 持续把事件发给按下时的窗口，中途整窗穿透会丢失拖拽与抬起事件。
+    /// <summary>
+    /// Decides the input state of a popup window from its suspension flag, the cursor position and its drag state.
+    /// </summary>
+    /// <param name="isInputSuspended">
+    /// Input must stay off for the whole window, for example while a motion plays or while
+    /// <see cref="InputElement.IsHitTestVisible" /> is false. The result is then
+    /// <see cref="MacOSPopupInputState.Suspended" /> whatever the other arguments are.
     /// </param>
+    /// <param name="isCursorInWindow">
+    /// The cursor is inside the bounds of the popup window.
+    /// </param>
+    /// <param name="isCursorInContent">
+    /// The cursor is inside the content shape of the popup.
+    /// </param>
+    /// <param name="isDragging">
+    /// This window owns a button drag, that is a button was pressed inside the content. During a drag AppKit keeps
+    /// sending events to the window that received the press, so passing the whole window through midway would lose
+    /// the drag and the button-up events.
+    /// </param>
+    /// <returns>
+    /// <see cref="MacOSPopupInputState.Suspended" /> while input is suspended,
+    /// <see cref="MacOSPopupInputState.PassThrough" /> when the cursor is inside the window but outside the content
+    /// and no drag is in progress, and <see cref="MacOSPopupInputState.Receive" /> otherwise.
+    /// </returns>
     internal static MacOSPopupInputState ResolveState(bool isInputSuspended, bool isCursorInWindow, bool isCursorInContent,
                                                       bool isDragging)
     {
@@ -121,17 +154,19 @@ internal sealed class MacOSPopupShadowPassThrough : IPopupShadowHitTest
     {
         if (!OperatingSystem.IsMacOS() || _isDisposed || _popupRoot.PlatformImpl is null)
         {
-            // 原生窗口已销毁时轮询无从恢复，直接停止
+            // Polling cannot recover once the native window is destroyed, so it is stopped right away.
             StopPassThroughPolling();
             return;
         }
 
-        // 窗口忽略鼠标事件时仍返回实时光标；窗口基准坐标原点在左下，DesktopScaling 为 1，翻转 Y 即为客户区 DIP
+        // mouseLocationOutsideOfEventStream still returns the live cursor while the window ignores mouse
+        // events. Window-based coordinates have their origin at the bottom left and DesktopScaling is 1, so
+        // flipping Y gives client-area DIPs.
         var location = WindowUtilsInterop.objc_msgSend_point(
             _nsWindow, WindowUtilsInterop.MouseLocationOutsideOfEventStreamSelector);
         var point = new Point(location.X, _popupRoot.ClientSize.Height - location.Y);
         var isInWindow = new Rect(_popupRoot.ClientSize).Contains(point);
-        // 穿透期间按下的按键属于下方窗口，不影响本窗口状态
+        // A button pressed while passing through belongs to the window below, not to this window.
         Apply(ResolveState(IsInputSuspended(), isInWindow, isInWindow && _isInContentShape(point), false));
     }
 
@@ -145,7 +180,8 @@ internal sealed class MacOSPopupShadowPassThrough : IPopupShadowHitTest
         _isDisposed = true;
         StopPassThroughPolling();
         _rawInputSubscription?.Dispose();
-        // Popup 关闭时 Avalonia 可能已销毁原生窗口并置空 PlatformImpl，此时不再向 NSWindow 发消息
+        // When the popup closes, Avalonia may already have destroyed the native window and set PlatformImpl
+        // to null. No message is sent to the NSWindow then.
         if (OperatingSystem.IsMacOS() && _popupRoot.PlatformImpl is not null)
         {
             SetIgnoresMouseEvents(!_popupRoot.IsHitTestVisible);
@@ -165,7 +201,8 @@ internal sealed class MacOSPopupShadowPassThrough : IPopupShadowHitTest
             return;
         }
 
-        // 本窗口正在接收输入；按键拖拽时 AppKit 也把窗口外的移动发给本窗口，因此按 Position 判定是否在窗口内
+        // This window is receiving input here. During a button drag AppKit also sends the moves outside
+        // the window to it, so Position decides whether the pointer is inside the window.
         var point      = pointerEvent.Position;
         var isInWindow = new Rect(_popupRoot.ClientSize).Contains(point);
         var isDragging = (pointerEvent.InputModifiers & MouseButtonsMask) != RawInputModifiers.None;

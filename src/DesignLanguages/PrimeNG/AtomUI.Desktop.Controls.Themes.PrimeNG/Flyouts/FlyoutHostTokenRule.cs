@@ -3,7 +3,9 @@ using AtomUI.Theme.Languages;
 
 namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 
-/// <summary>The PrimeNG view of <see cref="FlyoutHostToken"/>.</summary>
+/// <summary>
+/// The PrimeNG view of <see cref="FlyoutHostToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class FlyoutHostTokenRule : IControlTokenRule<PrimeNGToken, FlyoutHostToken>
 {
@@ -11,7 +13,8 @@ internal sealed class FlyoutHostTokenRule : IControlTokenRule<PrimeNGToken, Flyo
     {
         var token  = target.Own;
         var global = target.Global;
-        // PrimeNG: the control-global overrides, read by the formulas below.
+        // PrimeNG: the control-global overrides (MotionDurationMid), read by the FlyoutHost theme
+        // (MotionDuration) and not by the formulas below.
         PrimeNGFlyoutHostTokens.EvaluateGlobal(in context, global);
         token.MarginToAnchor    = global.UniformlyMarginXXS;
         token.OverlayHostShadow = global.BoxShadowsSecondary;

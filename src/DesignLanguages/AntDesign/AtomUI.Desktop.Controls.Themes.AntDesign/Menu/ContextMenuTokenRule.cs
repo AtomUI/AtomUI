@@ -3,7 +3,9 @@ using AtomUI.Theme.Languages;
 
 namespace AtomUI.Desktop.Controls.Themes.AntDesign;
 
-/// <summary>The AntDesign view of <see cref="ContextMenuToken"/>.</summary>
+/// <summary>
+/// The AntDesign view of <see cref="ContextMenuToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class ContextMenuTokenRule : IControlTokenRule<AntDesignToken, ContextMenuToken>
 {

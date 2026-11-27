@@ -7,9 +7,9 @@ using Shouldly;
 namespace AtomUI.DesignLanguages.Shadcn.Tests;
 
 /// <summary>
-/// shadcn with the values of every desktop control satisfies the design language contract (spec 14, 15): every
-/// derivation writes every token it owns, is pure and deterministic, and the paired roles are readable, under all 32
-/// variants (8 styles x light/dark x default/compact).
+/// shadcn with the values of every desktop control satisfies the design language contract: every derivation writes
+/// every token it owns, is pure and deterministic, and the paired roles are readable, under all 32 variants
+/// (8 styles x light/dark x default/compact).
 /// </summary>
 public class ShadcnContractTests
 {

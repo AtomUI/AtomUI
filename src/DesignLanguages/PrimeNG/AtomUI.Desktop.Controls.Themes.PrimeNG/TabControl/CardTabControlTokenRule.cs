@@ -3,7 +3,9 @@ using AtomUI.Theme.Languages;
 
 namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 
-/// <summary>The PrimeNG view of <see cref="CardTabControlToken"/>.</summary>
+/// <summary>
+/// The PrimeNG view of <see cref="CardTabControlToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class CardTabControlTokenRule : IControlTokenRule<PrimeNGToken, CardTabControlToken>
 {

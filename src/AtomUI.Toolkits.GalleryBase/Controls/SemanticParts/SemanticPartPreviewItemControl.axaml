@@ -7,8 +7,10 @@
     x:Class="AtomUI.Toolkits.GalleryBase.Controls.SemanticPartPreviewItemControl"
     x:DataType="gallery:SemanticPartPreviewItem">
     <UserControl.Styles>
-        <!-- 行需要实底背景：透明背景在 Avalonia 12 的合成器命中测试中不产生命中，
-             行右侧空白区域会穿透到下层，导致列表行部分区域无法响应鼠标 -->
+        <!-- The row needs an opaque background: with a transparent background the Avalonia 12 compositor hit testing
+        produces no hit, the blank area on the right of the row falls through to the layer below, and parts of the
+        list row stop responding to the mouse
+        -->
         <Style Selector="Border.part-row">
             <Setter Property="Background" Value="{atom:SharedTokenResource ColorBgContainer}" />
         </Style>
@@ -35,8 +37,10 @@
                     <atom:TextBlock Text="{Binding Name}"
                                     FontSize="14"
                                     FontWeight="SemiBold" />
-                    <!-- 多 owner Preview 时标注 Part 归属（如 Message 的 root 同时存在于两个 owner 上）。
-                         用轻量 TextBlock 而非 Tag：行内不再引入额外徽标控件，保持面板结构扁平。 -->
+                    <!-- With several owners in one preview the row labels which owner a part belongs to (for example
+                    the root of Message exists on two owners). A light TextBlock is used instead of a Tag so that
+                    the row adds no extra badge control and the panel stays flat.
+                    -->
                     <atom:TextBlock IsVisible="{Binding IsOwnerLabelVisible}"
                                     VerticalAlignment="Center"
                                     FontSize="11"

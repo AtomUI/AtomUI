@@ -5,13 +5,13 @@ using Avalonia.Markup.Xaml.Templates;
 namespace AtomUI.Theme.Resources;
 
 /// <summary>
-/// Builds the <see cref="Transitions"/> of one <see cref="TokenTransitions"/> markup for resolved Token durations.
+/// Builds the <see cref="Transitions" /> of one <see cref="TokenTransitions" /> markup for resolved Token durations.
 /// </summary>
 /// <remarks>
 /// <para>
 /// The declared Tokens are discovered from the first build. Each distinct duration vector gets one built instance
 /// that every target resolving the same durations shares; Avalonia keeps transition state per animated control, and
-/// a built instance is never mutated after it is handed out. At most <see cref="MaxSharedVariants"/> vectors are
+/// a built instance is never mutated after it is handed out. At most <see cref="MaxSharedVariants" /> vectors are
 /// kept (a default theme needs one); further vectors are built per request and owned by their target alone.
 /// </para>
 /// <para>
@@ -35,10 +35,14 @@ internal sealed class TokenTransitionsFactory
         _content = content;
     }
 
-    /// <summary>The distinct declared Tokens, in declaration order.</summary>
+    /// <summary>
+    /// The distinct declared Tokens, in declaration order.
+    /// </summary>
     internal SharedTokenKind[] Kinds => _kinds ?? DiscoverKinds();
 
-    /// <summary>The plain global resource keys of <see cref="Kinds"/>, boxed once.</summary>
+    /// <summary>
+    /// The plain global resource keys of <see cref="Kinds" />, boxed once.
+    /// </summary>
     internal object[] GlobalKeys
     {
         get
@@ -59,7 +63,9 @@ internal sealed class TokenTransitionsFactory
 
     internal int SharedVariantCount => _variants.Count;
 
-    /// <summary>The owner's unbound Effective Global keys of <see cref="Kinds"/>, created once per owner.</summary>
+    /// <summary>
+    /// The owner's unbound Effective Global keys of <see cref="Kinds" />, created once per owner.
+    /// </summary>
     internal object[] GetOwnerKeys(ControlTokenIdentity owner)
     {
         if (!_ownerKeys.TryGetValue(owner, out var keys))
@@ -76,7 +82,7 @@ internal sealed class TokenTransitionsFactory
     }
 
     /// <summary>
-    /// Returns the transitions for <paramref name="durations"/> (one value per entry of <see cref="Kinds"/>).
+    /// Returns the transitions for <paramref name="durations" /> (one value per entry of <see cref="Kinds" />).
     /// Finding an existing vector does not allocate.
     /// </summary>
     internal Transitions GetTransitions(ReadOnlySpan<TimeSpan> durations)

@@ -4,7 +4,9 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls.Themes.AntDesign;
 
-/// <summary>The AntDesign view of <see cref="PopupConfirmToken"/>.</summary>
+/// <summary>
+/// The AntDesign view of <see cref="PopupConfirmToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class PopupConfirmTokenRule : IControlTokenRule<AntDesignToken, PopupConfirmToken>
 {

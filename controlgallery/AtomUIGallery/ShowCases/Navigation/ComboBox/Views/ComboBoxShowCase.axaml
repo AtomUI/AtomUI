@@ -28,11 +28,11 @@
                                                  SemanticOwner="{Binding #ComboBoxSemanticOwner}"
                                                  SemanticOwnerType="{x:Type atom:ComboBox}">
                         <gallery:SemanticPartPreview.PreviewContent>
-                            <!--
-                                按 AtomUI 标准方式钉住模板内 Popup：IsPopupPinnedOpen 与 Select / AutoComplete 等
-                                控件一致为 public。控件在弹层打开前先抑制 light-dismiss（ApplyPopupPinnedOpenSettings），
-                                因此钉住的弹层不会创建遮罩，也不会阻断卡片悬停。
-                                过滤模式开启以便 input 部件可见（与 placeholder 互斥）。
+                            <!-- Pins the in-template popup the standard AtomUI way: IsPopupPinnedOpen is public here as
+                            in Select, AutoComplete and the other controls. The control suppresses light-dismiss
+                            before the popup opens (ApplyPopupPinnedOpenSettings), so a pinned popup creates no
+                            mask and does not block hovering the card. Filter mode is switched on so that the input
+                            part is visible (it is mutually exclusive with placeholder).
                             -->
                             <atom:ComboBox x:Name="ComboBoxSemanticOwner"
                                            Width="320"
@@ -543,9 +543,9 @@
         <gallery:ShowCaseItem.DeferredContentTemplate>
             <DataTemplate x:DataType="vm:ComboBoxViewModel">
         <StackPanel HorizontalAlignment="Left" Spacing="20">
-            <!--
-                边框定制示例刻意选用非 primary 色：outlined 默认边框是灰、聚焦后是 ColorPrimary(蓝)，
-                若仍用蓝色会与聚焦态无法区分，看不出定制是否生效。
+            <!-- The border customization example deliberately uses a non-primary color: the default outlined border is
+            gray and turns ColorPrimary (blue) when focused, so a blue custom border could not be told from the
+            focused state and the customization would not be visible.
             -->
             <StackPanel.Styles>
                 <Style Selector="atom|ComboBox.semantic-styles-demo">

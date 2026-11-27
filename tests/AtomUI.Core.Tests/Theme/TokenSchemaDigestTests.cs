@@ -4,7 +4,9 @@ using Xunit;
 
 namespace AtomUI.Core.Tests.Theme;
 
-/// <summary>Spec 8, check 4 (Review Focus 4): a value package built against another token schema fails at startup.</summary>
+/// <summary>
+/// A value package built against another token schema fails at startup.
+/// </summary>
 public class TokenSchemaDigestTests
 {
     [Fact]

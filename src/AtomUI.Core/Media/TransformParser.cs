@@ -5,6 +5,9 @@ using Avalonia.Media.Transformation;
 
 namespace AtomUI.Media;
 
+/// <summary>
+/// Parses transform function lists written in CSS syntax into Avalonia transform operations.
+/// </summary>
 public static class TransformParser
 {
     private static readonly (string, TransformFunction)[] s_functionMapping =
@@ -31,6 +34,35 @@ public static class TransformParser
         ("px", Unit.Pixel)
     };
 
+    /// <summary>
+    /// Parses a CSS style transform function list, such as <c>translate(10px, 20px) rotate(45deg)</c>, into a
+    /// <see cref="TransformOperations" />.
+    /// </summary>
+    /// <param name="s">
+    /// A sequence of calls to <c>translate</c>, <c>translateX</c>, <c>translateY</c>, <c>scale</c>, <c>scaleX</c>,
+    /// <c>scaleY</c>, <c>skew</c>, <c>skewX</c>, <c>skewY</c>, <c>rotate</c> or <c>matrix</c>. Names and units are
+    /// matched case-insensitively.
+    /// </param>
+    /// <returns>
+    /// The combined transform, or <see cref="TransformOperations.Identity" /> when <paramref name="s" /> is
+    /// <c>none</c> after trimming.
+    /// </returns>
+    /// <exception cref="ArgumentException">
+    /// <paramref name="s" /> is <see langword="null" /> or empty.
+    /// </exception>
+    /// <exception cref="FormatException">
+    /// <paramref name="s" /> is not well formed: a function or unit is unknown, a parenthesis is missing, an argument
+    /// is not a number or has the wrong count, or an argument carries a unit that its function does not accept.
+    /// </exception>
+    /// <remarks>
+    /// Arguments are separated by a comma or a space. <c>translate</c>, <c>scale</c> and <c>skew</c> take one or two
+    /// arguments and their <c>X</c> and <c>Y</c> variants take one. <c>rotate</c> takes an angle, or an angle
+    /// followed by the x and y of the center point. <c>matrix</c> takes six numbers. A <c>translate</c> argument and
+    /// the center coordinates of <c>rotate</c> are in pixels when written without a unit; the angle of
+    /// <c>rotate</c> and the arguments of <c>skew</c> are in degrees. Angles also accept <c>grad</c>, <c>rad</c> and
+    /// <c>turn</c>. Translate arguments accept only <c>px</c>, and the arguments of <c>scale</c> and <c>matrix</c>
+    /// must have no unit.
+    /// </remarks>
     public static TransformOperations Parse(string s)
     {
         void ThrowInvalidFormat()
@@ -121,7 +153,7 @@ public static class TransformParser
 
             var value = double.Parse(part, NumberStyles.Float, CultureInfo.InvariantCulture);
             
-            // 应用默认单位
+            // Give an argument that has no unit the unit that its function assumes by default.
             if (function == TransformFunction.Translate ||
                 function == TransformFunction.TranslateX ||
                 function == TransformFunction.TranslateY)
@@ -305,7 +337,7 @@ public static class TransformParser
                     var centerX = values[1];
                     var centerY = values[2];
                     
-                    // 验证中心坐标是否有单位
+                    // The center coordinates accept a px unit; any other unit is rejected.
                     if (centerX.Unit != Unit.None && centerX.Unit != Unit.Pixel)
                     {
                         ThrowFormatInvalidValue(function, in centerX);

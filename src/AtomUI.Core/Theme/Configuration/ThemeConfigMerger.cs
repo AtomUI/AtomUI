@@ -15,8 +15,8 @@ internal static class ThemeConfigMerger
         var effectiveParent = parent is null
             ? defaults
             : parent;
-        // Inherit = false (spec 7.7): keep the parent's language and idiom, drop everything else the parent and the
-        // selected definition give; the axes the defaults themselves write (a root definition's fixed axes) remain.
+        // Inherit = false: keep the parent's language and idiom, drop everything else the parent and the selected
+        // definition give; the axes the defaults themselves write (a root definition's fixed axes) remain.
         var mergeBase = current.Inherit ? effectiveParent : KeepLanguage(defaults, effectiveParent);
         var candidate = Apply(mergeBase, current);
         if (candidate.Equals(effectiveParent))
@@ -344,7 +344,9 @@ internal sealed class ThemeConfigChangeSet
         ChangedControls     = Array.AsReadOnly(changedControlArray);
     }
 
-    /// <summary>Whether the language, an axis or a language token changed: the global tokens must be derived again.</summary>
+    /// <summary>
+    /// Whether the language, an axis or a language token changed: the global tokens must be derived again.
+    /// </summary>
     public bool LanguageInputsChanged { get; }
     public bool GlobalTokensChanged { get; }
     public IReadOnlyList<ControlTokenIdentity> ChangedControls { get; }

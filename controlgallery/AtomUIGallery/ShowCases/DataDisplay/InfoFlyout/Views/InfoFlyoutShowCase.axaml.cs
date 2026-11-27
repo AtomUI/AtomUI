@@ -25,10 +25,10 @@ public partial class InfoFlyoutShowCase : GalleryReactiveUserControl<InfoFlyoutV
         }
     }
 
-    // InfoFlyout 的弹层是代码创建、跨视觉根的 Popup，SemanticPartHighlightSession 只自动
-    // 发现模板内 Popup，因此在这里把弹层根（FlyoutPresenter）在打开时注册进
-    // SemanticPartPreview.AdditionalRoots，让 popup.container/popup.content/popup.arrow
-    // 能被语义高亮会话解析到。
+    // The InfoFlyout popup is created in code and lives outside the owner's visual root.
+    // SemanticPartHighlightSession only discovers popups inside the template, so the popup
+    // root (FlyoutPresenter) is registered in SemanticPartPreview.AdditionalRoots when it opens.
+    // That lets the highlight session resolve popup.container, popup.content and popup.arrow.
     private void HandleSemanticPreviewLoaded(object? sender, RoutedEventArgs args)
     {
         if (sender is not SemanticPartPreview preview ||
@@ -65,7 +65,7 @@ public partial class InfoFlyoutShowCase : GalleryReactiveUserControl<InfoFlyoutV
 
     private void HandleSemanticPreviewPopupClosed(object? sender, EventArgs args)
     {
-        // 关闭时不立即清空：钉住打开的预览只在 Unloaded 时释放根引用。
+        // Nothing is cleared on close: a pinned-open preview releases its root references only on Unloaded.
     }
 
     private void RegisterSemanticPreviewRoot()

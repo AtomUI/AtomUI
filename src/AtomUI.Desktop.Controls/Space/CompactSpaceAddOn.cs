@@ -8,6 +8,11 @@ using Avalonia.Metadata;
 
 namespace AtomUI.Desktop.Controls;
 
+/// <summary>
+/// A text or content piece attached to the start or end of a <see cref="CompactSpace" /> group and drawn as one
+/// of its joined segments; its index in <see cref="CompactSpace.Children" /> decides the side. Match its
+/// <see cref="StyleVariant" /> and <see cref="Status" /> with those of the joined input controls.
+/// </summary>
 public class CompactSpaceAddOn : TemplatedControl,
                                  ICustomizableSizeTypeAware,
                                  ICompactSpaceAware,
@@ -16,21 +21,40 @@ public class CompactSpaceAddOn : TemplatedControl,
 {
     #region 公共属性定义
 
+    /// <summary>
+    /// Identifies the <see cref="Content" /> property.
+    /// </summary>
     public static readonly StyledProperty<object?> ContentProperty =
         ContentPresenter.ContentProperty.AddOwner<CompactSpaceAddOn>();
     
+    /// <summary>
+    /// Identifies the <see cref="ContentTemplate" /> property.
+    /// </summary>
     public static readonly StyledProperty<IDataTemplate?> ContentTemplateProperty =
         ContentPresenter.ContentTemplateProperty.AddOwner<CompactSpaceAddOn>();
     
+    /// <summary>
+    /// Identifies the <see cref="SizeType" /> property.
+    /// </summary>
     public static readonly StyledProperty<CustomizableSizeType> SizeTypeProperty =
         CustomizableSizeTypeControlProperty.SizeTypeProperty.AddOwner<CompactSpaceAddOn>();
     
+    /// <summary>
+    /// Identifies the <see cref="StyleVariant" /> property.
+    /// </summary>
     public static readonly StyledProperty<InputControlStyleVariant> StyleVariantProperty =
         InputControlStyleVariantProperty.StyleVariantProperty.AddOwner<CompactSpaceAddOn>();
 
+    /// <summary>
+    /// Identifies the <see cref="Status" /> property.
+    /// </summary>
     public static readonly StyledProperty<InputControlStatus> StatusProperty =
         InputControlStatusProperty.StatusProperty.AddOwner<CompactSpaceAddOn>();
 
+    /// <summary>
+    /// The content shown inside the add-on. It is the XAML content property, so it can be written as the child
+    /// element of the add-on. <see langword="null" /> shows nothing.
+    /// </summary>
     [Content]
     [DependsOn(nameof(ContentTemplate))]
     public object? Content
@@ -39,24 +63,44 @@ public class CompactSpaceAddOn : TemplatedControl,
         set => SetValue(ContentProperty, value);
     }
     
+    /// <summary>
+    /// Template used to build <see cref="Content" />. <see langword="null" /> lets the content presenter choose:
+    /// a control is shown as is, and any other value is looked up in the data templates of this control.
+    /// </summary>
     public IDataTemplate? ContentTemplate
     {
         get => GetValue(ContentTemplateProperty);
         set => SetValue(ContentTemplateProperty, value);
     }
     
+    /// <summary>
+    /// Size preset of the add-on. The theme takes its font size, corner radius, padding and minimum height from
+    /// it. Inside a <see cref="CompactSpace" /> the add-on receives the <see cref="CompactSpace.SizeType" /> of
+    /// that control, which overrides a value set on the add-on itself.
+    /// </summary>
     public CustomizableSizeType SizeType
     {
         get => GetValue(SizeTypeProperty);
         set => SetValue(SizeTypeProperty, value);
     }
     
+    /// <summary>
+    /// Visual style of the add-on, to be kept in step with the variant of the joined input controls. The theme
+    /// styles <c>Outlined</c> with a border and a background and <c>Filled</c> with a background only; the other
+    /// variants leave the add-on transparent and borderless. With <c>Underlined</c> the effective corner radius
+    /// is always 0.
+    /// </summary>
     public InputControlStyleVariant StyleVariant
     {
         get => GetValue(StyleVariantProperty);
         set => SetValue(StyleVariantProperty, value);
     }
 
+    /// <summary>
+    /// Status of the add-on, to be kept in step with the status of the joined input controls. <c>Error</c> and
+    /// <c>Warning</c> recolor the text of the add-on, with <c>Outlined</c> also its border and with <c>Filled</c>
+    /// also its background.
+    /// </summary>
     public InputControlStatus Status
     {
         get => GetValue(StatusProperty);
@@ -113,6 +157,11 @@ public class CompactSpaceAddOn : TemplatedControl,
         AffectsRender<CompactSpaceAddOn>(StyleVariantProperty, StatusProperty);
     }
 
+    /// <summary>
+    /// Calls the base implementation, then recomputes the effective corner radius when
+    /// <see cref="TemplatedControl.CornerRadius" />, the position in the <see cref="CompactSpace" /> or the
+    /// orientation of that control changes.
+    /// </summary>
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
@@ -124,6 +173,10 @@ public class CompactSpaceAddOn : TemplatedControl,
         }
     }
 
+    /// <summary>
+    /// Applies the template, then recomputes the effective corner radius so that the template finds a value that
+    /// matches the current position in a <see cref="CompactSpace" /> and its orientation.
+    /// </summary>
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);

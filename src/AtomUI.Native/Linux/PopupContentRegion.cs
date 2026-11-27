@@ -4,16 +4,30 @@ using Avalonia;
 namespace AtomUI.Native.Linux;
 
 /// <summary>
-/// 把窗口型 Popup 的内容形状（圆角矩形 + 箭头三角形）光栅化为整数坐标矩形的并集，
-/// 作为 X11 SHAPE input region（device pixel，按 RenderScaling）或 Wayland <c>wl_region</c>
-/// （surface 逻辑坐标，缩放为 1）提交。
-/// 按像素行扫描，像素中心落在形状内即属于输入区域；相邻行区间相同则合并，矩形数量约为圆角与箭头所占行数。
+/// Rasterizes the content shape of a windowed Popup (rounded rectangle plus arrow triangle) into a union of
+/// integer-coordinate rectangles, for submission as an X11 SHAPE input region (device pixels, scaled by
+/// <c>RenderScaling</c>) or as a Wayland <c>wl_region</c> (surface logical coordinates, scale 1).
+/// The shape is scanned row by pixel row: a pixel belongs to the input region when its center lies inside the
+/// shape. Adjacent rows with the same span are merged, so the number of rectangles is about the number of rows
+/// occupied by the rounded corners and the arrow.
 /// </summary>
 [SupportedOSPlatform("linux")]
 internal static class PopupContentRegion
 {
-    /// <param name="shape">客户区 DIP 坐标的内容形状。</param>
-    /// <param name="scaling">DIP 到目标整数坐标系的缩放。</param>
+    /// <summary>
+    /// Rasterizes <paramref name="shape" /> into the rectangles of an input region.
+    /// </summary>
+    /// <param name="shape">
+    /// The content shape, in client-area DIPs.
+    /// </param>
+    /// <param name="scaling">
+    /// The scale factor from DIPs to the target integer coordinate system.
+    /// </param>
+    /// <returns>
+    /// The rectangles whose union is the rasterized shape, in the target integer coordinate system. Adjacent rows
+    /// with the same span are merged into one rectangle. Empty when the body has no size or when
+    /// <paramref name="scaling" /> is not a positive finite number.
+    /// </returns>
     public static List<PixelRect> Rasterize(PopupContentShape shape, double scaling)
     {
         var result = new List<PixelRect>();
@@ -58,7 +72,8 @@ internal static class PopupContentRegion
 
             if (hasArrow && TryGetArrowSpan(arrowBounds, arrowSide, y, out var arrowLeft, out var arrowRight))
             {
-                // 箭头底边贴住主体，同一行的两个区间相连，取并集的外包即可
+                // The arrow base touches the body, so the two spans of the row are contiguous; the bounding span of
+                // their union suffices.
                 left  = Math.Min(left, arrowLeft);
                 right = Math.Max(right, arrowRight);
             }
@@ -86,7 +101,8 @@ internal static class PopupContentRegion
         return result;
     }
 
-    // 圆角在距角圆心纵向 dy 处的水平内缩量；dy <= 0 表示该行不在此圆角范围内
+    // Horizontal inset of a rounded corner at the vertical distance dy from the corner center.
+    // dy <= 0 means that the row is outside this corner.
     private static double CornerInset(double radius, double dy)
     {
         if (radius <= 0 || dy <= 0)
@@ -112,7 +128,7 @@ internal static class PopupContentRegion
             case PopupArrowSide.Top:
             case PopupArrowSide.Bottom:
             {
-                // 顶点在外侧边中点，底边贴住主体
+                // The tip of the arrow is at the midpoint of the outer edge, and its base touches the body.
                 var progress = side == PopupArrowSide.Top
                     ? (y - arrow.Top) / arrow.Height
                     : (arrow.Bottom - y) / arrow.Height;

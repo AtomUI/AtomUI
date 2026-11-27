@@ -9,6 +9,9 @@ using Avalonia.Interactivity;
 
 namespace AtomUI.Desktop.Controls;
 
+/// <summary>
+/// A column that displays the bound value as text in each cell and edits it with a <see cref="LineEdit" />.
+/// </summary>
 public class DataGridTextColumn : DataGridAbstractTextColumn
 {
     public DataGridTextColumn()
@@ -19,8 +22,12 @@ public class DataGridTextColumn : DataGridAbstractTextColumn
     /// <summary>
     /// Causes the column cell being edited to revert to the specified value.
     /// </summary>
-    /// <param name="editingElement">The element that the column displays for a cell in editing mode.</param>
-    /// <param name="uneditedValue">The previous, unedited value in the cell being edited.</param>
+    /// <param name="editingElement">
+    /// The element that the column displays for a cell in editing mode.
+    /// </param>
+    /// <param name="uneditedValue">
+    /// The previous, unedited value in the cell being edited.
+    /// </param>
     protected override void CancelCellEdit(Control editingElement, object uneditedValue)
     {
         if (editingElement is LineEdit lineEdit)
@@ -33,9 +40,16 @@ public class DataGridTextColumn : DataGridAbstractTextColumn
     /// <summary>
     /// Gets a <see cref="T:AtomUI.Desktop.Controls.TextBox" /> control that is bound to the column's <see cref="P:AtomUI.Desktop.Controls.DataGridBoundColumn.Binding" /> property value.
     /// </summary>
-    /// <param name="cell">The cell that will contain the generated element.</param>
-    /// <param name="dataItem">The data item represented by the row that contains the intended cell.</param>
-    /// <returns>A new <see cref="T:AtomUI.Desktop.Controls.TextBox" /> control that is bound to the column's <see cref="P:AtomUI.Desktop.Controls.DataGridBoundColumn.Binding" /> property value.</returns>
+    /// <param name="cell">
+    /// The cell that will contain the generated element.
+    /// </param>
+    /// <param name="dataItem">
+    /// The data item represented by the row that contains the intended cell.
+    /// </param>
+    /// <returns>
+    /// A new <see cref="T:AtomUI.Desktop.Controls.TextBox" /> control that is bound to the column's
+    /// <see cref="P:AtomUI.Desktop.Controls.DataGridBoundColumn.Binding" /> property value.
+    /// </returns>
     protected override Control GenerateEditingElementDirect(DataGridCell cell, object dataItem)
     {
         var lineEdit = new LineEdit
@@ -49,9 +63,15 @@ public class DataGridTextColumn : DataGridAbstractTextColumn
     /// <summary>
     /// Called when the cell in the column enters editing mode.
     /// </summary>
-    /// <param name="editingElement">The element that the column displays for a cell in editing mode.</param>
-    /// <param name="editingEventArgs">Information about the user gesture that is causing a cell to enter editing mode.</param>
-    /// <returns>The unedited value. </returns>
+    /// <param name="editingElement">
+    /// The element that the column displays for a cell in editing mode.
+    /// </param>
+    /// <param name="editingEventArgs">
+    /// Information about the user gesture that is causing a cell to enter editing mode.
+    /// </param>
+    /// <returns>
+    /// The unedited value.
+    /// </returns>
     protected override object PrepareCellForEdit(Control editingElement, RoutedEventArgs editingEventArgs)
     {
         if (editingElement is LineEdit lineEdit)

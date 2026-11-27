@@ -4,7 +4,9 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls.Themes.Shadcn;
 
-/// <summary>The shadcn view of <see cref="MenuFlyoutPresenterToken"/>.</summary>
+/// <summary>
+/// The shadcn view of <see cref="MenuFlyoutPresenterToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class MenuFlyoutPresenterTokenRule : IControlTokenRule<ShadcnToken, MenuFlyoutPresenterToken>
 {
@@ -17,7 +19,7 @@ internal sealed class MenuFlyoutPresenterTokenRule : IControlTokenRule<ShadcnTok
         token.MenuPopupBorderThickness = new Thickness();
         token.ItemColor = global.ColorText;
         token.ItemHoverColor = token.ItemColor;
-        // The ring plus the menu shadow, and the integrated border in the ring colour.
+        // The ring plus the menu shadow, and the integrated border in the ring color.
         token.MenuPopupShadows         = context.Language.GetMenuOverlayRecipe(global).ShadowsWithOutline;
         token.MenuPopupBorderColor     = context.Language.OutlineRing;
         token.MenuPopupBorderThickness = new Thickness(1);

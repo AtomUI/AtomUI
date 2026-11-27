@@ -4,7 +4,9 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls.Themes.Shadcn;
 
-/// <summary>The shadcn view of <see cref="MessageCardToken"/>.</summary>
+/// <summary>
+/// The shadcn view of <see cref="MessageCardToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class MessageCardTokenRule : IControlTokenRule<ShadcnToken, MessageCardToken>
 {
@@ -34,6 +36,8 @@ internal sealed class MessageCardTokenRule : IControlTokenRule<ShadcnToken, Mess
         token.ErrorIconColor = global.ColorError;
         token.ErrorColor = global.ColorText;
         token.LoadingIconColor = global.ColorPrimary;
+        // Ant Design formula kept as is: shadcn draws toasts with sonner, which has no registry class, so no registry
+        // value is merged into the message card tokens.
         token.ContentPadding = new Thickness(
             (global.ControlHeightLG -
              global.FontSize * global.RelativeLineHeight) / 2,

@@ -1,13 +1,15 @@
 namespace AtomUI.Desktop.Controls.Internal.Calendar;
 
 /// <summary>
-/// 默认 CalendarHeader 的年/月选项计算。纯逻辑，无控件依赖，可独立单测。
+/// Computes the year and month options of the default <see cref="CalendarHeader" />.
+/// It is pure logic and depends on no control.
 /// </summary>
 internal static class CalendarHeaderOptions
 {
     /// <summary>
-    /// 计算 Year Select 的年份选项（首尾包含）。
-    /// 无 ValidRange 时为 [current-10, current+9] 共 20 年；有 ValidRange 时为 Start.Year..End.Year。
+    /// Builds the years offered by the year Select of the default header, ascending and inclusive at both ends.
+    /// With both range years the list runs from <c>rangeStartYear</c> to <c>rangeEndYear</c>; otherwise from
+    /// <c>currentYear - 10</c> to <c>currentYear + 9</c>, clamped to the years that <see cref="DateTime" /> supports.
     /// </summary>
     public static IReadOnlyList<int> BuildYearOptions(int currentYear, int? rangeStartYear, int? rangeEndYear)
     {
@@ -33,8 +35,9 @@ internal static class CalendarHeaderOptions
     }
 
     /// <summary>
-    /// 计算某年 Month Select 的可选月份（1..12，首尾包含）。
-    /// 当该年处于 ValidRange 边界年份时，只返回与范围相交的月份。
+    /// Builds the months (1..12) offered by the month Select of the default header for one year, ascending and
+    /// inclusive at both ends. In the first or the last year of the valid range, only the months inside the range
+    /// are returned; a year outside the range yields an empty list.
     /// </summary>
     public static IReadOnlyList<int> BuildMonthOptions(int year, DateTime? rangeStart, DateTime? rangeEnd)
     {
@@ -76,7 +79,9 @@ internal static class CalendarHeaderOptions
     }
 
     /// <summary>
-    /// 切换到某年时，把当前月份收敛到该年可选月份范围内。
+    /// Clamps a month to the months that <see cref="BuildMonthOptions" /> offers for one year, so that switching
+    /// the year keeps the current month whenever that year allows it.
+    /// Returns <c>desiredMonth</c> unchanged when the year offers no month.
     /// </summary>
     public static int ClampMonthToYear(int desiredMonth, int year, DateTime? rangeStart, DateTime? rangeEnd)
     {

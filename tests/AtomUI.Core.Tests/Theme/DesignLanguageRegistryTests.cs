@@ -10,7 +10,7 @@ using Xunit;
 namespace AtomUI.Core.Tests.Theme;
 
 /// <summary>
-/// Registration of design languages and control token rules (spec 6.1, 8): the lookup walks the language token's base
+/// Registration of design languages and control token rules: the lookup walks the language token's base
 /// types, the nearest registration wins, and duplicates are rejected.
 /// </summary>
 public class DesignLanguageRegistryTests
@@ -195,13 +195,19 @@ public class DesignLanguageRegistryTests
     }
 }
 
-/// <summary>A language token derived from <see cref="ProbeLanguageToken"/>: a language built on the probe language.</summary>
+/// <summary>
+/// A language token derived from <see cref="ProbeLanguageToken" />: a language built on the probe language.
+/// </summary>
 public class ChildProbeToken : ProbeLanguageToken;
 
-/// <summary>A second level of rule.</summary>
+/// <summary>
+/// A second level of rule.
+/// </summary>
 public sealed class GrandchildProbeToken : ChildProbeToken;
 
-/// <summary>A language with no rule of its own, used to test the lookup along its token's base types.</summary>
+/// <summary>
+/// A language with no rule of its own, used to test the lookup along its token's base types.
+/// </summary>
 public sealed class ChainLanguage<TToken>(string id) : DesignLanguage<TToken> where TToken : LanguageDesignToken, new()
 {
     private static readonly DesignStyle s_style = new("Default");

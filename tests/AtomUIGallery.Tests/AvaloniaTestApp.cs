@@ -52,5 +52,6 @@ public static class TestAppBuilder
     }
 }
 
-// 本工程引用生成器：应用类声明为 partial，由生成器补上 RegisterServices 挂接。
+// This project references the generator: the app class is declared partial and the generator adds the
+// RegisterServices hook.
 internal sealed partial class TestApplication : Application;

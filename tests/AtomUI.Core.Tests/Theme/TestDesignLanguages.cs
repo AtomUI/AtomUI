@@ -7,13 +7,19 @@ using Avalonia.Media;
 
 namespace AtomUI.Core.Tests.Theme;
 
-/// <summary>The design languages the Core tests compile against.</summary>
+/// <summary>
+/// The design languages the Core tests compile against.
+/// </summary>
 internal static class TestDesignLanguages
 {
-    /// <summary>The Ant Design language as its package registers it (one shared descriptor, as in an application).</summary>
+    /// <summary>
+    /// The Ant Design language as its package registers it (one shared descriptor, as in an application).
+    /// </summary>
     internal static DesignLanguageDescriptor AntDesign { get; } = CaptureAntDesign();
 
-    /// <summary>A minimal language whose rules count their calls; see <see cref="ProbeLanguage"/>.</summary>
+    /// <summary>
+    /// A minimal language whose rules count their calls; see <see cref="ProbeLanguage" />.
+    /// </summary>
     internal static DesignLanguageDescriptor Probe(ProbeLanguage? language = null) =>
         new(language ?? new ProbeLanguage(), Array.Empty<TokenDescriptor>());
 
@@ -30,7 +36,9 @@ internal static class TestDesignLanguages
         return builder;
     }
 
-    /// <summary>Starts AtomUI on <paramref name="application"/> with Ant Design enabled and the test's own configuration.</summary>
+    /// <summary>
+    /// Starts AtomUI on <paramref name="application" /> with Ant Design enabled and the test's own configuration.
+    /// </summary>
     internal static void AttachWithAntDesign(Avalonia.Application application, Action<IAtomUIBuilder> configure) =>
         AtomUI.ApplicationStartup.AttachWith(application, builder =>
         {
@@ -46,7 +54,9 @@ internal static class TestDesignLanguages
     }
 }
 
-/// <summary>The language token of <see cref="ProbeLanguage"/>; it declares no tokens.</summary>
+/// <summary>
+/// The language token of <see cref="ProbeLanguage" />; it declares no tokens.
+/// </summary>
 [LanguageDesignToken]
 public partial class ProbeLanguageToken : LanguageDesignToken;
 
@@ -70,7 +80,9 @@ public sealed class ProbeLanguage : DesignLanguage<ProbeLanguageToken>
     public int DeriveLanguageCalls { get; private set; }
     public int DeriveGlobalCalls { get; private set; }
 
-    /// <summary>When set, <see cref="DeriveGlobal"/> throws.</summary>
+    /// <summary>
+    /// When set, <see cref="DeriveGlobal" /> throws.
+    /// </summary>
     public bool FailGlobal { get; init; }
 
     public override void DefineSeeds(in DesignVariant variant, DesignToken seed, ProbeLanguageToken languageSeed) =>

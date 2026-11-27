@@ -50,7 +50,9 @@ internal class SelectHandle : TemplatedControl
             nameof(IsFormFeedbackVisible),
             o => o.IsFormFeedbackVisible);
 
-    /// <summary>Size of the indicator icon, resolved from the owning select's effective globals by the theme.</summary>
+    /// <summary>
+    /// Size of the indicator icon, resolved from the owning select's effective globals by the theme.
+    /// </summary>
     internal static readonly StyledProperty<double> IconSizeProperty =
         AvaloniaProperty.Register<SelectHandle, double>(nameof(IconSize));
 

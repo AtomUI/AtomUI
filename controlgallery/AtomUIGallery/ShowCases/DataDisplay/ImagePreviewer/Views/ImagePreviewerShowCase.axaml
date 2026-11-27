@@ -278,13 +278,17 @@
                                         Spacing="{atom:SharedTokenResource Spacing}"
                                         HorizontalAlignment="Left">
                                 <StackPanel.Styles>
-                                    <!-- 严格对齐 ant style-class.tsx：左侧 object 形式（root: padding 4 + borderRadius 8 +
-                                         overflow hidden；image: borderRadius 4），右侧 function 形式（root: 额外常驻 2px
-                                         #A594F9 边框；image: borderRadius 4 + filter grayscale(50%)）。上游 image 的
-                                         borderRadius 经 image 部件的 Semantic Style 落到 ImagePreviewRenderer.CornerRadius
-                                         （Border.CornerRadiusProperty 的 AddOwner，须写限定名 Border.CornerRadius——
-                                         Setter 上下文使用公开 ContractType Control，不引用 internal renderer）；
-                                         filter 无等价属性，grayscale 仍通过 ViewModel 提供去饱和后的图像源复现。 -->
+                                    <!-- Strictly mirrors ant style-class.tsx. Left, the object form (root: padding 4 +
+                                    borderRadius 8 + overflow hidden; image: borderRadius 4). Right, the function
+                                    form (root: an extra persistent 2px #A594F9 border; image: borderRadius 4 +
+                                    filter grayscale(50%)). The upstream image borderRadius reaches
+                                    ImagePreviewRenderer.CornerRadius through the semantic style of the image part.
+                                    That property is an AddOwner of Border.CornerRadiusProperty, so the qualified
+                                    name Border.CornerRadius is required: the setter context uses the public
+                                    ContractType Control and does not reference the internal renderer. There is no
+                                    equivalent property for filter, so grayscale is still reproduced by the
+                                    ViewModel, which supplies a desaturated image source.
+                                    -->
                                     <Style Selector="atom|ImagePreviewer.semantic-styles-demo">
                                         <atom:ImagePreviewerImageStyle x:SetterTargetType="Control">
                                             <Setter Property="Border.CornerRadius" Value="4" />
@@ -296,8 +300,10 @@
                                         </atom:ImagePreviewerImageStyle>
                                     </Style>
                                 </StackPanel.Styles>
-                                <!-- 经对上游三张截图逐像素核对：边框在常态与 hover 态均常驻显示，
-                                     hover 变化的是 cover 遮罩（rgba(0,0,0,0.3) 淡入 + 眼睛/预览指示）。 -->
+                                <!-- Checked against the three upstream screenshots pixel by pixel: the border stays
+                                visible in the normal and the hover state. What changes on hover is the cover mask
+                                (rgba(0,0,0,0.3) fades in, with the eye/preview indicator).
+                                -->
                                 <atom:ImagePreviewer Classes="semantic-styles-demo"
                                                      Width="160"
                                                      Padding="4"

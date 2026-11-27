@@ -7,7 +7,8 @@ namespace AtomUI.Controls.Commons;
 
 /// <summary>
 /// Decides whether a continuous animation owned by a control should run: motion is enabled, the owner is attached to
-/// a visual tree, every visual ancestor is visible, and the effective <see cref="MotionActivity"/> source is active.
+/// a visual tree, the owner and every visual ancestor of it are visible, and the effective
+/// <see cref="MotionActivity" /> source is active.
 /// The gate holds no timer; it tells the owner when the answer changes and the owner starts or stops its animation.
 /// Changes within one dispatcher job are coalesced: a visibility or activity flicker that ends where it started does
 /// not stop and restart the animation.
@@ -26,10 +27,16 @@ public sealed class MotionGate : IDisposable
     private bool _isFlushPosted;
     private bool _isDisposed;
 
-    /// <param name="owner">The control whose animation is gated.</param>
-    /// <param name="shouldRunChanged">Called with the new <see cref="ShouldRun"/> each time it changes, after the
-    /// dispatcher job that changed it; not called for the initial value, which the owner reads from
-    /// <see cref="ShouldRun"/>.</param>
+    /// <summary>
+    /// Creates the gate with <see cref="ShouldRun" /> evaluated from the current state of <paramref name="owner" />.
+    /// </summary>
+    /// <param name="owner">
+    /// The control whose animation is gated.
+    /// </param>
+    /// <param name="shouldRunChanged">
+    /// Called with the new <see cref="ShouldRun" /> each time it changes, after the dispatcher job that changed it; not
+    /// called for the initial value, which the owner reads from <see cref="ShouldRun" />.
+    /// </param>
     public MotionGate(Visual owner, Action<bool> shouldRunChanged)
     {
         _owner            = owner;
@@ -45,7 +52,10 @@ public sealed class MotionGate : IDisposable
         _isInitialized = true;
     }
 
-    /// <summary>Usually bound to the <c>EnableMotion</c> token through the owner's own motion property.</summary>
+    /// <summary>
+    /// When it is <see langword="false" />, <see cref="ShouldRun" /> is <see langword="false" />. The default is
+    /// <see langword="true" />. Usually bound to the <c>EnableMotion</c> token through the owner's own motion property.
+    /// </summary>
     public bool IsMotionEnabled
     {
         get => _isMotionEnabled;
@@ -60,8 +70,18 @@ public sealed class MotionGate : IDisposable
         }
     }
 
+    /// <summary>
+    /// Whether the owner's animation should run now; it is <see langword="false" /> after <see cref="Dispose" />. The
+    /// value changes in the same step as the <c>shouldRunChanged</c> callback, after the dispatcher job that changed an
+    /// input, so it can lag such a change within that job.
+    /// </summary>
     public bool ShouldRun => _shouldRun;
 
+    /// <summary>
+    /// Detaches the gate from its owner: it unsubscribes from the owner's events, drops the ancestor visibility
+    /// tracking and the activity source, and sets <see cref="ShouldRun" /> to <see langword="false" /> without raising
+    /// the <c>shouldRunChanged</c> callback. Calling it again has no effect.
+    /// </summary>
     public void Dispose()
     {
         if (_isDisposed)
@@ -137,7 +157,9 @@ public sealed class MotionGate : IDisposable
         }, _attachment);
     }
 
-    /// <summary>Gets whether the gate currently subscribes to the owner's visual ancestors.</summary>
+    /// <summary>
+    /// Gets whether the gate currently subscribes to the owner's visual ancestors.
+    /// </summary>
     internal bool IsTrackingAncestorVisibility => _attachment is not null;
 
     private void Detach()

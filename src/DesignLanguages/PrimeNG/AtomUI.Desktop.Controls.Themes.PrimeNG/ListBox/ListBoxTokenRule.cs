@@ -4,7 +4,9 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 
-/// <summary>The PrimeNG view of <see cref="ListBoxToken"/>.</summary>
+/// <summary>
+/// The PrimeNG view of <see cref="ListBoxToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class ListBoxTokenRule : IControlTokenRule<PrimeNGToken, ListBoxToken>
 {
@@ -13,7 +15,7 @@ internal sealed class ListBoxTokenRule : IControlTokenRule<PrimeNGToken, ListBox
         var token  = target.Own;
         var global = target.Global;
         var item   = context.Language.GetListItemRecipe(global);
-        // PrimeNG: the control-global overrides, read by the formulas below.
+        // PrimeNG: no control-global overrides; EvaluateGlobal writes nothing.
         PrimeNGListBoxTokens.EvaluateGlobal(in context, global);
         var colorTextDisabled  = global.ColorTextDisabled;
         var colorTextSecondary = global.ColorTextSecondary;
@@ -21,6 +23,8 @@ internal sealed class ListBoxTokenRule : IControlTokenRule<PrimeNGToken, ListBox
 
         token.ItemColor         = colorTextSecondary;
         token.ItemHoverColor    = colorTextSecondary;
+        // PrimeUIX list.option: highlight.background / highlight.color for the selected item, focus.background for the
+        // hovered one.
         token.ItemSelectedColor = item.SelectedForeground;
         token.ItemSelectedIndicatorColor = global.ColorPrimary;
 
@@ -30,6 +34,9 @@ internal sealed class ListBoxTokenRule : IControlTokenRule<PrimeNGToken, ListBox
 
         token.ItemDisabledColor = colorTextDisabled;
 
+        // Ant Design formula kept as is; the PrimeNG list box stage (PrimeNGListBoxTokens.EvaluateOwn) replaces
+        // ItemPadding and ContentPadding here and the item and hover colors above with the PrimeUIX list
+        // values. The SM and LG item paddings and ItemMargin stay.
         token.ItemPaddingLG = new Thickness(global.UniformlyPadding, 0);
         token.ItemPaddingSM = new Thickness(global.UniformlyPaddingXS, 0);
         token.ItemPadding   = new Thickness(global.UniformlyPaddingSM, 0);

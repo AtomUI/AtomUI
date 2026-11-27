@@ -9,6 +9,9 @@ public partial class CommunityPage : GalleryReactiveUserControl<CommunityViewMod
 {
     public const string LanguageId = nameof(CommunityPage);
 
+    /// <summary>
+    /// Identifies the <see cref="IsDarkThemeMode" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsDarkThemeModeProperty =
         AvaloniaProperty.Register<CommunityPage, bool>(nameof(IsDarkThemeMode));
 

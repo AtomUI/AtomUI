@@ -3,7 +3,9 @@ using AtomUI.Theme.Languages;
 
 namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 
-/// <summary>The PrimeNG view of <see cref="StepsProgressBarToken"/>.</summary>
+/// <summary>
+/// The PrimeNG view of <see cref="StepsProgressBarToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class StepsProgressBarTokenRule : IControlTokenRule<PrimeNGToken, StepsProgressBarToken>
 {
@@ -11,7 +13,7 @@ internal sealed class StepsProgressBarTokenRule : IControlTokenRule<PrimeNGToken
     {
         var token  = target.Own;
         var global = target.Global;
-        // PrimeNG: the control-global overrides, read by the formulas below.
+        // PrimeNG: no control-global overrides; EvaluateGlobal writes nothing.
         PrimeNGProgressTokens<StepsProgressBarToken>.EvaluateGlobal(in context, global);
         LineProgressTokenCalculator.Calculate(in context, global, token);
         token.ProgressStepMarginInlineEnd = global.UniformlyMarginXXS / 2;

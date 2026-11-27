@@ -12,14 +12,42 @@ namespace AtomUI.Desktop.Controls;
 
 using AvaloniaDefaultMenuInteractionHandler = Avalonia.Controls.Platform.DefaultMenuInteractionHandler;
 
+/// <summary>
+/// Menu interaction handler shared by <see cref="Menu" />, <see cref="ContextMenu" /> and
+/// <see cref="MenuFlyoutPresenter" />. It adds hover delays to the Avalonia default handler: a submenu opens
+/// after a delay once the pointer enters its item, and an open submenu closes after a delay once the pointer
+/// leaves it or enters a sibling item. A key the base handler handles, an access key or a pointer press cancels
+/// the pending open and close.
+/// </summary>
 public class DefaultMenuInteractionHandler : AvaloniaDefaultMenuInteractionHandler, IMenuInteractionHandler
 {
+    /// <summary>
+    /// Creates a handler that runs its hover delays with <c>DispatcherTimer.RunOnce</c>.
+    /// </summary>
+    /// <param name="isContextMenu">
+    /// Whether the owner is a context menu rather than a menu bar. <see cref="Menu" /> passes
+    /// <see langword="false" />, <see cref="ContextMenu" /> and <see cref="MenuFlyoutPresenter" /> pass
+    /// <see langword="true" />.
+    /// </param>
     public DefaultMenuInteractionHandler(bool isContextMenu)
         : base(isContextMenu)
     {
         _delayRun = (callback, delay) => DispatcherTimer.RunOnce(callback, delay);
     }
 
+    /// <summary>
+    /// Creates a handler that runs its hover delays through a scheduler supplied by the caller.
+    /// </summary>
+    /// <param name="isContextMenu">
+    /// Whether the owner is a context menu rather than a menu bar.
+    /// </param>
+    /// <param name="inputManager">
+    /// The input manager handed to the Avalonia base handler. May be <see langword="null" />.
+    /// </param>
+    /// <param name="delayRun">
+    /// Runs a callback after a delay and returns a handle that cancels it. The handler wraps the callback so that it
+    /// runs at most once and does nothing once the operation has been canceled.
+    /// </param>
     public DefaultMenuInteractionHandler(
         bool isContextMenu,
         IInputManager? inputManager,
@@ -38,6 +66,10 @@ public class DefaultMenuInteractionHandler : AvaloniaDefaultMenuInteractionHandl
     private IDisposable? _pendingCloseDelay;
     private long _closeIntentGeneration;
 
+    /// <summary>
+    /// Lets the base handler process the key first. When the base handler marks a key that was unhandled before as
+    /// handled, the pending hover open and close are canceled, so that an earlier hover is not applied afterwards.
+    /// </summary>
     protected override void KeyDown(object? sender, KeyEventArgs e)
     {
         var wasHandled = e.Handled;
@@ -49,12 +81,22 @@ public class DefaultMenuInteractionHandler : AvaloniaDefaultMenuInteractionHandl
         }
     }
 
+    /// <summary>
+    /// Cancels the pending hover open and close before the base handler processes the access key.
+    /// </summary>
     protected override void AccessKeyPressed(object? sender, RoutedEventArgs e)
     {
         CancelPendingHoverOperations();
         base.AccessKeyPressed(sender, e);
     }
 
+    /// <summary>
+    /// Handles the pointer entering a menu item below the menu bar. The item and its ancestors are selected. A
+    /// submenu item that is not open yet is scheduled to open once its pending close is canceled; any other item
+    /// cancels the pending open and close and schedules an open sibling submenu to close. The base handler is not
+    /// called for these items. A top-level item and a source outside a menu item cancel the pending hover
+    /// operations and are passed to the base handler.
+    /// </summary>
     protected override void PointerEntered(object? sender, RoutedEventArgs e)
     {
         var item = GetMenuItemCore(e.Source as Control);
@@ -95,6 +137,12 @@ public class DefaultMenuInteractionHandler : AvaloniaDefaultMenuInteractionHandl
         }
     }
 
+    /// <summary>
+    /// Does not call the base handler. While the left button is pressed and the pointer has left the bounds of the
+    /// menu item under it, the pointer capture is released. The capture is kept while the source of the event is
+    /// inside a scroll bar thumb. Events that have no menu item as source, or whose item has no transformed bounds,
+    /// are ignored.
+    /// </summary>
     protected override void PointerMoved(object? sender, PointerEventArgs e)
     {
         var item = GetMenuItemCore(e.Source as Control);
@@ -126,6 +174,13 @@ public class DefaultMenuInteractionHandler : AvaloniaDefaultMenuInteractionHandl
         }
     }
 
+    /// <summary>
+    /// Handles the pointer leaving a menu item below the menu bar. A submenu that is still closed cancels its pending
+    /// open and clears the selection of its parent. An open submenu is scheduled to close, unless the pointer is over
+    /// that submenu, in which case its pending close is canceled instead. The base handler is not called for these
+    /// items. A top-level item and a source outside a menu item cancel the pending hover operations and are passed to
+    /// the base handler.
+    /// </summary>
     protected override void PointerExited(object? sender, RoutedEventArgs e)
     {
         var item = GetMenuItemCore(e.Source as Control);
@@ -160,6 +215,9 @@ public class DefaultMenuInteractionHandler : AvaloniaDefaultMenuInteractionHandl
         }
     }
 
+    /// <summary>
+    /// Cancels the pending hover open and close before the base handler processes the press.
+    /// </summary>
     protected override void PointerPressed(object? sender, PointerPressedEventArgs e)
     {
         CancelPendingHoverOperations();

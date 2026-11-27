@@ -92,7 +92,7 @@
             </Style>
         </Style>
 
-        <!--  text 和 icon 都存在的情况 -->
+        <!-- Both text and icon are present -->
         <Style Selector="^[SizeType=Large]">
             <Setter Property="IconWidth" Value="{atom:HyperLinkButtonTokenResource IconSizeLG}" />
             <Setter Property="IconHeight" Value="{atom:HyperLinkButtonTokenResource IconSizeLG}" />

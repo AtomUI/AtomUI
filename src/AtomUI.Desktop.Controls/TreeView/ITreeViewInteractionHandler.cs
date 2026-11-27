@@ -6,9 +6,11 @@ namespace AtomUI.Desktop.Controls;
 public interface ITreeViewInteractionHandler
 {
     /// <summary>
-    /// Attaches the interaction handler to a menu.
+    /// Attaches the interaction handler to a TreeView.
     /// </summary>
-    /// <param name="treeView">The treeView.</param>
+    /// <param name="treeView">
+    /// The treeView.
+    /// </param>
     void Attach(TreeView treeView);
 
     /// <summary>

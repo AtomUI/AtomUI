@@ -35,15 +35,22 @@ internal sealed class ThemeContext
     internal ThemeAppearance Appearance => Snapshot.Appearance;
     internal ThemeTokenResourceProvider ResourceProvider { get; }
 
-    /// <summary>True while a context publishes on the current thread, i.e. while the resource/Published notifications of a theme publish run.</summary>
+    /// <summary>
+    /// True while a context publishes on the current thread, i.e. while the resource/Published notifications of a theme
+    /// publish run.
+    /// </summary>
     internal static bool IsPublishing => t_publishDepth > 0;
 
-    /// <summary>Incremented by every <see cref="Publish"/>; bindings use it to recognise the publish a notification belongs to.</summary>
+    /// <summary>
+    /// Incremented by every <see cref="Publish" />. No binding reads it: a binding recognises the publish a
+    /// notification belongs to by snapshot identity, see <see cref="ThemePublishTracker" />.
+    /// </summary>
     internal long PublishVersion => Volatile.Read(ref _publishVersion);
 
     /// <summary>
-    /// What the last <see cref="Commit"/> changed relative to the snapshot before it. <see cref="ThemePublishDelta.Everything"/>
-    /// when the current snapshot was not installed by that commit (first snapshot, package read override).
+    /// What the last <see cref="Commit" /> changed relative to the snapshot before it. <see
+    /// cref="ThemePublishDelta.Everything" /> when the current snapshot was not installed by that commit (first
+    /// snapshot, package read override).
     /// </summary>
     internal ThemePublishDelta LastPublish
     {
@@ -66,7 +73,8 @@ internal sealed class ThemeContext
 
     /// <summary>
     /// Registered-owner lookup cached per snapshot for the bindings that refresh on every publish (UI thread only,
-    /// like the bindings). <paramref name="slot"/> is the owner's Control slot when it is registered.
+    /// like the bindings). Returns <see langword="true" /> when the owner is registered; <paramref name="slot" /> is
+    /// then its Control slot and <c>-1</c> otherwise.
     /// </summary>
     internal bool TryGetRegisteredOwnerSlot(ControlTokenIdentity owner, out int slot)
     {

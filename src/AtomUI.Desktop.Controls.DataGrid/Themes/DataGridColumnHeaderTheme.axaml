@@ -187,14 +187,14 @@
             <Style Selector="^ /template/ atom|DataGridFrozenColumnShadow#FrozenShadow">
                 <Setter Property="IsVisible" Value="True" />
             </Style>
-            <!-- 右冻结列首列：阴影条带位于表头左外侧 -->
+            <!-- First column of the right frozen columns: the shadow strip sits outside the left edge of the header -->
             <Style Selector="^[FrozenShadowPosition=Left] /template/ atom|DataGridFrozenColumnShadow#FrozenShadow">
                 <Setter Property="HorizontalAlignment" Value="Left" />
                 <Setter Property="RenderTransform" Value="translateX(-30px)" />
                 <Setter Property="BoxShadow"
                         Value="{atom:DataGridTokenResource RightFrozenShadows}" />
             </Style>
-            <!-- 左冻结列末列：阴影条带位于表头右外侧 -->
+            <!-- Last column of the left frozen columns: the shadow strip sits outside the right edge of the header -->
             <Style Selector="^[FrozenShadowPosition=Right] /template/ atom|DataGridFrozenColumnShadow#FrozenShadow">
                 <Setter Property="HorizontalAlignment" Value="Right" />
                 <Setter Property="RenderTransform" Value="translateX(30px)" />

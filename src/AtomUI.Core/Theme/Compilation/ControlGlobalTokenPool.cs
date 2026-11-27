@@ -4,7 +4,7 @@ using AtomUI.Theme.Schema;
 namespace AtomUI.Theme.Compilation;
 
 /// <summary>
-/// The global view a control rule starts from, shared between the controls of one evaluation unit (spec 12.2).
+/// The global view a control rule starts from, shared between the controls of one evaluation unit.
 /// A control whose rule writes no global token and that has no global override returns its view unchanged, and
 /// the next control reuses it instead of copying the scope's global tokens again. A view that was written is dropped.
 /// </summary>
@@ -20,9 +20,13 @@ internal sealed class ControlGlobalTokenPool
         _descriptors = descriptors;
     }
 
-    /// <summary>An unwritten copy of the scope's global tokens; the caller owns it until it returns it.</summary>
+    /// <summary>
+    /// An unwritten copy of the scope's global tokens; the caller owns it until it returns it.
+    /// </summary>
     internal DesignToken Rent() => Interlocked.Exchange(ref _spare, null) ?? ThemeCompiler.CopyBuilder(_source, _descriptors);
 
-    /// <summary>Hands back a view that still equals the scope's global tokens.</summary>
+    /// <summary>
+    /// Hands back a view that still equals the scope's global tokens.
+    /// </summary>
     internal void Return(DesignToken view) => Interlocked.CompareExchange(ref _spare, view, null);
 }

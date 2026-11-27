@@ -4,21 +4,49 @@ using Microsoft.Build.Framework;
 
 namespace AtomUI.Build.Tasks;
 
+/// <summary>
+/// MSBuild task that generates the MSBuild props file listing the catalog entries of a language package.
+/// </summary>
 public sealed class GenerateLanguagePackagePropsTask : AtomUILocalizationTask
 {
+    /// <summary>
+    /// The ID of the language package the props file is generated for.
+    /// </summary>
     [Required]
     public string PackageId { get; set; } = string.Empty;
 
+    /// <summary>
+    /// The XLIFF documents of the package, one catalog entry each. Every item needs the <c>AtomUILanguageModuleId</c>
+    /// and <c>AtomUILanguagePackagePath</c> metadata; <c>AtomUILanguageContractValidation</c> is optional.
+    /// </summary>
     [Required]
     public ITaskItem[] LanguageFiles { get; set; } = Array.Empty<ITaskItem>();
 
+    /// <summary>
+    /// The path of the props file to write. Its directory is created when it does not exist.
+    /// </summary>
     [Required]
     public string OutputPath { get; set; } = string.Empty;
 
+    /// <summary>
+    /// When <see langword="true" />, every language file must be a target-language XLIFF document; when
+    /// <see langword="false" />, every file must be an en-US document without <c>trgLang</c>.
+    /// </summary>
     public bool RequireTargetLanguage { get; set; } = true;
 
+    /// <summary>
+    /// The source kind of the language files, <c>StaticLanguagePack</c> by default. <c>ModuleBuiltIn</c> makes an item
+    /// without <c>AtomUILanguageContractValidation</c> metadata default to <c>Verified</c>.
+    /// </summary>
     public string SourceKind { get; set; } = "StaticLanguagePack";
 
+    /// <summary>
+    /// Validates every language file and writes the props file with one catalog entry per file.
+    /// </summary>
+    /// <returns>
+    /// <see langword="true" /> when the props file was written; <see langword="false" /> when an item is invalid.
+    /// Validation stops at the first invalid item and logs the reason as <c>ATOMUILOC005</c> or <c>ATOMUILOC009</c>.
+    /// </returns>
     public override bool Execute()
     {
         var entries = new List<LanguagePackageCatalogEntry>();

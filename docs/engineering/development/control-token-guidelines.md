@@ -69,10 +69,14 @@ public sealed class Rating : TemplatedControl
 [ControlDesignToken]
 public sealed partial class RatingToken : AbstractControlDesignToken
 {
-    /// <summary>Edge length of one star.</summary>
+    /// <summary>
+    /// Edge length of one star.
+    /// </summary>
     public partial double StarSize { get; set; }
 
-    /// <summary>Horizontal gap between two adjacent stars.</summary>
+    /// <summary>
+    /// Horizontal gap between two adjacent stars.
+    /// </summary>
     public partial double StarGap { get; set; }
 }
 ```

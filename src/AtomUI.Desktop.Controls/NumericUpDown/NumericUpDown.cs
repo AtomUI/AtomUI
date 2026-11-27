@@ -15,12 +15,30 @@ using Avalonia.Metadata;
 
 namespace AtomUI.Desktop.Controls;
 
+/// <summary>
+/// The layout of the text area of a <see cref="NumericUpDown" />, in particular where the <c>-</c> and <c>+</c>
+/// handles sit.
+/// </summary>
 public enum NumericUpDownMode
 {
+    /// <summary>
+    /// Left-aligned text. The <c>-</c> and <c>+</c> handles stay hidden until the pointer is over the control and
+    /// then slide in, pushing the content aside.
+    /// </summary>
     Input,
+    /// <summary>
+    /// Centered text between the <c>-</c> and <c>+</c> handles, which stay in view and keep their own space. The
+    /// layout is used only while <c>ShowButtonSpinner</c> is <see langword="true" />; otherwise the control uses the
+    /// <see cref="Input" /> layout.
+    /// </summary>
     Spinner
 }
 
+/// <summary>
+/// The numeric up-down control: a text box in a frame with an optional clear button, add-on segments outside the
+/// frame and content slots inside it, with <c>-</c> and <c>+</c> handles while <c>ShowButtonSpinner</c> is
+/// <see langword="true" />. Parsing, range checks and validation come from <see cref="AbstractNumericUpDown" />.
+/// </summary>
 public partial class NumericUpDown : AbstractNumericUpDown,
                                      IMotionAwareControl,
                                      ICompactSpaceAware,
@@ -28,60 +46,116 @@ public partial class NumericUpDown : AbstractNumericUpDown,
                                      ICustomizableSizeTypeAware
 {
     #region 公共属性定义
+    /// <summary>
+    /// Identifies the <see cref="ClearIcon" /> property.
+    /// </summary>
     public static readonly StyledProperty<PathIcon?> ClearIconProperty =
         AvaloniaProperty.Register<NumericUpDown, PathIcon?>(nameof(ClearIcon));
 
+    /// <summary>
+    /// Identifies the <see cref="LeftAddOn" /> property.
+    /// </summary>
     public static readonly StyledProperty<object?> LeftAddOnProperty =
         AddOnDecoratedBox.LeftAddOnProperty.AddOwner<NumericUpDown>();
     
+    /// <summary>
+    /// Identifies the <see cref="LeftAddOnTemplate" /> property.
+    /// </summary>
     public static readonly StyledProperty<IDataTemplate?> LeftAddOnTemplateProperty =
         AddOnDecoratedBox.LeftAddOnTemplateProperty.AddOwner<NumericUpDown>();
 
+    /// <summary>
+    /// Identifies the <see cref="RightAddOn" /> property.
+    /// </summary>
     public static readonly StyledProperty<object?> RightAddOnProperty =
         AddOnDecoratedBox.RightAddOnProperty.AddOwner<NumericUpDown>();
     
+    /// <summary>
+    /// Identifies the <see cref="RightAddOnTemplate" /> property.
+    /// </summary>
     public static readonly StyledProperty<IDataTemplate?> RightAddOnTemplateProperty =
         AddOnDecoratedBox.RightAddOnTemplateProperty.AddOwner<NumericUpDown>();
     
+    /// <summary>
+    /// Identifies the <see cref="InnerLeftContentTemplate" /> property.
+    /// </summary>
     public static readonly StyledProperty<IDataTemplate?> InnerLeftContentTemplateProperty =
         AvaloniaProperty.Register<NumericUpDown, IDataTemplate?>(nameof(InnerLeftContentTemplate));
     
+    /// <summary>
+    /// Identifies the <see cref="InnerRightContentTemplate" /> property.
+    /// </summary>
     public static readonly StyledProperty<IDataTemplate?> InnerRightContentTemplateProperty =
         AvaloniaProperty.Register<NumericUpDown, IDataTemplate?>(nameof(InnerRightContentTemplate));
 
+    /// <summary>
+    /// Identifies the <see cref="SizeType" /> property.
+    /// </summary>
     public static readonly StyledProperty<CustomizableSizeType> SizeTypeProperty =
         CustomizableSizeTypeControlProperty.SizeTypeProperty.AddOwner<NumericUpDown>();
 
+    /// <summary>
+    /// Identifies the <see cref="StyleVariant" /> property.
+    /// </summary>
     public static readonly StyledProperty<InputControlStyleVariant> StyleVariantProperty =
         InputControlStyleVariantProperty.StyleVariantProperty.AddOwner<NumericUpDown>();
 
+    /// <summary>
+    /// Identifies the <see cref="Status" /> property.
+    /// </summary>
     public new static readonly StyledProperty<InputControlStatus> StatusProperty =
         AbstractNumericUpDown.StatusProperty.AddOwner<NumericUpDown>();
 
+    /// <summary>
+    /// Identifies the <see cref="IsAllowClear" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsAllowClearProperty =
         TextBox.IsAllowClearProperty.AddOwner<NumericUpDown>();
 
+    /// <summary>
+    /// Identifies the <see cref="IsMotionEnabled" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<NumericUpDown>();
 
+    /// <summary>
+    /// Identifies the <see cref="IsStringMode" /> property.
+    /// </summary>
     public new static readonly StyledProperty<bool> IsStringModeProperty =
         AbstractNumericUpDown.IsStringModeProperty.AddOwner<NumericUpDown>();
     
+    /// <summary>
+    /// Identifies the <see cref="IsKeyboardEnabled" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsKeyboardEnabledProperty =
         AvaloniaProperty.Register<NumericUpDown, bool>(nameof(IsKeyboardEnabled), true);
 
+    /// <summary>
+    /// Identifies the <see cref="Mode" /> property.
+    /// </summary>
     public static readonly StyledProperty<NumericUpDownMode> ModeProperty =
         AvaloniaProperty.Register<NumericUpDown, NumericUpDownMode>(nameof(Mode), NumericUpDownMode.Input);
 
+    /// <summary>
+    /// Identifies the <see cref="StringValue" /> property.
+    /// </summary>
     public new static readonly StyledProperty<string?> StringValueProperty =
         AbstractNumericUpDown.StringValueProperty.AddOwner<NumericUpDown>();
 
+    /// <summary>
+    /// Icon of the clear button. When it is <see langword="null" /> when the control is initialized, a
+    /// <see cref="CloseCircleFilled" /> icon is set as the current value in its place.
+    /// </summary>
     public PathIcon? ClearIcon
     {
         get => GetValue(ClearIconProperty);
         set => SetValue(ClearIconProperty, value);
     }
 
+    /// <summary>
+    /// Content of the add-on segment attached before the input frame. It is presented with
+    /// <see cref="LeftAddOnTemplate" /> when that is set.
+    /// </summary>
     [DependsOn(nameof(LeftAddOnTemplate))]
     public object? LeftAddOn
     {
@@ -89,12 +163,19 @@ public partial class NumericUpDown : AbstractNumericUpDown,
         set => SetValue(LeftAddOnProperty, value);
     }
     
+    /// <summary>
+    /// The data template used to present <see cref="LeftAddOn" />.
+    /// </summary>
     public object? LeftAddOnTemplate
     {
         get => GetValue(LeftAddOnTemplateProperty);
         set => SetValue(LeftAddOnTemplateProperty, value);
     }
 
+    /// <summary>
+    /// Content of the add-on segment attached after the input frame. It is presented with
+    /// <see cref="RightAddOnTemplate" /> when that is set.
+    /// </summary>
     [DependsOn(nameof(RightAddOnTemplate))]
     public object? RightAddOn
     {
@@ -102,78 +183,130 @@ public partial class NumericUpDown : AbstractNumericUpDown,
         set => SetValue(RightAddOnProperty, value);
     }
     
+    /// <summary>
+    /// The data template used to present <see cref="RightAddOn" />.
+    /// </summary>
     public object? RightAddOnTemplate
     {
         get => GetValue(RightAddOnTemplateProperty);
         set => SetValue(RightAddOnTemplateProperty, value);
     }
     
+    /// <summary>
+    /// The data template used to present the inner left content, a prefix inside the frame before the text; in the
+    /// <see cref="NumericUpDownMode.Spinner" /> layout it sits between the two handles.
+    /// </summary>
     public object? InnerLeftContentTemplate
     {
         get => GetValue(InnerLeftContentTemplateProperty);
         set => SetValue(InnerLeftContentTemplateProperty, value);
     }
     
+    /// <summary>
+    /// The data template used to present the inner right content, which sits inside the frame after the text and the
+    /// clear button.
+    /// </summary>
     public object? InnerRightContentTemplate
     {
         get => GetValue(InnerRightContentTemplateProperty);
         set => SetValue(InnerRightContentTemplateProperty, value);
     }
 
+    /// <summary>
+    /// Size preset of the control. It is passed to the spinner of the template, which sizes the frame from it, and it
+    /// selects the font size of the text while <see cref="IsCustomFontSize" /> is <see langword="false" />.
+    /// </summary>
     public CustomizableSizeType SizeType
     {
         get => GetValue(SizeTypeProperty);
         set => SetValue(SizeTypeProperty, value);
     }
 
+    /// <summary>
+    /// Style variant of the input frame. It is passed to the spinner of the template, which paints the frame in that
+    /// variant.
+    /// </summary>
     public InputControlStyleVariant StyleVariant
     {
         get => GetValue(StyleVariantProperty);
         set => SetValue(StyleVariantProperty, value);
     }
 
+    /// <summary>
+    /// Validation state painted on the input frame. The contract is that of
+    /// <see cref="AbstractNumericUpDown.Status" />.
+    /// </summary>
     public new InputControlStatus Status
     {
         get => GetValue(StatusProperty);
         set => SetValue(StatusProperty, value);
     }
 
+    /// <summary>
+    /// <see langword="true" /> shows a clear button inside the frame. It is visible only while the control is not
+    /// read-only and its text is not empty; clicking it sets the value to <see langword="null" /> and moves focus
+    /// back to the text box.
+    /// </summary>
     public bool IsAllowClear
     {
         get => GetValue(IsAllowClearProperty);
         set => SetValue(IsAllowClearProperty, value);
     }
     
+    /// <summary>
+    /// Controls the motion of the template's parts. The value is passed to the spinner and to the clear button. The
+    /// theme sets it from the <c>EnableMotion</c> token when no value is set on the control.
+    /// </summary>
     public bool IsMotionEnabled
     {
         get => GetValue(IsMotionEnabledProperty);
         set => SetValue(IsMotionEnabledProperty, value);
     }
 
+    /// <summary>
+    /// <see langword="true" /> keeps the text as entered in <see cref="StringValue" />, next to the parsed value. The
+    /// contract is that of <see cref="AbstractNumericUpDown.IsStringMode" />.
+    /// </summary>
     public new bool IsStringMode
     {
         get => GetValue(IsStringModeProperty);
         set => SetValue(IsStringModeProperty, value);
     }
 
+    /// <summary>
+    /// Controls whether the Up, Down, PageUp and PageDown keys change the value. With <see langword="false" /> those
+    /// keys are marked handled on the control and on its text box; typing is not affected.
+    /// </summary>
     public bool IsKeyboardEnabled
     {
         get => GetValue(IsKeyboardEnabledProperty);
         set => SetValue(IsKeyboardEnabledProperty, value);
     }
 
+    /// <summary>
+    /// Layout of the text area; <see cref="NumericUpDownMode.Input" /> when not set. The Spinner layout is used only
+    /// while <c>ShowButtonSpinner</c> is <see langword="true" />.
+    /// </summary>
     public NumericUpDownMode Mode
     {
         get => GetValue(ModeProperty);
         set => SetValue(ModeProperty, value);
     }
 
+    /// <summary>
+    /// The text as it was entered, used only while <see cref="IsStringMode" /> is <see langword="true" />. The
+    /// contract is that of <see cref="AbstractNumericUpDown.StringValue" />.
+    /// </summary>
     public new string? StringValue
     {
         get => GetValue(StringValueProperty);
         set => SetValue(StringValueProperty, value);
     }
 
+    /// <summary>
+    /// <see langword="true" /> keeps the font size set on the control or inherited by it, so that the size presets no
+    /// longer change the text size.
+    /// </summary>
     public bool IsCustomFontSize
     {
         get => GetValue(IsCustomFontSizeProperty);
@@ -204,6 +337,11 @@ public partial class NumericUpDown : AbstractNumericUpDown,
     internal static readonly StyledProperty<bool> IsUsedInCompactSpaceProperty = 
         CompactSpaceAwareControlProperty.IsUsedInCompactSpaceProperty.AddOwner<NumericUpDown>();
 
+    /// <summary>
+    /// Width of the spinner handle, in device-independent pixels. The theme takes it from the <c>HandleWidth</c> token
+    /// of the control and passes it to the decorated input frames of the template, which reserve this width for the
+    /// spinner handle next to the content.
+    /// </summary>
     internal double SpinnerHandleWidth
     {
         get => GetValue(SpinnerHandleWidthProperty);
@@ -295,8 +433,17 @@ public partial class NumericUpDown : AbstractNumericUpDown,
     {
     }
 
+    /// <summary>
+    /// Returns <see langword="false" />, which keeps the text commit policy of <see cref="AbstractNumericUpDown" />
+    /// off unless <see cref="AbstractNumericUpDown.Digits" /> is set or empty text is not allowed. Without the policy,
+    /// text that cannot be parsed is left to the Avalonia base class: it is not committed and raises no error.
+    /// </summary>
     protected override bool ReportsTextConversionErrors => false;
 
+    /// <summary>
+    /// Sets a <see cref="CloseCircleFilled" /> icon as the current value of <see cref="ClearIcon" /> when the control
+    /// is initialized without one. An override must call this member for the default icon to be applied.
+    /// </summary>
     protected override void OnInitialized()
     {
         base.OnInitialized();
@@ -306,6 +453,13 @@ public partial class NumericUpDown : AbstractNumericUpDown,
         }
     }
 
+    /// <summary>
+    /// Locates the clear button and the text box of the template and subscribes to their click and key down events.
+    /// It detaches the text box from the relayed <see cref="KeyboardNavigation.TabIndexProperty" /> so that the tab
+    /// order of the template holds, updates the visibility of the clear button and binds the template parts to
+    /// this control once the spinner's own template is applied, which the bindings reach into. An override must call
+    /// this member.
+    /// </summary>
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
@@ -328,11 +482,19 @@ public partial class NumericUpDown : AbstractNumericUpDown,
         SetupTemplatePartBindings(e);
     }
 
+    /// <summary>
+    /// Called when the clear button is clicked, before focus returns to the text box. The default implementation sets
+    /// the value to <see langword="null" />; an override that should still clear it must call this member.
+    /// </summary>
     protected virtual void NotifyClearButtonClicked()
     {
         Value = null;
     }
 
+    /// <summary>
+    /// Recomputes the visibility of the clear button after <c>IsReadOnly</c>, <c>Text</c> or
+    /// <see cref="IsAllowClear" /> changes. An override must call this member.
+    /// </summary>
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
@@ -346,10 +508,17 @@ public partial class NumericUpDown : AbstractNumericUpDown,
 
     }
 
+    /// <inheritdoc />
     protected override void OnTextChanged(string? oldValue, string? newValue) => base.OnTextChanged(oldValue, newValue);
 
+    /// <inheritdoc />
     protected override void OnValueChanged(decimal? oldValue, decimal? newValue) => base.OnValueChanged(oldValue, newValue);
 
+    /// <summary>
+    /// While <see cref="IsKeyboardEnabled" /> is <see langword="false" />, marks Up, Down, PageUp and PageDown as
+    /// handled without calling the base member, so that those keys do not change the value. Every other key goes to
+    /// the base member.
+    /// </summary>
     protected override void OnKeyDown(KeyEventArgs e)
     {
         if (!IsKeyboardEnabled)
@@ -415,18 +584,22 @@ public partial class NumericUpDown : AbstractNumericUpDown,
             return 0.0;
         }
 
-        // 都一样宽
+        // All four sides are equally wide.
         return addOnDecoratedBox.InnerBoxBorderThickness.Left;
     }
 
     #endregion
 
+    /// <inheritdoc />
     protected override void NotifySetFormValue(decimal? value) => base.NotifySetFormValue(value);
 
+    /// <inheritdoc />
     protected override decimal? NotifyGetFormValue() => base.NotifyGetFormValue();
 
+    /// <inheritdoc />
     protected override void NotifyClearFormValue() => base.NotifyClearFormValue();
 
+    /// <inheritdoc />
     protected override void NotifyValidateStatus(FormValidateStatus status) => base.NotifyValidateStatus(status);
 
     private void HandleClearButtonClicked(object? sender, RoutedEventArgs args)

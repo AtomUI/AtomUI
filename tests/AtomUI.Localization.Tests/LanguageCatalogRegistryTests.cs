@@ -218,7 +218,8 @@ public class LanguageCatalogRegistryTests
     public void Unregistered_Key_Types_Miss_Without_Allocating_After_First_Lookup()
     {
         var registry = CreateDataRegistry(typeof(DeltaResourceKind).Assembly.GetName().Name!, typeof(DeltaResourceKind).FullName!);
-        // Avalonia 以控件 Type 查找 ControlTheme（键类型为 RuntimeType），以字符串或 token enum 查找其它资源。
+        // Avalonia looks up a ControlTheme by the control Type (the key type is RuntimeType) and other resources
+        // by a string or a token enum.
         Type[] keyTypes = [typeof(Type).GetType(), typeof(string), typeof(GammaResourceKind)];
         foreach (var keyType in keyTypes)
         {

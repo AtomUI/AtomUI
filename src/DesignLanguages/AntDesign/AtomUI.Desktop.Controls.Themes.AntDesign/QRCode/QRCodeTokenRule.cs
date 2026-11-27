@@ -4,7 +4,9 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls.Themes.AntDesign;
 
-/// <summary>The AntDesign view of <see cref="QRCodeToken"/>.</summary>
+/// <summary>
+/// The AntDesign view of <see cref="QRCodeToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class QRCodeTokenRule : IControlTokenRule<AntDesignToken, QRCodeToken>
 {

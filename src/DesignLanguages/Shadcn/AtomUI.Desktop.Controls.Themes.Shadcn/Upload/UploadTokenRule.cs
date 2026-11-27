@@ -4,7 +4,9 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls.Themes.Shadcn;
 
-/// <summary>The shadcn view of <see cref="UploadToken"/>.</summary>
+/// <summary>
+/// The shadcn view of <see cref="UploadToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class UploadTokenRule : IControlTokenRule<ShadcnToken, UploadToken>
 {
@@ -18,6 +20,7 @@ internal sealed class UploadTokenRule : IControlTokenRule<ShadcnToken, UploadTok
         token.TextListNamePadding = new Thickness(global.UniformlyPaddingXS, 0);
         token.TextListItemPadding = new Thickness(global.UniformlyPaddingXS, global.UniformlyPaddingXXS);
 
+        // Ant Design formula kept as is: shadcn has no Upload, so the language has no values of its own.
         token.TextListProgressLineHeight = 2;
         token.TextListProgressPadding = new Thickness(
                 token.TextListItemPadding.Left + global.FontSize + token.TextListNamePadding.Left,

@@ -4,7 +4,9 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls.Themes.Shadcn;
 
-/// <summary>The shadcn view of <see cref="WindowTitleBarButtonToken"/>.</summary>
+/// <summary>
+/// The shadcn view of <see cref="WindowTitleBarButtonToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class WindowTitleBarButtonTokenRule : IControlTokenRule<ShadcnToken, WindowTitleBarButtonToken>
 {

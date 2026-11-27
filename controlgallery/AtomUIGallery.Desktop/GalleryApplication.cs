@@ -19,7 +19,9 @@ public partial class GalleryApplication : BaseGalleryApplication
         Name = "AtomUI Desktop Gallery";
     }
 
-    /// <summary>宿主在 AppBuilder 链上登记 Gallery 的 AtomUI 配置。</summary>
+    /// <summary>
+    /// The host registers the Gallery AtomUI configuration on the AppBuilder chain.
+    /// </summary>
     public static void Configure(IAtomUIBuilder builder)
     {
         ArgumentNullException.ThrowIfNull(builder);
@@ -38,7 +40,8 @@ public partial class GalleryApplication : BaseGalleryApplication
         builder.UsePrimeNG();
         builder.UseShadcn();
         builder.WithInitialDesignLanguage<AntDesignLanguage>();
-        // Auto：动态代码编译（JIT/ReadyToRun）时显示，NativeAOT 下不显示。图片在显示 Splash 时才加载。
+        // Auto shows the splash under JIT and ReadyToRun and hides it under NativeAOT.
+        // The image loads only when the splash is shown.
         builder.UseSplash(SplashMode.Auto, splash => splash
             .WithLogo(new Uri("avares://AtomUIGallery.Desktop/Assets/Images/AppLogo.iconset/icon_128x128@2x.png"))
             .WithTitle("AtomUI Gallery"));

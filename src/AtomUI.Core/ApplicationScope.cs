@@ -55,7 +55,8 @@ internal sealed partial class ApplicationScope : IAtomUI, IDisposable
 
     internal Style FlowDirectionStyle { get; }
 
-    // 启动状态和可等待结果由同一个对象拥有；状态由启动编排推进。
+    // The startup state and the awaitable result are owned by the same object; the state is advanced by the
+    // startup orchestration.
     internal StartupProcess Startup { get; }
 
     internal void ReleaseStartupInputs()

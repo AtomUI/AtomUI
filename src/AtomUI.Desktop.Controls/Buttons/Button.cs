@@ -14,15 +14,48 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
 
+/// <summary>
+/// Visual kind of a <see cref="Button" />. The value decides the color and variant a button falls back to
+/// while <see cref="Button.Color" /> or <see cref="Button.Variant" /> is <see langword="null" />, and
+/// <see cref="Dashed" /> selects the template with the dashed frame.
+/// </summary>
 public enum ButtonType
 {
+    /// <summary>
+    /// Standard button. It is outlined and neutral, or solid and primary while <see cref="Button.Variant" />
+    /// is <see cref="ButtonVariant.Solid" />, and it takes the danger color while
+    /// <see cref="Button.IsDanger" /> is set.
+    /// </summary>
     Default,
+    /// <summary>
+    /// Button with a dashed border, drawn in the <see cref="ButtonVariant.Dashed" /> style.
+    /// </summary>
     Dashed,
+    /// <summary>
+    /// Button in the <see cref="ButtonVariant.Solid" /> style with the primary color, which is the danger
+    /// color while <see cref="Button.IsDanger" /> is set.
+    /// </summary>
     Primary,
+    /// <summary>
+    /// Button in the <see cref="ButtonVariant.Link" /> style: text without border or background, in the
+    /// link color of the theme.
+    /// </summary>
     Link,
+    /// <summary>
+    /// Button in the <see cref="ButtonVariant.Text" /> style: text without border; the background appears
+    /// only while the button is hovered or pressed.
+    /// </summary>
     Text
 }
 
+/// <summary>
+/// The button of the desktop library. On top of <see cref="AbstractButton" /> it adds the visual kind
+/// (<see cref="ButtonType" />), the shape of the frame (<see cref="Shape" />), the ghost, danger and loading looks,
+/// a size step (<see cref="SizeType" />) and the placement, size and padding of the icon and of the content. An
+/// explicit <see cref="Color" /> and <see cref="Variant" /> replace what the kind resolves to. The button plays a
+/// wave animation when it is released while <see cref="IsWaveSpiritEnabled" /> allows it, and it takes part in a
+/// compact <c>Space</c>, which adjusts its corner radius to its place in the group.
+/// </summary>
 [PseudoClasses(ButtonPseudoClass.DefaultType,
     ButtonPseudoClass.DashedType,
     ButtonPseudoClass.PrimaryType,
@@ -37,81 +70,158 @@ public partial class Button : AbstractButton,
 {
     #region 公共属性定义
 
+    /// <summary>
+    /// Identifies the <see cref="ButtonType" /> property.
+    /// </summary>
     public static readonly StyledProperty<ButtonType> ButtonTypeProperty =
         AvaloniaProperty.Register<Button, ButtonType>(nameof(ButtonType));
 
+    /// <summary>
+    /// Identifies the <see cref="Shape" /> property.
+    /// </summary>
     public new static readonly StyledProperty<ButtonShape> ShapeProperty =
         AbstractButton.ShapeProperty.AddOwner<Button>();
 
+    /// <summary>
+    /// Identifies the <see cref="IsDanger" /> property.
+    /// </summary>
     public new static readonly StyledProperty<bool> IsDangerProperty =
         AbstractButton.IsDangerProperty.AddOwner<Button>();
 
+    /// <summary>
+    /// Identifies the <see cref="IsGhost" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsGhostProperty =
         AvaloniaProperty.Register<Button, bool>(nameof(IsGhost));
 
+    /// <summary>
+    /// Identifies the <see cref="IsLoading" /> property.
+    /// </summary>
     public new static readonly StyledProperty<bool> IsLoadingProperty =
         AbstractButton.IsLoadingProperty.AddOwner<Button>();
 
+    /// <summary>
+    /// Identifies the <see cref="SizeType" /> property.
+    /// </summary>
     public static readonly StyledProperty<CustomizableSizeType> SizeTypeProperty =
         CustomizableSizeTypeControlProperty.SizeTypeProperty.AddOwner<Button>();
 
+    /// <summary>
+    /// Identifies the <see cref="ContentPadding" /> property.
+    /// </summary>
     public static readonly StyledProperty<Thickness> ContentPaddingProperty =
         AvaloniaProperty.Register<Button, Thickness>(nameof(ContentPadding));
 
+    /// <summary>
+    /// Identifies the <see cref="Icon" /> property.
+    /// </summary>
     public new static readonly StyledProperty<PathIcon?> IconProperty =
         AbstractButton.IconProperty.AddOwner<Button>();
 
+    /// <summary>
+    /// Identifies the <see cref="IconWidth" /> property.
+    /// </summary>
     public static readonly StyledProperty<double> IconWidthProperty =
         AvaloniaProperty.Register<Button, double>(nameof(IconWidth));
 
+    /// <summary>
+    /// Identifies the <see cref="IconHeight" /> property.
+    /// </summary>
     public static readonly StyledProperty<double> IconHeightProperty =
         AvaloniaProperty.Register<Button, double>(nameof(IconHeight));
 
+    /// <summary>
+    /// Identifies the <see cref="IconPlacement" /> property.
+    /// </summary>
     public new static readonly StyledProperty<ButtonIconPlacement> IconPlacementProperty =
         AbstractButton.IconPlacementProperty.AddOwner<Button>();
 
+    /// <summary>
+    /// Identifies the <see cref="IsMotionEnabled" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<Button>();
 
+    /// <summary>
+    /// Identifies the <see cref="IsWaveSpiritEnabled" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsWaveSpiritEnabledProperty =
         WaveSpiritAwareControlProperty.IsWaveSpiritEnabledProperty.AddOwner<Button>();
 
+    /// <summary>
+    /// Identifies the <see cref="Color" /> property.
+    /// </summary>
     public new static readonly StyledProperty<ButtonColor?> ColorProperty =
         AbstractButton.ColorProperty.AddOwner<Button>();
 
+    /// <summary>
+    /// Identifies the <see cref="Variant" /> property.
+    /// </summary>
     public new static readonly StyledProperty<ButtonVariant?> VariantProperty =
         AbstractButton.VariantProperty.AddOwner<Button>();
 
+    /// <summary>
+    /// Visual kind of the button, one of the <c>ButtonType</c> values. While <see cref="Color" /> or
+    /// <see cref="Variant" /> is <see langword="null" />, the value decides both through
+    /// <see cref="ResolveFallbackColorAndVariant" />; a button that sets both is painted with those instead.
+    /// </summary>
     public ButtonType ButtonType
     {
         get => GetValue(ButtonTypeProperty);
         set => SetValue(ButtonTypeProperty, value);
     }
 
+    /// <summary>
+    /// Shape of the button frame. The button never measures taller than wide. <see cref="ButtonShape.Circle" />
+    /// measures square and <see cref="ButtonShape.Round" /> at least one and a half times as wide as high, and
+    /// both take their corner radius from the measured height; <see cref="ButtonShape.Rectangular" /> forces
+    /// square corners. The default theme pads a circle with its circle padding instead of
+    /// <see cref="ContentPadding" />.
+    /// </summary>
     public new ButtonShape Shape
     {
         get => GetValue(ShapeProperty);
         set => SetValue(ShapeProperty, value);
     }
 
+    /// <summary>
+    /// Marks the button as destructive: it raises the <c>danger</c> pseudo-class, and while <see cref="Color" />
+    /// or <see cref="Variant" /> is <see langword="null" /> the button is painted in the
+    /// <see cref="ButtonColor.Danger" /> color whatever its <see cref="ButtonType" /> is.
+    /// </summary>
     public new bool IsDanger
     {
         get => GetValue(IsDangerProperty);
         set => SetValue(IsDangerProperty, value);
     }
 
+    /// <summary>
+    /// Makes the button a ghost button: its background stays transparent and it casts no shadow, whatever its
+    /// color and variant. A ghost button is painted in the <see cref="ButtonVariant.Outlined" /> style even when
+    /// its type or <see cref="Variant" /> resolves to <see cref="ButtonVariant.Solid" />.
+    /// </summary>
     public bool IsGhost
     {
         get => GetValue(IsGhostProperty);
         set => SetValue(IsGhostProperty, value);
     }
 
+    /// <summary>
+    /// Switches the button to its loading look: it raises the <c>loading</c> pseudo-class, with which the
+    /// themes replace <see cref="Icon" /> with a spinning loading icon, and the wave animation is not played.
+    /// The button stays enabled.
+    /// </summary>
     public new bool IsLoading
     {
         get => GetValue(IsLoadingProperty);
         set => SetValue(IsLoadingProperty, value);
     }
 
+    /// <summary>
+    /// Size step of the button, <c>Middle</c> by default. The default theme takes the minimum height, font
+    /// size, <see cref="ContentPadding" />, corner radius and icon size from it; <c>Custom</c> sets no minimum
+    /// height. The value is set on the button itself and does not inherit.
+    /// </summary>
     public CustomizableSizeType SizeType
     {
         get => GetValue(SizeTypeProperty);
@@ -119,7 +229,11 @@ public partial class Button : AbstractButton,
     }
 
     /// <summary>
-    /// Gets or sets the padding used by the default theme for regular button content.
+    /// Padding between the frame and the content of a button that shows content. The default theme sets it
+    /// from the content padding of the <see cref="SizeType" /> and copies it into
+    /// <see cref="TemplatedControl.Padding" />; a value set here applies to every size. It is ignored for an
+    /// icon-only button and for a <see cref="ButtonShape.Circle" /> button, which pad with the icon-only
+    /// padding and the circle padding of the theme.
     /// </summary>
     public Thickness ContentPadding
     {
@@ -127,48 +241,93 @@ public partial class Button : AbstractButton,
         set => SetValue(ContentPaddingProperty, value);
     }
 
+    /// <summary>
+    /// Icon shown next to the content, or <see langword="null" /> for no icon. The theme shows it only while
+    /// it is an AtomUI <see cref="AtomUI.Controls.Icon" /> and the button is not loading; it is sized with
+    /// <see cref="IconWidth" /> and <see cref="IconHeight" /> and painted with the foreground. An icon without
+    /// content raises the <c>icononly</c> pseudo-class, with which the themes apply the icon-only padding.
+    /// </summary>
     public new PathIcon? Icon
     {
         get => GetValue(IconProperty);
         set => SetValue(IconProperty, value);
     }
 
+    /// <summary>
+    /// Width of <see cref="Icon" /> and of the loading icon, in device-independent pixels. The default theme
+    /// sets it from the icon size of the <see cref="SizeType" />, or from the icon-only size while an icon-only
+    /// button is loading. The registered value is 0, so a theme must set the property for the icon to be seen.
+    /// </summary>
     public double IconWidth
     {
         get => GetValue(IconWidthProperty);
         set => SetValue(IconWidthProperty, value);
     }
 
+    /// <summary>
+    /// Height of <see cref="Icon" /> and of the loading icon, in device-independent pixels. The default theme
+    /// sets it from the icon size of the <see cref="SizeType" />, or from the icon-only size while an icon-only
+    /// button is loading. The registered value is 0, so a theme must set the property for the icon to be seen.
+    /// </summary>
     public double IconHeight
     {
         get => GetValue(IconHeightProperty);
         set => SetValue(IconHeightProperty, value);
     }
 
+    /// <summary>
+    /// Side of the content the icon is placed on, <see cref="ButtonIconPlacement.Start" /> by default. The
+    /// default theme docks <see cref="Icon" /> to the left of the content for
+    /// <see cref="ButtonIconPlacement.Start" /> and to the right for <see cref="ButtonIconPlacement.End" />,
+    /// each with its own icon margin; it has no effect on an icon-only button.
+    /// </summary>
     public new ButtonIconPlacement IconPlacement
     {
         get => GetValue(IconPlacementProperty);
         set => SetValue(IconPlacementProperty, value);
     }
 
+    /// <summary>
+    /// Enables the motion of the button while <see langword="true" />: the color transitions of the default
+    /// theme and the wave animation that runs when the button is released. The default theme sets it from the
+    /// <c>EnableMotion</c> token; a value set on the button replaces that.
+    /// </summary>
     public bool IsMotionEnabled
     {
         get => GetValue(IsMotionEnabledProperty);
         set => SetValue(IsMotionEnabledProperty, value);
     }
 
+    /// <summary>
+    /// Enables the wave animation while <see langword="true" />. It runs when a pressed button is released,
+    /// and only while <see cref="IsMotionEnabled" /> is also <see langword="true" />, the button is not loading
+    /// and its effective variant is <see cref="ButtonVariant.Solid" />,
+    /// <see cref="ButtonVariant.Outlined" /> or <see cref="ButtonVariant.Dashed" />. The default theme sets it
+    /// from the <c>EnableWaveSpirit</c> token; a value set on the button replaces that.
+    /// </summary>
     public bool IsWaveSpiritEnabled
     {
         get => GetValue(IsWaveSpiritEnabledProperty);
         set => SetValue(IsWaveSpiritEnabledProperty, value);
     }
 
+    /// <summary>
+    /// Color scheme of the button, or <see langword="null" /> to derive it. The value is used only while
+    /// <see cref="Variant" /> is also set; otherwise <see cref="ResolveFallbackColorAndVariant" /> decides the
+    /// color from <see cref="ButtonType" /> and <see cref="IsDanger" />.
+    /// </summary>
     public new ButtonColor? Color
     {
         get => GetValue(ColorProperty);
         set => SetValue(ColorProperty, value);
     }
 
+    /// <summary>
+    /// Painting style of the button, or <see langword="null" /> to derive it. With <see cref="Color" /> also
+    /// set the pair is used as it is; otherwise <see cref="ResolveFallbackColorAndVariant" /> decides both, and
+    /// a ghost button never shows <see cref="ButtonVariant.Solid" /> because
+    /// <see cref="NormalizeVariant" /> turns it into <see cref="ButtonVariant.Outlined" />.
+    /// </summary>
     public new ButtonVariant? Variant
     {
         get => GetValue(VariantProperty);
@@ -220,7 +379,7 @@ public partial class Button : AbstractButton,
 
     /// <summary>
     /// Corner radius imposed by a hosting control that splits one visual frame over several Buttons (SplitButton). It
-    /// replaces <see cref="TemplatedControl.CornerRadius"/> as the base of <see cref="EffectiveCornerRadius"/> so the
+    /// replaces <see cref="TemplatedControl.CornerRadius" /> as the base of <see cref="EffectiveCornerRadius" /> so the
     /// public property keeps the theme and user values.
     /// </summary>
     internal static readonly StyledProperty<CornerRadius?> HostCornerRadiusProperty =
@@ -268,7 +427,7 @@ public partial class Button : AbstractButton,
     private bool _effectiveIconVisible;
 
     /// <summary>
-    /// Whether the icon slot is shown: an AtomUI <see cref="AtomUI.Controls.Icon"/> is set, the icon is allowed
+    /// Whether the icon slot is shown: an AtomUI <see cref="AtomUI.Controls.Icon" /> is set, the icon is allowed
     /// and the button is not loading. Templates bind to it instead of a three-way MultiBinding.
     /// </summary>
     internal bool EffectiveIconVisible
@@ -374,7 +533,7 @@ public partial class Button : AbstractButton,
 
     private bool _usesThemeRecipe;
 
-    // The recipe colour model; see AbstractButtonGeometryToken.RecipeVariants.
+    // The recipe color model; see AbstractButtonGeometryToken.RecipeVariants.
     internal bool UsesThemeRecipe
     {
         get => _usesThemeRecipe;
@@ -383,7 +542,7 @@ public partial class Button : AbstractButton,
 
     private bool _disablesWithOpacity;
 
-    // Disabled buttons keep their colours at ThemeDisabledOpacity instead of the grey disabled paint.
+    // Disabled buttons keep their colors at ThemeDisabledOpacity instead of the gray disabled paint.
     internal bool DisablesWithOpacity
     {
         get => _disablesWithOpacity;
@@ -400,7 +559,7 @@ public partial class Button : AbstractButton,
 
     private bool _pressMoves;
 
-    // Pressing moves the button instead of switching to the pressed colours.
+    // Pressing moves the button instead of switching to the pressed colors.
     internal bool PressMoves
     {
         get => _pressMoves;
@@ -471,6 +630,15 @@ public partial class Button : AbstractButton,
 
     double ICompactSpaceAware.GetBorderThickness() => GetBorderThicknessForCompactSpace();
 
+    /// <summary>
+    /// Border width this button reports to a compact <c>Space</c>, which offsets each item of the group by a
+    /// multiple of it: the left border in a horizontal space, the top border in a vertical one, and 0 while the
+    /// button is not used in compact space. It is called through
+    /// <c>ICompactSpaceAware.GetBorderThickness</c>; override it to report a different width.
+    /// </summary>
+    /// <returns>
+    /// The border width in device-independent pixels.
+    /// </returns>
     protected virtual double GetBorderThicknessForCompactSpace()
     {
         if (!IsUsedInCompactSpace)
@@ -499,25 +667,58 @@ public partial class Button : AbstractButton,
     void IFormItemAware.ClearFormValue() => NotifyClearFormValue();
     void IFormItemAware.NotifyValidateStatus(FormValidateStatus status) => NotifyValidateStatus(status);
 
+    /// <summary>
+    /// Called when a form writes a value into this control through <c>IFormItemAware.SetFormValue</c>, which
+    /// a form item does for values that do not come from the user. A button keeps no form value, so the
+    /// default does nothing; override it to react to the value.
+    /// </summary>
+    /// <param name="value">
+    /// The value the form writes, of the type that <see cref="NotifyGetFormValue" /> returns.
+    /// </param>
     protected virtual void NotifySetFormValue(object? value)
     {
     }
 
+    /// <summary>
+    /// Returns the value a form reads from this control through <c>IFormItemAware.GetFormValue</c>, which
+    /// becomes the value of the form item and of its field. A button keeps no form value, so the default
+    /// returns <see langword="null" />; override it to report one.
+    /// </summary>
+    /// <returns>
+    /// <see langword="null" /> in the default implementation.
+    /// </returns>
     protected virtual object? NotifyGetFormValue()
     {
         return null;
     }
 
+    /// <summary>
+    /// Called when the form item that holds this control is reset and has no initial value to restore. A
+    /// button keeps no form value, so the default does nothing; override it to reset state kept for the form.
+    /// </summary>
     protected virtual void NotifyClearFormValue()
     {
     }
 
+    /// <summary>
+    /// Called when the form item that holds this control updates its validation state, also with
+    /// <c>FormValidateStatus.Validating</c> while a validation runs. A button shows no validation feedback, so
+    /// the default does nothing; override it to react to the status.
+    /// </summary>
+    /// <param name="status">
+    /// The new validation status of the form item.
+    /// </param>
     protected virtual void NotifyValidateStatus(FormValidateStatus status)
     {
     }
 
     #endregion
 
+    /// <summary>
+    /// Calls the base member, then subscribes to the theme token resolver and applies the theme appearance.
+    /// The subscription replaces one left by an earlier attachment and is disposed in
+    /// <see cref="OnDetachedFromLogicalTree" />. Derived overrides must call the base member.
+    /// </summary>
     protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
     {
         base.OnAttachedToLogicalTree(e);
@@ -528,6 +729,10 @@ public partial class Button : AbstractButton,
         ConfigureThemeAppearance();
     }
 
+    /// <summary>
+    /// Disposes the theme token subscription, then calls the base member. Derived overrides must call the base
+    /// member.
+    /// </summary>
     protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
     {
         _themeScopeSubscription?.Dispose();
@@ -535,6 +740,11 @@ public partial class Button : AbstractButton,
         base.OnDetachedFromLogicalTree(e);
     }
 
+    /// <summary>
+    /// Calls the base member, then resolves the wave spirit decorator of the template and refreshes the type
+    /// pseudo-classes, the wave type and the effective corner radius from the current property values. Derived
+    /// overrides must call the base member.
+    /// </summary>
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
@@ -544,6 +754,12 @@ public partial class Button : AbstractButton,
         ConfigureEffectiveCornerRadius();
     }
 
+    /// <summary>
+    /// Measures the content and applies the shape to the result: the width is never smaller than the height,
+    /// a circle measures square and a round button at least one and a half times as wide as high. For those two
+    /// shapes the measured height also becomes the effective corner radius, without changing
+    /// <see cref="TemplatedControl.CornerRadius" />.
+    /// </summary>
     protected override Size MeasureOverride(Size availableSize)
     {
         var size         = LayoutHelper.ApplyLayoutConstraints(this, base.MeasureOverride(availableSize));
@@ -575,6 +791,15 @@ public partial class Button : AbstractButton,
         return new Size(targetWidth, targetHeight);
     }
 
+    /// <summary>
+    /// Calls the base member, then keeps the state derived from the properties in step with them: the icon
+    /// slot follows <see cref="Icon" /> and <see cref="IsLoading" />, releasing a pressed button starts the
+    /// wave animation, the <c>popup-trigger</c> pseudo-class follows whether a <c>Flyout</c> is set, the type
+    /// pseudo-classes follow <see cref="ButtonType" />, the wave type follows <see cref="Shape" />, the
+    /// effective color and variant follow <see cref="ButtonType" /> and <see cref="IsGhost" />, and the
+    /// effective border thickness and corner radius follow the properties they are computed from. Derived
+    /// overrides must call the base member.
+    /// </summary>
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
@@ -712,6 +937,14 @@ public partial class Button : AbstractButton,
         }
     }
 
+    /// <summary>
+    /// Projects a new effective color and variant into the template state: <c>EffectiveIsDanger</c> follows
+    /// the effective color, <c>EffectiveIsGhost</c> follows <see cref="IsGhost" />, the frame gets a border for
+    /// the <see cref="ButtonVariant.Outlined" />, <see cref="ButtonVariant.Dashed" /> and
+    /// <see cref="ButtonVariant.Solid" /> styles and none for the others, and the variant theme variables are
+    /// refreshed. It runs after every change of the effective state; derived overrides must call the base
+    /// member.
+    /// </summary>
     protected override void OnEffectiveButtonStateChanged()
     {
         EffectiveIsDanger   = EffectiveColor == ButtonColor.Danger;
@@ -722,9 +955,28 @@ public partial class Button : AbstractButton,
         ConfigureVariantThemeVariables();
     }
 
+    /// <summary>
+    /// Turns <see cref="ButtonVariant.Solid" /> into <see cref="ButtonVariant.Outlined" /> for a ghost button
+    /// and returns every other variant unchanged. It runs before a variant is stored as the effective variant,
+    /// for a set <see cref="Variant" /> as well as for the fallback.
+    /// </summary>
+    /// <param name="variant">
+    /// The variant resolved from <see cref="Variant" /> or from the fallback.
+    /// </param>
     protected override ButtonVariant NormalizeVariant(ButtonVariant variant) =>
         IsGhost && variant == ButtonVariant.Solid ? ButtonVariant.Outlined : variant;
 
+    /// <summary>
+    /// Returns the color and variant for a button whose <see cref="Color" /> or <see cref="Variant" /> is
+    /// <see langword="null" />. A button of a type other than <c>Default</c>, or a danger button, takes the
+    /// style of its type and the <see cref="ButtonColor.Danger" /> color, or <see cref="ButtonColor.Primary" />
+    /// for <c>Primary</c> and <see cref="ButtonColor.Default" /> for every other type. A default button that
+    /// is not a danger button takes primary and solid while <see cref="Variant" /> is
+    /// <see cref="ButtonVariant.Solid" />, and default and outlined otherwise.
+    /// </summary>
+    /// <returns>
+    /// The fallback color in <c>Color</c> and the fallback variant in <c>Variant</c>.
+    /// </returns>
     protected override (ButtonColor Color, ButtonVariant Variant) ResolveFallbackColorAndVariant()
     {
         if (ButtonType != ButtonType.Default || IsDanger)

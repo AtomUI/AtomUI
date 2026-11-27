@@ -3,6 +3,10 @@ using Avalonia;
 
 namespace AtomUI.Icons;
 
+/// <summary>
+/// Extracts the <c>viewBox</c> and the drawing elements of an SVG document into an
+/// <see cref="SvgParsedInfo" />, which icon package generators turn into icon classes.
+/// </summary>
 public class SvgParser
 {
     private const string SvgElementName = "svg";
@@ -17,7 +21,7 @@ public class SvgParser
     private const string GroupElementName = "g";
     private const string ViewBoxAttrName = "viewBox";
     
-    // svg 图形元素的属性名称
+    // Attribute names of the SVG graphic elements.
     private const string XAttrName = "x";
     private const string YAttrName = "y";
     private const string WidthAttrName = "width";
@@ -45,13 +49,42 @@ public class SvgParser
     private List<SvgGraphicElement>? _graphicElements;
     private ViewBox _viewBox = new ();
     private bool _parseFinished;
-    // 暂时我只支持解析一层 g 标签
+    // Only one level of g elements is supported for now.
     
     private Stack<GroupElement>? _groupInfoStack;
 
-    // 上下文信息
+    // Parsing context: the names of the elements that are currently open.
     private Stack<string>? _currentElementNames;
 
+    /// <summary>
+    /// Parses one SVG document and returns its graphic elements and its <c>viewBox</c>.
+    /// </summary>
+    /// <param name="svg">
+    /// The SVG source text.
+    /// </param>
+    /// <returns>
+    /// The graphic elements in document order and the <c>viewBox</c>.
+    /// </returns>
+    /// <exception cref="XmlException">
+    /// The source is not well-formed XML.
+    /// </exception>
+    /// <exception cref="FormatException">
+    /// A <c>points</c> entry holds a coordinate that is not two numbers, or a <c>viewBox</c> number is not an
+    /// integer.
+    /// </exception>
+    /// <remarks>
+    /// <para>
+    /// Supported elements are <c>path</c>, <c>g</c>, <c>rect</c>, <c>circle</c>, <c>ellipse</c>, <c>line</c>,
+    /// <c>polyline</c> and <c>polygon</c>. Other elements are not collected, and a <c>clipPath</c> element
+    /// is skipped with its content. An element inherits the paint attributes of the <c>g</c> element that
+    /// encloses it, and its own attributes override the inherited values.
+    /// </para>
+    /// <para>
+    /// The <c>viewBox</c> values are read as integers. The parser keeps the <c>viewBox</c> across calls: a
+    /// document without one yields the <c>viewBox</c> of the document parsed before it on the same instance,
+    /// or the default value for the first document.
+    /// </para>
+    /// </remarks>
     public SvgParsedInfo Parse(string svg)
     {
         try
@@ -165,7 +198,7 @@ public class SvgParser
         if (viewBox is not null)
         {
             var parts = viewBox.Split([' '], StringSplitOptions.RemoveEmptyEntries);
-            // 暂时没有进行错误处理
+            // No error handling for a malformed viewBox yet.
             _viewBox.X      = int.Parse(parts[0]);
             _viewBox.Y      = int.Parse(parts[1]);
             _viewBox.Width  = int.Parse(parts[2]);
@@ -432,7 +465,7 @@ public class SvgParser
             element.StrokeWidth    = groupInfo.StrokeWidth;
             element.Opacity    = groupInfo.Opacity;
         }
-        // 暂时自己的优先级大
+        // For now, an attribute on the element itself takes precedence over the value inherited from the group.
         var transform = reader.GetAttribute(TransformAttrName);
         if (!string.IsNullOrEmpty(transform))
         {

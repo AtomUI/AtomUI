@@ -14,13 +14,13 @@ namespace AtomUI.Desktop.Controls;
 /// <summary>
 /// A masonry (waterfall) layout control that organizes children of uneven heights into columns
 /// using stable-column assignments by default, with classic shortest-column reflow available
-/// through <see cref="LayoutStrategy"/>.
+/// through <see cref="LayoutStrategy" />.
 /// </summary>
 /// <remarks>
 /// <para>
-/// <see cref="Masonry"/> derives from <see cref="ItemsControl"/> and supports two content styles:
-/// placing arbitrary <see cref="Control"/> children directly (the child itself acts as its container,
-/// no extra visual layer), or binding a data collection via <see cref="ItemsControl.ItemsSource"/>
+/// <see cref="Masonry" /> derives from <see cref="ItemsControl" /> and supports two content styles:
+/// placing arbitrary <see cref="Control" /> children directly (the child itself acts as its container,
+/// no extra visual layer), or binding a data collection via <see cref="ItemsControl.ItemsSource" />
 /// (the base class generates <c>ContentPresenter</c> containers). Container generation, collection
 /// change synchronization and container recycling are provided by the base class.
 /// </para>
@@ -34,49 +34,49 @@ public partial class Masonry : ItemsControl
     #region 公共属性定义
 
     /// <summary>
-    /// Defines the <see cref="ColumnCount"/> property.
+    /// Defines the <see cref="ColumnCount" /> property.
     /// </summary>
     public static readonly StyledProperty<int> ColumnCountProperty =
         AvaloniaProperty.Register<Masonry, int>(nameof(ColumnCount));
 
     /// <summary>
-    /// Defines the <see cref="ColumnInfo"/> property.
+    /// Defines the <see cref="ColumnInfo" /> property.
     /// </summary>
     public static readonly StyledProperty<ResponsiveInt?> ColumnInfoProperty =
         AvaloniaProperty.Register<Masonry, ResponsiveInt?>(nameof(ColumnInfo));
 
     /// <summary>
-    /// Defines the <see cref="MinColumnWidth"/> property.
+    /// Defines the <see cref="MinColumnWidth" /> property.
     /// </summary>
     public static readonly StyledProperty<double> MinColumnWidthProperty =
         AvaloniaProperty.Register<Masonry, double>(nameof(MinColumnWidth), 320d);
 
     /// <summary>
-    /// Defines the <see cref="MaxColumnCount"/> property.
+    /// Defines the <see cref="MaxColumnCount" /> property.
     /// </summary>
     public static readonly StyledProperty<int> MaxColumnCountProperty =
         AvaloniaProperty.Register<Masonry, int>(nameof(MaxColumnCount), 4);
 
     /// <summary>
-    /// Defines the <see cref="ColumnGap"/> property.
+    /// Defines the <see cref="ColumnGap" /> property.
     /// </summary>
     public static readonly StyledProperty<double> ColumnGapProperty =
         AvaloniaProperty.Register<Masonry, double>(nameof(ColumnGap), 16d);
 
     /// <summary>
-    /// Defines the <see cref="RowGap"/> property.
+    /// Defines the <see cref="RowGap" /> property.
     /// </summary>
     public static readonly StyledProperty<double> RowGapProperty =
         AvaloniaProperty.Register<Masonry, double>(nameof(RowGap), 16d);
 
     /// <summary>
-    /// Defines the <see cref="Gutter"/> property.
+    /// Defines the <see cref="Gutter" /> property.
     /// </summary>
     public static readonly StyledProperty<ResponsiveGutter?> GutterProperty =
         AvaloniaProperty.Register<Masonry, ResponsiveGutter?>(nameof(Gutter));
 
     /// <summary>
-    /// Defines the <see cref="LayoutStrategy"/> property.
+    /// Defines the <see cref="LayoutStrategy" /> property.
     /// </summary>
     public static readonly StyledProperty<MasonryLayoutStrategy> LayoutStrategyProperty =
         AvaloniaProperty.Register<Masonry, MasonryLayoutStrategy>(
@@ -86,14 +86,14 @@ public partial class Masonry : ItemsControl
     /// <summary>
     /// Defines the attached <c>Masonry.Column</c> property, which pins a child to a specific
     /// column. A <c>null</c> value (the default) delegates automatic placement to
-    /// <see cref="LayoutStrategy"/>.
+    /// <see cref="LayoutStrategy" />.
     /// </summary>
     public static readonly AttachedProperty<int?> ColumnProperty =
         AvaloniaProperty.RegisterAttached<Masonry, Control, int?>("Column");
 
     /// <summary>
     /// Defines the attached <c>Masonry.Span</c> property, which controls how a child occupies
-    /// columns. Defaults to <see cref="MasonryItemSpan.Auto"/>.
+    /// columns. Defaults to <see cref="MasonryItemSpan.Auto" />.
     /// </summary>
     public static readonly AttachedProperty<MasonryItemSpan> SpanProperty =
         AvaloniaProperty.RegisterAttached<Masonry, Control, MasonryItemSpan>("Span", MasonryItemSpan.Auto);
@@ -101,7 +101,7 @@ public partial class Masonry : ItemsControl
     /// <summary>
     /// Gets or sets the fixed number of columns. When greater than zero, Masonry uses a fixed
     /// column count. When less than or equal to zero, Masonry computes the effective column count
-    /// from <see cref="MinColumnWidth"/>, <see cref="MaxColumnCount"/> and the available width.
+    /// from <see cref="MinColumnWidth" />, <see cref="MaxColumnCount" /> and the available width.
     /// Defaults to <c>0</c> (container adaptive).
     /// </summary>
     public int ColumnCount
@@ -112,7 +112,7 @@ public partial class Masonry : ItemsControl
 
     /// <summary>
     /// Gets or sets the responsive column count. When the current breakpoint is configured,
-    /// this value takes precedence over <see cref="ColumnCount"/>.
+    /// this value takes precedence over <see cref="ColumnCount" />.
     /// </summary>
     public ResponsiveInt? ColumnInfo
     {
@@ -141,7 +141,7 @@ public partial class Masonry : ItemsControl
     }
 
     /// <summary>
-    /// Gets or sets the horizontal gap between columns. Negative, <see cref="double.NaN"/>
+    /// Gets or sets the horizontal gap between columns. Negative, <see cref="double.NaN" />
     /// and infinite values are normalized to a valid non-negative value in the effective state.
     /// Defaults to <c>16</c>.
     /// </summary>
@@ -152,7 +152,7 @@ public partial class Masonry : ItemsControl
     }
 
     /// <summary>
-    /// Gets or sets the vertical gap between rows. Negative, <see cref="double.NaN"/>
+    /// Gets or sets the vertical gap between rows. Negative, <see cref="double.NaN" />
     /// and infinite values are normalized to a valid non-negative value in the effective state.
     /// Defaults to <c>16</c>.
     /// </summary>
@@ -164,7 +164,7 @@ public partial class Masonry : ItemsControl
 
     /// <summary>
     /// Gets or sets the responsive horizontal and vertical gutter. When the current breakpoint is
-    /// configured, this value takes precedence over <see cref="ColumnGap"/> and <see cref="RowGap"/>.
+    /// configured, this value takes precedence over <see cref="ColumnGap" /> and <see cref="RowGap" />.
     /// </summary>
     public ResponsiveGutter? Gutter
     {
@@ -174,8 +174,8 @@ public partial class Masonry : ItemsControl
 
     /// <summary>
     /// Gets or sets the strategy used to assign automatic items to columns. The default
-    /// <see cref="MasonryLayoutStrategy.StableColumns"/> keeps existing items in their columns
-    /// while the effective column count is unchanged. <see cref="MasonryLayoutStrategy.Reflow"/>
+    /// <see cref="MasonryLayoutStrategy.StableColumns" /> keeps existing items in their columns
+    /// while the effective column count is unchanged. <see cref="MasonryLayoutStrategy.Reflow" />
     /// recomputes automatic assignments from the current shortest column on each layout calculation.
     /// </summary>
     public MasonryLayoutStrategy LayoutStrategy
@@ -184,16 +184,24 @@ public partial class Masonry : ItemsControl
         set => SetValue(LayoutStrategyProperty, value);
     }
 
-    /// <summary>Gets the value of the attached <c>Masonry.Column</c> property.</summary>
+    /// <summary>
+    /// Gets the value of the attached <c>Masonry.Column</c> property.
+    /// </summary>
     public static int? GetColumn(Control element) => element.GetValue(ColumnProperty);
 
-    /// <summary>Sets the value of the attached <c>Masonry.Column</c> property.</summary>
+    /// <summary>
+    /// Sets the value of the attached <c>Masonry.Column</c> property.
+    /// </summary>
     public static void SetColumn(Control element, int? value) => element.SetValue(ColumnProperty, value);
 
-    /// <summary>Gets the value of the attached <c>Masonry.Span</c> property.</summary>
+    /// <summary>
+    /// Gets the value of the attached <c>Masonry.Span</c> property.
+    /// </summary>
     public static MasonryItemSpan GetSpan(Control element) => element.GetValue(SpanProperty);
 
-    /// <summary>Sets the value of the attached <c>Masonry.Span</c> property.</summary>
+    /// <summary>
+    /// Sets the value of the attached <c>Masonry.Span</c> property.
+    /// </summary>
     public static void SetSpan(Control element, MasonryItemSpan value) => element.SetValue(SpanProperty, value);
 
     #endregion
@@ -212,15 +220,15 @@ public partial class Masonry : ItemsControl
     #region 内部属性定义
 
     /// <summary>
-    /// Defines the internal <see cref="MotionDuration"/> property. Item appear fade and position
-    /// glide duration, fed from the <c>MotionDurationSlow</c> token by the control theme.
+    /// Defines the internal <see cref="MotionDuration" /> property. Duration of the appear fade of an item that is
+    /// arranged for the first time, fed from the <c>MotionDurationSlow</c> token by the control theme.
     /// Zero (global motion disabled) degrades all item motions to instantaneous.
     /// </summary>
     internal static readonly StyledProperty<TimeSpan> MotionDurationProperty =
         MotionAwareControlProperty.MotionDurationProperty.AddOwner<Masonry>();
 
     /// <summary>
-    /// Defines the internal <see cref="LeaveMotionDuration"/> property. Removed item fade-out
+    /// Defines the internal <see cref="LeaveMotionDuration" /> property. Removed item fade-out
     /// duration, fed from the <c>MotionDurationFast</c> token by the control theme.
     /// </summary>
     internal static readonly StyledProperty<TimeSpan> LeaveMotionDurationProperty =
@@ -260,24 +268,37 @@ public partial class Masonry : ItemsControl
 
     #region 离场动效（ghost 层托管）
 
-    // antd motionEaseOut == CubicEaseOut（与 MasonryPanel.MotionEasing 一致）
+    // antd motionEaseOut == CubicEaseOut, the same easing as MasonryPanel.MotionEasing.
     private static readonly CubicEaseOut MotionEasing = new();
     private Canvas? _motionGhostLayer;
     private readonly List<Border> _motionGhostHosts = new();
 
+    /// <summary>
+    /// Captures the <c>PART_MotionGhostLayer</c> canvas of the template, which hosts removed items while they fade
+    /// out. Derived overrides must call the base member, or removed items disappear without the fade.
+    /// </summary>
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
         _motionGhostLayer = e.NameScope.Find<Canvas>("PART_MotionGhostLayer");
     }
 
+    /// <summary>
+    /// Calls the base member, then releases the containers that pending leave fades still host in the motion ghost
+    /// layer, so that a removed container does not stay parented to the ghost layer.
+    /// </summary>
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnDetachedFromVisualTree(e);
         ClearMotionGhosts();
     }
 
-    /// <summary>面板移除子项后调用：将被移除容器移入 ghost 层在原位置淡出。</summary>
+    /// <summary>
+    /// Called by <see cref="MasonryPanel" /> after it removed children. Moves each removed container into the motion
+    /// ghost layer, where it fades out at its last position. The ghost layer owns the container until its fade
+    /// ends, so the panel must call <see cref="TryReleaseMotionGhost" /> before adding the container again.
+    /// Does nothing when the template has no ghost layer or <see cref="LeaveMotionDuration" /> is zero or less.
+    /// </summary>
     internal void NotifyItemsRemoved(MasonryPanel source, IReadOnlyList<MasonryPanel.MasonryRemovedItem> removedItems)
     {
         if (_motionGhostLayer is null)
@@ -295,7 +316,7 @@ public partial class Masonry : ItemsControl
         var duration = LeaveMotionDuration;
         if (duration <= TimeSpan.Zero)
         {
-            return; // 禁用动效：与上游一致直接消失
+            return; // Motion is disabled: the item disappears at once, as in antd
         }
         var layer = _motionGhostLayer!;
         var origin = source.TranslatePoint(default, layer).GetValueOrDefault();
@@ -336,7 +357,14 @@ public partial class Masonry : ItemsControl
         ReleaseMotionGhost(host);
     }
 
-    /// <summary>容器重加入面板前由面板调用：立即归还容器归属，避免双视觉父级。</summary>
+    /// <summary>
+    /// Called by <see cref="MasonryPanel" /> before it adds a container back. Returns the container to the caller
+    /// at once, so that adding it does not give it a second visual parent.
+    /// </summary>
+    /// <returns>
+    /// <see langword="true" /> when a pending leave fade hosts the container and it has been released;
+    /// <see langword="false" /> when no leave fade hosts it.
+    /// </returns>
     internal bool TryReleaseMotionGhost(Control container)
     {
         for (var i = 0; i < _motionGhostHosts.Count; i++)
@@ -352,7 +380,7 @@ public partial class Masonry : ItemsControl
 
     private void ReleaseMotionGhost(Border host)
     {
-        host.Child = null; // 归还容器归属（用户直接子元素场景容器归用户所有）
+        host.Child = null; // Returns the container to its owner: for direct children it is the user's own element
         _motionGhostHosts.Remove(host);
         if (host.Parent is Canvas layer)
         {
@@ -384,6 +412,10 @@ public partial class Masonry : ItemsControl
         Dispatcher.Post(() => LayoutChanged?.Invoke(this, new MasonryLayoutChangedEventArgs(items)));
     }
 
+    /// <summary>
+    /// Adds the <c>semantic-item</c> class, the target of <c>MasonryItemStyle</c>, to every item container.
+    /// Derived overrides must call the base member, or the item style does not reach their containers.
+    /// </summary>
     protected override void PrepareContainerForItemOverride(Control container, object? item, int index)
     {
         base.PrepareContainerForItemOverride(container, item, index);

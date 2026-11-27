@@ -7,6 +7,16 @@ using Avalonia.Layout;
 
 namespace AtomUI.Controls.Commons;
 
+/// <summary>
+/// Base class of the items control that hosts the checkable tags of a checkable tag group;
+/// <c>CheckableTagItemsControl</c> in AtomUI.Desktop.Controls derives from it.
+/// </summary>
+/// <remarks>
+/// <c>ItemSpacing</c> and <c>LineSpacing</c> are the gaps between the tags and between their lines,
+/// <c>Orientation</c> the direction in which the tags are laid out, and <c>IsMultiple</c> whether several tags can
+/// be checked at once. The properties are shared with <c>AbstractCheckableTagGroup</c>, which adds them to the
+/// control.
+/// </remarks>
 internal abstract class AbstractCheckableTagItemsControl : SelectingItemsControl
 {
     public static readonly StyledProperty<double> ItemSpacingProperty =

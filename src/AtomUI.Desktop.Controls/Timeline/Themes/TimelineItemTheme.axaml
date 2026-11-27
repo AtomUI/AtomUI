@@ -115,19 +115,19 @@
             </Style>
         </Style>
 
-        <!-- 非 Reverse 状态下，下一个是 pending item 设置大内间距 -->
+        <!-- Without Reverse, the item before a pending item gets the large padding -->
         <Style Selector="^[Orientation=Vertical][NextIsPending=True][IsReverse=False]">
             <Setter Property="Padding"
                     Value="{atom:TimelineTokenResource ItemPaddingBottomLG}" />
         </Style>
 
-        <!-- 在 Reverse 下，pending item 自己设置大内间距 -->
+        <!-- With Reverse, the pending item itself gets the large padding -->
         <Style Selector="^[Orientation=Vertical][IsPending=True][IsReverse=True]">
             <Setter Property="Padding"
                     Value="{atom:TimelineTokenResource ItemPaddingBottomLG}" />
         </Style>
 
-        <!-- 对齐上游 li:last-child：最后一个节点不保留下内边距 -->
+        <!-- Matches the upstream li:last-child: the last node keeps no bottom padding -->
         <Style Selector="^[Orientation=Vertical][IsLast=True]">
             <Setter Property="Padding" Value="0" />
         </Style>

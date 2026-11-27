@@ -49,11 +49,14 @@ public partial class ProductApp : Application
 
     private static IAtomUIBuilder? s_configuredBuilder;
 
-    /// <summary>宿主在 BuildAvaloniaApp 链末尾登记产品配置。</summary>
+    /// <summary>
+    /// The host registers the product configuration at the end of the BuildAvaloniaApp chain.
+    /// </summary>
     public static void Configure(IAtomUIBuilder builder)
     {
         ArgumentNullException.ThrowIfNull(builder);
-        // 配置回调早于 Application 实例创建，因此经静态字段转交，由 Initialize 取用。
+        // The configuration callback runs before the Application instance exists, so it hands the builder over
+        // through a static field that Initialize picks up.
         s_configuredBuilder = builder;
         builder.UseDesktopControls();
         builder.UseAntDesign(static language => language.AddDesktopControls());
@@ -72,7 +75,7 @@ public partial class ProductApp : Application
 
     public override void Initialize()
     {
-        // Configure 在 Attach 之前同步执行，此时 builder 已就绪。
+        // Configure runs synchronously before Attach, so the builder is ready at this point.
         _builder = s_configuredBuilder ?? throw new InvalidOperationException(
             "PRODUCT_FAIL the host did not register AtomUI configuration before startup.");
 #if COMPLEX

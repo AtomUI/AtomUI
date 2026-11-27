@@ -5,6 +5,9 @@ using AtomUI.Theme.Languages;
 
 namespace AtomUI.Desktop.Controls.Themes.Shadcn;
 
+/// <summary>
+/// Provides <see cref="AddDesktopControls" />, the entry point that adds the shadcn values of the desktop controls.
+/// </summary>
 public static class ShadcnDesktopControlsExtensions
 {
     /// <summary>

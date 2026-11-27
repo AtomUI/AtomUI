@@ -11,6 +11,15 @@ using Avalonia.VisualTree;
 
 namespace AtomUI.Controls.Commons;
 
+/// <summary>
+/// Base class of the count badge indicator, the small label that shows a count at a corner of another control;
+/// <c>CountBadgeAdorner</c> in AtomUI.Desktop.Controls derives from it.
+/// </summary>
+/// <remarks>
+/// The indicator surface is <c>PART_IndicatorSurface</c> and the content presenter is <c>PART_ContentPresenter</c>.
+/// The indicator shows <c>Content</c> when it is set, otherwise the count text. <c>AbstractCountBadge</c> creates
+/// the indicator through <c>AbstractCountBadge.CreateBadgeAdorner</c>, which the concrete badge overrides.
+/// </remarks>
 [TemplatePart("PART_IndicatorSurface", typeof(Control))]
 [TemplatePart("PART_ContentPresenter", typeof(ContentPresenter))]
 internal abstract class AbstractCountBadgeAdorner : TemplatedControl
@@ -100,8 +109,7 @@ internal abstract class AbstractCountBadgeAdorner : TemplatedControl
             (o, v) => o.IsAdornerMode = v);
 
     /// <summary>
-    /// The indicator's ring, computed from <see cref="BadgeShadowSize"/> and <see cref="BadgeShadowColor"/>; the template
-    /// projects it onto the indicator border's BoxShadow.
+    /// Identifies the <see cref="IndicatorShadows" /> property.
     /// </summary>
     internal static readonly DirectProperty<AbstractCountBadgeAdorner, BoxShadows> IndicatorShadowsProperty =
         AvaloniaProperty.RegisterDirect<AbstractCountBadgeAdorner, BoxShadows>(
@@ -140,6 +148,13 @@ internal abstract class AbstractCountBadgeAdorner : TemplatedControl
 
     private bool _isAdornerMode;
 
+    /// <summary>
+    /// Whether the indicator is shown over another control, at its corner. With <see langword="true" /> the theme
+    /// aligns the indicator content to the top-right of the surface <c>PART_IndicatorSurface</c>, and the control
+    /// arranges the surface so that it is centered on the top-right corner of the area it is laid out in, moved by
+    /// <see cref="Offset" />. With <see langword="false" />, the default, the template arranges the surface. This
+    /// class does not set the value.
+    /// </summary>
     internal bool IsAdornerMode
     {
         get => _isAdornerMode;
@@ -148,6 +163,11 @@ internal abstract class AbstractCountBadgeAdorner : TemplatedControl
 
     private BoxShadows _indicatorShadows;
 
+    /// <summary>
+    /// The ring around the indicator, computed from <see cref="BadgeShadowColor" /> and
+    /// <see cref="BadgeShadowSize" />; it is empty while <see cref="IsBordered" /> is
+    /// <see langword="false" />. The theme binds the box shadow of the indicator border to it.
+    /// </summary>
     internal BoxShadows IndicatorShadows
     {
         get => _indicatorShadows;
@@ -156,7 +176,10 @@ internal abstract class AbstractCountBadgeAdorner : TemplatedControl
 
     private object? _presentedContent;
 
-    // The content the template shows: explicit Content when set, otherwise the count text.
+    /// <summary>
+    /// The content that the template presents inside the indicator: <see cref="Content" /> when it is set, otherwise
+    /// the count text (<see cref="CountText" />). The control updates it when either of them changes.
+    /// </summary>
     internal object? PresentedContent => _presentedContent;
 
     private string? _countText;
@@ -185,6 +208,11 @@ internal abstract class AbstractCountBadgeAdorner : TemplatedControl
         set => SetValue(BadgeShadowSizeProperty, value);
     }
 
+    /// <summary>
+    /// The Token resource keys of the color and the size of the ring around the indicator. The theme sets it. While
+    /// the indicator is attached to a visual tree, it observes these Tokens, and a change of one of them recomputes
+    /// <see cref="IndicatorShadows" />. <see langword="null" /> ends the observation.
+    /// </summary>
     internal BadgeShadowTokenResourceKeys? ShadowTokenResourceKeys
     {
         get => GetValue(ShadowTokenResourceKeysProperty);

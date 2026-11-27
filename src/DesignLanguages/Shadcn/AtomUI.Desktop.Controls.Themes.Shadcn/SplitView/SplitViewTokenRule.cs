@@ -4,7 +4,9 @@ using Avalonia.Animation.Easings;
 
 namespace AtomUI.Desktop.Controls.Themes.Shadcn;
 
-/// <summary>The shadcn view of <see cref="SplitViewToken"/>.</summary>
+/// <summary>
+/// The shadcn view of <see cref="SplitViewToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class SplitViewTokenRule : IControlTokenRule<ShadcnToken, SplitViewToken>
 {
@@ -12,6 +14,7 @@ internal sealed class SplitViewTokenRule : IControlTokenRule<ShadcnToken, SplitV
     {
         var token  = target.Own;
         var global = target.Global;
+        // Ant Design formula kept as is: shadcn has no SplitView, so the language has no values of its own.
         token.OpenPaneThemeLength     = 320;
         token.CompactPaneThemeLength  = 48;
         token.PaneOpenMotionDuration  = TimeSpan.FromMilliseconds(200);

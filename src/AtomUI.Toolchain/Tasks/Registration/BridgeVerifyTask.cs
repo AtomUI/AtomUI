@@ -6,19 +6,70 @@ using Microsoft.Build.Framework;
 
 namespace AtomUI.Build.Tasks;
 
-/// <summary>Records the distinct input-consumption, compiler-output and publish-copy boundaries.</summary>
+/// <summary>
+/// Records the distinct input-consumption, compiler-output and publish-copy boundaries.
+/// </summary>
 public sealed class VerifyConditionalRegistrationBridgeTask : RegistrationBuildTask
 {
+    /// <summary>
+    /// Path of the frozen format 2 inputs document, which lists the assemblies and additional inputs with
+    /// their hashes. Its hash must equal the transformation's <c>originalInputHash</c>, and the receipt
+    /// records it.
+    /// </summary>
     [Required] public string InputsPath { get; set; } = string.Empty;
+    /// <summary>
+    /// Path of the format 1 transformation document (stage <c>transformed-input</c>, input format 2) that
+    /// was written for these inputs. Every replacement it lists must match a frozen input assembly.
+    /// </summary>
     [Required] public string TransformationPath { get; set; } = string.Empty;
+    /// <summary>
+    /// The assembly paths the SDK compiler actually consumed.
+    /// In the <c>analysis-input</c> phase they must be exactly the prepared set, compared by assembly identity
+    /// and path. With the <c>wasm</c> engine they are the final compiler assemblies, which must match the
+    /// published ones by hash.
+    /// </summary>
     public ITaskItem[] ConsumedAssemblies { get; set; } = [];
+    /// <summary>
+    /// The non-assembly inputs the SDK compiler actually consumed.
+    /// In the <c>analysis-input</c> phase they must equal the frozen additional inputs whose kind is
+    /// <c>root-descriptor</c>, <c>reference</c>, <c>custom-step</c> or <c>opaque</c>. With the <c>wasm</c> engine
+    /// they are the final native WASM asset, which must match exactly one published <c>.wasm</c> file.
+    /// </summary>
     public ITaskItem[] ConsumedAdditionalInputs { get; set; } = [];
+    /// <summary>
+    /// The directory that holds the compiler output; required in the <c>linked-output</c> and
+    /// <c>published-output</c> phases. Every recorded file must lie under it, and the receipt stores its path
+    /// relative to this directory.
+    /// </summary>
     public string OutputDirectory { get; set; } = string.Empty;
+    /// <summary>
+    /// The compiler output files to verify and record in the <c>linked-output</c> and <c>published-output</c>
+    /// phases. When empty, every <c>.dll</c> and <c>.pdb</c> file under <see cref="OutputDirectory" /> is taken,
+    /// plus every <c>.wasm</c> file for the <c>wasm</c> engine. An empty resulting set fails the task.
+    /// </summary>
     public ITaskItem[] OutputFiles { get; set; } = [];
+    /// <summary>
+    /// Path of the bridge receipt. The <c>analysis-input</c> phase writes it. Each later phase reads the receipt
+    /// of the preceding phase from this path, requires the same inputs, transformation and engine, and replaces
+    /// it. A failed run deletes the file.
+    /// </summary>
     [Required] public string ReceiptPath { get; set; } = string.Empty;
+    /// <summary>
+    /// The engine that produced the output: <c>illink</c>, <c>nativeaot</c> or <c>wasm</c>.
+    /// </summary>
     [Required] public string EngineKind { get; set; } = string.Empty;
+    /// <summary>
+    /// The boundary to record. <c>analysis-input</c> checks what the SDK compiler consumed,
+    /// <c>linked-output</c> checks the compiler output, and <c>published-output</c> checks the published assets.
+    /// </summary>
     [Required] public string Phase { get; set; } = string.Empty;
 
+    /// <summary>
+    /// Verifies the frozen inputs and the transformation, checks the boundary that <see cref="Phase" /> names and
+    /// writes the receipt to <see cref="ReceiptPath" />. Returns <see langword="true" /> once the receipt is
+    /// written. Otherwise it logs error <c>ATOMUIREG006</c>, deletes any existing receipt and returns
+    /// <see langword="false" />.
+    /// </summary>
     public override bool Execute()
     {
         try

@@ -20,23 +20,42 @@ namespace AtomUI.Desktop.Controls;
 
 using ItemCollection = AtomUI.Collections.ItemCollection;
 
+/// <summary>
+/// Cascade selection control: a drop-down select that presents a tree of <see cref="ICascaderOption" /> level by
+/// level and selects one option or, with <see cref="IsMultiple" />, a set of options.
+/// </summary>
 public partial class Cascader : AbstractSelect
 {
     #region 公共属性定义
+    /// <summary>
+    /// Identifies the <see cref="ShowCheckedStrategy" /> property.
+    /// </summary>
     public static readonly StyledProperty<TreeSelectCheckedStrategy> ShowCheckedStrategyProperty =
         AvaloniaProperty.Register<Cascader, TreeSelectCheckedStrategy>(
             nameof(ShowCheckedStrategy), TreeSelectCheckedStrategy.All);
     
+    /// <summary>
+    /// Identifies the <see cref="IsMultiple" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsMultipleProperty =
         AvaloniaProperty.Register<Cascader, bool>(
             nameof(IsMultiple));
     
+    /// <summary>
+    /// Identifies the <see cref="OptionsSource" /> property.
+    /// </summary>
     public static readonly StyledProperty<IEnumerable<ICascaderOption>?> OptionsSourceProperty =
         CascaderView.OptionsSourceProperty.AddOwner<Cascader>();
     
+    /// <summary>
+    /// Identifies the <see cref="OptionTemplate" /> property.
+    /// </summary>
     public static readonly StyledProperty<IDataTemplate?> OptionTemplateProperty =
         CascaderView.OptionTemplateProperty.AddOwner<Cascader>();
     
+    /// <summary>
+    /// Identifies the <see cref="SelectedOption" /> property.
+    /// </summary>
     public static readonly DirectProperty<Cascader, ICascaderOption?> SelectedOptionProperty =
         AvaloniaProperty.RegisterDirect<Cascader, ICascaderOption?>(
             nameof(SelectedOption),
@@ -45,6 +64,9 @@ public partial class Cascader : AbstractSelect
             defaultBindingMode: BindingMode.TwoWay,
             enableDataValidation: true);
     
+    /// <summary>
+    /// Identifies the <see cref="SelectedOptions" /> property.
+    /// </summary>
     public static readonly DirectProperty<Cascader, IList<ICascaderOption>?> SelectedOptionsProperty =
         AvaloniaProperty.RegisterDirect<Cascader, IList<ICascaderOption>?>(
             nameof(SelectedOptions),
@@ -53,51 +75,102 @@ public partial class Cascader : AbstractSelect
             defaultBindingMode: BindingMode.TwoWay,
             enableDataValidation: true);
     
+    /// <summary>
+    /// Identifies the <see cref="ExpandIcon" /> property.
+    /// </summary>
     public static readonly StyledProperty<IconTemplate?> ExpandIconProperty =
         CascaderView.ExpandIconProperty.AddOwner<Cascader>();
     
+    /// <summary>
+    /// Identifies the <see cref="LoadingIcon" /> property.
+    /// </summary>
     public static readonly StyledProperty<IconTemplate?> LoadingIconProperty =
         CascaderView.LoadingIconProperty.AddOwner<Cascader>();
     
+    /// <summary>
+    /// Identifies the <see cref="ExpandTrigger" /> property.
+    /// </summary>
     public static readonly StyledProperty<CascaderViewExpandTrigger> ExpandTriggerProperty =
         CascaderView.ExpandTriggerProperty.AddOwner<Cascader>();
 
+    /// <summary>
+    /// Identifies the <see cref="DataLoader" /> property.
+    /// </summary>
     public static readonly StyledProperty<ICascaderItemDataLoader?> DataLoaderProperty =
         CascaderView.DataLoaderProperty.AddOwner<Cascader>();
     
+    /// <summary>
+    /// Identifies the <see cref="Filter" /> property.
+    /// </summary>
     public static readonly StyledProperty<IValueFilter?> FilterProperty =
         CascaderView.FilterProperty.AddOwner<Cascader>();
     
+    /// <summary>
+    /// Identifies the <see cref="FilterHighlightStrategy" /> property.
+    /// </summary>
     public static readonly StyledProperty<TextBlockHighlightStrategy> FilterHighlightStrategyProperty =
         CascaderView.FilterHighlightStrategyProperty.AddOwner<Cascader>();
     
+    /// <summary>
+    /// Identifies the <see cref="FilterHighlightForeground" /> property.
+    /// </summary>
     public static readonly StyledProperty<IBrush?> FilterHighlightForegroundProperty =
         CascaderView.FilterHighlightForegroundProperty.AddOwner<Cascader>();
     
+    /// <summary>
+    /// Identifies the <see cref="DefaultSelectOptionPath" /> property.
+    /// </summary>
     public static readonly StyledProperty<TreeNodePath?> DefaultSelectOptionPathProperty =
         AvaloniaProperty.Register<Cascader, TreeNodePath?>(nameof(DefaultSelectOptionPath));
     
+    /// <summary>
+    /// Identifies the <see cref="IsAllowSelectParent" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsAllowSelectParentProperty =
         CascaderView.IsAllowSelectParentProperty.AddOwner<Cascader>();
     
+    /// <summary>
+    /// Chooses which selected options are shown as tags in the selection box. It applies only when
+    /// <see cref="IsMultiple" /> is <see langword="true" />. With
+    /// <see cref="TreeSelectCheckedStrategy.ShowParent" />, a selected option is shown in place of the options
+    /// selected below it once all of its children are selected. With
+    /// <see cref="TreeSelectCheckedStrategy.ShowChild" />, only selected options that have no children are shown.
+    /// <see cref="TreeSelectCheckedStrategy.All" /> (the default) shows every selected option.
+    /// </summary>
     public TreeSelectCheckedStrategy ShowCheckedStrategy
     {
         get => GetValue(ShowCheckedStrategyProperty);
         set => SetValue(ShowCheckedStrategyProperty, value);
     }
     
+    /// <summary>
+    /// Enables multiple selection: options are checked in the drop-down, the selection is held by
+    /// <see cref="SelectedOptions" /> and shown as tags. When <see langword="false" /> (the default), a single
+    /// option is selected and <see cref="SelectedOption" /> is shown as a path.
+    /// </summary>
     public bool IsMultiple
     {
         get => GetValue(IsMultipleProperty);
         set => SetValue(IsMultipleProperty, value);
     }
     
+    /// <summary>
+    /// Gets or sets the source of the options offered in the drop-down: an enumerable of
+    /// <see cref="ICascaderOption" /> items, where the children of an option form the next level. A new source
+    /// replaces the items of <see cref="Options" />. The selection is then resolved again by option path
+    /// (<c>ItemKey</c> or <c>Value</c>), so it is kept when its path exists in the new source.
+    /// </summary>
     public IEnumerable? OptionsSource
     {
         get => GetValue(OptionsSourceProperty);
         set => SetValue(OptionsSourceProperty, value);
     }
     
+    /// <summary>
+    /// Gets or sets the template that renders an option in the drop-down. Its data item is an
+    /// <see cref="ICascaderOption" />. The registered default is <see langword="null" />; the theme then supplies a
+    /// template that shows the <c>Header</c> of the option.
+    /// </summary>
     [InheritDataTypeFromItems("OptionsSource")]
     public IDataTemplate? OptionTemplate
     {
@@ -107,6 +180,12 @@ public partial class Cascader : AbstractSelect
     
     private ICascaderOption? _selectedOption;
     
+    /// <summary>
+    /// Gets or sets the option selected in single-selection mode. Assign an option of the current
+    /// <see cref="Options" />: the path shown in the selection box is built from its <c>ParentNode</c> chain.
+    /// Setting it reports the new value to the owning FormItem and forwards the option to the drop-down view.
+    /// <see langword="null" /> clears the selection, so the placeholder can show.
+    /// </summary>
     public ICascaderOption? SelectedOption
     {
         get => _selectedOption;
@@ -115,68 +194,133 @@ public partial class Cascader : AbstractSelect
         
     private IList<ICascaderOption>? _checkedOptions;
     
+    /// <summary>
+    /// Gets or sets the options selected in multiple-selection mode; its items are shown as tags, chosen by
+    /// <see cref="ShowCheckedStrategy" />. The default is <see langword="null" />, which means that nothing is
+    /// selected. Assign a list that implements <c>INotifyCollectionChanged</c> to have later changes of the list
+    /// tracked. When options are checked in the drop-down, the control replaces this value with a new list.
+    /// </summary>
     public IList<ICascaderOption>? SelectedOptions
     {
         get => _checkedOptions;
         set => SetAndRaise(SelectedOptionsProperty, ref _checkedOptions, value);
     }
     
+    /// <summary>
+    /// Gets or sets the template of the icon that marks an option which has a next level. Set it on the
+    /// Cascader; the theme forwards it to the option items. The registered default is
+    /// <see langword="null" />; the theme then supplies a right arrow.
+    /// </summary>
     public IconTemplate? ExpandIcon
     {
         get => GetValue(ExpandIconProperty);
         set => SetValue(ExpandIconProperty, value);
     }
     
+    /// <summary>
+    /// Gets or sets the template of the icon shown on an option item while its children are being loaded by the
+    /// <see cref="DataLoader" />. Set it on the Cascader; the theme forwards it to the option items. The
+    /// registered default is <see langword="null" />; the theme then supplies a spinning loading icon.
+    /// </summary>
     public IconTemplate? LoadingIcon
     {
         get => GetValue(LoadingIconProperty);
         set => SetValue(LoadingIconProperty, value);
     }
     
+    /// <summary>
+    /// Gets or sets what expands an option that has children into the next level: clicking it
+    /// (<see cref="CascaderViewExpandTrigger.Click" />, the default) or resting the pointer on it
+    /// (<see cref="CascaderViewExpandTrigger.Hover" />). Set it on the Cascader; the theme forwards it to the
+    /// drop-down view.
+    /// </summary>
     public CascaderViewExpandTrigger ExpandTrigger
     {
         get => GetValue(ExpandTriggerProperty);
         set => SetValue(ExpandTriggerProperty, value);
     }
 
+    /// <summary>
+    /// Gets or sets the loader that supplies the children of an option on demand when the option is expanded.
+    /// Set it on the Cascader; the theme forwards it to the drop-down view. The default is
+    /// <see langword="null" />, which turns loading on demand off; only the children already present in the
+    /// option tree are shown.
+    /// </summary>
     public ICascaderItemDataLoader? DataLoader
     {
         get => GetValue(DataLoaderProperty);
         set => SetValue(DataLoaderProperty, value);
     }
     
+    /// <summary>
+    /// Gets or sets the filter that decides which options stay visible while text is typed in the search box.
+    /// Set it on the Cascader; the theme forwards it to the drop-down view. If the value is still
+    /// <see langword="null" /> when the control is initialized, a
+    /// <see cref="ValueFilterMode.Contains" /> filter is set as the current value, which leaves a binding in
+    /// place. A <see langword="null" /> set afterwards disables filtering.
+    /// </summary>
     public IValueFilter? Filter
     {
         get => GetValue(FilterProperty);
         set => SetValue(FilterProperty, value);
     }
     
+    /// <summary>
+    /// Gets or sets how the text that matched the search is emphasized in the option paths of the filtered list.
+    /// It is a combination of the <see cref="TextBlockHighlightStrategy" /> flags; the default is <c>All</c>.
+    /// Set it on the Cascader; the theme forwards it to the drop-down view.
+    /// </summary>
     public TextBlockHighlightStrategy FilterHighlightStrategy
     {
         get => GetValue(FilterHighlightStrategyProperty);
         set => SetValue(FilterHighlightStrategyProperty, value);
     }
     
+    /// <summary>
+    /// Gets or sets the brush of the highlighted match in the option paths of the filtered list. Set it on the
+    /// Cascader; the theme forwards it to the drop-down view. The registered default is
+    /// <see langword="null" />; the theme then supplies the <c>FilterHighlightColor</c> token of the Cascader.
+    /// </summary>
     public IBrush? FilterHighlightForeground
     {
         get => GetValue(FilterHighlightForegroundProperty);
         set => SetValue(FilterHighlightForegroundProperty, value);
     }
     
+    /// <summary>
+    /// Gets or sets the option path that the drop-down expands along by default and that is shown as selected
+    /// while nothing is selected in single-selection mode. Each segment names the option of one level by its
+    /// <c>ItemKey</c> or <c>Value</c>. Showing the path sets only the text of the selection box:
+    /// <see cref="SelectedOption" /> stays <see langword="null" /> until an option is picked or assigned.
+    /// </summary>
     public TreeNodePath? DefaultSelectOptionPath
     {
         get => GetValue(DefaultSelectOptionPathProperty);
         set => SetValue(DefaultSelectOptionPathProperty, value);
     }
     
+    /// <summary>
+    /// Gets or sets whether an option that has children can be selected as a single value. When
+    /// <see langword="true" />, clicking such an option selects it and double-clicking it closes the drop-down.
+    /// When <see langword="false" /> (the default), only options without children can be selected. Set it on the
+    /// Cascader; the theme forwards it to the drop-down view.
+    /// </summary>
     public bool IsAllowSelectParent
     {
         get => GetValue(IsAllowSelectParentProperty);
         set => SetValue(IsAllowSelectParentProperty, value);
     }
     
+    /// <summary>
+    /// Gets an <see cref="ItemsSourceView" /> over the <see cref="Options" /> collection, created on demand.
+    /// </summary>
     public ItemsSourceView OptionsView => ItemsSourceView.GetOrCreate(_options);
     
+    /// <summary>
+    /// Gets the options offered in the drop-down. Declare them as XAML content of the Cascader or add them here;
+    /// each item must implement <see cref="ICascaderOption" />, and the children of an option form the next level.
+    /// Setting <see cref="OptionsSource" /> replaces the items of this collection.
+    /// </summary>
     [Content]
     public ItemCollection Options => _options;
     
@@ -315,6 +459,10 @@ public partial class Cascader : AbstractSelect
         }
     }
 
+    /// <summary>
+    /// Sets a default <see cref="ValueFilterMode.Contains" /> filter when <see cref="Filter" /> is still
+    /// <see langword="null" />, without replacing a binding. The base member is called first.
+    /// </summary>
     protected override void OnInitialized()
     {
         base.OnInitialized();
@@ -324,6 +472,10 @@ public partial class Cascader : AbstractSelect
         }
     }
 
+    /// <summary>
+    /// Starts tracking changes of the <see cref="SelectedOptions" /> collection and refreshes the state derived
+    /// from the selection. The base member is called first.
+    /// </summary>
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
@@ -331,6 +483,10 @@ public partial class Cascader : AbstractSelect
         ConfigureSelectedOptionsValueState();
     }
 
+    /// <summary>
+    /// Stops tracking the <see cref="SelectedOptions" /> collection and clears the flag that suppresses
+    /// auto-repeated Enter presses. The base member is called last.
+    /// </summary>
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         ReleaseSelectedOptionsCollectionChangedSource();
@@ -343,6 +499,11 @@ public partial class Cascader : AbstractSelect
         Clear();
     }
     
+    /// <summary>
+    /// Clears the selection in either mode: sets <see cref="SelectedOption" />, <see cref="SelectedOptions" /> and
+    /// the path shown in the selection box to <see langword="null" />. It does not restore a
+    /// <see cref="DefaultSelectOptionPath" />.
+    /// </summary>
     public void Clear()
     {
         _isDefaultSelectOptionPathApplied = false;
@@ -368,12 +529,20 @@ public partial class Cascader : AbstractSelect
        
     }
     
+    /// <summary>
+    /// Handles the keys that act on the drop-down: Down, Enter and Space open it, Escape closes it and F4 toggles
+    /// it. While it is open, keys are passed to the drop-down view first. The base member is called first.
+    /// </summary>
     protected override void OnKeyDown(KeyEventArgs e)
     {
         base.OnKeyDown(e);
         HandleKeyDownCore(e);
     }
 
+    /// <summary>
+    /// Clears the flag that suppresses auto-repeated Enter presses, here and in the drop-down view, when keyboard
+    /// focus leaves the control as a whole. The base member is called first.
+    /// </summary>
     protected override void OnLostFocus(FocusChangedEventArgs e)
     {
         base.OnLostFocus(e);
@@ -384,6 +553,10 @@ public partial class Cascader : AbstractSelect
         }
     }
 
+    /// <summary>
+    /// Clears the flag that suppresses auto-repeated Enter presses when Enter is released, and passes every key
+    /// release to the drop-down view, which clears its own flag. The base member is called last.
+    /// </summary>
     protected override void OnKeyUp(KeyEventArgs e)
     {
         if (e.Key == Key.Enter)
@@ -452,6 +625,12 @@ public partial class Cascader : AbstractSelect
         SetCurrentValue(IsDropDownOpenProperty, false);
     }
     
+    /// <summary>
+    /// Keeps the control in step with property changes: refreshes the search box and the popup width, the state
+    /// derived from the selection and from <see cref="IsMultiple" /> (placeholder, shown path, tags, selected
+    /// count), and shows a changed <see cref="DefaultSelectOptionPath" /> while nothing is selected. The base
+    /// member is called first.
+    /// </summary>
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
@@ -523,6 +702,11 @@ public partial class Cascader : AbstractSelect
         }
     }
     
+    /// <summary>
+    /// Binds the template parts <c>PART_SingleFilterInput</c> and <c>PART_CascaderView</c>: releases the previous
+    /// drop-down view, hooks the events of the new one, gives it <see cref="Options" /> and the selection, and
+    /// refreshes the state derived from the selection. The base member is called first.
+    /// </summary>
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
@@ -555,6 +739,11 @@ public partial class Cascader : AbstractSelect
         ConfigureSingleFilterTextBox();
     }
     
+    /// <summary>
+    /// Runs after the drop-down has closed. In single-selection mode it clears the search box and the filter
+    /// value, lets the search box size itself again and resets the interaction state of the drop-down view. The
+    /// base member is called last.
+    /// </summary>
     protected override void PopupClosed(object? sender, EventArgs e)
     {
         if (!IsMultiple && _singleFilterInput != null)
@@ -567,6 +756,10 @@ public partial class Cascader : AbstractSelect
         base.PopupClosed(sender, e);
     }
 
+    /// <summary>
+    /// Runs after the drop-down has opened. In single-selection mode it restores the selected option in the
+    /// drop-down view and moves keyboard focus to the search box. The base member is called first.
+    /// </summary>
     protected override void PopupOpened(object? sender, EventArgs e)
     {
         base.PopupOpened(sender, e);
@@ -713,6 +906,11 @@ public partial class Cascader : AbstractSelect
         }
     }
     
+    /// <summary>
+    /// Marks a press inside the open drop-down popup as handled. When the drop-down is closed, it sets the
+    /// <c>:pressed</c> pseudo-class; <see cref="OnPointerReleased" /> toggles the drop-down only when that
+    /// pseudo-class is set. The base member is called first.
+    /// </summary>
     protected override void OnPointerPressed(PointerPressedEventArgs e)
     {
         base.OnPointerPressed(e);
@@ -756,6 +954,12 @@ public partial class Cascader : AbstractSelect
         }
     }
     
+    /// <summary>
+    /// Toggles the drop-down when the release ends a press that started on the closed control and lands outside
+    /// the drop-down popup, unless it lands on the close button of a selected tag. In every case it clears the
+    /// <c>:pressed</c> pseudo-class. A release inside the open drop-down popup is marked handled. The base member
+    /// is called last.
+    /// </summary>
     protected override void OnPointerReleased(PointerReleasedEventArgs e)
     {
         if (!e.Handled && e.Source is Visual source)
@@ -1193,6 +1397,9 @@ public partial class Cascader : AbstractSelect
         }
     }
 
+    /// <summary>
+    /// Shows the <see cref="DefaultSelectOptionPath" /> while nothing is selected. The base member is called first.
+    /// </summary>
     protected override void OnLoaded(RoutedEventArgs e)
     {
         base.OnLoaded(e);
@@ -1201,6 +1408,12 @@ public partial class Cascader : AbstractSelect
     
     #region 实现 FormItem 接口
     
+    /// <summary>
+    /// Assigns a value received from a FormItem: an <see cref="ICascaderOption" /> becomes
+    /// <see cref="SelectedOption" /> in single-selection mode, and an <c>IList&lt;ICascaderOption&gt;</c> becomes
+    /// <see cref="SelectedOptions" /> in multiple-selection mode. Any other value clears the selection of the
+    /// current mode.
+    /// </summary>
     protected override void NotifySetFormValue(object? value)
     {
         if (!IsMultiple)
@@ -1213,6 +1426,10 @@ public partial class Cascader : AbstractSelect
         }
     }
     
+    /// <summary>
+    /// Returns the value that a FormItem reads: <see cref="SelectedOption" /> in single-selection mode and
+    /// <see cref="SelectedOptions" /> in multiple-selection mode.
+    /// </summary>
     protected override object? NotifyGetFormValue()
     {
         if (!IsMultiple)
@@ -1222,6 +1439,10 @@ public partial class Cascader : AbstractSelect
         return SelectedOptions;
     }
     
+    /// <summary>
+    /// Clears the value that a FormItem resets: sets <see cref="SelectedOption" /> in single-selection mode and
+    /// <see cref="SelectedOptions" /> in multiple-selection mode to <see langword="null" />.
+    /// </summary>
     protected override void NotifyClearFormValue()
     {
         if (!IsMultiple)

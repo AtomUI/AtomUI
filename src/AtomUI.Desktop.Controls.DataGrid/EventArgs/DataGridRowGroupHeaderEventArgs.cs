@@ -5,12 +5,15 @@
 
 namespace AtomUI.Desktop.Controls;
 
+/// <summary>
+/// Carries a group header for the <see cref="DataGrid.LoadingRowGroup" /> and
+/// <see cref="DataGrid.UnloadingRowGroup" /> events.
+/// </summary>
 public class DataGridRowGroupHeaderEventArgs : EventArgs
 {
     /// <summary>
     /// Constructs a DataGridRowGroupHeaderEventArgs instance
     /// </summary>
-    /// <param name="rowGroupHeader"></param>
     public DataGridRowGroupHeaderEventArgs(DataGridRowGroupHeader rowGroupHeader)
     {
         RowGroupHeader = rowGroupHeader;

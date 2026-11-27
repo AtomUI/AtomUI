@@ -3,6 +3,10 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls;
 
+/// <summary>
+/// The container of one row in a <see cref="TransferListView" />. The theme shows the checkbox of a checkable row
+/// and the remove button of a row that is not checkable.
+/// </summary>
 [TokenOwnerTransparent]
 public partial class TransferListItem : ListViewItem
 {

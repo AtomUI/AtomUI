@@ -6,7 +6,9 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls.Themes.Shadcn;
 
-/// <summary>The shadcn view of <see cref="DrawerToken"/>.</summary>
+/// <summary>
+/// The shadcn view of <see cref="DrawerToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class DrawerTokenRule : IControlTokenRule<ShadcnToken, DrawerToken>
 {
@@ -119,6 +121,7 @@ internal sealed class DrawerTokenRule : IControlTokenRule<ShadcnToken, DrawerTok
             }
         ]);
 
+        // Ant Design formula kept as is: no registry value is merged into these sizes.
         token.SmallSize         = new Dimension(378);
         token.MiddleSize        = new Dimension(520);
         token.LargeSize         = new Dimension(736);
@@ -131,7 +134,7 @@ internal sealed class DrawerTokenRule : IControlTokenRule<ShadcnToken, DrawerTok
         token.EdgeBorderColor   = Colors.Transparent;
         token.EdgeBorderThickness = 0;
         // The drawer shadow level of the style on all four sides; Vega also draws the anchored-side border in the outline
-        // ring colour.
+        // ring color.
         var drawerShadows = context.Language.DrawerShadow;
         token.BoxShadowDrawerLeft  = drawerShadows;
         token.BoxShadowDrawerRight = drawerShadows;

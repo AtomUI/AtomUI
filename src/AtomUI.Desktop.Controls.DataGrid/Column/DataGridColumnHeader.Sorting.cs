@@ -188,7 +188,8 @@ internal partial class DataGridColumnHeader
         }
     }
 
-    //TODO GroupSorting
+    // TODO GroupSorting: verify that this member handles sorting for column groups and complete it where it is
+    // missing. Remove this TODO when that is done.
     internal void ProcessSort(KeyModifiers keyModifiers, ListSortDirection? forcedDirection = null)
     {
         ProcessRangeSort(keyModifiers, forcedDirection);

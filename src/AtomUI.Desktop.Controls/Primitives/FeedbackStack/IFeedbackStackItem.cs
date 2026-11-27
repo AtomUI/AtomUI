@@ -3,7 +3,9 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
 
-/// <summary>Desktop feedback cards add stack visibility to the shared lifetime contract.</summary>
+/// <summary>
+/// Desktop feedback cards add stack visibility to the shared lifetime contract.
+/// </summary>
 internal interface IFeedbackStackItem : IFeedbackLifetimeItem, IFeedbackProgressItem
 {
     bool IsProgressVisible { get; }

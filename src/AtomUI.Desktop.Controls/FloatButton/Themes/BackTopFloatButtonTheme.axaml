@@ -117,7 +117,9 @@
         <Setter Property="IsActive" Value="True" />
 
         <Style Selector="^ /template/ atomc|BackTopProgressRing#ProgressRing">
-            <!-- 默认隐藏：由 IsShowProgress=True 的下述选择器置 True（后序样式覆盖先序） -->
+            <!-- Hidden by default; the selector below with IsShowProgress=True sets True (a later style overrides an
+            earlier one)
+            -->
             <Setter Property="IsVisible" Value="False" />
             <Setter Property="ProgressRingTokenResourceKeys" Value="{x:Static atom:BackTopRingResources.ProgressRingTokenResourceKeys}" />
         </Style>

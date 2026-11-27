@@ -9,7 +9,7 @@ namespace AtomUI.Generator.ThemeConsumption;
 
 /// <summary>
 /// ATOMUIGEN043: control code must read Tokens only through <c>ControlTokenAccessor</c>, <c>TokenResourceBinder</c> or
-/// an AXAML TokenResource (control-token-guidelines rule 2).
+/// an AXAML TokenResource.
 /// <para>
 /// Reported: a call to the Avalonia <c>TryGetResource</c>/<c>TryFindResource</c>/<c>FindResource</c> family
 /// (<c>Application.Current</c>, any <c>IResourceHost</c>, the <c>ResourceNodeExtensions</c> extensions) whose key
@@ -36,11 +36,19 @@ public sealed class ScopedTokenReadAnalyzer : DiagnosticAnalyzer
 
     private static readonly string[] s_readMethodNames = ["TryGetResource", "TryFindResource", "FindResource"];
 
+    /// <summary>
+    /// The single descriptor <c>ControlCodeScopedTokenRead</c> that this analyzer reports.
+    /// </summary>
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } =
     [
         AtomUIDiagnosticDescriptors.ControlCodeScopedTokenRead
     ];
 
+    /// <summary>
+    /// Registers the action that reports ATOMUIGEN043 in the control code of the compilation for every invocation.
+    /// Generated code is not analyzed. Nothing is registered when <c>ControlCodeScope.TryCreate</c> returns
+    /// <see langword="null" />.
+    /// </summary>
     public override void Initialize(AnalysisContext context)
     {
         context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);

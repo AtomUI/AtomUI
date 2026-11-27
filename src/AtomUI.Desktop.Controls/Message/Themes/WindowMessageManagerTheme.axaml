@@ -7,11 +7,13 @@
         <Setter Property="Padding" Value="{atom:MessageCardTokenResource MessageTopMargin}" />
         <Setter Property="Template">
             <ControlTemplate>
-                <!-- release/6.0 堆叠结构：StackHost 按方位锚定并紧贴可见队列（hover 命中区与队列范围一致），
-                     presenter 拉满 StackHost，卡片间距由 FeedbackStackPanel 的 ExpandedGap 管理；
-                     semantic-list-content 标记 listContent 部件。
-                     layer: 外层是表面宿主（规则 3），卡片内控件的焦点描边、Badge 落在它的装饰层，紧贴本 manager 的卡片；
-                     它没有背景，不参与命中，StackHost 的命中区不变。 -->
+                <!-- Stacking structure: StackHost is anchored by placement and hugs the visible queue (the hover hit
+                area equals the queue extent), the presenter fills StackHost, and the gap between cards is managed
+                by FeedbackStackPanel through ExpandedGap; semantic-list-content marks the listContent part. layer:
+                the outer element is the surface host; the focus strokes and badges of controls inside the cards
+                land in its adorner layer, right next to this manager's cards. It has no background and takes no
+                part in hit testing, so the hit area of StackHost is unchanged.
+                -->
                 <VisualLayerManager Name="PART_SurfaceHost"
                                     atom:LayerLadder.IsSurfaceHost="True">
                     <Grid Name="PART_StackHost"

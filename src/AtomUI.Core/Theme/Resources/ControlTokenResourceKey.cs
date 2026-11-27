@@ -2,6 +2,14 @@ using SchemaControlTokenIdentity = AtomUI.Theme.Schema.ControlTokenIdentity;
 
 namespace AtomUI.Theme.Resources;
 
+/// <summary>
+/// A resource key for a global Token that is looked up through the Effective Global Token of a control: the
+/// control's own value of the Token is used when it has one, otherwise the global resource.
+/// </summary>
+/// <remarks>
+/// A bound key stores the slot of one control in one snapshot. An unbound key stores a control identity or a
+/// control type instead, and is resolved against the active theme snapshot at each lookup.
+/// </remarks>
 public readonly record struct ControlTokenResourceKey
 {
     internal ControlTokenResourceKey(int controlSlot, SharedTokenKind kind)
@@ -41,6 +49,20 @@ public readonly record struct ControlTokenResourceKey
     internal Type? ControlType { get; }
     internal bool IsBound { get; }
 
+    /// <summary>
+    /// Creates the key for the global Token <paramref name="kind" /> as it is effective for the control that
+    /// <paramref name="identity" /> identifies. Looking the key up throws an
+    /// <see cref="InvalidOperationException" /> when that control is not registered in the active theme schema.
+    /// </summary>
+    /// <param name="identity">
+    /// The identity of the control that owns the Token.
+    /// </param>
+    /// <param name="kind">
+    /// The global Token to read.
+    /// </param>
+    /// <returns>
+    /// A resource key for resource lookups and <c>DynamicResource</c> bindings.
+    /// </returns>
     public static object Global(
         SchemaControlTokenIdentity identity,
         SharedTokenKind kind)
@@ -53,6 +75,24 @@ public readonly record struct ControlTokenResourceKey
         return new ControlTokenResourceKey(controlType, kind);
     }
 
+    /// <summary>
+    /// Creates the key for the Own Token <paramref name="resourceKey" /> of the control that
+    /// <paramref name="identity" /> identifies. Looking the key up throws an
+    /// <see cref="InvalidOperationException" /> when that control is not registered in the active theme schema or
+    /// the Token is not one of its Own Tokens.
+    /// </summary>
+    /// <param name="identity">
+    /// The identity of the control that owns the Token.
+    /// </param>
+    /// <param name="resourceKey">
+    /// The resource key of an Own Token of that control.
+    /// </param>
+    /// <returns>
+    /// A resource key for resource lookups and <c>DynamicResource</c> bindings.
+    /// </returns>
+    /// <exception cref="ArgumentNullException">
+    /// <paramref name="resourceKey" /> is <see langword="null" />.
+    /// </exception>
     public static object Own(SchemaControlTokenIdentity identity, object resourceKey) =>
         new ControlOwnTokenResourceKey(identity, resourceKey);
 

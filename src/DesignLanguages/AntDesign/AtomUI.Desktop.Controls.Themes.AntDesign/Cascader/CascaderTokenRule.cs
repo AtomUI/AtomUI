@@ -4,7 +4,9 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls.Themes.AntDesign;
 
-/// <summary>The AntDesign view of <see cref="CascaderToken"/>.</summary>
+/// <summary>
+/// The AntDesign view of <see cref="CascaderToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class CascaderTokenRule : IControlTokenRule<AntDesignToken, CascaderToken>
 {

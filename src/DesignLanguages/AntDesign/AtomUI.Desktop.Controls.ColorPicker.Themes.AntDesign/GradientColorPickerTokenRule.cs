@@ -3,7 +3,9 @@ using AtomUI.Theme.Languages;
 
 namespace AtomUI.Desktop.Controls.Themes.AntDesign;
 
-/// <summary>The AntDesign view of <see cref="GradientColorPickerToken"/>.</summary>
+/// <summary>
+/// The AntDesign view of <see cref="GradientColorPickerToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class GradientColorPickerTokenRule : IControlTokenRule<AntDesignToken, GradientColorPickerToken>
 {

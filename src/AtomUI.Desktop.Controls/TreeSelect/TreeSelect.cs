@@ -24,80 +24,145 @@ namespace AtomUI.Desktop.Controls;
 using ItemCollection = AtomUI.Collections.ItemCollection;
 using AvaloniaTreeView = Avalonia.Controls.TreeView;
 
+/// <summary>
+/// A select control whose drop-down shows a tree. In single selection the selection box shows the header of
+/// <see cref="SelectedItem" /> as text; with <see cref="IsMultiple" /> it shows the nodes of
+/// <see cref="SelectedItems" /> as tags.
+/// </summary>
 public partial class TreeSelect : AbstractSelect
 {
     #region 公共属性定义
 
+    /// <summary>
+    /// Identifies the <see cref="ShowCheckedStrategy" /> property.
+    /// </summary>
     public static readonly StyledProperty<TreeSelectCheckedStrategy> ShowCheckedStrategyProperty =
         AvaloniaProperty.Register<TreeSelect, TreeSelectCheckedStrategy>(
             nameof(ShowCheckedStrategy), TreeSelectCheckedStrategy.All);
 
+    /// <summary>
+    /// Identifies the <see cref="AutoScrollToSelectedItem" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> AutoScrollToSelectedItemProperty =
         SelectingItemsControl.AutoScrollToSelectedItemProperty.AddOwner<TreeSelect>();
 
+    /// <summary>
+    /// Identifies the <see cref="IsShowIcon" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsShowIconProperty =
         TreeView.IsShowIconProperty.AddOwner<TreeSelect>();
 
+    /// <summary>
+    /// Identifies the <see cref="IsShowLeafIcon" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsShowLeafIconProperty =
         TreeView.IsShowLeafIconProperty.AddOwner<TreeSelect>();
 
+    /// <summary>
+    /// Identifies the <see cref="IsShowLine" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsShowLineProperty =
         TreeView.IsShowLineProperty.AddOwner<TreeSelect>();
 
+    /// <summary>
+    /// Identifies the <see cref="IsTreeCheckable" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsTreeCheckableProperty =
         AvaloniaProperty.Register<TreeSelect, bool>(
             nameof(IsTreeCheckable));
 
+    /// <summary>
+    /// Identifies the <see cref="IsMultiple" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsMultipleProperty =
         AvaloniaProperty.Register<TreeSelect, bool>(
             nameof(IsMultiple));
 
+    /// <summary>
+    /// Identifies the <see cref="IsDefaultExpandAll" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsDefaultExpandAllProperty =
         AvaloniaProperty.Register<TreeSelect, bool>(
             nameof(IsDefaultExpandAll));
 
+    /// <summary>
+    /// Identifies the <see cref="IsShowTreeLine" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsShowTreeLineProperty =
         AvaloniaProperty.Register<TreeSelect, bool>(
             nameof(IsShowTreeLine));
 
+    /// <summary>
+    /// Identifies the <see cref="IsSwitcherRotation" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsSwitcherRotationProperty =
         TreeView.IsSwitcherRotationProperty.AddOwner<TreeSelect>();
 
+    /// <summary>
+    /// Identifies the <see cref="IsTreeCheckStrictly" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsTreeCheckStrictlyProperty =
         AvaloniaProperty.Register<TreeSelect, bool>(nameof(IsTreeCheckStrictly), false);
 
+    /// <summary>
+    /// Identifies the <see cref="TreeDefaultExpandedPaths" /> property.
+    /// </summary>
     public static readonly DirectProperty<TreeSelect, IList<TreeNodePath>?> TreeDefaultExpandedPathsProperty =
         AvaloniaProperty.RegisterDirect<TreeSelect, IList<TreeNodePath>?>(
             nameof(TreeDefaultExpandedPaths),
             o => o.TreeDefaultExpandedPaths,
             (o, v) => o.TreeDefaultExpandedPaths = v);
 
+    /// <summary>
+    /// Identifies the <see cref="ItemsSource" /> property.
+    /// </summary>
     public static readonly StyledProperty<IEnumerable<ITreeItemNode>?> ItemsSourceProperty =
         AvaloniaProperty.Register<TreeSelect, IEnumerable<ITreeItemNode>?>(nameof(ItemsSource));
 
+    /// <summary>
+    /// Identifies the <see cref="ItemTemplate" /> property.
+    /// </summary>
     public static readonly StyledProperty<IDataTemplate?> ItemTemplateProperty =
         AvaloniaProperty.Register<TreeSelect, IDataTemplate?>(nameof(ItemTemplate));
 
+    /// <summary>
+    /// Identifies the <see cref="DataLoader" /> property.
+    /// </summary>
     public static readonly StyledProperty<ITreeItemNodeLoader?> DataLoaderProperty =
         AvaloniaProperty.Register<TreeSelect, ITreeItemNodeLoader?>(
             nameof(DataLoader));
 
+    /// <summary>
+    /// Identifies the <see cref="Filter" /> property.
+    /// </summary>
     public static readonly StyledProperty<IValueFilter?> FilterProperty =
         AvaloniaProperty.Register<TreeSelect, IValueFilter?>(
             nameof(Filter));
 
+    /// <summary>
+    /// Identifies the <see cref="FilterValueSelector" /> property.
+    /// </summary>
     public static readonly StyledProperty<DefaultFilterValueSelector?> FilterValueSelectorProperty =
         AvaloniaProperty.Register<TreeSelect, DefaultFilterValueSelector?>(nameof(FilterValueSelector));
 
+    /// <summary>
+    /// Identifies the <see cref="FilterStrategy" /> property.
+    /// </summary>
     public static readonly DirectProperty<TreeSelect, TreeFilterStrategy> FilterStrategyProperty =
         AvaloniaProperty.RegisterDirect<TreeSelect, TreeFilterStrategy>(
             nameof(FilterStrategy),
             o => o.FilterStrategy,
             (o, v) => o.FilterStrategy = v);
 
+    /// <summary>
+    /// Identifies the <see cref="FilterHighlightForeground" /> property.
+    /// </summary>
     public static readonly StyledProperty<IBrush?> FilterHighlightForegroundProperty =
         AvaloniaProperty.Register<TreeSelect, IBrush?>(nameof(FilterHighlightForeground));
 
+    /// <summary>
+    /// Identifies the <see cref="SelectedItem" /> property.
+    /// </summary>
     public static readonly DirectProperty<TreeSelect, ITreeItemNode?> SelectedItemProperty =
         AvaloniaProperty.RegisterDirect<TreeSelect, ITreeItemNode?>(
             nameof(SelectedItem),
@@ -106,6 +171,9 @@ public partial class TreeSelect : AbstractSelect
             defaultBindingMode: BindingMode.TwoWay,
             enableDataValidation: true);
 
+    /// <summary>
+    /// Identifies the <see cref="SelectedItems" /> property.
+    /// </summary>
     public static readonly DirectProperty<TreeSelect, IList<ITreeItemNode>?> SelectedItemsProperty =
         AvaloniaProperty.RegisterDirect<TreeSelect, IList<ITreeItemNode>?>(
             nameof(SelectedItems),
@@ -114,66 +182,120 @@ public partial class TreeSelect : AbstractSelect
             defaultBindingMode: BindingMode.TwoWay,
             enableDataValidation: true);
 
+    /// <summary>
+    /// Chooses which of the <see cref="SelectedItems" /> are listed as tags in the selection box while
+    /// <see cref="IsMultiple" /> is <see langword="true" />. <see cref="TreeSelectCheckedStrategy.All" /> lists
+    /// every selected node, <see cref="TreeSelectCheckedStrategy.ShowParent" /> lists the topmost node of a fully
+    /// selected subtree in place of the nodes below it, and
+    /// <see cref="TreeSelectCheckedStrategy.ShowChild" /> lists only the selected nodes that have no children.
+    /// The flags can be combined; the default is <see cref="TreeSelectCheckedStrategy.All" />.
+    /// </summary>
     public TreeSelectCheckedStrategy ShowCheckedStrategy
     {
         get => GetValue(ShowCheckedStrategyProperty);
         set => SetValue(ShowCheckedStrategyProperty, value);
     }
 
+    /// <summary>
+    /// Whether the drop-down tree scrolls its selected node into view when the selection changes. The value is
+    /// passed on to that tree view only.
+    /// </summary>
     public bool AutoScrollToSelectedItem
     {
         get => GetValue(AutoScrollToSelectedItemProperty);
         set => SetValue(AutoScrollToSelectedItemProperty, value);
     }
 
+    /// <summary>
+    /// Whether the nodes of the drop-down tree show their icon. The value is passed on to that tree view only.
+    /// The default is <see langword="false" />.
+    /// </summary>
     public bool IsShowIcon
     {
         get => GetValue(IsShowIconProperty);
         set => SetValue(IsShowIconProperty, value);
     }
 
+    /// <summary>
+    /// Whether nodes without children show their icon in the drop-down tree. The value is passed on to that tree
+    /// view only. The default is <see langword="false" />.
+    /// </summary>
     public bool IsShowLeafIcon
     {
         get => GetValue(IsShowLeafIconProperty);
         set => SetValue(IsShowLeafIconProperty, value);
     }
 
+    /// <summary>
+    /// Whether the drop-down tree draws lines that connect a node to its children. The value is passed on to that
+    /// tree view only. The default is <see langword="false" />.
+    /// </summary>
     public bool IsShowLine
     {
         get => GetValue(IsShowLineProperty);
         set => SetValue(IsShowLineProperty, value);
     }
 
+    /// <summary>
+    /// Whether every node of the drop-down tree shows a check box and nodes are selected by checking them instead
+    /// of by highlighting them. Changing this property also sets <see cref="IsMultiple" /> to
+    /// <see langword="true" />, switches the drop-down tree to check boxes and clears the selection of a tree view
+    /// that already exists. The default is <see langword="false" />.
+    /// </summary>
     public bool IsTreeCheckable
     {
         get => GetValue(IsTreeCheckableProperty);
         set => SetValue(IsTreeCheckableProperty, value);
     }
 
+    /// <summary>
+    /// Whether more than one node can be selected. When <see langword="true" />, the nodes of
+    /// <see cref="SelectedItems" /> are shown as tags in the selection box. When <see langword="false" />, the
+    /// header of <see cref="SelectedItem" /> is shown there as text, and that text box accepts typed filter text
+    /// while the drop-down is open and <c>IsFilterEnabled</c> is set. The default is <see langword="false" />.
+    /// </summary>
     public bool IsMultiple
     {
         get => GetValue(IsMultipleProperty);
         set => SetValue(IsMultipleProperty, value);
     }
 
+    /// <summary>
+    /// Whether all nodes of the drop-down tree are expanded by default. The value is passed on to that tree view
+    /// only. The default is <see langword="false" />.
+    /// </summary>
     public bool IsDefaultExpandAll
     {
         get => GetValue(IsDefaultExpandAllProperty);
         set => SetValue(IsDefaultExpandAllProperty, value);
     }
 
+    /// <summary>
+    /// Not read by the current implementation: the value is stored and its changes are raised, but neither the
+    /// control nor its themes use it. <see cref="IsShowLine" /> is the property that is passed on to the
+    /// drop-down tree. The default is <see langword="false" />.
+    /// </summary>
     public bool IsShowTreeLine
     {
         get => GetValue(IsShowTreeLineProperty);
         set => SetValue(IsShowTreeLineProperty, value);
     }
 
+    /// <summary>
+    /// Whether the switcher of a node rotates when that node is expanded or collapsed in the drop-down tree. The
+    /// value is passed on to that tree view only. The default is <see langword="true" />.
+    /// </summary>
     public bool IsSwitcherRotation
     {
         get => GetValue(IsSwitcherRotationProperty);
         set => SetValue(IsSwitcherRotationProperty, value);
     }
 
+    /// <summary>
+    /// Whether the check box of a node works independently of its parent and children while
+    /// <see cref="IsTreeCheckable" /> is set. Otherwise checking a node also changes the check state of its parent
+    /// and children. The value is passed on to the drop-down tree only. The default is <see langword="false" />.
+    /// </summary>
     public bool IsTreeCheckStrictly
     {
         get => GetValue(IsTreeCheckStrictlyProperty);
@@ -182,18 +304,33 @@ public partial class TreeSelect : AbstractSelect
 
     private IList<TreeNodePath>? _treeDefaultExpandedPaths;
 
+    /// <summary>
+    /// Not read by the current implementation: the value is stored and its changes are raised, but neither the
+    /// control nor its themes use it, so setting it expands no node. The default is <see langword="null" />.
+    /// </summary>
     public IList<TreeNodePath>? TreeDefaultExpandedPaths
     {
         get => _treeDefaultExpandedPaths;
         set => SetAndRaise(TreeDefaultExpandedPathsProperty, ref _treeDefaultExpandedPaths, value);
     }
 
+    /// <summary>
+    /// The root nodes of the drop-down tree. When it is replaced, the selection is carried over to the nodes of the
+    /// new source that have the same <c>ItemKey</c> or <c>Value</c> along their ancestor path; a selected node that
+    /// cannot be matched this way is dropped from the selection. <see langword="null" /> leaves only the nodes of
+    /// <see cref="Items" />.
+    /// </summary>
     public IEnumerable<ITreeItemNode>? ItemsSource
     {
         get => GetValue(ItemsSourceProperty);
         set => SetValue(ItemsSourceProperty, value);
     }
 
+    /// <summary>
+    /// The template that renders a node of the drop-down tree; its data context is the node. The value is passed on
+    /// to that tree view. When it is not set, the theme supplies a tree template that shows the <c>Header</c> of a
+    /// node as text and takes its children from its <c>Children</c> collection.
+    /// </summary>
     [InheritDataTypeFromItems(nameof(ItemsSource))]
     public IDataTemplate? ItemTemplate
     {
@@ -201,18 +338,33 @@ public partial class TreeSelect : AbstractSelect
         set => SetValue(ItemTemplateProperty, value);
     }
 
+    /// <summary>
+    /// The loader that supplies the children of a node of the drop-down tree when that node is expanded, for trees
+    /// whose nodes are loaded on demand. The value is passed on to that tree view. When it is
+    /// <see langword="null" />, nothing is loaded and a node shows only the children it already holds.
+    /// </summary>
     public ITreeItemNodeLoader? DataLoader
     {
         get => GetValue(DataLoaderProperty);
         set => SetValue(DataLoaderProperty, value);
     }
 
+    /// <summary>
+    /// The filter that decides which nodes of the drop-down tree match the filter text typed into the selection
+    /// box. The value is passed on to that tree view. When it is still <see langword="null" /> when the control is
+    /// initialized, a <see cref="ValueFilterMode.Contains" /> filter is set as the current value. While it is
+    /// <see langword="null" />, typed text does not filter the tree.
+    /// </summary>
     public IValueFilter? Filter
     {
         get => GetValue(FilterProperty);
         set => SetValue(FilterProperty, value);
     }
 
+    /// <summary>
+    /// Not read by the current implementation: the value is stored and its changes are raised, but the control does
+    /// not pass it on to the drop-down tree, so it has no effect on filtering.
+    /// </summary>
     public DefaultFilterValueSelector? FilterValueSelector
     {
         get => GetValue(FilterValueSelectorProperty);
@@ -224,12 +376,24 @@ public partial class TreeSelect : AbstractSelect
                                                  TreeFilterStrategy.ExpandPath |
                                                  TreeFilterStrategy.HideUnMatched;
 
+    /// <summary>
+    /// How the drop-down tree presents the result of filtering. The flags choose whether a matching node is
+    /// highlighted as a whole (<see cref="TreeFilterStrategy.HighlightedWhole" />), whether the match is shown bold
+    /// (<see cref="TreeFilterStrategy.BoldedMatch" />), whether the ancestors of a matching node are expanded
+    /// (<see cref="TreeFilterStrategy.ExpandPath" />) and whether nodes without a match are hidden
+    /// (<see cref="TreeFilterStrategy.HideUnMatched" />). The value is passed on to that tree view. The default
+    /// combines all four flags.
+    /// </summary>
     public TreeFilterStrategy FilterStrategy
     {
         get => _filterStrategy;
         set => SetAndRaise(FilterStrategyProperty, ref _filterStrategy, value);
     }
 
+    /// <summary>
+    /// The foreground of the highlighted match in the header of a node of the drop-down tree. The value is passed on
+    /// to that tree view. When it is not set, the theme supplies <c>TreeSelectToken.FilterHighlightColor</c>.
+    /// </summary>
     public IBrush? FilterHighlightForeground
     {
         get => GetValue(FilterHighlightForegroundProperty);
@@ -238,6 +402,11 @@ public partial class TreeSelect : AbstractSelect
 
     private ITreeItemNode? _selectedItem;
 
+    /// <summary>
+    /// The selected node while <see cref="IsMultiple" /> is <see langword="false" />; its header is shown in the
+    /// selection box. Setting it selects the node in the drop-down tree, and selecting a node there updates this
+    /// property. The binding is two-way by default. The drop-down tree does not update it in multiple selection.
+    /// </summary>
     public ITreeItemNode? SelectedItem
     {
         get => _selectedItem;
@@ -246,14 +415,30 @@ public partial class TreeSelect : AbstractSelect
 
     private IList<ITreeItemNode>? _selectedItems;
 
+    /// <summary>
+    /// The selected nodes while <see cref="IsMultiple" /> is <see langword="true" />; they are shown as tags in the
+    /// selection box, limited to the nodes chosen by <see cref="ShowCheckedStrategy" />. Selecting or checking
+    /// nodes in the drop-down tree replaces the list with a new one, and closing a tag removes that node and its
+    /// descendants. When the assigned list notifies collection changes, adding or removing a node in place is
+    /// applied to the tags and the drop-down tree as well. The binding is two-way by default.
+    /// <see langword="null" /> means that nothing is selected.
+    /// </summary>
     public IList<ITreeItemNode>? SelectedItems
     {
         get => _selectedItems;
         set => SetAndRaise(SelectedItemsProperty, ref _selectedItems, value);
     }
 
+    /// <summary>
+    /// A view of <see cref="Items" /> for enumerating the root nodes of the drop-down tree and for observing changes
+    /// of that collection.
+    /// </summary>
     public ItemsSourceView ItemsView => ItemsSourceView.GetOrCreate(_items);
 
+    /// <summary>
+    /// The root nodes of the drop-down tree. Nodes declared as XAML content are collected here, and the collection
+    /// assigned to <see cref="ItemsSource" /> is merged into it while one is assigned.
+    /// </summary>
     [Content]
     public ItemCollection Items => _items;
     #endregion
@@ -374,12 +559,21 @@ public partial class TreeSelect : AbstractSelect
         Items.CollectionChanged += HandleItemsChanged;
     }
 
+    /// <summary>
+    /// Clears the selection by setting <see cref="SelectedItem" /> and <see cref="SelectedItems" /> to
+    /// <see langword="null" />. The nodes of <see cref="Items" /> are not affected. The clear button of the
+    /// selection box calls this method.
+    /// </summary>
     public void Clear()
     {
         SelectedItems = null;
         SelectedItem  = null;
     }
 
+    /// <summary>
+    /// Calls the base method, then sets a <see cref="ValueFilterMode.Contains" /> filter as the current value of
+    /// <see cref="Filter" /> when no filter is set, and recomputes whether <c>MaxCount</c> is reached.
+    /// </summary>
     protected override void OnInitialized()
     {
         base.OnInitialized();
@@ -390,6 +584,11 @@ public partial class TreeSelect : AbstractSelect
         ConfigureMaxSelectReached();
     }
 
+    /// <summary>
+    /// Calls the base method, then starts observing collection changes of <see cref="SelectedItems" /> and refreshes
+    /// the state that depends on the selection: placeholder, tags, selected count and the selection of the
+    /// drop-down tree.
+    /// </summary>
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
@@ -397,12 +596,20 @@ public partial class TreeSelect : AbstractSelect
         ConfigureSelectedItemsValueState();
     }
 
+    /// <summary>
+    /// Calls the base method, then updates the text, placeholder and read-only state of the text box in the
+    /// selection box from the selection mode, the drop-down state and the filter settings.
+    /// </summary>
     protected override void OnLoaded(RoutedEventArgs e)
     {
         base.OnLoaded(e);
         ConfigureSingleFilterTextBox();
     }
 
+    /// <summary>
+    /// Stops observing collection changes of <see cref="SelectedItems" />, discards the tree view created for
+    /// the drop-down, and then calls the base method.
+    /// </summary>
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         ReleaseSelectedItemsCollectionChangedSource();
@@ -410,12 +617,30 @@ public partial class TreeSelect : AbstractSelect
         base.OnDetachedFromVisualTree(e);
     }
 
+    /// <summary>
+    /// Sets the effective width of the drop-down to the larger of <paramref name="selectWidth" /> and
+    /// <c>MinPopupWidth</c>, or to <c>MinPopupWidth</c> alone when <c>IsPopupMatchSelectWidth</c> is
+    /// <see langword="false" />. The base class calls it with the width of the control; this class calls it
+    /// when <c>IsPopupMatchSelectWidth</c> or <c>MinPopupWidth</c> changes. An override that does not call this
+    /// method must set <c>EffectivePopupWidth</c> itself.
+    /// </summary>
+    /// <param name="selectWidth">
+    /// The width of the select control.
+    /// </param>
     protected override void ConfigurePopupMinWith(double selectWidth)
     {
         var matchedWidth = IsPopupMatchSelectWidth ? selectWidth : 0.0;
         SetCurrentValue(EffectivePopupWidthProperty, Math.Max(matchedWidth, MinPopupWidth));
     }
 
+    /// <summary>
+    /// Calls the base method, then keeps the selection box and the drop-down tree in step with the changed property.
+    /// A change of the drop-down state, the selection, <see cref="IsMultiple" />, <c>FilterValue</c>,
+    /// <c>PlaceholderText</c> or <c>IsFilterEnabled</c> updates the text, placeholder, tags and read-only state of
+    /// the selection box; <see cref="IsMultiple" /> and <see cref="IsTreeCheckable" /> also set the selection mode
+    /// of that tree. <c>StyleVariant</c> and <c>Status</c> update the pseudo classes, and the popup width settings
+    /// update the effective popup width. An override must call this method for this state to stay in step.
+    /// </summary>
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
@@ -503,6 +728,12 @@ public partial class TreeSelect : AbstractSelect
         }
     }
 
+    /// <summary>
+    /// Discards the tree view of the previous template, calls the base method, then finds the filter text box and
+    /// the box that receives the pointer input passed through the drop-down's overlay, brings the selection box in
+    /// line with the current state, relays the hover and pressed state of that box to the select handle, and creates
+    /// the content of the drop-down when it is open.
+    /// </summary>
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         ClearPopupContent();
@@ -528,6 +759,12 @@ public partial class TreeSelect : AbstractSelect
         }
     }
 
+    /// <summary>
+    /// Creates the tree view of the drop-down on the first call and puts it into the frame of the popup; later calls
+    /// only make sure that the frame holds that tree view. The tree view reads the selection, filter, node and
+    /// loading settings of this control through bindings, so it is created once. Nothing happens when the template
+    /// has no popup part.
+    /// </summary>
     protected override void EnsurePopupContent()
     {
         if (Popup == null)
@@ -575,14 +812,18 @@ public partial class TreeSelect : AbstractSelect
             SyncSelectedItemsToTreeView();
         }
 
-        // PopupFrame 现在是 TreeSelectTheme 中静态模板 Border（即 Popup.Child），
-        // 每次以 Popup.Child 为准取回，避免缓存字段在模板重应用后指向旧实例。
+        // The popup frame is a static Border in the TreeSelectTheme template (Popup.Child). It is taken from
+        // Popup.Child on every call, so that no cached field points at a stale instance after a template re-apply.
         if (Popup.Child is Border popupFrame && !ReferenceEquals(popupFrame.Child, _treeView))
         {
             popupFrame.Child = _treeView;
         }
     }
 
+    /// <summary>
+    /// Calls the base method, then clears the keyboard-active node of the drop-down tree and, in single selection,
+    /// clears the filter text and brings the text box of the selection box in line with that.
+    /// </summary>
     protected override void PopupClosed(object? sender, EventArgs e)
     {
         base.PopupClosed(sender, e);
@@ -594,6 +835,10 @@ public partial class TreeSelect : AbstractSelect
         }
     }
 
+    /// <summary>
+    /// Calls the base method, then, in single selection, passes <see cref="SelectedItem" /> to the drop-down tree and
+    /// moves the focus to the filter text box when filtering is enabled.
+    /// </summary>
     protected override void PopupOpened(object? sender, EventArgs e)
     {
         base.PopupOpened(sender, e);
@@ -607,6 +852,11 @@ public partial class TreeSelect : AbstractSelect
         }
     }
 
+    /// <summary>
+    /// Calls the base method, then keeps the drop-down open for a press inside the drop-down. While the drop-down is
+    /// open, a press on this control outside the filter text box and outside the close button of a tag closes it.
+    /// While it is closed, the press marks the control as pressed so that the matching release opens it.
+    /// </summary>
     protected override void OnPointerPressed(PointerPressedEventArgs e)
     {
         base.OnPointerPressed(e);
@@ -647,6 +897,11 @@ public partial class TreeSelect : AbstractSelect
         }
     }
 
+    /// <summary>
+    /// Marks a release inside the drop-down as handled so that it does not toggle the drop-down. A release on this
+    /// control that follows a press on it toggles the drop-down, unless it lands on the close button of a tag; that
+    /// release is marked as handled as well. The pressed state is cleared and the base method is called last.
+    /// </summary>
     protected override void OnPointerReleased(PointerReleasedEventArgs e)
     {
         if (!e.Handled && e.Source is Visual source)
@@ -677,6 +932,11 @@ public partial class TreeSelect : AbstractSelect
 
     #region 实现 FormItem 接口
 
+    /// <summary>
+    /// Assigns the value that a form pushes to this control: an <c>ITreeItemNode</c> becomes
+    /// <see cref="SelectedItem" /> in single selection, an <c>IList&lt;ITreeItemNode&gt;</c> becomes
+    /// <see cref="SelectedItems" /> in multiple selection, and a value of any other type clears the selection.
+    /// </summary>
     protected override void NotifySetFormValue(object? value)
     {
         if (!IsMultiple)
@@ -689,6 +949,11 @@ public partial class TreeSelect : AbstractSelect
         }
     }
 
+    /// <summary>
+    /// Returns the value that a form reads from this control: <see cref="SelectedItem" /> in single selection and
+    /// <see cref="SelectedItems" /> in multiple selection, either of which is <see langword="null" /> when
+    /// nothing is selected.
+    /// </summary>
     protected override object? NotifyGetFormValue()
     {
         if (!IsMultiple)
@@ -698,6 +963,10 @@ public partial class TreeSelect : AbstractSelect
         return SelectedItems;
     }
 
+    /// <summary>
+    /// Clears the selection when a form resets this control: <see cref="SelectedItem" /> is set to
+    /// <see langword="null" /> in single selection and <see cref="SelectedItems" /> in multiple selection.
+    /// </summary>
     protected override void NotifyClearFormValue()
     {
         if (!IsMultiple)
@@ -860,8 +1129,8 @@ public partial class TreeSelect : AbstractSelect
             _treeView.SetTemplatedParent(null);
         }
 
-        // PopupFrame 是 TreeSelectTheme 中静态模板 Border（即 Popup.Child），
-        // 仅清空其内部的树视图，保留 Border 自身作为弹层根。
+        // The popup frame is a static Border in the TreeSelectTheme template (Popup.Child). Only the tree view
+        // inside it is removed; the Border itself stays as the root of the popup layer.
         if (Popup != null && Popup.Child is Border popupFrame && ReferenceEquals(popupFrame.Child, _treeView))
         {
             popupFrame.Child = null;

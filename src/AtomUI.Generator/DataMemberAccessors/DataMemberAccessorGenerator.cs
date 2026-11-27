@@ -3,6 +3,12 @@ using Microsoft.CodeAnalysis;
 
 namespace AtomUI.Generator.DataMemberAccessors;
 
+/// <summary>
+/// Generates a <c>DataMemberAccessorRegistration_…</c> class for every non-generic class, struct or interface
+/// marked with <c>[GenerateDataMemberAccessors]</c>. The class describes each accessible instance property,
+/// inherited ones included, with its name, type, writability, display name, order, read-only and editable state,
+/// and states whether an instance of the type can be created.
+/// </summary>
 [Generator]
 public sealed class DataMemberAccessorGenerator : IIncrementalGenerator
 {
@@ -15,6 +21,10 @@ public sealed class DataMemberAccessorGenerator : IIncrementalGenerator
             SymbolDisplayFormat.FullyQualifiedFormat.MiscellaneousOptions |
             SymbolDisplayMiscellaneousOptions.IncludeNullableReferenceTypeModifier);
 
+    /// <summary>
+    /// Registers the implementation source output that writes one registration class per type marked with
+    /// <c>[GenerateDataMemberAccessors]</c>; types the generator does not handle produce none.
+    /// </summary>
     public void Initialize(IncrementalGeneratorInitializationContext initContext)
     {
         var dataTypes = initContext.SyntaxProvider.ForAttributeWithMetadataName(

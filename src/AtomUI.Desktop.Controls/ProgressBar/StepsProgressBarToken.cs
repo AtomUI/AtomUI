@@ -2,18 +2,19 @@ using AtomUI.Theme.DesignTokens;
 
 namespace AtomUI.Desktop.Controls;
 
+/// <summary>
+/// Own Tokens of the <see cref="StepsProgressBar" />: the gap between two steps and the minimum width of a step.
+/// </summary>
 [ControlDesignToken]
 public sealed partial class StepsProgressBarToken : AbstractLineProgressToken
 {
     /// <summary>
-    /// 步骤之间的间距
-    /// Gap between two steps (antd Progress progressStepMarginInlineEnd)
+    /// Gap between two adjacent steps of a steps progress bar (antd Progress progressStepMarginInlineEnd).
     /// </summary>
     public partial double ProgressStepMarginInlineEnd { get; set; }
 
     /// <summary>
-    /// 步骤最小宽度
-    /// Minimum width of a step (antd Progress progressStepMinWidth)
+    /// Minimum width of a step (antd Progress progressStepMinWidth).
     /// </summary>
     public partial double ProgressStepMinWidth { get; set; }
 }

@@ -6,9 +6,16 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls.Themes.AntDesign;
 
-/// <summary>The AntDesign values of the shared <see cref="AbstractButtonVariantToken"/> layer.</summary>
+/// <summary>
+/// The AntDesign values of the shared <see cref="AbstractButtonVariantToken" /> layer.
+/// </summary>
 public static class ButtonVariantTokenCalculator
 {
+    /// <summary>
+    /// Assigns the Ant Design values of the shared <see cref="AbstractButtonVariantToken" /> layer to
+    /// <paramref name="token" />, which holds the variant-specific colors and shadows of the Button.
+    /// <c>ButtonGeometryTokenCalculator</c> calls it.
+    /// </summary>
     public static void Calculate(in TokenEvaluationContext<AntDesignToken> context, DesignToken global, AbstractButtonVariantToken token)
     {
         var controlOutlineWidth = global.ControlOutlineWidth;

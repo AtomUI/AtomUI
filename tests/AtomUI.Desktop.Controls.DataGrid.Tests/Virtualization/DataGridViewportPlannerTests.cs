@@ -194,8 +194,10 @@ public class DataGridViewportPlannerTests
         }
     }
 
-    // 行高 = 设备像素 / RenderScaling：分数缩放下布局取整得到的行高不能被二进制精确表示，
-    // 行底与下一行行顶若按不同算式求值会相差若干 ULP。任何落在行边界上的偏移都必须映射到包含它的槽位。
+    // Row height = device pixels / RenderScaling: under fractional scaling the row height rounded by layout is
+    // not exactly representable in binary, and the bottom of a row and the top of the next row differ by a few
+    // ULP when they are computed by different expressions. Any offset that lands on a row boundary must map to
+    // the slot that contains it.
     [Theory]
     [InlineData(1.25)]
     [InlineData(1.5)]
@@ -208,7 +210,8 @@ public class DataGridViewportPlannerTests
         for (var pixels = 24; pixels <= 120; pixels++)
         {
             var height = pixels / renderScaling;
-            // 默认高度：与实测相同、相邻浮点数（显示行求平均的结果）、向上取整的初始估计
+            // Default heights: equal to the measured value, the neighboring float (the result of averaging over
+            // visible rows), and the initial estimate rounded up.
             foreach (var defaultHeight in new[] { height, Math.BitDecrement(height), Math.Ceiling(height) })
             {
                 foreach (var measureEverySlot in new[] { true, false })

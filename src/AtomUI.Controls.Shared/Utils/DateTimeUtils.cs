@@ -26,8 +26,10 @@ internal static class DateTimeUtils
     }
 
     /// <summary>
-    /// 基于格式和字体计算出任意日期/时间字符串能达到的最大渲染宽度，
-    /// 用于给输入框设置稳定的 PreferredInputWidth，避免因数字/月份/星期名不同而抖动。
+    /// Calculates the largest size that a date or time string formatted with <paramref name="format" /> can reach with
+    /// the given font. Its width serves as the preferred width of the input, so that the input does not jitter when
+    /// digits, month names or weekday names differ.
+    /// The sample dates use the current culture when <paramref name="formatInfo" /> is <see langword="null" />.
     /// </summary>
     public static Size CalculateWidestFormattedDateTimeSize(
         string format,
@@ -50,7 +52,7 @@ internal static class DateTimeUtils
 
         var maxWidth  = 0d;
         var maxHeight = 0d;
-        // 2028-01-02 是星期天,加 offset 可以扫过一周;日 28 保证两位数字,时分秒取宽数字概率更高.
+        // Seven consecutive days starting at day 28 cover every weekday name and guarantee a two-digit day.
         var monthCount = needMonthSweep ? 12 : 1;
         for (var month = 1; month <= monthCount; month++)
         {
@@ -95,7 +97,8 @@ internal static class DateTimeUtils
     }
 
     /// <summary>
-    /// 基于时钟类型和字体计算 TimePicker 输入框的最大渲染宽度。
+    /// Calculates the largest size that the time text of <see cref="FormatTimeSpan" /> can reach with the given font
+    /// and clock type. Its width serves as the preferred width of the time input.
     /// </summary>
     public static Size CalculateWidestFormattedTimeSpanSize(
         bool is12HourClock,
@@ -146,7 +149,8 @@ internal static class DateTimeUtils
     }
 
     /// <summary>
-    /// 检查格式字符串中(忽略 'literal' 引号段和转义字符)是否出现指定字符至少 minRepeat 次连续。
+    /// Checks whether <paramref name="token" /> appears at least <paramref name="minRepeat" /> times in a row outside
+    /// quoted literals and escape sequences.
     /// </summary>
     private static bool ContainsToken(string format, char token, int minRepeat = 1)
     {

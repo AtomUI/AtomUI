@@ -3,11 +3,14 @@ using AtomUI.Theme.Languages;
 
 namespace AtomUI.DesignLanguages.Shadcn;
 
+/// <summary>
+/// Provides <see cref="UseShadcn" />, the builder entry point that enables the shadcn design language.
+/// </summary>
 public static class ShadcnBuilderExtensions
 {
     /// <summary>
     /// Enables the shadcn language. The value packages of the enabled control packages are added in
-    /// <paramref name="configure"/>, for example <c>builder.UseShadcn(language =&gt; language.AddDesktopControls())</c>.
+    /// <paramref name="configure" />, for example <c>builder.UseShadcn(language =&gt; language.AddDesktopControls())</c>.
     /// </summary>
     public static IAtomUIBuilder UseShadcn(this IAtomUIBuilder builder,
         Action<DesignLanguageBuilder<ShadcnLanguage>>? configure = null)

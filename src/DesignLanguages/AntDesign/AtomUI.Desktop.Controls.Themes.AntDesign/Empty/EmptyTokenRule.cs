@@ -4,7 +4,9 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls.Themes.AntDesign;
 
-/// <summary>The AntDesign view of <see cref="EmptyToken"/>.</summary>
+/// <summary>
+/// The AntDesign view of <see cref="EmptyToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class EmptyTokenRule : IControlTokenRule<AntDesignToken, EmptyToken>
 {

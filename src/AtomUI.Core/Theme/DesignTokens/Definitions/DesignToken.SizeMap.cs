@@ -4,7 +4,7 @@
 public partial class DesignToken
 {
     /// <summary>
-    /// XXL
+    /// The largest step of the size gradient. The XXL margin and spacing tokens take this value.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Map)]
     public partial double SizeXXL { get; set; } = 48;
@@ -34,8 +34,8 @@ public partial class DesignToken
     public partial double SizeMS { get; set; }
 
     /// <summary>
-    /// 默认
-    /// 默认尺寸
+    /// The default size of the size gradient, equal to <see cref="SizeMS" /> outside a compact layout.
+    /// It is derived from <see cref="SizeUnit" /> and <see cref="SizeStep" />.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Map)]
     public partial double Size { get; set; } = 16;

@@ -66,8 +66,8 @@ public partial class TreeView
     private Point? _lastPoint;
     private TreeViewItem? _beingDraggedTreeItem;
     private DragPreviewAdorner? _dragPreview;
-    private TreeViewItem? _currentDragOver; // 这个不是目标节点，有可能是在父节点上拖动
-    private TreeViewItem? _dropTargetNode; // 目标释放节点
+    private TreeViewItem? _currentDragOver; // Not the drop target: the pointer may be over a parent node.
+    private TreeViewItem? _dropTargetNode; // The drop target node.
     private DropTargetInfo? _dropTargetInfo;
     private OwnerTokenSet? _dragIndicatorTokens;
     private double _dragIndicatorLineWidth;
@@ -146,7 +146,7 @@ public partial class TreeView
         }
     }
     
-    // 自己优先的查找，用于确认拖动发生的节点
+    // Self-first lookup, used to identify the node where the drag starts.
     internal TreeViewItem? GetNodeByPositionSelfFirst(Point position)
     {
         TreeViewItem? result = null;
@@ -199,7 +199,7 @@ public partial class TreeView
         return result;
     }
 
-    // 孩子优先的查找
+    // Child-first lookup.
     internal TreeViewItem? GetNodeByPosition(Point position)
     {
         TreeViewItem? result = null;
@@ -296,6 +296,11 @@ public partial class TreeView
         return result;
     }
 
+    /// <summary>
+    /// Starts a drag of the node under a pressed pointer when the pointer then moves farther than
+    /// <c>Constants.DragThreshold</c> from the pressed point, raising <see cref="ItemDragStarted" />. Every further
+    /// move updates the drag preview, the drop target and the drop indicator. The base implementation is not called.
+    /// </summary>
     protected override void OnPointerMoved(PointerEventArgs e)
     {
         if (_lastPoint.HasValue)
@@ -326,6 +331,11 @@ public partial class TreeView
         }
     }
 
+    /// <summary>
+    /// Ends a tracked pointer press, and any drag started from it, when the tree loses the pointer capture. While
+    /// the tree is attached to the visual tree the drag is completed as a drop; a detached tree only clears its
+    /// drag state. The base implementation is called afterwards.
+    /// </summary>
     protected override void OnPointerCaptureLost(PointerCaptureLostEventArgs e)
     {
         if (_lastPoint.HasValue)
@@ -343,6 +353,10 @@ public partial class TreeView
         base.OnPointerCaptureLost(e);
     }
 
+    /// <summary>
+    /// Ends a tracked pointer press, and any drag started from it, when the pointer is released: marks the event
+    /// as handled, completes the drag as a drop and clears the drag state. The base implementation is called first.
+    /// </summary>
     protected override void OnPointerReleased(PointerReleasedEventArgs e)
     {
         base.OnPointerReleased(e);
@@ -393,7 +407,7 @@ public partial class TreeView
         }
     }
 
-    // 正常一个有效的拖动，应该 _currentDragOver 不为空
+    // During a valid drag, _currentDragOver is normally not null.
     private void SetupDragIndicatorRenderInfo(in Point position)
     {
         if (_currentDragOver is null ||
@@ -651,7 +665,7 @@ public partial class TreeView
 
     private bool IsVisibleInViewport(TreeViewItem viewItem)
     {
-        // 先判断是否展开
+        // Check expansion first: the node is hidden unless every ancestor is expanded.
         if (viewItem.Level > 0)
         {
             var isExpanded  = true;
@@ -693,6 +707,9 @@ public partial class TreeView
         return false;
     }
     
+    /// <summary>
+    /// Draws the drop indicator as an aliased line while a drag is active and a drop position is resolved.
+    /// </summary>
     public override void Render(DrawingContext context)
     {
         if (IsDragging && _dragIndicatorRenderInfo is not null)

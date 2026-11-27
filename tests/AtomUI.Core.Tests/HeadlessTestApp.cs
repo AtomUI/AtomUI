@@ -46,10 +46,14 @@ public static class TestAppBuilder
     }
 }
 
-// partial：由 AtomUI 生成器补上 RegisterServices 挂接；没有 UseAtomUI 配置时挂接不做任何事。
+// partial: the AtomUI generator adds the RegisterServices hook; the hook does nothing when there is
+// no UseAtomUI configuration.
 internal sealed partial class TestApplication : Application
 {
-    /// <summary>Initialize 执行时 AtomUI 内核是否已经提交（启动契约测试使用）。</summary>
+    /// <summary>
+    /// Whether the AtomUI kernel is already committed when Initialize runs. Used by the startup contract
+    /// tests.
+    /// </summary>
     internal bool ThemeManagerSeenInInitialize { get; private set; }
 
     public override void Initialize()

@@ -10,8 +10,8 @@ using Xunit;
 namespace AtomUI.Core.Tests.Theme;
 
 /// <summary>
-/// The Ant Design language satisfies the design language contract (spec 14, 15) under every declared variant, and the
-/// contract reports each kind of violation of a deliberately broken language built on it.
+/// The Ant Design language satisfies the design language contract under every declared variant, and the contract
+/// reports each kind of violation of a deliberately broken language built on it.
 /// </summary>
 public class DesignLanguageContractTests
 {
@@ -84,7 +84,9 @@ public class DesignLanguageContractTests
         return DesignLanguageContract.Verify(input, "Broken");
     }
 
-    /// <summary>Ant Design's derivation with one deliberate fault, under the light and dark default variants only.</summary>
+    /// <summary>
+    /// Ant Design's derivation with one deliberate fault, under the light and dark default variants only.
+    /// </summary>
     private sealed class BrokenLanguage(BrokenLanguage.Mode mode) : DesignLanguage<AntDesignToken>
     {
         internal enum Mode

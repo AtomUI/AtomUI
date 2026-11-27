@@ -10,8 +10,8 @@ namespace AtomUI.Data;
 internal static class HeldValueExtensions
 {
     /// <summary>
-    /// Sets <paramref name="value"/> at <paramref name="priority"/> and releases the entry previously held in
-    /// <paramref name="handle"/>. The new entry goes in before the old one is released, so the effective value never
+    /// Sets <paramref name="value" /> at <paramref name="priority" /> and releases the entry previously held in
+    /// <paramref name="handle" />. The new entry goes in before the old one is released, so the effective value never
     /// falls back in between.
     /// </summary>
     public static void SetHeldValue<T>(
@@ -26,7 +26,9 @@ internal static class HeldValueExtensions
         previous?.Dispose();
     }
 
-    /// <summary>Releases the entry held in <paramref name="handle"/>, if any.</summary>
+    /// <summary>
+    /// Releases the entry held in <paramref name="handle" />, if any.
+    /// </summary>
     public static void ReleaseHeldValue(ref IDisposable? handle)
     {
         var previous = handle;

@@ -46,7 +46,8 @@ internal sealed class StartupProcess : IStartup
         {
             LogError(failure);
             _completion.TrySetException(failure);
-            // 公开任务保留原始异常；没有观察者时也不产生未观察任务异常。失败已写 Error 日志，不是静默的。
+            // The public task keeps the original exception. Observing it here prevents an UnobservedTaskException when
+            // nothing else observes the task. The failure is not silent: it has already been logged at Error level.
             _ = _completion.Task.Exception;
             Finish(StartupState.Failed);
         }
@@ -134,7 +135,7 @@ internal sealed class StartupProcess : IStartup
         }
         catch
         {
-            // 日志宿主失败不能改变启动结果。
+            // A failing logging host must not change the startup result.
         }
     }
 }

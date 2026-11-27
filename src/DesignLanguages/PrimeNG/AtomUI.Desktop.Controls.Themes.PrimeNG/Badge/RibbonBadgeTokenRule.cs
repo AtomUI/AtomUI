@@ -5,7 +5,9 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 
-/// <summary>The PrimeNG view of <see cref="RibbonBadgeToken"/>.</summary>
+/// <summary>
+/// The PrimeNG view of <see cref="RibbonBadgeToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class RibbonBadgeTokenRule : IControlTokenRule<PrimeNGToken, RibbonBadgeToken>
 {
@@ -14,6 +16,8 @@ internal sealed class RibbonBadgeTokenRule : IControlTokenRule<PrimeNGToken, Rib
         var token  = target.Own;
         var global = target.Global;
 
+        // Ant Design formula kept as is: PrimeUIX defines no values for this control, so the rule takes the Ant
+        // Design formula over the PrimeNG global tokens.
         token.Offset             = new Point(global.UniformlyMarginXS, global.UniformlyMarginXS);
         token.CornerTransform    = new ScaleTransform(1, 0.75).ToImmutable();
         token.CornerDarkenAmount = 15;

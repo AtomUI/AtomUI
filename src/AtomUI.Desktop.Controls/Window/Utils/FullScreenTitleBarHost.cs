@@ -12,7 +12,7 @@ using Avalonia.VisualTree;
 namespace AtomUI.Desktop.Controls;
 
 /// <summary>
-/// The full-screen title bar surface of <see cref="Window"/>. It presents either the window's own default title bar
+/// The full-screen title bar surface of <see cref="Window" />. It presents either the window's own default title bar
 /// instance or the application's custom full-screen content, and reports its measured height. Mode, open state and
 /// position are projected by the window; the host never resolves them itself.
 /// </summary>
@@ -133,7 +133,9 @@ internal class FullScreenTitleBarHost : ContentControl, IMotionAwareControl
 
     #region 内部协作 API
 
-    /// <summary>Raised when Escape is pressed while keyboard focus is inside the surface.</summary>
+    /// <summary>
+    /// Raised when Escape is pressed while keyboard focus is inside the surface.
+    /// </summary>
     internal event EventHandler? DismissRequested;
 
     #endregion

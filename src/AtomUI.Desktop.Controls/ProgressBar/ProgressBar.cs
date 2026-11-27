@@ -5,6 +5,12 @@ using Avalonia.LogicalTree;
 
 namespace AtomUI.Desktop.Controls;
 
+/// <summary>
+/// A line progress bar. In the <c>FontAndStrokePresets</c> mode, which its theme sets, it reads the stroke
+/// thickness of the three size presets, the inner padding, the info margin and the candidates of the inner
+/// label color from Tokens; without that mode the stroke thickness falls back to the built-in defaults and no
+/// Token spacing or label color is applied.
+/// </summary>
 public partial class ProgressBar : AbstractGeneralProgressBar
 {
     private static readonly object[] s_progressKeys =
@@ -31,9 +37,21 @@ public partial class ProgressBar : AbstractGeneralProgressBar
     {
     }
 
+    /// <summary>
+    /// Returns the Token set with the font size presets followed by the keys of the stroke thickness of the three
+    /// size presets, the inner padding, the info margin and the two candidates of the inner label color in the
+    /// <c>FontAndStrokePresets</c> mode, and without own keys in any other mode.
+    /// </summary>
     private protected override OwnerTokenSet CreateLineSizeTokenSet() =>
         CreateLineSizeTokenSetFromKeys(LineSizeTokenResourceMode == LineSizeTokenMode.FontAndStrokePresets ? s_progressKeys : []);
 
+    /// <summary>
+    /// Reads the stroke thickness presets, the inner padding, the info margin and the candidates of the inner label
+    /// color from the Token set in the <c>FontAndStrokePresets</c> mode. A new stroke thickness is applied to the
+    /// effective size type and the stroke thickness at once. Without that mode the stroke presets return to the
+    /// built-in defaults and no Token spacing or label color is applied. The base member is called with
+    /// <see langword="true" /> also when the spacing changed.
+    /// </summary>
     private protected override void OnLineSizeTokensChanged(bool fontPresetsChanged)
     {
         var usesProgressTokens = LineSizeTokenResourceMode == LineSizeTokenMode.FontAndStrokePresets;
@@ -58,6 +76,10 @@ public partial class ProgressBar : AbstractGeneralProgressBar
             usesProgressTokens ? ReadLineColorToken(LineFontPresetCount + 6) : null);
     }
 
+    /// <summary>
+    /// Puts the stroke thickness presets back to the built-in defaults and removes the Token candidates of the inner
+    /// label color, then calls the base method.
+    /// </summary>
     protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
     {
         _strokePresets = s_defaultStrokes;
@@ -65,6 +87,10 @@ public partial class ProgressBar : AbstractGeneralProgressBar
         base.OnDetachedFromLogicalTree(e);
     }
 
+    /// <summary>
+    /// Returns the thickness of the bar line for a size type: the preset read from the Tokens in the
+    /// <c>FontAndStrokePresets</c> mode, or otherwise the built-in default.
+    /// </summary>
     private protected override double QueryLineStrokeThickness(SizeType sizeType) => sizeType switch
     {
         SizeType.Large => _strokePresets.Large,

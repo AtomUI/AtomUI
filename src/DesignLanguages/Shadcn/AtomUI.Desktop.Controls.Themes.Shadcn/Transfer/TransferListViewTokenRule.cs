@@ -4,7 +4,9 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls.Themes.Shadcn;
 
-/// <summary>The shadcn view of <see cref="TransferListViewToken"/>.</summary>
+/// <summary>
+/// The shadcn view of <see cref="TransferListViewToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class TransferListViewTokenRule : IControlTokenRule<ShadcnToken, TransferListViewToken>
 {

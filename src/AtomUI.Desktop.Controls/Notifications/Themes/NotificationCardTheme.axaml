@@ -8,16 +8,16 @@
     <ControlTheme x:Key="{x:Type atom:NotificationCard}" TargetType="atom:NotificationCard">
         <Setter Property="Template">
             <ControlTemplate>
-                <!--
-                    卡片模板：上方为「图标 + 标题/描述」的流式内容区，下方为可选的动作区；
-                    close 与 progress 是不参与流式排版的覆盖层，通过对齐属性贴在卡片右上角与底边。
-
-                    两条结构约束：
-                    1) `Frame` 是模板根、阴影绘制者与有限动效目标。Frame 上方不插入裁剪布局层，
-                       卡片外层继续承担堆叠定位与缩放；Message 的 PART_Frame 使用同一职责分离。
-                    2) `Padding` 必须由 `Frame` 内部的 `ContentBox` 承担，不能让 `Frame` 自己带内边距。
-                       `PART_Layout` 是 close / progress 的定位父级，只有 `Frame` 无内边距时它才与卡片
-                       边框内侧重合，close / progress 才能贴在边框右上角与边框底边；否则会被内边距顶开。
+                <!-- Card template: a flow content area on top with icon + title/description, and an optional actions
+                area below. close and progress are overlays outside the flow, pinned to the top right corner and to
+                the bottom edge of the card through the alignment properties. Two structural constraints. 1) Frame
+                is the template root, the shadow painter and the motion target. No clipping layout layer is
+                inserted above Frame; the outer card keeps handling stack positioning and scaling, and the
+                PART_Frame of Message uses the same separation of duties. 2) Padding must be carried by ContentBox
+                inside Frame; Frame itself must have no inner padding. PART_Layout is the positioning parent of
+                close and progress. Only when Frame has no padding does it coincide with the inner edge of the card
+                border, so that close and progress sit on the top right corner and on the bottom edge of the
+                border; otherwise the padding pushes them inward.
                 -->
                     <Border Name="Frame"
                             Background="{TemplateBinding Background}"
@@ -68,7 +68,9 @@
                                     </StackPanel>
                                 </Border>
 
-                                <!-- close 是覆盖层：不参与流式排版，贴卡片右上角对齐。 -->
+                                <!-- close is an overlay: it takes no part in the flow and is pinned to the top right
+                                corner of the card.
+                                -->
                                 <atom:IconButton
                                     Name="PART_CloseButton"
                                     Classes.semantic-close="True"
@@ -110,9 +112,9 @@
 
         <Setter Property="Width" Value="{atom:NotificationCardTokenResource NotificationWidth}" />
 
-        <!--
-            root 表面默认值放在 owner 级：Frame 通过 TemplateBinding 取用，因此 ControlTheme
-            只提供默认视觉，用户经 owner-scoped Semantic Style 覆盖时能真正投影到卡片外框。
+        <!-- The root surface defaults live at owner level: Frame reads them through TemplateBinding, so the
+        ControlTheme only supplies the default look and an override through an owner-scoped Semantic Style really
+        reaches the card frame.
         -->
         <Setter Property="Background" Value="{atom:NotificationCardTokenResource NotificationBg}" />
         <Setter Property="BorderThickness" Value="{atom:NotificationCardTokenResource NotificationBorderThickness}" />
@@ -131,8 +133,10 @@
 
         <!-- =============================== icon ================================ -->
         <Style Selector="^ /template/ atom|IconPresenter#IconPresenter">
-            <!-- 图标与标题首行顶部对齐。DockPanel 的子节点默认 Stretch，加上显式 Height 后会被垂直居中，
-                 视觉上图标比标题低一截，因此这里显式顶部对齐。 -->
+            <!-- The icon aligns with the top of the first title line. DockPanel stretches its children by default and
+            centers them vertically once they have an explicit Height, which makes the icon sit visibly lower than
+            the title, so the top alignment is explicit here.
+            -->
             <Setter Property="VerticalAlignment" Value="Top" />
             <Setter Property="Width"
                     Value="{atom:NotificationCardTokenResource NotificationIconSize}" />
@@ -187,7 +191,9 @@
                     Value="{atom:NotificationCardTokenResource FontSizeLG}" />
             <Setter Property="Foreground"
                     Value="{atom:NotificationCardTokenResource ColorTextHeading}" />
-            <!-- 只有标题行与关闭按钮同排，因此仅标题为关闭按钮预留右侧空间。 -->
+            <!-- Only the title row shares a row with the close button, so only the title reserves room on the right for
+            it.
+            -->
             <Setter Property="Padding"
                     Value="{atom:NotificationCardTokenResource NotificationTitlePadding}" />
         </Style>
@@ -199,7 +205,9 @@
                     Value="{atom:NotificationCardTokenResource FontSize}" />
             <Setter Property="LineHeight"
                     Value="{atom:NotificationCardTokenResource FontHeight}" />
-            <!-- 描述在标题下方，不与关闭按钮同排，因此不预留右侧空间。 -->
+            <!-- The description sits below the title and shares no row with the close button, so it reserves no room on
+            the right.
+            -->
         </Style>
 
         <!-- ============================== actions ============================== -->

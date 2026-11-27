@@ -5,9 +5,15 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 
-/// <summary>The PrimeNG values of the shared <see cref="AbstractDatePickerToken"/> layer.</summary>
+/// <summary>
+/// The PrimeNG values of the shared <see cref="AbstractDatePickerToken" /> layer.
+/// </summary>
 public static class DatePickerTokenCalculator
 {
+    /// <summary>
+    /// Calls <see cref="TimeViewTokenCalculator.Calculate" /> and then writes the PrimeNG values into the shared date
+    /// picker layer: the header margin, the panel content padding and the top margin of the button panel.
+    /// </summary>
     public static void Calculate(in TokenEvaluationContext<PrimeNGToken> context, DesignToken global, AbstractDatePickerToken token)
     {
         TimeViewTokenCalculator.Calculate(in context, global, token);

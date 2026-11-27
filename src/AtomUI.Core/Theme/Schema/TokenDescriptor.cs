@@ -3,11 +3,49 @@ using AtomUI.Theme.DesignTokens;
 
 namespace AtomUI.Theme.Schema;
 
+/// <summary>
+/// Describes one design token for the theme system: its name, its slot in the token class that owns it, its
+/// stage, its value type and its resource key. The descriptor also converts the token's value to and from literal
+/// text and reads and writes it on a token instance.
+/// </summary>
 public sealed class TokenDescriptor
 {
     private readonly TokenValueCodec _codec;
     private readonly TokenValueAccessor _accessor;
 
+    /// <summary>
+    /// Creates a descriptor whose value is converted, read and written through per-token delegates.
+    /// </summary>
+    /// <param name="name">
+    /// The token name; it must be a valid schema identifier.
+    /// </param>
+    /// <param name="slot">
+    /// The position of the token in the token class that owns it; it must not be negative.
+    /// </param>
+    /// <param name="stage">
+    /// The stage the token belongs to.
+    /// </param>
+    /// <param name="valueType">
+    /// The declared type of the token's value.
+    /// </param>
+    /// <param name="resourceKey">
+    /// The key under which the token's value is exposed as a theme resource.
+    /// </param>
+    /// <param name="parser">
+    /// Converts the literal text of a value into the value.
+    /// </param>
+    /// <param name="formatter">
+    /// Converts a value into its literal text.
+    /// </param>
+    /// <param name="getter">
+    /// Reads the value from a token instance.
+    /// </param>
+    /// <param name="setter">
+    /// Writes the value to a token instance.
+    /// </param>
+    /// <param name="resourceProjector">
+    /// Converts the value of a token instance into the value a theme resource exposes.
+    /// </param>
     public TokenDescriptor(
         string name,
         int slot,
@@ -76,6 +114,15 @@ public sealed class TokenDescriptor
         TokenValueAccessor accessor) =>
         new(name, slot, stage, codec, resourceKey, accessor);
 
+    /// <summary>
+    /// Generated-code entry point that also records the generated value contract.
+    /// <paramref name="valueContractVersion" /> must be <c>1</c> and the codec must support compiled values. A theme
+    /// definition binds to the token only when it was built for the recorded contract version.
+    /// </summary>
+    /// <exception cref="ArgumentException">
+    /// <paramref name="valueContractVersion" /> is not <c>1</c>, or <paramref name="codec" /> does not support compiled
+    /// values.
+    /// </exception>
     [EditorBrowsable(EditorBrowsableState.Never)]
     public static TokenDescriptor CreateGenerated(
         string name, int slot, TokenStage stage, TokenValueCodec codec, object resourceKey,
@@ -94,14 +141,38 @@ public sealed class TokenDescriptor
 
     internal int GeneratedValueContractVersion { get; private init; }
 
+    /// <summary>
+    /// The name of the token. Lookups by name compare it ordinally.
+    /// </summary>
     public string Name { get; }
+    /// <summary>
+    /// The position of the token in the token class that owns it. The generated accessor uses it to select the token
+    /// member to read or write, and global and language tokens are ordered by it.
+    /// </summary>
     public int Slot { get; }
+    /// <summary>
+    /// The stage the token belongs to. The theme compiler reads it to reject writes to seeds, and it is part of the
+    /// theme cache key and of the registry revision.
+    /// </summary>
     public TokenStage Stage { get; }
+    /// <summary>
+    /// The declared type of the token's value.
+    /// </summary>
     public Type ValueType { get; }
+    /// <summary>
+    /// The key under which the token's value is exposed as a theme resource. Resource lookups and the resources of a
+    /// compiled theme use it.
+    /// </summary>
     public object ResourceKey { get; }
 
+    /// <summary>
+    /// Converts the literal text of the token's value back into a value, as <see cref="Format" /> writes it.
+    /// </summary>
     public object? Parse(string value) => _codec.Parse(value);
 
+    /// <summary>
+    /// Converts a value into the literal text that <see cref="Parse" /> reads back.
+    /// </summary>
     public string Format(object? value) => _codec.Format(value);
 
     internal object? CopyValue(object? value)
@@ -121,18 +192,28 @@ public sealed class TokenDescriptor
         return _codec.Parse(_codec.Format(value));
     }
 
+    /// <summary>
+    /// Reads the value of the token at <see cref="Slot" /> from a token instance.
+    /// </summary>
     public object? GetValue(AbstractDesignToken token)
     {
         ArgumentNullException.ThrowIfNull(token);
         return _accessor.GetValue(token, Slot);
     }
 
+    /// <summary>
+    /// Writes the value of the token at <see cref="Slot" /> to a token instance.
+    /// </summary>
     public void SetValue(AbstractDesignToken token, object? value)
     {
         ArgumentNullException.ThrowIfNull(token);
         _accessor.SetValue(token, Slot, value);
     }
 
+    /// <summary>
+    /// Converts the value of the token at <see cref="Slot" /> into the value a theme resource exposes. The theme
+    /// compiler stores that value under <see cref="ResourceKey" />.
+    /// </summary>
     public object? ProjectResourceValue(AbstractDesignToken token)
     {
         ArgumentNullException.ThrowIfNull(token);

@@ -5,7 +5,9 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls.Themes.Shadcn;
 
-/// <summary>The shadcn view of <see cref="GroupBoxToken"/>.</summary>
+/// <summary>
+/// The shadcn view of <see cref="GroupBoxToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class GroupBoxTokenRule : IControlTokenRule<ShadcnToken, GroupBoxToken>
 {
@@ -13,6 +15,7 @@ internal sealed class GroupBoxTokenRule : IControlTokenRule<ShadcnToken, GroupBo
     {
         var token  = target.Own;
         var global = target.Global;
+        // Ant Design formula kept as is: shadcn has no group box, so the language has no values of its own.
         token.ContentPadding           = global.PaddingXS;
         token.HeaderContainerMargin = new Thickness(global.UniformlyMargin, global.UniformlyMarginXS,
             global.UniformlyMargin, 0);

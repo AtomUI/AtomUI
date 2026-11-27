@@ -3,61 +3,72 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
 
+/// <summary>
+/// Design tokens of the desktop tag. Next to the tag metrics inherited from <see cref="AbstractTagToken" />,
+/// they hold the main color of each status, the background and text color of a tag without a color, the
+/// text color of Solid tags and the size of the close icon.
+/// </summary>
 [ControlDesignToken]
 public sealed partial class TagToken : AbstractTagToken
 {
     /// <summary>
-    /// 成功状态标签的主色（文本与描边，实心变体的填充）；与全局 ColorSuccessBg / ColorSuccessBorder 成组。
-    /// Main colour of a success tag (text and outline, the fill of the solid variant); pairs with the global
-    /// ColorSuccessBg / ColorSuccessBorder.
+    /// Main color of a tag with the success status, in place of the global success color. It paints the text
+    /// and the outline, and the fill of the Solid variant or of a Filled tag while
+    /// <see cref="FilledStatusSolid" /> is on. The light status background and the border of the Outlined
+    /// variant come from the global ColorSuccessBg / ColorSuccessBorder.
     /// </summary>
     public partial Color SuccessColor { get; set; }
 
     /// <summary>
-    /// 信息（processing）状态标签的主色；与全局 ColorInfoBg / ColorInfoBorder 成组。
-    /// Main colour of an info (processing) tag; pairs with the global ColorInfoBg / ColorInfoBorder.
+    /// Main color of a tag with the info (processing) status, in place of the global info color. It paints the
+    /// text and the outline, and the fill of the Solid variant or of a Filled tag while
+    /// <see cref="FilledStatusSolid" /> is on. The light status background and the border of the Outlined
+    /// variant come from the global ColorInfoBg / ColorInfoBorder.
     /// </summary>
     public partial Color InfoColor { get; set; }
 
     /// <summary>
-    /// 警告状态标签的主色；与全局 ColorWarningBg / ColorWarningBorder 成组。
-    /// Main colour of a warning tag; pairs with the global ColorWarningBg / ColorWarningBorder.
+    /// Main color of a tag with the warning status, in place of the global warning color. It paints the text
+    /// and the outline, and the fill of the Solid variant or of a Filled tag while
+    /// <see cref="FilledStatusSolid" /> is on. The light status background and the border of the Outlined
+    /// variant come from the global ColorWarningBg / ColorWarningBorder.
     /// </summary>
     public partial Color WarningColor { get; set; }
 
     /// <summary>
-    /// 错误状态标签的主色；与全局 ColorErrorBg / ColorErrorBorder 成组。
-    /// Main colour of an error tag; pairs with the global ColorErrorBg / ColorErrorBorder.
+    /// Main color of a tag with the error status, in place of the global error color. It paints the text and
+    /// the outline, and the fill of the Solid variant or of a Filled tag while
+    /// <see cref="FilledStatusSolid" /> is on. The light status background and the border of the Outlined
+    /// variant come from the global ColorErrorBg / ColorErrorBorder.
     /// </summary>
     public partial Color ErrorColor { get; set; }
 
     /// <summary>
-    /// 默认背景色
-    /// Default background color
+    /// Background of a tag without a preset, status or custom color; the Solid and Outline variants set their
+    /// own background.
     /// </summary>
     public partial Color DefaultBg { get; set; }
 
     /// <summary>
-    /// 默认文字颜色
-    /// Default text color
+    /// Text color of a tag without a preset, status or custom color; the Solid variant uses
+    /// <see cref="SolidTextColor" /> instead. The icon and the close button take the same color.
     /// </summary>
     public partial Color DefaultColor { get; set; }
 
     /// <summary>
-    /// 关闭图标尺寸
-    /// Size of the close icon
+    /// Width and height of the icon in the tag's close button.
     /// </summary>
     public partial double TagCloseIconSize { get; set; }
 
     /// <summary>
-    /// 默认实心标签的文本色
-    /// Default text color for solid tag
+    /// Text color of a tag of the Solid variant that has no preset, status or custom color.
     /// </summary>
     public partial Color SolidTextColor { get; set; }
 
     /// <summary>
-    /// 填充型状态标签是否使用实心底色
-    /// Whether a Filled status tag uses the solid status fill with the contrast text
+    /// Whether a Filled status tag is painted like the Solid variant, with the status color as fill and the
+    /// contrast text as text color. While it is <see langword="false" />, a Filled status tag keeps the light
+    /// status background with the status color as text.
     /// </summary>
     public partial bool FilledStatusSolid { get; set; }
 }

@@ -47,9 +47,22 @@ token.CellWidth = global.ControlHeightSM;
         token.HeaderHorizontalPadding = new Thickness(global.UniformlyPaddingXS, 0);
         token.DateBodyPadding = new Thickness(bodyHorizontalPadding, global.UniformlyPaddingXS);
         token.HeaderBorderThickness = new Thickness(0, 0, 0, global.LineWidth);
+        // antd dims the week number of the selected row to half alpha.
         token.WeekNumberOpacity = 0.5;
     }
 
+    /// <summary>
+    /// Returns the height of a date cell row: <paramref name="cellHeight" /> plus three times the XXS padding.
+    /// </summary>
+    /// <param name="token">
+    /// The date viewer token that receives the row height. Not read.
+    /// </param>
+    /// <param name="global">
+    /// The global token that supplies the XXS padding.
+    /// </param>
+    /// <param name="cellHeight">
+    /// The height of one date cell.
+    /// </param>
     public static double CalculateCellRowHeight(AbstractDateViewerToken token, DesignToken global, double cellHeight) =>
         cellHeight + global.UniformlyPaddingXXS * 3;
 }

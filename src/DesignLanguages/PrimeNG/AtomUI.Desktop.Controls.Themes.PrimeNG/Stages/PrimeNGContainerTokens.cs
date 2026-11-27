@@ -18,8 +18,9 @@ internal static class PrimeNGTabStage
 {
     internal static void ApplyGlobal(in TokenEvaluationContext<PrimeNGToken> context, DesignToken controlGlobal)
     {
-        // The ink bar slides over 250ms in every preset (tabs: width / inset 250ms); the tab colours stay instant.
+        // The ink bar slides over 250ms in every preset (tabs: width / inset 250ms); the tab colors stay instant.
         PrimeNGMotion.Restore(context, controlGlobal, slow: PrimeNGMotion.TabsInkBar);
+        // tablist.border.color is content.border.color; Lara has none.
         controlGlobal.ColorBorderSecondary = context.Variant.Style == PrimeNGLanguage.Lara
             ? Colors.Transparent
             : context.Language.GetContentBorder(context.Variant);
@@ -28,6 +29,8 @@ internal static class PrimeNGTabStage
     internal static void ApplyLine(in TokenEvaluationContext<PrimeNGToken> context, DesignToken effectiveGlobal, AbstractLineTabToken token)
     {
         var kind = context.Variant.Style;
+        // tab.color is text.muted and tab.hover.color text.color; the title weight is 600 in Aura and 700 in Lara
+        // and Nora.
         token.ItemColor             = effectiveGlobal.ColorTextSecondary;
         token.ItemHoverColor        = effectiveGlobal.ColorText;
         token.TitleFontWeight       = kind == PrimeNGLanguage.Aura ? FontWeight.SemiBold : FontWeight.Bold;
@@ -38,11 +41,14 @@ internal static class PrimeNGTabStage
         token.HorizontalItemPaddingSM = new Thickness(paddingX - 4, 10);
         token.HorizontalItemPaddingLG = new Thickness(paddingX + 4, 18);
         token.HorizontalItemGutter    = 0;
+        // active.bar.height 1px in Aura; Lara's 2px accent is kept for Lara and Nora (Nora fills the tab).
         token.InkBarThickness       = kind == PrimeNGLanguage.Aura ? effectiveGlobal.LineWidth : 2 * effectiveGlobal.LineWidth;
     }
 }
 
-/// <summary>PrimeUIX <c>tabs</c> for <see cref="TabControlToken"/>; see <see cref="PrimeNGTabStage"/>.</summary>
+/// <summary>
+/// PrimeUIX <c>tabs</c> for <see cref="TabControlToken" />; see <see cref="PrimeNGTabStage" />.
+/// </summary>
 internal static class PrimeNGTabControlTokens
 {
     internal static void EvaluateGlobal(in TokenEvaluationContext<PrimeNGToken> context, DesignToken controlGlobal) =>
@@ -51,7 +57,9 @@ internal static class PrimeNGTabControlTokens
         PrimeNGTabStage.ApplyLine(context, effectiveGlobal, token);
 }
 
-/// <summary>PrimeUIX <c>tabs</c> for <see cref="TabStripToken"/>; see <see cref="PrimeNGTabStage"/>.</summary>
+/// <summary>
+/// PrimeUIX <c>tabs</c> for <see cref="TabStripToken" />; see <see cref="PrimeNGTabStage" />.
+/// </summary>
 internal static class PrimeNGTabStripTokens
 {
     internal static void EvaluateGlobal(in TokenEvaluationContext<PrimeNGToken> context, DesignToken controlGlobal) =>
@@ -64,9 +72,9 @@ internal static class PrimeNGTabStripTokens
 /// Collapse under the PrimeNG presets, PrimeUIX 3.1.1 <c>accordion</c>: header background
 /// <c>header.background</c> (Aura and Nora the content background, Lara surface.50 / surface.800), content background
 /// <c>content.background</c> (dark: surface.900), a header padding of 6px 16px (Lara 4px 16px; PrimeUIX
-/// <c>header.padding</c> 16, Nora 14px 16px, see the Expander), <c>content.padding</c>
-/// 0 16 16 16 in Aura (no gap under the header) and 16 in Lara and Nora, borders in <c>content.border.color</c> and the
-/// <c>border.radius.md</c> corners.
+/// <c>header.padding</c> 16, Nora 14px 16px, see the Expander), <c>content.padding</c> 0 16 16 16 in Aura (no gap
+/// under the header) and 16 in Lara and Nora, borders in <c>content.border.color</c> and corners at the <c>md</c>
+/// step of <c>border.radius</c>.
 /// </summary>
 internal static class PrimeNGCollapseTokens
 {
@@ -79,6 +87,8 @@ internal static class PrimeNGCollapseTokens
     {
         var kind = context.Variant.Style;
         var dark = context.Variant.Appearance == ThemeAppearance.Dark;
+        // accordion.header.background: Lara surface.50 / surface.800, Aura and Nora the content background; the
+        // content is content.background (dark surface.900).
         token.HeaderBg = kind == PrimeNGLanguage.Lara
             ? context.Language.GetSurfaceColor(dark ? 800 : 50)
             : effectiveGlobal.ColorBgElevated;
@@ -87,6 +97,7 @@ internal static class PrimeNGCollapseTokens
         // than the Expander's (panel toggleable header 6px 16px, Lara 4px 16px). AtomUI gives both the Expander's padding
         // so the two collapsible headers line up (a deliberate deviation).
         token.HeaderPadding = new Thickness(16, kind == PrimeNGLanguage.Lara ? 4 : 6);
+        // accordion.content.padding 16 (Aura 0 16 16 16: no gap under the header) and the md step of border.radius.
         token.ContentPadding = kind == PrimeNGLanguage.Aura ? new Thickness(16, 0, 16, 16) : new Thickness(16);
         token.CollapsePanelBorderRadius = effectiveGlobal.BorderRadius;
         // header.color text.muted (Nora text.color), header.active.color text.color.
@@ -99,9 +110,9 @@ internal static class PrimeNGCollapseTokens
 
 /// <summary>
 /// Expander under the PrimeNG presets, PrimeUIX 3.1.1 <c>panel</c> (toggleable): header background
-/// <c>header.background</c> (Aura and Nora transparent over the panel, Lara surface.50 / surface.800),
-/// <c>toggleable.header.padding</c> 6px 16px (Lara 4px 16px), <c>content.padding</c> 0 16 16 16 (Lara and Nora 16), border
-/// <c>root.border.color</c> (content.border.color) and the <c>border.radius.md</c> corners.
+/// <c>header.background</c> (Lara surface.50 / surface.800, Aura and Nora the content background),
+/// <c>toggleable.header.padding</c> 6px 16px (Lara 4px 16px), <c>content.padding</c> 0 16 16 16 (Lara and Nora 16),
+/// border <c>root.border.color</c> (content.border.color) and corners at the <c>md</c> step of <c>border.radius</c>.
 /// </summary>
 internal static class PrimeNGExpanderTokens
 {
@@ -115,6 +126,9 @@ internal static class PrimeNGExpanderTokens
         var kind = context.Variant.Style;
         var lara = kind == PrimeNGLanguage.Lara;
         var dark = context.Variant.Appearance == ThemeAppearance.Dark;
+        // panel.toggleable: header.background (Lara surface.50 / surface.800, Aura and Nora the content background),
+        // toggleable.header.padding 6px 16px (Lara 4px 16px), content.padding 0 16 16 16 (Aura) or 16, and the md
+        // step of border.radius.
         token.HeaderBg       = lara ? context.Language.GetSurfaceColor(dark ? 800 : 50) : effectiveGlobal.ColorBgElevated;
         token.ContentBg      = effectiveGlobal.ColorBgElevated;
         token.HeaderPadding  = new Thickness(16, lara ? 4 : 6);
@@ -122,6 +136,7 @@ internal static class PrimeNGExpanderTokens
         token.ExpanderBorderRadius = effectiveGlobal.BorderRadius;
         // panel.header.color text.color.
         token.HeaderColor = effectiveGlobal.ColorText;
+        // accordion header.font.weight 600 (Lara and Nora 700), the weight the Collapse takes as well.
         token.HeaderFontWeight = kind == PrimeNGLanguage.Aura ? FontWeight.SemiBold : FontWeight.Bold;
     }
 }
@@ -141,6 +156,8 @@ internal static class PrimeNGGroupBoxTokens
     internal static void EvaluateOwn(in TokenEvaluationContext<PrimeNGToken> context, DesignToken effectiveGlobal, GroupBoxToken token)
     {
         var kind = context.Variant.Style;
+        // fieldset.legend.padding 6px 10px (Lara 8px 12px), legend.gap 8, and root.padding 0 16 16 16 (Lara and
+        // Nora 10 16 16 16).
         token.HeaderContentPadding = kind == PrimeNGLanguage.Lara ? new Thickness(12, 8) : new Thickness(10, 6);
         token.HeaderIconMargin     = new Thickness(0, 0, 8, 0);
         // fieldset legend.font.weight 600 (Lara and Nora 700).
@@ -164,6 +181,9 @@ internal static class PrimeNGBreadcrumbTokens
     {
         var nora = context.Variant.Style == PrimeNGLanguage.Nora;
         var dark = context.Variant.Appearance == ThemeAppearance.Dark;
+        // breadcrumb: every item in item.color (text.muted, the last one too), no hover background, and links without
+        // padding; separator.color (Aura and Lara surface.400 / surface.500, Nora surface.600 / surface.400) with
+        // root.gap 8 on each side.
         token.SeparatorColor = context.Language.GetSurfaceColor(nora ? (dark ? 400 : 600) : (dark ? 500 : 400));
         token.ItemColor                    = effectiveGlobal.ColorTextSecondary;
         token.LinkColor                    = effectiveGlobal.ColorTextSecondary;
@@ -190,6 +210,7 @@ internal static class PrimeNGSplitterTokens
     internal static void EvaluateOwn(in TokenEvaluationContext<PrimeNGToken> context, DesignToken effectiveGlobal, SplitterToken token)
     {
         var line = context.Language.GetContentBorder(context.Variant);
+        // splitter.gutter.background (content.border.color), 1px and the same on hover and drag; a 24 handle.
         token.HandleLineColor      = line;
         token.HandleLineHoverColor = line;
         token.HandleLineDragColor  = line;

@@ -1,5 +1,9 @@
 namespace AtomUI.Desktop.Controls;
 
+/// <summary>
+/// Preferred position of the dropdown popup relative to the selector: above or below it, with the left or
+/// right edge of the popup aligned to the selector's edge on the same side.
+/// </summary>
 public enum SelectPopupPlacement
 {
     /// <summary>

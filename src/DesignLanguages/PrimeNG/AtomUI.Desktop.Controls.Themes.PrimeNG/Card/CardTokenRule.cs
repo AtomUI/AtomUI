@@ -6,7 +6,9 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 
-/// <summary>The PrimeNG view of <see cref="CardToken"/>.</summary>
+/// <summary>
+/// The PrimeNG view of <see cref="CardToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class CardTokenRule : IControlTokenRule<PrimeNGToken, CardToken>
 {
@@ -14,8 +16,11 @@ internal sealed class CardTokenRule : IControlTokenRule<PrimeNGToken, CardToken>
     {
         var token  = target.Own;
         var global = target.Global;
-        // PrimeNG: the control-global overrides, read by the formulas below.
+        // PrimeNG: the control-global overrides (ColorBgContainer read by the formulas below and by the Card theme for
+        // Background; BorderRadiusLG, ColorBorderSecondary read by the Card theme only (CornerRadius, BorderBrush)).
         PrimeNGCardTokens.EvaluateGlobal(in context, global);
+        // Ant Design formula kept as is: the card stage (PrimeNGCardTokens) replaces the body padding, the resting
+        // shadow and the dark header background; the header metrics keep the Ant Design formula.
         token.HeaderBg         = Colors.Transparent;
         token.HeaderFontSizeLG = global.FontSizeLG;
         token.HeaderFontSize   = global.FontSize;
@@ -36,6 +41,8 @@ internal sealed class CardTokenRule : IControlTokenRule<PrimeNGToken, CardToken>
         token.HeaderPaddingLG  = new Thickness(global.UniformlyPaddingLG, 0);
         token.HeaderPadding    = new Thickness(global.UniformlyPaddingSM, 0);
         token.HeaderPaddingSM  = new Thickness(global.UniformlyPaddingXS, 0);
+        // antd cardShadow: the shadow of a hoverable card. PrimeUIX card.shadow is the resting shadow, which the
+        // stage writes over RestingShadows below, so CardShadows stays the hover shadow.
         token.CardShadows         = new BoxShadows(new BoxShadow()
             {
                 OffsetX = 0,
@@ -61,6 +68,8 @@ internal sealed class CardTokenRule : IControlTokenRule<PrimeNGToken, CardToken>
                     Color   = ColorUtils.FromRgbF(0.09, 0, 0, 0)
                 }
             ]);
+        // Ant Design gives an outlined card no resting shadow, so the hover shadow is kept as transparent layers.
+        // Under PrimeNG the stage replaces RestingShadows with the PrimeUIX card.shadow (EvaluateOwn below).
         token.RestingShadows = Transparent(token.CardShadows);
         token.CardGridHoverShadows = token.CardShadows;
 
@@ -74,7 +83,9 @@ internal sealed class CardTokenRule : IControlTokenRule<PrimeNGToken, CardToken>
     }
 
 
-    /// <summary>The same shadow layers with a transparent colour: the resting start shape of the hover transition.</summary>
+    /// <summary>
+    /// The same shadow layers with a transparent color: the resting start shape of the hover transition.
+    /// </summary>
     private static BoxShadows Transparent(BoxShadows shadows)
     {
         if (shadows.Count == 0)

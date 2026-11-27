@@ -4,7 +4,9 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 
-/// <summary>The PrimeNG view of <see cref="CompactSpaceAddOnToken"/>.</summary>
+/// <summary>
+/// The PrimeNG view of <see cref="CompactSpaceAddOnToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class CompactSpaceAddOnTokenRule : IControlTokenRule<PrimeNGToken, CompactSpaceAddOnToken>
 {

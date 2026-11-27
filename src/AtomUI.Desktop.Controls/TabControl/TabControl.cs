@@ -13,6 +13,10 @@ using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
 
+/// <summary>
+/// A tab control with line tabs. The selected tab is marked by an ink bar, each item is hosted in a line-shaped
+/// <see cref="TabItem" />, and the content area shows the content of the selected tab.
+/// </summary>
 public partial class TabControl : BaseTabControl, ITransitionInitializationOwner
 {
     #region 内部属性定义
@@ -59,6 +63,10 @@ public partial class TabControl : BaseTabControl, ITransitionInitializationOwner
         SelectionChanged += HandleSelectionChanged;
     }
 
+    /// <summary>
+    /// Arranges the control and then places the ink bar on the selected tab. Call the base member first: the ink
+    /// bar is placed from the bounds of the selected tab, which the base arrange pass produces.
+    /// </summary>
     protected override Size ArrangeOverride(Size finalSize)
     {
         var size = base.ArrangeOverride(finalSize);
@@ -70,6 +78,10 @@ public partial class TabControl : BaseTabControl, ITransitionInitializationOwner
         return size;
     }
 
+    /// <summary>
+    /// Creates the container for an item that is not a <see cref="TabItem" /> already: a new line-shaped tab that
+    /// carries the semantic item class.
+    /// </summary>
     protected override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey)
     {
         var tabItem = new TabItem
@@ -80,6 +92,10 @@ public partial class TabControl : BaseTabControl, ITransitionInitializationOwner
         return tabItem;
     }
 
+    /// <summary>
+    /// Calls the base member and then gives a <see cref="TabItem" /> container the line shape and the semantic item
+    /// class. This also covers the tabs that the app supplied as items.
+    /// </summary>
     protected override void PrepareContainerForItemOverride(Control container, object? item, int index)
     {
         base.PrepareContainerForItemOverride(container, item, index);
@@ -90,12 +106,21 @@ public partial class TabControl : BaseTabControl, ITransitionInitializationOwner
         }
     }
 
+    /// <summary>
+    /// Resets the transition initialization of the ink bar, then calls the base member. The ink bar is placed again
+    /// for the new template, and that first placement is not animated.
+    /// </summary>
     protected override void OnTemplateChanged(AvaloniaPropertyChangedEventArgs e)
     {
         _transitionInitialization?.Reset();
         base.OnTemplateChanged(e);
     }
 
+    /// <summary>
+    /// Applies the template and sets up the ink bar. The transition initialization is reset and the base member is
+    /// called; then the ink bar, the items presenter and the tab scroll viewer are looked up, the scroll offset
+    /// subscription moves to the new scroll viewer, and the ink bar is configured and placed.
+    /// </summary>
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         _transitionInitialization.Reset();
@@ -119,6 +144,10 @@ public partial class TabControl : BaseTabControl, ITransitionInitializationOwner
         SetupSelectedIndicator();
     }
 
+    /// <summary>
+    /// Resets the transition initialization, calls the base member, and then follows the bounds of the selected tab
+    /// and places the ink bar.
+    /// </summary>
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         _transitionInitialization.Reset();
@@ -127,6 +156,10 @@ public partial class TabControl : BaseTabControl, ITransitionInitializationOwner
         SetupSelectedIndicator();
     }
 
+    /// <summary>
+    /// Resets the transition initialization and stops following the bounds of the selected tab before the base
+    /// member is called.
+    /// </summary>
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         _transitionInitialization.Reset();
@@ -135,6 +168,11 @@ public partial class TabControl : BaseTabControl, ITransitionInitializationOwner
         base.OnDetachedFromVisualTree(e);
     }
 
+    /// <summary>
+    /// Calls the base member and then keeps the ink bar in step with the change. A change of the length animation
+    /// or the centering mode hands the template parts to the base class and requests a new arrange pass. A change
+    /// of the indicator mode, the fixed indicator length or the ink bar thickness places the ink bar again.
+    /// </summary>
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
@@ -164,6 +202,9 @@ public partial class TabControl : BaseTabControl, ITransitionInitializationOwner
         }
     }
 
+    /// <summary>
+    /// Calls the base member and then places the ink bar.
+    /// </summary>
     protected override void OnLoaded(RoutedEventArgs e)
     {
         base.OnLoaded(e);

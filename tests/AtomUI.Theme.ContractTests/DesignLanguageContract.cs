@@ -12,13 +12,22 @@ using Avalonia.Media;
 
 namespace AtomUI.Theme.ContractTests;
 
-/// <summary>One broken rule of the design language contract (spec 14, 15).</summary>
-/// <param name="Check">The check that failed; one of the constants on <see cref="DesignLanguageContract"/>.</param>
-/// <param name="Variant">The variant the rule broke under, as <c>Style/Appearance/Density/Idiom</c>.</param>
-/// <param name="TokenName">
-/// The token involved (a global, language or control token), or <see langword="null"/> when the rule is not about one token.
+/// <summary>
+/// One broken rule of the design language contract.
+/// </summary>
+/// <param name="Check">
+/// The check that failed; one of the constants on <see cref="DesignLanguageContract" />.
 /// </param>
-/// <param name="Message">What was observed.</param>
+/// <param name="Variant">
+/// The variant the rule broke under, as <c>Style/Appearance/Density/Idiom</c>.
+/// </param>
+/// <param name="TokenName">
+/// The token involved (a global, language or control token), or <see langword="null" /> when the rule is not about one
+/// token.
+/// </param>
+/// <param name="Message">
+/// What was observed.
+/// </param>
 public sealed record DesignLanguageContractViolation(string Check, string Variant, string? TokenName, string Message);
 
 /// <summary>
@@ -31,7 +40,9 @@ public sealed class DesignLanguageContractInput
 
     internal ThemeSchemaRegistry Registry { get; }
 
-    /// <summary>The identities of the enabled languages.</summary>
+    /// <summary>
+    /// The identities of the enabled languages.
+    /// </summary>
     public IReadOnlyList<string> Languages => Registry.Languages.Select(static language => language.Id).ToArray();
 
     /// <summary>
@@ -39,7 +50,9 @@ public sealed class DesignLanguageContractInput
     /// against a fresh application builder and captures the languages, the control packages and the control token rules
     /// it enables. No Avalonia application is required: the builder is registered against, never committed.
     /// </summary>
-    /// <exception cref="InvalidOperationException">The registration does not cover every control under every language.</exception>
+    /// <exception cref="InvalidOperationException">
+    /// The registration does not cover every control under every language.
+    /// </exception>
     public static DesignLanguageContractInput Capture(Action<IAtomUIBuilder> register)
     {
         ArgumentNullException.ThrowIfNull(register);
@@ -53,7 +66,7 @@ public sealed class DesignLanguageContractInput
             : new ThemeSchemaRegistry(GeneratedThemeSchema.GetGlobalTokens(), manualControls,
                 Array.Empty<DesignLanguageDescriptor>());
         var index = StartupPackageIndex.Create(builder.PackageDeclarations, null, manualRegistry);
-        // The registry checks that every control has a rule under every language (spec 8, check 1).
+        // The registry checks that every control has a rule under every language.
         var registry = new ThemeSchemaRegistry(GeneratedThemeSchema.GetGlobalTokens(), index, theme.Languages,
             theme.TokenRules);
         return new DesignLanguageContractInput(registry);
@@ -61,23 +74,31 @@ public sealed class DesignLanguageContractInput
 }
 
 /// <summary>
-/// Reusable contract verifier for design languages and their control values (spec 14: purity, completeness of the three
-/// token kinds, readability of paired roles, determinism under every variant). It runs the language's rules
+/// Reusable contract verifier for design languages and their control values: purity, completeness of the three token
+/// kinds, readability of paired roles, determinism under every variant. It runs the language's rules
 /// directly for the completeness checks and through the real theme compiler for the others, under every declared
 /// style × appearance × density × idiom.
 /// </summary>
 public static class DesignLanguageContract
 {
-    /// <summary>The language is registered exactly once with a valid identity and declares at least one value per axis.</summary>
+    /// <summary>
+    /// The language is registered exactly once with a valid identity and declares at least one value per axis.
+    /// </summary>
     public const string Identity = nameof(Identity);
 
-    /// <summary><c>DeriveLanguage</c> writes every language token that is not a seed.</summary>
+    /// <summary>
+    /// <c>DeriveLanguage</c> writes every language token that is not a seed.
+    /// </summary>
     public const string LanguageComplete = nameof(LanguageComplete);
 
-    /// <summary><c>DeriveGlobal</c> writes every Map and Alias token.</summary>
+    /// <summary>
+    /// <c>DeriveGlobal</c> writes every Map and Alias token.
+    /// </summary>
     public const string GlobalComplete = nameof(GlobalComplete);
 
-    /// <summary>Every control token rule of the language writes every own token of its control.</summary>
+    /// <summary>
+    /// Every control token rule of the language writes every own token of its control.
+    /// </summary>
     public const string ControlComplete = nameof(ControlComplete);
 
     /// <summary>
@@ -86,13 +107,19 @@ public static class DesignLanguageContract
     /// </summary>
     public const string Pure = nameof(Pure);
 
-    /// <summary>Two compilations of the same variant produce the same global, language and control token values.</summary>
+    /// <summary>
+    /// Two compilations of the same variant produce the same global, language and control token values.
+    /// </summary>
     public const string Deterministic = nameof(Deterministic);
 
-    /// <summary>Body text and text on the primary fill meet the contrast thresholds of <see cref="ContrastRatio"/>.</summary>
+    /// <summary>
+    /// Body text and text on the primary fill meet the contrast thresholds of <see cref="ContrastRatio" />.
+    /// </summary>
     public const string Readable = nameof(Readable);
 
-    /// <summary>Every variant the language declares: each style × Light/Dark × each density × each idiom.</summary>
+    /// <summary>
+    /// Every variant the language declares: each style × Light/Dark × each density × each idiom.
+    /// </summary>
     public static IReadOnlyList<DesignVariant> Variants(DesignLanguageAxes axes)
     {
         ArgumentNullException.ThrowIfNull(axes);
@@ -104,7 +131,7 @@ public static class DesignLanguageContract
     }
 
     /// <summary>
-    /// Verifies the language <paramref name="languageId"/> and every control token rule registered for it against each
+    /// Verifies the language <paramref name="languageId" /> and every control token rule registered for it against each
     /// check of the contract, and returns the violations; an empty list means the language satisfies the contract.
     /// </summary>
     /// <exception cref="InvalidOperationException">

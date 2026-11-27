@@ -15,7 +15,9 @@ namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 /// </summary>
 internal static class PrimeNGToolTipTokens
 {
-    /// <summary>PrimeUIX <c>tooltip.gutter</c> 0.25rem.</summary>
+    /// <summary>
+    /// PrimeUIX <c>tooltip.gutter</c> 0.25rem.
+    /// </summary>
     private const double PrimeNGTooltipGutter = 4;
     internal static void EvaluateGlobal(in TokenEvaluationContext<PrimeNGToken> context, DesignToken controlGlobal)
     {

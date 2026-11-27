@@ -78,10 +78,11 @@ internal static class WindowUtilsInterop
     }
 
     /// <summary>
-    /// macOS AppKit 的 <c>NSWindowButton</c> 枚举，标识窗口标题栏上的标准按钮。
+    /// The <c>NSWindowButton</c> enumeration of macOS AppKit, which identifies the standard buttons of a window
+    /// title bar.
     /// </summary>
     /// <remarks>
-    /// 数值来源于 Apple SDK 的 <c>AppKit/NSWindow.h</c>：
+    /// The values come from <c>AppKit/NSWindow.h</c> of the Apple SDK:
     /// <code>
     /// typedef NS_ENUM(NSUInteger, NSWindowButton) {
     ///     NSWindowCloseButton            = 0,
@@ -89,12 +90,13 @@ internal static class WindowUtilsInterop
     ///     NSWindowZoomButton             = 2,
     ///     NSWindowToolbarButton          = 3,
     ///     NSWindowDocumentIconButton     = 4,
-    ///     NSWindowDocumentVersionsButton = 6,  // 注意：跳过 5
+    ///     NSWindowDocumentVersionsButton = 6,  // 5 is skipped
     ///     NSWindowFullScreenButton       = 7   // API_DEPRECATED since 10.12
     /// };
     /// </code>
-    /// 常规 <c>NSWindow</c> 上只存在 Close / Miniaturize / Zoom；其余按钮取决于窗口样式
-    /// (<c>styleMask</c>)、是否有 toolbar、是否为 document window 等。
+    /// A regular <c>NSWindow</c> has only Close, Miniaturize and Zoom. The other buttons depend on the window
+    /// style (<c>styleMask</c>), on whether the window has a toolbar, on whether it is a document window, and
+    /// so on.
     /// </remarks>
     public enum NSWindowButton : long
     {
@@ -107,7 +109,7 @@ internal static class WindowUtilsInterop
         FullScreenButton = 7
     }
     
-    // Objective-C 运行时函数
+    // Objective-C runtime functions.
     [DllImport("/usr/lib/libobjc.A.dylib")]
     public static extern IntPtr sel_registerName(string selectorName);
 
@@ -140,7 +142,7 @@ internal static class WindowUtilsInterop
     [DllImport("/usr/lib/libSystem.B.dylib")]
     private static extern int dlclose(IntPtr handle);
 
-    // objc_msgSend 函数的不同重载
+    // Overloads of objc_msgSend.
     [DllImport("/usr/lib/libobjc.A.dylib", EntryPoint = "objc_msgSend")]
     public static extern IntPtr objc_msgSend_intptr(IntPtr receiver, IntPtr selector);
 
@@ -216,11 +218,11 @@ internal static class WindowUtilsInterop
     [DllImport("/usr/lib/libobjc.A.dylib", EntryPoint = "objc_msgSend")]
     public static extern double objc_msgSend_double(IntPtr receiver, IntPtr selector);
 
-    // NSPoint 为两个 double，x64 与 arm64 都按寄存器返回，不走 objc_msgSend_stret。
+    // An NSPoint is two doubles, which x64 and arm64 return in registers, so objc_msgSend_stret is not used.
     [DllImport("/usr/lib/libobjc.A.dylib", EntryPoint = "objc_msgSend")]
     public static extern NSPoint objc_msgSend_point(IntPtr receiver, IntPtr selector);
 
-    // Selector字符串缓存
+    // Cache of selector strings.
     public static readonly IntPtr SetIgnoresMouseEventsSelector = sel_registerName("setIgnoresMouseEvents:");
     public static readonly IntPtr IgnoresMouseEventsSelector = sel_registerName("ignoresMouseEvents");
     public static readonly IntPtr MouseLocationOutsideOfEventStreamSelector =
@@ -300,7 +302,7 @@ internal static class WindowUtilsInterop
             : objc_msgSend_intptr(nativeString, RetainSelector);
     }
 
-    // 辅助方法
+    // Helper methods.
     public static IntPtr GetStandardWindowButton(IntPtr window, long buttonType)
     {
         return objc_msgSend_intptr_long(window, StandardWindowButtonSelector, buttonType);
@@ -343,7 +345,9 @@ internal static class WindowUtilsInterop
         return objc_msgSend_intptr(view, SuperviewSelector);
     }
 
-    /// <summary>Returns the elements of an <c>NSArray</c>; an empty list for a null array.</summary>
+    /// <summary>
+    /// Returns the elements of an <c>NSArray</c>; an empty list for a null array.
+    /// </summary>
     public static List<IntPtr> GetArrayItems(IntPtr array)
     {
         var items = new List<IntPtr>();
@@ -367,7 +371,9 @@ internal static class WindowUtilsInterop
         return obj != IntPtr.Zero && cls != IntPtr.Zero && objc_msgSend_bool_intptr(obj, IsKindOfClassSelector, cls);
     }
 
-    /// <summary>Hides or shows an <c>NSView</c> or a <c>CALayer</c>; both respond to <c>setHidden:</c>.</summary>
+    /// <summary>
+    /// Hides or shows an <c>NSView</c> or a <c>CALayer</c>; both respond to <c>setHidden:</c>.
+    /// </summary>
     public static void SetHidden(IntPtr viewOrLayer, bool isHidden)
     {
         if (viewOrLayer != IntPtr.Zero)

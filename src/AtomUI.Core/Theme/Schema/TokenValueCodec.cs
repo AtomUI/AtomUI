@@ -2,6 +2,10 @@ using System.ComponentModel;
 
 namespace AtomUI.Theme.Schema;
 
+/// <summary>
+/// Converts the values of one token value type between values and literal text. Generated registrations share one
+/// <see cref="TokenValueCodec{T}" /> instance per value type.
+/// </summary>
 [EditorBrowsable(EditorBrowsableState.Never)]
 public abstract class TokenValueCodec
 {
@@ -17,16 +21,28 @@ public abstract class TokenValueCodec
     internal virtual bool SupportsCompiledValues => false;
 }
 
+/// <summary>
+/// The codec of the token value type <typeparamref name="T" />: it parses with <see cref="ThemeTokenValueParser" />
+/// and formats with <see cref="ThemeTokenValueFormatter" />.
+/// </summary>
+/// <typeparam name="T">
+/// The token value type.
+/// </typeparam>
 [EditorBrowsable(EditorBrowsableState.Never)]
 public sealed class TokenValueCodec<T> : TokenValueCodec
 {
+    /// <summary>
+    /// The shared codec instance for <typeparamref name="T" />; the class has no other instances.
+    /// </summary>
     public static readonly TokenValueCodec<T> Instance = new();
 
     private TokenValueCodec()
     {
     }
 
-    /// <summary>Copies a supported generated value without formatting or parsing a literal.</summary>
+    /// <summary>
+    /// Copies a supported generated value without formatting or parsing a literal.
+    /// </summary>
     public static T Copy(T value)
     {
         if ((typeof(T).IsValueType && typeof(T) != typeof(Avalonia.Media.BoxShadows) &&

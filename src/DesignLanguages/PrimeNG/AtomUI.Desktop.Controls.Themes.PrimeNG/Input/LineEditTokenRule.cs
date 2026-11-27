@@ -3,7 +3,9 @@ using AtomUI.Theme.Languages;
 
 namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 
-/// <summary>The PrimeNG view of <see cref="LineEditToken"/>.</summary>
+/// <summary>
+/// The PrimeNG view of <see cref="LineEditToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class LineEditTokenRule : IControlTokenRule<PrimeNGToken, LineEditToken>
 {
@@ -11,7 +13,8 @@ internal sealed class LineEditTokenRule : IControlTokenRule<PrimeNGToken, LineEd
     {
         var token  = target.Own;
         var global = target.Global;
-        // PrimeNG: the control-global overrides, read by the formulas below.
+        // PrimeNG: the control-global overrides of PrimeNGInputStage.Apply (form-field values), read by the LineEdit
+        // theme and its input frame (CornerRadius, Foreground, Background, IconBrush), not the formulas below.
         PrimeNGLineEditTokens.EvaluateGlobal(in context, global);
         token.TransparentOutlineBorder = false;
         token.BottomOutlineBorder      = false;

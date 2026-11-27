@@ -57,8 +57,10 @@ internal sealed class LineProgressPanel : Panel
     }
 
     /// <summary>
-    /// 只有填充比例变化时，在上次排布的槽内直接按新比例排布填充部件，不使面板或宿主的测量、排布失效。
-    /// 面板排布已失效时什么都不做，随后的排布会读到最新比例。
+    /// Arranges the fill part at the current indicator ratio inside the groove rectangle of the last arrange.
+    /// It does not invalidate the measure or the arrange of the panel or of its host, so call it when only the
+    /// fill ratio changed. Does nothing when the arrange of the panel is already invalid; the arrange that
+    /// follows reads the latest ratio.
     /// </summary>
     internal void SyncTrackToIndicatorRatio()
     {
@@ -76,8 +78,9 @@ internal sealed class LineProgressPanel : Panel
         }
     }
 
-    // 填充不足最小可见长度时排成空矩形而不切换 IsVisible：可见性翻转会使面板测量失效，
-    // 从 0 起步的过渡因此多出一次布局
+    // A fill shorter than the minimum visible length is arranged as an empty rectangle instead of toggling
+    // IsVisible: a visibility change invalidates the measure of the panel, which costs a transition that
+    // starts from 0 one extra layout pass.
     private static void ArrangeFillTrack(
         Control track,
         Rect trackRect,

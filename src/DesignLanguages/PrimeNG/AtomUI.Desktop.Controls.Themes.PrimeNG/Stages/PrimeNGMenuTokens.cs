@@ -18,13 +18,15 @@ namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 /// </summary>
 internal static class PrimeNGMenuFrame
 {
-    /// <summary>The menu popup frame with the PrimeUIX content border and navigation shadow.</summary>
+    /// <summary>
+    /// The menu popup frame with the PrimeUIX content border and navigation shadow.
+    /// </summary>
     internal static BoxShadows Shadows(in TokenEvaluationContext<PrimeNGToken> context, DesignToken effectiveGlobal) =>
         context.Language.GetMenuOverlayRecipe(effectiveGlobal, context.Variant).ShadowsWithOutline;
 
     /// <summary>
     /// The focused (hovered) item of a menu: PrimeUIX <c>item.focus.background</c> / <c>focus.color</c> (Aura and Lara
-    /// navigation.item.active, Nora the solid primary with its contrast colour).
+    /// navigation.item.active, Nora the solid primary with its contrast color).
     /// </summary>
     internal static (Color Background, Color Foreground) Focus(in TokenEvaluationContext<PrimeNGToken> context, DesignToken effectiveGlobal)
     {
@@ -39,11 +41,13 @@ internal static class PrimeNGMenuFrame
     /// Popup menu rows, PrimeUIX 3.1.1 <c>tieredmenu</c> / <c>menu</c> / <c>contextmenu</c>: <c>item.padding</c> 4px
     /// 10px (Lara 8px 14px) around the 1.5 line box, <c>item.gap</c> 8 between icon and label,
     /// <c>item.border.radius</c> 4 (Lara and Nora 0), <c>list.padding</c> 4px 4px (Lara 8px 0, Nora 2px 0), a
-    /// <c>min-width</c> of 12.5rem and the focus colours.
+    /// <c>min-width</c> of 12.5rem and the focus colors.
     /// </summary>
     internal static void ApplyItems(in TokenEvaluationContext<PrimeNGToken> context, DesignToken effectiveGlobal, AbstractMenuPopupToken token)
     {
         var kind    = context.Variant.Style;
+        // item.padding 4px 10px (Lara 8px 14px) around the 1.5 line box, item.gap 8, item.border.radius 4 (Lara and
+        // Nora 0) and min-width 12.5rem.
         var padding = kind == PrimeNGLanguage.Lara ? new Thickness(14, 8) : new Thickness(10, 4);
         token.ItemPaddingInline       = padding;
         token.GroupTitlePadding       = padding;

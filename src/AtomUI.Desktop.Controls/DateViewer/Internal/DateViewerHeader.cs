@@ -16,7 +16,9 @@ internal sealed class DateViewerHeader : TemplatedControl
     public DateViewerHeaderContext? Context { get => GetValue(ContextProperty); set => SetValue(ContextProperty, value); }
     public IDataTemplate? HeaderTemplate { get => GetValue(HeaderTemplateProperty); set => SetValue(HeaderTemplateProperty, value); }
 
-    /// <summary>The weight of the period title, set by the owning viewer's theme from its Token.</summary>
+    /// <summary>
+    /// The weight of the period title, set by the owning viewer's theme from its Token.
+    /// </summary>
     internal static readonly StyledProperty<FontWeight> TitleFontWeightProperty =
         AvaloniaProperty.Register<DateViewerHeader, FontWeight>(nameof(TitleFontWeight), FontWeight.Bold);
 

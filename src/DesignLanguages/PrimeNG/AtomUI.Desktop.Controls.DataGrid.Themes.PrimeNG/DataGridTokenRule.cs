@@ -6,7 +6,9 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 
-/// <summary>The PrimeNG view of <see cref="DataGridToken"/>.</summary>
+/// <summary>
+/// The PrimeNG view of <see cref="DataGridToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class DataGridTokenRule : IControlTokenRule<PrimeNGToken, DataGridToken>
 {
@@ -17,6 +19,8 @@ internal sealed class DataGridTokenRule : IControlTokenRule<PrimeNGToken, DataGr
         var table  = context.Language.GetTableRecipe(global);
         var colorFillSecondarySolid = ColorUtils.OnBackground(global.ColorFillSecondary, global.ColorBgContainer);
         var colorFillContentSolid = ColorUtils.OnBackground(global.ColorFillContent, global.ColorBgContainer);
+        // The PrimeNG table recipe: the header, hovered, selected and plain row surfaces, the border, the cell paddings
+        // by size and the container radius.
         var colorFillAlterSolid = table.HeaderBackground;
 
         var baseColorAction      = global.ColorIcon;
@@ -50,6 +54,9 @@ internal sealed class DataGridTokenRule : IControlTokenRule<PrimeNGToken, DataGr
         token.ExpandIconBg                = global.ColorBgContainer;
         token.SelectionColumnWidth        = global.ControlHeight;
 
+        // Ant Design formula kept as is: the PrimeNG table recipe covers only the header and row surfaces, the
+        // border, the cell paddings and the radius, so the icon geometry, the filter dropdown sizes and the
+        // margins stay the Ant Design formula over the PrimeNG global tokens.
         token.ExpandIconMargin            = new Thickness(0,
             (global.FontSize * global.FontHeight - global.LineWidth * 3) / 2 -
             Math.Ceiling((global.FontSizeSM * 1.4 - global.LineWidth * 3) / 2),
@@ -70,7 +77,7 @@ internal sealed class DataGridTokenRule : IControlTokenRule<PrimeNGToken, DataGr
         token.ExpandIconHalfInner = global.ControlInteractiveSize / 2 - global.LineWidth;
         token.ExpandIconSize = (global.ControlInteractiveSize / 2 - global.LineWidth) * 2 +
                          global.LineWidth * 3;
-        token.RowReorderIndicatorSize   = global.SizeMD; // TODO 需要根据 SizeType 做一定的调整
+        token.RowReorderIndicatorSize   = global.SizeMD; // TODO SizeType: tune size per SizeType. Remove when tuned.
         token.ExpandIconScale = global.ControlInteractiveSize /
                           ((global.ControlInteractiveSize / 2 - global.LineWidth) * 2 +
                            global.LineWidth * 3);
@@ -78,7 +85,7 @@ internal sealed class DataGridTokenRule : IControlTokenRule<PrimeNGToken, DataGr
         token.SortIndicatorLayoutMargin = new Thickness(global.UniformlyMarginXS, 0, 0, 0);
         token.FilterIndicatorPadding    = new Thickness(global.UniformlyPaddingXXS, global.UniformlyPaddingXS);
 
-        // 别名控件初始化
+        // Initializes the Tokens of the alias control.
         token.TableFontSize = token.CellFontSize;
         token.TableBg       = table.RowBackground;
         token.TableRadius   = token.HeaderBorderRadius;
@@ -111,7 +118,8 @@ internal sealed class DataGridTokenRule : IControlTokenRule<PrimeNGToken, DataGr
         token.TableExpandedRowBg        = token.RowExpandedBg;
 
         // Dropdown
-        // TODO 暂未使用
+        // TODO Dropdown: the filter dropdown Tokens below are not used yet. Verify which of them the data grid reads,
+        // finish or drop the rest, and remove this TODO when that is settled.
         token.TableFilterDropdownWidth               = 120;
         token.TableFilterDropdownHeight              = 264;
         token.TableFilterDropdownSearchWidth         = 140;
@@ -119,7 +127,8 @@ internal sealed class DataGridTokenRule : IControlTokenRule<PrimeNGToken, DataGr
         token.TableFilterButtonContainerMargin       = new Thickness(0, global.UniformlyMarginXS, 0, 0);
         token.TableFilterButtonLayoutSeparatorMargin = new Thickness(0, global.UniformlyMarginXXS, 0, 0);
         token.TableFilterDropdownPadding             = global.PaddingXS;
-        // 对齐 AntD fixed.ts：冻结列分界阴影为 inset 10px 0 8px -8px（左）与 inset -10px 0 8px -8px（右）。
+        // Matches the Ant Design fixed.ts shadows: the shadow at a frozen column boundary is inset 10px 0 8px -8px
+        // (left) and inset -10px 0 8px -8px (right).
         token.LeftFrozenShadows = new BoxShadows(new BoxShadow
         {
             OffsetX = 10,

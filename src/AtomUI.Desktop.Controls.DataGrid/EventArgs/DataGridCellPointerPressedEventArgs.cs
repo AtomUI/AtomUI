@@ -7,15 +7,27 @@ using Avalonia.Input;
 
 namespace AtomUI.Desktop.Controls;
 
+/// <summary>
+/// Carries the data for the <see cref="DataGrid.CellPointerPressed" /> event: the pressed cell with its row
+/// and column, and the pointer event that pressed it.
+/// </summary>
 public class DataGridCellPointerPressedEventArgs : EventArgs
 {
     /// <summary>
     /// Instantiates a new instance of this class.
     /// </summary>
-    /// <param name="cell">The cell that has been pressed.</param>
-    /// <param name="row">The row container of the cell that has been pressed.</param>
-    /// <param name="column">The column of the cell that has been pressed.</param>
-    /// <param name="e">The pointer action that has been taken.</param>
+    /// <param name="cell">
+    /// The cell that has been pressed.
+    /// </param>
+    /// <param name="row">
+    /// The row container of the cell that has been pressed.
+    /// </param>
+    /// <param name="column">
+    /// The column of the cell that has been pressed.
+    /// </param>
+    /// <param name="e">
+    /// The pointer action that has been taken.
+    /// </param>
     public DataGridCellPointerPressedEventArgs(DataGridCell cell, 
                                                DataGridRow row,
                                                DataGridColumn column,

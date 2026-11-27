@@ -207,8 +207,10 @@
                                             <Setter Property="IconBrush" Value="{atom:SharedTokenResource ColorText}" />
                                         </atom:GroupBoxIconStyle>
                                     </Style>
-                                    <!-- root 语义区域的定制入口：分组边框与背景由 GroupBox 自绘，
-                                         模板中没有承载节点，因此用 owner 作用域的普通 Setter 而不是 Part Style。 -->
+                                    <!-- Customization entry of the root semantic area: GroupBox paints the group border
+                                    and background itself and the template has no host node, so plain owner-scoped
+                                    Setters are used instead of part styles.
+                                    -->
                                     <Style Selector="atom|GroupBox.semantic-border">
                                         <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorInfoBorder}" />
                                         <Setter Property="BorderThickness" Value="2" />

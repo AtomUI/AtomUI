@@ -66,11 +66,10 @@
                                                 IsCellActive="{Binding IsActive}"
                                                 Text="{Binding DisplayText}" />
                                         </atom:OtpLineEditCell>
-                                        <!--
-                                            分隔符字形由 OtpSeparatorPresenter 按当前
-                                            字体的 glyph metrics 实测墨迹盒自动居中，
-                                            任意字符、字体、字号都无需人工校准。容器
-                                            与 cell 中心对齐（测试锁定）。
+                                        <!-- The separator glyph is centered by OtpSeparatorPresenter from the measured
+                                        ink box of the glyph metrics of the current font, so no manual calibration
+                                        is needed for any character, font or size. The container aligns with the
+                                        cell center (pinned by tests).
                                         -->
                                         <Border
                                             VerticalAlignment="Center"

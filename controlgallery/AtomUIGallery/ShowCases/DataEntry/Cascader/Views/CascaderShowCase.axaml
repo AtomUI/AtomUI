@@ -854,7 +854,7 @@
                         </DataTemplate>
                     </gallery:ShowCaseItem.DeferredContentTemplate>
                 </gallery:ShowCaseItem>
-                <!-- 自定义语义结构的样式（对齐 antd 的 semantic structure styling 示例） -->
+                <!-- Styles for the custom semantic structure (mirrors the antd semantic structure styling example) -->
                 <gallery:ShowCaseItem Title="{gallery:CascaderShowCaseLangResource StyleClassTitle}"
                                       Description="{gallery:CascaderShowCaseLangResource StyleClassDescription}"
                                       SourceKey="cascader-semantic-part"

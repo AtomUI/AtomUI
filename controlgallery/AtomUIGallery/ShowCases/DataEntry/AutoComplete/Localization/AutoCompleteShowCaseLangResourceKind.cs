@@ -9,7 +9,7 @@ public enum AutoCompleteShowCaseLangResourceKind
     ComponentCategory,
     ComponentStatusStable,
 
-    // antd 对齐的 10 个示例（按文档顺序）
+    // The 10 examples aligned with antd, in documentation order
     BasicTitle,
     BasicDescription,
     CustomOptionsTitle,
@@ -31,7 +31,7 @@ public enum AutoCompleteShowCaseLangResourceKind
     StyleClassTitle,
     StyleClassDescription,
 
-    // 示例内的界面文案
+    // UI text inside the examples
     P2PlaceholderTextInputHere,
     P2PlaceholderTextControlMode,
     P2PlaceholderTextTryToTypeB,
@@ -52,7 +52,7 @@ public enum AutoCompleteShowCaseLangResourceKind
     P2ItemAntDesignFaq,
     P2ItemDesignLanguage,
 
-    // 语义部件预览
+    // Semantic part preview
     SemanticRootDescription,
     SemanticPrefixDescription,
     SemanticContentDescription,

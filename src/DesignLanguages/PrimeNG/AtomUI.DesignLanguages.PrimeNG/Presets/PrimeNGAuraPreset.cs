@@ -4,16 +4,16 @@ using Avalonia.Media;
 namespace AtomUI.DesignLanguages.PrimeNG.Presets;
 
 /// <summary>
-/// The Aura rule table (spec 4.7). Stops are checked against the Aura preset of <c>@primeuix/themes</c> 3.1.1;
-/// the README of this package lists which rows are verified there and which are AtomUI proposals.
+/// The Aura rule table. Stops are checked against the Aura preset of <c>@primeuix/themes</c> 3.1.1. A row that
+/// PrimeUIX does not define, or that departs from it, is a deliberate AtomUI value.
 /// </summary>
 internal static class PrimeNGAuraPreset
 {
     private const int White = PrimeNGShade.White;
     private const int Black = PrimeNGShade.Black;
 
-    // The colour rows equal Lara's by design: each preset is transcribed from its own XML and is expected to diverge
-    // (see "Lara rules" in the README).
+    // The color rows equal Lara's by design: each preset is transcribed from its own XML and is expected to diverge
+    // .
     internal static readonly PrimeNGPreset Table = new(
         Light: new PrimeNGAppearanceRules(
             Surface: PrimeNGTailwindPalettes.Slate,

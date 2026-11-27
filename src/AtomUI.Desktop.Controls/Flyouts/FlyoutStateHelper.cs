@@ -12,6 +12,23 @@ using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
 
+/// <summary>
+/// Opens and closes a <see cref="PopupFlyoutBase" /> at an anchor control in reaction to the input selected by
+/// <see cref="TriggerType" />: a click, a hover with enter and leave delays, or the keyboard focus. A control
+/// delegates its flyout behavior to one instance: it assigns or binds <see cref="AnchorTarget" />,
+/// <see cref="Flyout" />, <see cref="MouseEnterDelay" />, <see cref="MouseLeaveDelay" /> and
+/// <see cref="TriggerType" /> on it, pairs <see cref="NotifyAttachedToVisualTree" /> with
+/// <see cref="NotifyDetachedFromVisualTree" />, and can open or close the flyout itself through
+/// <see cref="ShowFlyout" /> and <see cref="HideFlyout" />. Used by <c>SplitButton</c>,
+/// <c>DropdownButton</c> and <c>FlyoutHost</c> in this assembly, and by the filter indicator of
+/// <c>AtomUI.Desktop.Controls.DataGrid</c> through friend access.
+/// </summary>
+/// <remarks>
+/// <para>
+/// The detach call releases the trigger handlers, the delay timers and the handlers registered on the flyout,
+/// because a flyout can be shared or outlive the control that owns the helper.
+/// </para>
+/// </remarks>
 internal class FlyoutStateHelper : AvaloniaObject
 {
     public static readonly StyledProperty<Control?> AnchorTargetProperty =

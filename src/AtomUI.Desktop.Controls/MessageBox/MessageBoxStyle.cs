@@ -1,29 +1,32 @@
 namespace AtomUI.Desktop.Controls;
 
+/// <summary>
+/// Selects the status icon and the standard buttons that a <see cref="MessageBox" /> shows.
+/// </summary>
 public enum MessageBoxStyle
 {
     /// <summary>
-    /// the message box does not have any icon.
+    /// Shows no icon and only an OK button.
     /// </summary>
     Normal,
     /// <summary>
-    /// an icon indicating that the message is asking a question.
+    /// Shows an exclamation-circle icon with an OK button and a Cancel button. The Escape key activates Cancel.
     /// </summary>
     Confirm,
     /// <summary>
-    /// an icon indicating that the message is nothing out of the ordinary.
+    /// Shows an information icon and only an OK button.
     /// </summary>
     Information,
     /// <summary>
-    /// an icon indicating that the message is a success.
+    /// Shows a check-circle icon and only an OK button.
     /// </summary>
     Success,
     /// <summary>
-    /// an icon indicating that the message is a warning, but can be dealt with.
+    /// Shows an exclamation-circle icon and only an OK button.
     /// </summary>
     Warning,
     /// <summary>
-    /// an icon indicating that the message represents a critical problem.
+    /// Shows a close-circle icon and only an OK button.
     /// </summary>
     Error
 }

@@ -4,8 +4,46 @@ using AtomUI.Theme.Schema;
 
 namespace AtomUI.Theme;
 
+/// <summary>
+/// What one control package hands to the theme manager: the control tokens, theme assets and semantic part
+/// descriptors it contributes, the provider of its control themes, and its theme resources.
+/// </summary>
+/// <remarks>
+/// Register it with <see cref="IThemeManagerBuilder.AddControlPackage(ControlPackageRegistration)" />. The theme
+/// manager builder reads the lists when it merges the package into the theme manager.
+/// </remarks>
 public sealed class ControlPackageRegistration
 {
+    /// <summary>
+    /// Validates the package and copies the descriptors and resources into read-only lists.
+    /// </summary>
+    /// <param name="id">
+    /// The package identity, which must be identical to the id of the theme provider.
+    /// </param>
+    /// <param name="controls">
+    /// The control token descriptors, without <see langword="null" /> entries. Their identities must be unique.
+    /// </param>
+    /// <param name="themeAssets">
+    /// The theme asset descriptors, without <see langword="null" /> entries. Their asset ids and asset URIs must each
+    /// be unique.
+    /// </param>
+    /// <param name="semanticControls">
+    /// The semantic part descriptors. Their identities and control types must each be unique.
+    /// </param>
+    /// <param name="controlThemesProvider">
+    /// Supplies the control themes of the package.
+    /// </param>
+    /// <param name="resources">
+    /// The theme resource registrations. Their asset ids must be unique.
+    /// </param>
+    /// <exception cref="ArgumentNullException">
+    /// An argument is <see langword="null" />.
+    /// </exception>
+    /// <exception cref="ArgumentException">
+    /// <paramref name="id" /> is blank or differs from the id of <paramref name="controlThemesProvider" />, a list
+    /// holds a duplicate, or <paramref name="resources" /> or <paramref name="semanticControls" /> holds a
+    /// <see langword="null" /> entry.
+    /// </exception>
     public ControlPackageRegistration(
         string id,
         IEnumerable<ControlTokenDescriptor> controls,
@@ -76,18 +114,57 @@ public sealed class ControlPackageRegistration
         ControlThemesProvider = controlThemesProvider;
     }
 
+    /// <summary>
+    /// The theme resource registrations of the package, sorted by phase, then order, then asset id.
+    /// </summary>
+    /// <remarks>
+    /// Each registration pairs an asset id with the factory that produces the theme resources of that asset. When
+    /// control packages are loaded, the theme manager adds every registration to its resources as a provider that
+    /// creates them lazily.
+    /// </remarks>
     public IReadOnlyList<ControlThemeResourceRegistration> Resources { get; }
+    /// <summary>
+    /// The position of this package among the control packages the theme manager builder has accepted, in the order
+    /// of acceptance. It is <c>-1</c> until the builder accepts the package.
+    /// </summary>
     public long PackageCommitOrdinal { get; internal set; } = -1;
-    /// <summary>生成器 emit 的包级 schema 指纹常量；手工注册为空，启动 Revision 回退全量计算。</summary>
+    /// <summary>
+    /// The package-level schema fingerprint that generated registration code precomputes at compile time.
+    /// </summary>
+    /// <remarks>
+    /// It is <see langword="null" /> for a package registered by hand and for a package whose deferred registration
+    /// fragments are still pending. The startup theme schema composes its revision from these constants only when
+    /// every package of the builder has one; a single <see langword="null" /> makes it compute the revision from the
+    /// full schema instead.
+    /// </remarks>
     public ulong? SchemaFingerprint { get; internal set; }
 
     // Only the configuration builder owns this continuation. It is cleared on completion or cancellation.
     internal Func<ControlPackageRegistration>? CompleteRegistration { get; set; }
 
+    /// <summary>
+    /// The package identity, which is identical to the id of <see cref="ControlThemesProvider" />.
+    /// </summary>
     public string Id { get; }
+    /// <summary>
+    /// The control token descriptors of the package, sorted by identity (catalog, then id).
+    /// </summary>
     public IReadOnlyList<ControlTokenDescriptor> Controls { get; }
+    /// <summary>
+    /// The theme asset descriptors of the package, sorted by asset URI.
+    /// </summary>
     public IReadOnlyList<ControlThemeAssetDescriptor> ThemeAssets { get; }
+    /// <summary>
+    /// The semantic part descriptors of the package, sorted by identity (catalog, then id). The theme manager builds
+    /// <see cref="IThemeManager.SemanticParts" /> from them.
+    /// </summary>
     public IReadOnlyList<ControlSemanticDescriptor> SemanticControls { get; }
+    /// <summary>
+    /// The provider that supplies the control themes of the package. Its id is the package <see cref="Id" />.
+    /// </summary>
+    /// <remarks>
+    /// The theme manager builder rejects a second package whose provider id is already registered.
+    /// </remarks>
     public IControlThemesProvider ControlThemesProvider { get; }
 
     private static int CompareIdentity(ControlTokenIdentity left, ControlTokenIdentity right)

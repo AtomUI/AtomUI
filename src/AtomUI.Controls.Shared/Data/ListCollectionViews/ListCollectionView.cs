@@ -47,7 +47,8 @@ internal partial class ListCollectionView : IListCollectionView, IList, INotifyP
     /// Gets the number of records in the view after 
     /// filtering, sorting, and paging.
     /// </summary>
-    //TODO Paging
+    // TODO Paging: verify that this member handles paging and complete it where it is missing. Remove this TODO when
+    // that is done.
     public int Count
     {
         get
@@ -126,7 +127,7 @@ internal partial class ListCollectionView : IListCollectionView, IList, INotifyP
     /// </summary>        
     /// <exception cref="NotSupportedException">
     /// Simpler implementations do not support filtering and will throw a NotSupportedException.
-    /// Use <seealso cref="CanFilter"/> property to test if filtering is supported before
+    /// Use <seealso cref="CanFilter" /> property to test if filtering is supported before
     /// assigning a non-null value.
     /// </exception>
     public Func<object, bool>? Filter
@@ -199,7 +200,8 @@ internal partial class ListCollectionView : IListCollectionView, IList, INotifyP
     /// <summary>
     /// Gets a value indicating whether a page index change is in process or not.
     /// </summary>
-    //TODO Paging
+    // TODO Paging: verify that this member handles paging and complete it where it is missing. Remove this TODO when
+    // that is done.
     public bool IsPageChanging
     {
         get => CheckFlag(CollectionViewFlags.IsPageChanging);
@@ -228,7 +230,8 @@ internal partial class ListCollectionView : IListCollectionView, IList, INotifyP
     /// <summary>
     /// Gets the current page we are on. (zero based)
     /// </summary>
-    //TODO Paging
+    // TODO Paging: verify that this member handles paging and complete it where it is missing. Remove this TODO when
+    // that is done.
     public int PageIndex => _pageIndex;
     
     /// <summary>
@@ -237,7 +240,8 @@ internal partial class ListCollectionView : IListCollectionView, IList, INotifyP
     /// in the collection. Otherwise, we will have separate pages for 
     /// the items to display.
     /// </summary>
-    //TODO Paging
+    // TODO Paging: verify that this member handles paging and complete it where it is missing. Remove this TODO when
+    // that is done.
     public int PageSize
     {
         get => _pageSize;
@@ -322,18 +326,18 @@ internal partial class ListCollectionView : IListCollectionView, IList, INotifyP
     /// <summary>
     /// Gets the Sort criteria to sort items in collection.
     /// </summary>
+    /// <exception cref="NotSupportedException">
+    /// Simpler implementations do not support sorting and will throw a NotSupportedException.
+    /// Use <seealso cref="CanSort" /> property to test if sorting is supported before adding
+    /// to SortDescriptions.
+    /// </exception>
     /// <remarks>
     /// <p>
     /// Clear a sort criteria by assigning SortDescription.Empty to this property.
-    /// One or more sort criteria in form of <seealso cref="ListSortDescription"/>
+    /// One or more sort criteria in form of <seealso cref="ListSortDescription" />
     /// can be used, each specifying a property and direction to sort by.
     /// </p>
     /// </remarks>
-    /// <exception cref="NotSupportedException">
-    /// Simpler implementations do not support sorting and will throw a NotSupportedException.
-    /// Use <seealso cref="CanSort"/> property to test if sorting is supported before adding
-    /// to SortDescriptions.
-    /// </exception>
     public SortDescriptionList SortDescriptions
     {
         get
@@ -391,13 +395,15 @@ internal partial class ListCollectionView : IListCollectionView, IList, INotifyP
     /// <summary>
     /// Raised when a page index change completed
     /// </summary>
-    //TODO Paging
+    // TODO Paging: verify that this member handles paging and complete it where it is missing. Remove this TODO when
+    // that is done.
     public event EventHandler<EventArgs>? PageChanged;
 
     /// <summary>
     /// Raised when a page index change is requested
     /// </summary>
-    //TODO Paging
+    // TODO Paging: verify that this member handles paging and complete it where it is missing. Remove this TODO when
+    // that is done.
     public event EventHandler<PageChangingEventArgs>? PageChanging;
 
     /// <summary>
@@ -480,13 +486,15 @@ internal partial class ListCollectionView : IListCollectionView, IList, INotifyP
     /// Gets whether the current page is empty and we need
     /// to move to a previous page.
     /// </summary>
-    //TODO Paging
+    // TODO Paging: verify that this member handles paging and complete it where it is missing. Remove this TODO when
+    // that is done.
     private bool NeedToMoveToPreviousPage => (PageSize > 0 && Count == 0 && PageIndex != 0 && PageCount == PageIndex);
 
     /// <summary>
     /// Gets a value indicating whether we are on the last local page
     /// </summary>
-    //TODO Paging
+    // TODO Paging: verify that this member handles paging and complete it where it is missing. Remove this TODO when
+    // that is done.
     private bool OnLastLocalPage
     {
         get
@@ -511,7 +519,8 @@ internal partial class ListCollectionView : IListCollectionView, IList, INotifyP
     /// <summary>
     /// Gets the number of pages we currently have
     /// </summary>
-    //TODO Paging
+    // TODO Paging: verify that this member handles paging and complete it where it is missing. Remove this TODO when
+    // that is done.
     private int PageCount => _pageSize > 0 ? Math.Max(1, (int)Math.Ceiling((double)ItemCount / _pageSize)) : 0;
 
     /// <summary>
@@ -537,7 +546,8 @@ internal partial class ListCollectionView : IListCollectionView, IList, INotifyP
     /// classes to also be able to access this value to see whether or not 
     /// to use the default source collection, or the internal list.
     /// </summary>
-    //TODO Paging
+    // TODO Paging: verify that this member handles paging and complete it where it is missing. Remove this TODO when
+    // that is done.
     private bool UsesLocalArray => SortDescriptions.Count > 0 || 
                                    Filter != null || 
                                    _pageSize > 0 || 
@@ -657,7 +667,7 @@ internal partial class ListCollectionView : IListCollectionView, IList, INotifyP
     /// <summary>
     /// Forwarder that holds a WeakReference to this view so that the source collection
     /// cannot prevent this view from being garbage collected.  Also used for eager
-    /// unsubscription via <see cref="Dispose"/>.
+    /// unsubscription via <see cref="Dispose" />.
     /// </summary>
     private WeakCollectionChangedForwarder? _collectionChangedForwarder;
 
@@ -680,7 +690,9 @@ internal partial class ListCollectionView : IListCollectionView, IList, INotifyP
     /// <summary>
     /// Helper constructor that sets default values for isDataSorted and isDataInGroupOrder.
     /// </summary>
-    /// <param name="source">The source for the collection</param>
+    /// <param name="source">
+    /// The source for the collection
+    /// </param>
     public ListCollectionView(IEnumerable source)
         : this(source, false /*isDataSorted*/, false /*isDataInGroupOrder*/, null)
     {
@@ -694,9 +706,15 @@ internal partial class ListCollectionView : IListCollectionView, IList, INotifyP
     /// <summary>
     /// Initializes a new instance of the ListCollectionView class.
     /// </summary>
-    /// <param name="source">The source for the collection</param>
-    /// <param name="isDataSorted">Determines whether the source is already sorted</param>
-    /// <param name="isDataInGroupOrder">Whether the source is already in the correct order for grouping</param>
+    /// <param name="source">
+    /// The source for the collection
+    /// </param>
+    /// <param name="isDataSorted">
+    /// Determines whether the source is already sorted
+    /// </param>
+    /// <param name="isDataInGroupOrder">
+    /// Whether the source is already in the correct order for grouping
+    /// </param>
     public ListCollectionView(IEnumerable source, bool isDataSorted, bool isDataInGroupOrder)
         : this(source, isDataSorted, isDataInGroupOrder, null)
     {
@@ -761,8 +779,8 @@ internal partial class ListCollectionView : IListCollectionView, IList, INotifyP
     }
 
     /// <summary>
-    /// Forwards <see cref="INotifyCollectionChanged.CollectionChanged"/> events to a
-    /// <see cref="ListCollectionView"/> via a <see cref="WeakReference{T}"/>, preventing
+    /// Forwards <see cref="INotifyCollectionChanged.CollectionChanged" /> events to a
+    /// <see cref="ListCollectionView" /> via a <see cref="WeakReference{T}" />, preventing
     /// the source collection from rooting the view.  Self-unsubscribes once the view
     /// has been garbage collected.
     /// </summary>
@@ -817,8 +835,12 @@ internal partial class ListCollectionView : IListCollectionView, IList, INotifyP
     /// <summary>
     /// Return the item at the specified index
     /// </summary>
-    /// <param name="index">Index of the item we want to retrieve</param>
-    /// <returns>The item at the specified index</returns>
+    /// <param name="index">
+    /// Index of the item we want to retrieve
+    /// </param>
+    /// <returns>
+    /// The item at the specified index
+    /// </returns>
     public object? this[int index] => GetItemAt(index);
 
     bool IList.IsFixedSize => SourceList?.IsFixedSize ?? true;
@@ -847,7 +869,9 @@ internal partial class ListCollectionView : IListCollectionView, IList, INotifyP
     /// After calling AddNew and changing the new item as desired, either
     /// CommitNew or CancelNew" should be called to complete the transaction.
     /// </summary>
-    /// <returns>The new item we are adding</returns>
+    /// <returns>
+    /// The new item we are adding
+    /// </returns>
 
     public object AddNew()
     {
@@ -969,7 +993,8 @@ internal partial class ListCollectionView : IListCollectionView, IList, INotifyP
     /// Complete the transaction started by AddNew. The new
     /// item is removed from the collection.
     /// </summary>
-    //TODO Paging
+    // TODO Paging: verify that this member handles paging and complete it where it is missing. Remove this TODO when
+    // that is done.
     public void CancelNew()
     {
         VerifyRefreshNotDeferred();
@@ -1074,8 +1099,12 @@ internal partial class ListCollectionView : IListCollectionView, IList, INotifyP
     /// Common functionality used by CommitNew, CancelNew, and when the
     /// new item is removed by Remove or Refresh.
     /// </summary>
-    /// <param name="cancel">Whether we canceled the add</param>
-    /// <returns>The new item we ended adding</returns>
+    /// <param name="cancel">
+    /// Whether we canceled the add
+    /// </param>
+    /// <returns>
+    /// The new item we ended adding
+    /// </returns>
     private object? EndAddNew(bool cancel)
     {
         object? newItem = CurrentAddItem;
@@ -1102,7 +1131,8 @@ internal partial class ListCollectionView : IListCollectionView, IList, INotifyP
     /// convention in that the view's sort, filter, and paging
     /// specifications (if any) are applied to the new item.
     /// </summary>
-    //TODO Paging
+    // TODO Paging: verify that this member handles paging and complete it where it is missing. Remove this TODO when
+    // that is done.
     public void CommitNew()
     {
         VerifyRefreshNotDeferred();
@@ -1250,8 +1280,12 @@ internal partial class ListCollectionView : IListCollectionView, IList, INotifyP
     /// If the caller knows that the item belongs to the
     /// underlying collection, it is more efficient to call PassesFilter.
     /// </summary>
-    /// <param name="item">The item we are checking to see whether it is within the collection</param>
-    /// <returns>Boolean value of whether or not the collection contains the item</returns>
+    /// <param name="item">
+    /// The item we are checking to see whether it is within the collection
+    /// </param>
+    /// <returns>
+    /// Boolean value of whether or not the collection contains the item
+    /// </returns>
     public bool Contains(object? item)
     {
         EnsureCollectionInSync();
@@ -1263,7 +1297,9 @@ internal partial class ListCollectionView : IListCollectionView, IList, INotifyP
     /// Enter a Defer Cycle.
     /// Defer cycles are used to coalesce changes to the ICollectionView.
     /// </summary>
-    /// <returns>IDisposable used to notify that we no longer need to defer, when we dispose</returns>
+    /// <returns>
+    /// IDisposable used to notify that we no longer need to defer, when we dispose
+    /// </returns>
     public IDisposable DeferRefresh()
     {
         if (IsAddingNew)
@@ -1280,8 +1316,11 @@ internal partial class ListCollectionView : IListCollectionView, IList, INotifyP
     /// This provides a way to enumerate the members of the collection
     /// without changing the currency.
     /// </summary>
-    /// <returns>IEnumerator for the collection</returns>
-    //TODO Paging
+    /// <returns>
+    /// IEnumerator for the collection
+    /// </returns>
+    // TODO Paging: verify that this member handles paging and complete it where it is missing. Remove this TODO when
+    // that is done.
     public IEnumerator GetEnumerator()
     {
         EnsureCollectionInSync();
@@ -1319,7 +1358,9 @@ internal partial class ListCollectionView : IListCollectionView, IList, INotifyP
     /// <summary>
     /// Interface Implementation for GetEnumerator()
     /// </summary>
-    /// <returns>IEnumerator that we get from our internal collection</returns>
+    /// <returns>
+    /// IEnumerator that we get from our internal collection
+    /// </returns>
     IEnumerator IEnumerable.GetEnumerator()
     {
         return GetEnumerator();
@@ -1329,11 +1370,15 @@ internal partial class ListCollectionView : IListCollectionView, IList, INotifyP
     /// Retrieve item at the given zero-based index in this ListCollectionView, after the source collection
     /// is filtered, sorted, and paged.
     /// </summary>
+    /// <param name="index">
+    /// Index of the item we want to retrieve
+    /// </param>
+    /// <returns>
+    /// Item at specified index
+    /// </returns>
     /// <exception cref="ArgumentOutOfRangeException">
     /// Thrown if index is out of range
     /// </exception>
-    /// <param name="index">Index of the item we want to retrieve</param>
-    /// <returns>Item at specified index</returns>
     public object? GetItemAt(int index)
     {
         EnsureCollectionInSync();
@@ -1361,9 +1406,14 @@ internal partial class ListCollectionView : IListCollectionView, IList, INotifyP
     /// <summary> 
     /// Return the index where the given item appears, or -1 if doesn't appear.
     /// </summary>
-    /// <param name="item">Item we are searching for</param>
-    /// <returns>Index of specified item</returns>
-    //TODO Paging
+    /// <param name="item">
+    /// Item we are searching for
+    /// </param>
+    /// <returns>
+    /// Index of specified item
+    /// </returns>
+    // TODO Paging: verify that this member handles paging and complete it where it is missing. Remove this TODO when
+    // that is done.
     public int IndexOf(object? item)
     {
         EnsureCollectionInSync();
@@ -1423,8 +1473,11 @@ internal partial class ListCollectionView : IListCollectionView, IList, INotifyP
     /// <summary>
     /// Moves to the first page.
     /// </summary>
-    /// <returns>Whether or not the move was successful.</returns>
-    //TODO Paging
+    /// <returns>
+    /// Whether or not the move was successful.
+    /// </returns>
+    // TODO Paging: verify that this member handles paging and complete it where it is missing. Remove this TODO when
+    // that is done.
     public bool MoveToFirstPage()
     {
         return MoveToPage(0);
@@ -1434,8 +1487,11 @@ internal partial class ListCollectionView : IListCollectionView, IList, INotifyP
     /// Moves to the last page.
     /// The move is only attempted when TotalItemCount is known.
     /// </summary>
-    /// <returns>Whether or not the move was successful.</returns>
-    //TODO Paging
+    /// <returns>
+    /// Whether or not the move was successful.
+    /// </returns>
+    // TODO Paging: verify that this member handles paging and complete it where it is missing. Remove this TODO when
+    // that is done.
     public bool MoveToLastPage()
     {
         if (TotalItemCount != -1 && PageSize > 0)
@@ -1448,19 +1504,27 @@ internal partial class ListCollectionView : IListCollectionView, IList, INotifyP
     /// <summary>
     /// Moves to the page after the current page we are on.
     /// </summary>
-    /// <returns>Whether or not the move was successful.</returns>
-    //TODO Paging
+    /// <returns>
+    /// Whether or not the move was successful.
+    /// </returns>
+    // TODO Paging: verify that this member handles paging and complete it where it is missing. Remove this TODO when
+    // that is done.
     public bool MoveToNextPage()
     {
         return MoveToPage(_pageIndex + 1);
     }
     
     /// <summary>
-    /// Requests a page move to page <paramref name="pageIndex"/>.
+    /// Requests a page move to page <paramref name="pageIndex" />.
     /// </summary>
-    /// <param name="pageIndex">Index of the target page</param>
-    /// <returns>Whether or not the move was successfully initiated.</returns>
-    //TODO Paging
+    /// <param name="pageIndex">
+    /// Index of the target page
+    /// </param>
+    /// <returns>
+    /// Whether or not the move was successfully initiated.
+    /// </returns>
+    // TODO Paging: verify that this member handles paging and complete it where it is missing. Remove this TODO when
+    // that is done.
     public bool MoveToPage(int pageIndex)
     {
         // Boundary checks for negative pageIndex
@@ -1494,14 +1558,14 @@ internal partial class ListCollectionView : IListCollectionView, IList, INotifyP
 
         if (RaisePageChanging(pageIndex) && pageIndex != -1)
         {
-            // Page move was cancelled. Abort the move, but only if the target index isn't -1.
+            // Page move was canceled. Abort the move, but only if the target index isn't -1.
             return false;
         }
 
         // Check if there is a current edited or new item so changes can be committed first.
         if (CurrentAddItem != null)
         {
-            // Since PageChanging was raised and not cancelled, a PageChanged notification needs to be raised
+            // Since PageChanging was raised and not canceled, a PageChanged notification needs to be raised
             // even though the PageIndex actually did not change.
             RaisePageChanged();
             return false;
@@ -1516,8 +1580,11 @@ internal partial class ListCollectionView : IListCollectionView, IList, INotifyP
     /// <summary>
     /// Moves to the page before the current page we are on.
     /// </summary>
-    /// <returns>Whether or not the move was successful.</returns>
-    //TODO Paging
+    /// <returns>
+    /// Whether or not the move was successful.
+    /// </returns>
+    // TODO Paging: verify that this member handles paging and complete it where it is missing. Remove this TODO when
+    // that is done.
     public bool MoveToPreviousPage()
     {
         return MoveToPage(_pageIndex - 1);
@@ -1530,8 +1597,12 @@ internal partial class ListCollectionView : IListCollectionView, IList, INotifyP
     /// item requires processing.
     /// Returns true if no filter is set on collection view.
     /// </summary>
-    /// <param name="item">The item to compare against the Filter</param>
-    /// <returns>Whether the item passes the filter</returns>
+    /// <param name="item">
+    /// The item to compare against the Filter
+    /// </param>
+    /// <returns>
+    /// Whether the item passes the filter
+    /// </returns>
     public bool PassesFilter(object item)
     {
         if (Filter != null)
@@ -1555,7 +1626,9 @@ internal partial class ListCollectionView : IListCollectionView, IList, INotifyP
     /// needs to be in the current filtered, sorted, and paged view
     /// to call 
     /// </summary>
-    /// <param name="item">Item we want to remove</param>
+    /// <param name="item">
+    /// Item we want to remove
+    /// </param>
     public void Remove(object? item)
     {
         int index = IndexOf(item);
@@ -1570,8 +1643,11 @@ internal partial class ListCollectionView : IListCollectionView, IList, INotifyP
     /// The index is interpreted with respect to the view (filtered, sorted,
     /// and paged list).
     /// </summary>
-    /// <param name="index">Index of the item we want to remove</param>
-    //TODO Paging
+    /// <param name="index">
+    /// Index of the item we want to remove
+    /// </param>
+    // TODO Paging: verify that this member handles paging and complete it where it is missing. Remove this TODO when
+    // that is done.
     public void RemoveAt(int index)
     {
         if (index < 0 || index >= Count)
@@ -1677,8 +1753,12 @@ internal partial class ListCollectionView : IListCollectionView, IList, INotifyP
     /// <summary>
     /// Returns true if specified flag in flags is set.
     /// </summary>
-    /// <param name="flags">Flag we are checking for</param>
-    /// <returns>Whether the specified flag is set</returns>
+    /// <param name="flags">
+    /// Flag we are checking for
+    /// </param>
+    /// <returns>
+    /// Whether the specified flag is set
+    /// </returns>
     private bool CheckFlag(CollectionViewFlags flags)
     {
         return _flags.HasAllFlags(flags);
@@ -1688,8 +1768,11 @@ internal partial class ListCollectionView : IListCollectionView, IList, INotifyP
     /// Called to complete the page move operation to set the
     /// current page index.
     /// </summary>
-    /// <param name="pageIndex">Final page index</param>
-    //TODO Paging
+    /// <param name="pageIndex">
+    /// Final page index
+    /// </param>
+    // TODO Paging: verify that this member handles paging and complete it where it is missing. Remove this TODO when
+    // that is done.
     private void CompletePageMove(int pageIndex)
     {
         if (_pageIndex == pageIndex)
@@ -1727,9 +1810,14 @@ internal partial class ListCollectionView : IListCollectionView, IList, INotifyP
     /// Convert a value for the index passed in to the index it would be
     /// relative to the InternalIndex property.
     /// </summary>
-    /// <param name="index">Index to convert</param>
-    /// <returns>Value for the InternalIndex</returns>
-    //TODO Paging
+    /// <param name="index">
+    /// Index to convert
+    /// </param>
+    /// <returns>
+    /// Value for the InternalIndex
+    /// </returns>
+    // TODO Paging: verify that this member handles paging and complete it where it is missing. Remove this TODO when
+    // that is done.
     private int ConvertToInternalIndex(int index)
     {
         Debug.Assert(index > -1, "Unexpected index == -1");
@@ -1861,8 +1949,12 @@ internal partial class ListCollectionView : IListCollectionView, IList, INotifyP
     /// <summary>
     /// Helper function used to determine the type of an item
     /// </summary>
-    /// <param name="useRepresentativeItem">Whether we should use a representative item</param>
-    /// <returns>The type of the items in the collection</returns>
+    /// <param name="useRepresentativeItem">
+    /// Whether we should use a representative item
+    /// </param>
+    /// <returns>
+    /// The type of the items in the collection
+    /// </returns>
     [UnconditionalSuppressMessage("Trimming", "IL2075",
         Justification = "Dynamic collection views infer item type from runtime collection interfaces. NativeAOT apps must preserve collection interface metadata.")]
     private Type? GetItemType(bool useRepresentativeItem)
@@ -1905,7 +1997,9 @@ internal partial class ListCollectionView : IListCollectionView, IList, INotifyP
     /// <summary>
     /// Gets a representative item from the collection
     /// </summary>
-    /// <returns>An item that can represent the collection</returns>
+    /// <returns>
+    /// An item that can represent the collection
+    /// </returns>
     private object? GetRepresentativeItem()
     {
         if (IsEmpty)
@@ -1942,8 +2036,12 @@ internal partial class ListCollectionView : IListCollectionView, IList, INotifyP
     /// <summary>
     /// Return index of item in the internal list.
     /// </summary>
-    /// <param name="item">The item we are checking</param>
-    /// <returns>Integer value on where in the InternalList the object is located</returns>
+    /// <param name="item">
+    /// The item we are checking
+    /// </param>
+    /// <returns>
+    /// Integer value on where in the InternalList the object is located
+    /// </returns>
     private int InternalIndexOf(object? item)
     {
         return InternalList.IndexOf(item);
@@ -1952,8 +2050,12 @@ internal partial class ListCollectionView : IListCollectionView, IList, INotifyP
     /// <summary>
     /// Return item at the given index in the internal list.
     /// </summary>
-    /// <param name="index">The index we are checking</param>
-    /// <returns>The item at the specified index</returns>
+    /// <param name="index">
+    /// The index we are checking
+    /// </param>
+    /// <returns>
+    /// The item at the specified index
+    /// </returns>
     private object? InternalItemAt(int index)
     {
         if (index >= 0 && index < InternalList.Count)
@@ -1966,14 +2068,15 @@ internal partial class ListCollectionView : IListCollectionView, IList, INotifyP
     /// <summary>
     ///     Notify listeners that this View has changed
     /// </summary>
+    /// <param name="args">
+    ///     The NotifyCollectionChangedEventArgs to be passed to the EventHandler
+    /// </param>
     /// <remarks>
     ///     CollectionViews (and sub-classes) should take their filter/sort/grouping/paging
     ///     into account before calling this method to forward CollectionChanged events.
     /// </remarks>
-    /// <param name="args">
-    ///     The NotifyCollectionChangedEventArgs to be passed to the EventHandler
-    /// </param>
-    //TODO Paging
+    // TODO Paging: verify that this member handles paging and complete it where it is missing. Remove this TODO when
+    // that is done.
     private void HandleCollectionChanged(NotifyCollectionChangedEventArgs args)
     {
         if (args == null)
@@ -2013,8 +2116,12 @@ internal partial class ListCollectionView : IListCollectionView, IList, INotifyP
     /// <summary>
     /// GroupBy changed handler
     /// </summary>
-    /// <param name="sender">CollectionViewGroup whose GroupBy has changed</param>
-    /// <param name="e">Arguments for the NotifyCollectionChanged event</param>
+    /// <param name="sender">
+    /// CollectionViewGroup whose GroupBy has changed
+    /// </param>
+    /// <param name="e">
+    /// Arguments for the NotifyCollectionChanged event
+    /// </param>
     private void HandleGroupByChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
         if (IsAddingNew)
@@ -2028,9 +2135,14 @@ internal partial class ListCollectionView : IListCollectionView, IList, INotifyP
     /// <summary>
     /// GroupDescription changed handler
     /// </summary>
-    /// <param name="sender">CollectionViewGroup whose GroupDescription has changed</param>
-    /// <param name="e">Arguments for the GroupDescriptionChanged event</param>
-    //TODO Paging
+    /// <param name="sender">
+    /// CollectionViewGroup whose GroupDescription has changed
+    /// </param>
+    /// <param name="e">
+    /// Arguments for the GroupDescriptionChanged event
+    /// </param>
+    // TODO Paging: verify that this member handles paging and complete it where it is missing. Remove this TODO when
+    // that is done.
     private void HandleGroupDescriptionChanged(object? sender, EventArgs e)
     {
         if (IsAddingNew)
@@ -2060,7 +2172,9 @@ internal partial class ListCollectionView : IListCollectionView, IList, INotifyP
     /// <summary>
     /// Raises a PropertyChanged event.
     /// </summary>
-    /// <param name="e">PropertyChangedEventArgs for this change</param>
+    /// <param name="e">
+    /// PropertyChangedEventArgs for this change
+    /// </param>
     private void NotifyPropertyChanged(PropertyChangedEventArgs e)
     {
         PropertyChanged?.Invoke(this, e);
@@ -2069,7 +2183,9 @@ internal partial class ListCollectionView : IListCollectionView, IList, INotifyP
     /// <summary>
     /// Helper to raise a PropertyChanged event.
     /// </summary>
-    /// <param name="propertyName">Property name for the property that changed</param>
+    /// <param name="propertyName">
+    /// Property name for the property that changed
+    /// </param>
     private void NotifyPropertyChanged(string propertyName)
     {
         NotifyPropertyChanged(new PropertyChangedEventArgs(propertyName));
@@ -2078,7 +2194,9 @@ internal partial class ListCollectionView : IListCollectionView, IList, INotifyP
     /// <summary>
     /// Sets up the ActiveComparer for the ListCollectionViewGroupRoot specified
     /// </summary>
-    /// <param name="groupRoot">The ListCollectionViewGroupRoot</param>
+    /// <param name="groupRoot">
+    /// The ListCollectionViewGroupRoot
+    /// </param>
     private void PrepareGroupingComparer(ListCollectionViewGroupRoot groupRoot)
     {
         if (groupRoot == _temporaryGroup || PageSize == 0)
@@ -2199,7 +2317,8 @@ internal partial class ListCollectionView : IListCollectionView, IList, INotifyP
     /// covered by the current page, or to display the entire group if paging is not
     /// being used.
     /// </summary>
-    //TODO Paging
+    // TODO Paging: verify that this member handles paging and complete it where it is missing. Remove this TODO when
+    // that is done.
     private void PrepareGroupsForCurrentPage()
     {
         _group.Clear();
@@ -2247,8 +2366,12 @@ internal partial class ListCollectionView : IListCollectionView, IList, INotifyP
     /// Create, filter and sort the local index array.
     /// called from Refresh(), override in derived classes as needed.
     /// </summary>
-    /// <param name="enumerable">new IEnumerable to associate this view with</param>
-    /// <returns>new local array to use for this view</returns>
+    /// <param name="enumerable">
+    /// new IEnumerable to associate this view with
+    /// </param>
+    /// <returns>
+    /// new local array to use for this view
+    /// </returns>
     private IList PrepareLocalArray(IEnumerable enumerable)
     {
         Debug.Assert(enumerable != null, "Input list to filter/sort should not be null");
@@ -2276,9 +2399,14 @@ internal partial class ListCollectionView : IListCollectionView, IList, INotifyP
     /// <summary>
     /// Process an Add operation from an INotifyCollectionChanged event handler.
     /// </summary>
-    /// <param name="addedItem">Item added to the source collection</param>
-    /// <param name="addIndex">Index item was added into</param>
-    //TODO Paging
+    /// <param name="addedItem">
+    /// Item added to the source collection
+    /// </param>
+    /// <param name="addIndex">
+    /// Index item was added into
+    /// </param>
+    // TODO Paging: verify that this member handles paging and complete it where it is missing. Remove this TODO when
+    // that is done.
     private void ProcessAddEvent(object addedItem, int addIndex)
     {
         // item to fire remove notification for if necessary
@@ -2453,9 +2581,14 @@ internal partial class ListCollectionView : IListCollectionView, IList, INotifyP
     /// <summary>
     /// Process a Remove operation from an INotifyCollectionChanged event handler.
     /// </summary>
-    /// <param name="removedItem">Item removed from the source collection</param>
-    /// <param name="isReplace">Whether this was part of a Replace operation</param>
-    //TODO Paging
+    /// <param name="removedItem">
+    /// Item removed from the source collection
+    /// </param>
+    /// <param name="isReplace">
+    /// Whether this was part of a Replace operation
+    /// </param>
+    // TODO Paging: verify that this member handles paging and complete it where it is missing. Remove this TODO when
+    // that is done.
     private void ProcessRemoveEvent(object removedItem, bool isReplace)
     {
         int internalRemoveIndex = -1;
@@ -2539,8 +2672,12 @@ internal partial class ListCollectionView : IListCollectionView, IList, INotifyP
     /// <summary>
     /// Handles adding an item into the collection, and applying sorting, filtering, grouping, paging.
     /// </summary>
-    /// <param name="item">Item to insert in the collection</param>
-    /// <param name="index">Index to insert item into</param>
+    /// <param name="item">
+    /// Item to insert in the collection
+    /// </param>
+    /// <param name="index">
+    /// Index to insert item into
+    /// </param>
     private void ProcessInsertToCollection(object item, int index)
     {
         // first check to see if it passes the filter
@@ -2596,8 +2733,12 @@ internal partial class ListCollectionView : IListCollectionView, IList, INotifyP
     /// <summary>
     /// Raises the PageChanging event
     /// </summary>
-    /// <param name="newPageIndex">Index of the requested page</param>
-    /// <returns>True if the event is cancelled (e.Cancel was set to True), False otherwise</returns>
+    /// <param name="newPageIndex">
+    /// Index of the requested page
+    /// </param>
+    /// <returns>
+    /// True if the event is canceled (e.Cancel was set to True), False otherwise
+    /// </returns>
     private bool RaisePageChanging(int newPageIndex)
     {
         EventHandler<PageChangingEventArgs>? handler = PageChanging;
@@ -2639,7 +2780,8 @@ internal partial class ListCollectionView : IListCollectionView, IList, INotifyP
     /// Re-create the view, using any SortDescriptions. 
     /// Also updates currency information.
     /// </summary>
-    //TODO Paging
+    // TODO Paging: verify that this member handles paging and complete it where it is missing. Remove this TODO when
+    // that is done.
     private void RefreshOverride()
     {
         // set IsGrouping to false
@@ -2699,8 +2841,12 @@ internal partial class ListCollectionView : IListCollectionView, IList, INotifyP
     /// <summary>
     /// Sets the specified Flag(s)
     /// </summary>
-    /// <param name="flags">Flags we want to set</param>
-    /// <param name="value">Value we want to set these flags to</param>
+    /// <param name="flags">
+    /// Flags we want to set
+    /// </param>
+    /// <param name="value">
+    /// Value we want to set these flags to
+    /// </param>
     private void SetFlag(CollectionViewFlags flags, bool value)
     {
         if (value)
@@ -2716,7 +2862,9 @@ internal partial class ListCollectionView : IListCollectionView, IList, INotifyP
     /// <summary>
     /// Set new SortDescription collection; re-hook collection change notification handler
     /// </summary>
-    /// <param name="descriptions">SortDescriptionCollection to set the property value to</param>
+    /// <param name="descriptions">
+    /// SortDescriptionCollection to set the property value to
+    /// </param>
     private void SetSortDescriptions(SortDescriptionList descriptions)
     {
         if (_sortDescriptions != null)
@@ -2736,7 +2884,6 @@ internal partial class ListCollectionView : IListCollectionView, IList, INotifyP
     /// <summary>
     /// Set new FilterDescription collection; re-hook collection change notification handler
     /// </summary>
-    /// <param name="descriptions"></param>
     private void SetFilterDescriptions(FilterDescriptionList descriptions)
     {
         if (_filterDescriptions != null)
@@ -2756,8 +2903,12 @@ internal partial class ListCollectionView : IListCollectionView, IList, INotifyP
     /// <summary>
     /// SortDescription was added/removed, refresh ListCollectionView
     /// </summary>
-    /// <param name="sender">Sender that triggered this handler</param>
-    /// <param name="e">NotifyCollectionChangedEventArgs for this change</param>
+    /// <param name="sender">
+    /// Sender that triggered this handler
+    /// </param>
+    /// <param name="e">
+    /// NotifyCollectionChangedEventArgs for this change
+    /// </param>
     private void SortDescriptionsChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
         if (IsAddingNew)
@@ -2789,8 +2940,12 @@ internal partial class ListCollectionView : IListCollectionView, IList, INotifyP
     /// <summary>
     /// SortDescription was added/removed, refresh ListCollectionView
     /// </summary>
-    /// <param name="sender">Sender that triggered this handler</param>
-    /// <param name="e">NotifyCollectionChangedEventArgs for this change</param>
+    /// <param name="sender">
+    /// Sender that triggered this handler
+    /// </param>
+    /// <param name="e">
+    /// NotifyCollectionChangedEventArgs for this change
+    /// </param>
     private void FilterDescriptionsChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
         if (IsAddingNew)
@@ -2822,8 +2977,12 @@ internal partial class ListCollectionView : IListCollectionView, IList, INotifyP
     /// <summary>
     /// Sort the List based on the SortDescriptions property.
     /// </summary>
-    /// <param name="list">List of objects to sort</param>
-    /// <returns>The sorted list</returns>
+    /// <param name="list">
+    /// List of objects to sort
+    /// </param>
+    /// <returns>
+    /// The sorted list
+    /// </returns>
     private List<object> SortList(List<object> list)
     {
         Debug.Assert(list != null, "Input list to sort should not be null");
@@ -2917,7 +3076,9 @@ internal partial class ListCollectionView : IListCollectionView, IList, INotifyP
         SourceList?.Insert(index, value);
         if (SourceList is not INotifyCollectionChanged)
         {
-            // TODO: implement Insert
+            // A source that raises no CollectionChanged events is told to reset the whole view here.
+            // TODO: report the inserted item as an Add change that carries the index instead of a Reset.
+            // Remove this comment when that Add change is raised.
             ProcessCollectionChanged(
                 new NotifyCollectionChangedEventArgs(NotifyCollectionChangedAction.Reset, value));
         }
@@ -2989,7 +3150,9 @@ internal partial class ListCollectionView : IListCollectionView, IList, INotifyP
         /// <summary>
         /// Sets a value indicating that we have been entered
         /// </summary>
-        /// <returns>Boolean value indicating whether we were already entered</returns>
+        /// <returns>
+        /// Boolean value indicating whether we were already entered
+        /// </returns>
         public bool Enter()
         {
             if (_entered)
@@ -3037,9 +3200,15 @@ internal partial class ListCollectionView : IListCollectionView, IList, INotifyP
         /// <summary>
         /// Initializes a new instance of the NewItemAwareEnumerator class.
         /// </summary>
-        /// <param name="collectionView">The ListCollectionView we are creating the enumerator for</param>
-        /// <param name="baseEnumerator">The baseEnumerator that we pass in</param>
-        /// <param name="newItem">The new item we are adding to the collection</param>
+        /// <param name="collectionView">
+        /// The ListCollectionView we are creating the enumerator for
+        /// </param>
+        /// <param name="baseEnumerator">
+        /// The baseEnumerator that we pass in
+        /// </param>
+        /// <param name="newItem">
+        /// The new item we are adding to the collection
+        /// </param>
         public NewItemAwareEnumerator(ListCollectionView collectionView, IEnumerator baseEnumerator, object? newItem)
         {
             _collectionView = collectionView;
@@ -3051,7 +3220,9 @@ internal partial class ListCollectionView : IListCollectionView, IList, INotifyP
         /// <summary>
         /// Implements the MoveNext function for IEnumerable
         /// </summary>
-        /// <returns>Whether we can move to the next item</returns>
+        /// <returns>
+        /// Whether we can move to the next item
+        /// </returns>
         public bool MoveNext()
         {
             if (_timestamp != _collectionView.Timestamp)
@@ -3155,9 +3326,15 @@ internal partial class ListCollectionView : IListCollectionView, IList, INotifyP
         /// <summary>
         /// Compares two objects and returns a value indicating whether one is less than, equal to or greater than the other.
         /// </summary>
-        /// <param name="x">first item to compare</param>
-        /// <param name="y">second item to compare</param>
-        /// <returns>Negative number if x is less than y, zero if equal, and a positive number if x is greater than y</returns>
+        /// <param name="x">
+        /// first item to compare
+        /// </param>
+        /// <param name="y">
+        /// second item to compare
+        /// </param>
+        /// <returns>
+        /// Negative number if x is less than y, zero if equal, and a positive number if x is greater than y
+        /// </returns>
         /// <remarks>
         /// Compares the 2 items using the list of property names and directions.
         /// </remarks>
@@ -3184,9 +3361,15 @@ internal partial class ListCollectionView : IListCollectionView, IList, INotifyP
         /// Steps through the given list using the comparer to find where
         /// to insert the specified item to maintain sorted order
         /// </summary>
-        /// <param name="x">Item to insert into the list</param>
-        /// <param name="list">List where we want to insert the item</param>
-        /// <returns>Index where we should insert into</returns>
+        /// <param name="x">
+        /// Item to insert into the list
+        /// </param>
+        /// <param name="list">
+        /// List where we want to insert the item
+        /// </param>
+        /// <returns>
+        /// Index where we should insert into
+        /// </returns>
         public int FindInsertIndex(object? x, IList list)
         {
             int min = 0;
@@ -3228,7 +3411,9 @@ internal partial class ListCollectionView : IListCollectionView, IList, INotifyP
         /// <summary>
         /// Initializes a new instance of the DeferHelper class
         /// </summary>
-        /// <param name="collectionView">CollectionView that created this DeferHelper</param>
+        /// <param name="collectionView">
+        /// CollectionView that created this DeferHelper
+        /// </param>
         public DeferHelper(ListCollectionView? collectionView)
         {
             _collectionView = collectionView;
@@ -3264,7 +3449,9 @@ internal partial class ListCollectionView : IListCollectionView, IList, INotifyP
         /// Creates a comparer which will respect the CultureInfo
         /// that is passed in when comparing strings.
         /// </summary>
-        /// <param name="culture">The CultureInfo to use in string comparisons</param>
+        /// <param name="culture">
+        /// The CultureInfo to use in string comparisons
+        /// </param>
         public CultureSensitiveComparer(CultureInfo? culture)
         {
             _culture = culture ?? CultureInfo.InvariantCulture;
@@ -3273,9 +3460,15 @@ internal partial class ListCollectionView : IListCollectionView, IList, INotifyP
         /// <summary>
         /// Compares two objects and returns a value indicating whether one is less than, equal to or greater than the other.
         /// </summary>
-        /// <param name="x">first item to compare</param>
-        /// <param name="y">second item to compare</param>
-        /// <returns>Negative number if x is less than y, zero if equal, and a positive number if x is greater than y</returns>
+        /// <param name="x">
+        /// first item to compare
+        /// </param>
+        /// <param name="y">
+        /// second item to compare
+        /// </param>
+        /// <returns>
+        /// Negative number if x is less than y, zero if equal, and a positive number if x is greater than y
+        /// </returns>
         /// <remarks>
         /// Compares the 2 items using the specified CultureInfo for string and using the default object comparer for all other objects.
         /// </remarks>

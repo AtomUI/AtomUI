@@ -3,7 +3,9 @@ using AtomUI.Theme.Languages;
 
 namespace AtomUI.Desktop.Controls.Themes.AntDesign;
 
-/// <summary>The AntDesign view of <see cref="TransferTreeViewToken"/>.</summary>
+/// <summary>
+/// The AntDesign view of <see cref="TransferTreeViewToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class TransferTreeViewTokenRule : IControlTokenRule<AntDesignToken, TransferTreeViewToken>
 {

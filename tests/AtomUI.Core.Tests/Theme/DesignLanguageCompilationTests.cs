@@ -14,9 +14,8 @@ using Xunit;
 namespace AtomUI.Core.Tests.Theme;
 
 /// <summary>
-/// The single-pass pipeline of the compiler (spec 5): seeds, language tokens, global tokens, then each control's view,
-/// with explicit values frozen against the rules, every rule run once, and failures reported where they
-/// belong (spec 5.5).
+/// The single-pass pipeline of the compiler: seeds, language tokens, global tokens, then each control's view,
+/// with explicit values frozen against the rules, every rule run once, and failures reported where they belong.
 /// </summary>
 public class DesignLanguageCompilationTests
 {
@@ -235,7 +234,9 @@ public enum ViewProbeTokenKind
     DerivedHeight
 }
 
-/// <summary>A control token written by hand the way the generator writes one: every setter checks the freeze.</summary>
+/// <summary>
+/// A control token written by hand the way the generator writes one: every setter checks the freeze.
+/// </summary>
 public sealed class ViewProbeToken : AbstractControlDesignToken, IControlToken
 {
     public static ControlTokenIdentity ControlIdentity { get; } = new("Test", "ViewProbe");

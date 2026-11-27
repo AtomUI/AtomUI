@@ -4,7 +4,9 @@ using Avalonia.Media.Fonts;
 
 namespace AtomUI.Media;
 
-/// <summary>Shares a platform FontManager collection across independently owned application scopes.</summary>
+/// <summary>
+/// Shares a platform FontManager collection across independently owned application scopes.
+/// </summary>
 internal static class FontCollectionLifetime
 {
     private static readonly ConditionalWeakTable<FontManager, CollectionSet> Collections = new();

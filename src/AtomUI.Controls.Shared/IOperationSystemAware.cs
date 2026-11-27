@@ -2,6 +2,16 @@ using Avalonia;
 
 namespace AtomUI.Controls;
 
+/// <summary>
+/// Receives the operating system type and version detected by the framework. It is implemented by
+/// <c>Window</c>, <c>WindowTitleBar</c> and <c>CaptionButtonGroup</c> in AtomUI.Desktop.Controls.
+/// </summary>
+/// <remarks>
+/// <c>ConfigureOsType</c> in this assembly detects the platform and calls <c>SetOsType</c> with <c>Windows</c>,
+/// <c>macOS</c> (also for Mac Catalyst), <c>Linux</c> or <c>Unknown</c>, then passes
+/// <c>Environment.OSVersion.Version</c> to <c>SetOsVersion</c>. The three implementations declare both setters as
+/// explicit interface members.
+/// </remarks>
 internal interface IOperationSystemAware
 {
     OsType OsType { get; }

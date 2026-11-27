@@ -3,7 +3,9 @@ using AtomUI.Theme.Languages;
 
 namespace AtomUI.Desktop.Controls.Themes.AntDesign;
 
-/// <summary>The AntDesign view of <see cref="LineEditToken"/>.</summary>
+/// <summary>
+/// The AntDesign view of <see cref="LineEditToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class LineEditTokenRule : IControlTokenRule<AntDesignToken, LineEditToken>
 {

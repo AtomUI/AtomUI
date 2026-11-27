@@ -7,10 +7,26 @@ using Microsoft.Build.Framework;
 
 namespace AtomUI.ControlledNet8
 {
+    /// <summary>
+    /// ILLink task of the controlled .NET 8 link. It starts the official ILLink 8.x engine through
+    /// <c>dotnet exec</c> with the prepared .NET 10 runtime configuration and a major roll-forward, so that
+    /// the engine runs on .NET 10 or later.
+    /// </summary>
     public sealed class ILLink : global::ILLink.Tasks.ILLink
     {
         private string _runtimeConfig;
 
+        /// <summary>
+        /// Takes the prepared linker and runtime configuration from the <c>CustomData</c> items
+        /// <c>AtomUIControlledLinkerPath</c> and <c>AtomUIControlledRuntimeConfig</c>, whose <c>Value</c>
+        /// metadata holds the path, removes both items from <c>CustomData</c> and runs the SDK task. Each item
+        /// must be present exactly once and its path must be absolute and exist.
+        /// </summary>
+        /// <returns>
+        /// <see langword="true" /> when the SDK task succeeded. <see langword="false" /> when an item is
+        /// missing or its path is invalid, which is logged as error <c>ATOMUIREG006</c>, or when the SDK task
+        /// failed.
+        /// </returns>
         public override bool Execute()
         {
             try
@@ -41,6 +57,14 @@ namespace AtomUI.ControlledNet8
             }
         }
 
+        /// <summary>
+        /// Builds the command line of the .NET host process that starts the linker. <c>exec --roll-forward Major</c>
+        /// and the quoted path of the prepared runtime configuration come before the arguments that the SDK task
+        /// generates.
+        /// </summary>
+        /// <returns>
+        /// The command line for the .NET host.
+        /// </returns>
         protected override string GenerateCommandLineCommands()
         {
             // Command-line roll-forward has priority over environment settings. Major rolls forward only

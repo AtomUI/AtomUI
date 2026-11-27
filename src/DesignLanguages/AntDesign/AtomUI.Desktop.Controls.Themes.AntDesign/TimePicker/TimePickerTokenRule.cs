@@ -4,7 +4,9 @@ using AtomUI.Theme.Languages;
 
 namespace AtomUI.Desktop.Controls.Themes.AntDesign;
 
-/// <summary>The AntDesign view of <see cref="TimePickerToken"/>.</summary>
+/// <summary>
+/// The AntDesign view of <see cref="TimePickerToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class TimePickerTokenRule : IControlTokenRule<AntDesignToken, TimePickerToken>
 {

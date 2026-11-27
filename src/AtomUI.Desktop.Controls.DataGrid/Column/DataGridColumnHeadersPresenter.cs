@@ -12,6 +12,10 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
 
+/// <summary>
+/// The panel that lays out the header cells of the columns in the header row of a <see cref="DataGrid" />,
+/// left-frozen, scrolling and right-frozen headers in separate ranges, together with the drag indicator.
+/// </summary>
 public sealed class DataGridColumnHeadersPresenter : Panel, IChildIndexProvider
 {
     private Control? _dragIndicator;
@@ -84,12 +88,12 @@ public sealed class DataGridColumnHeadersPresenter : Panel, IChildIndexProvider
     /// <summary>
     /// Arranges the content of the <see cref="T:AtomUI.Desktop.Controls.DataGridColumnHeadersPresenter" />.
     /// </summary>
-    /// <returns>
-    /// The actual size used by the <see cref="T:AtomUI.Desktop.Controls.DataGridColumnHeadersPresenter" />.
-    /// </returns>
     /// <param name="finalSize">
     /// The final area within the parent that this element should use to arrange itself and its children.
     /// </param>
+    /// <returns>
+    /// The actual size used by the <see cref="T:AtomUI.Desktop.Controls.DataGridColumnHeadersPresenter" />.
+    /// </returns>
     protected override Size ArrangeOverride(Size finalSize)
     {
         if (OwningGrid == null)
@@ -119,7 +123,7 @@ public sealed class DataGridColumnHeadersPresenter : Panel, IChildIndexProvider
         var lastLeftFrozenColumn     = columns.LastVisibleLeftFrozenColumn;
         var firstRightFrozenColumn   = columns.FirstVisibleRightFrozenColumn;
         
-        // 需要先计算出 frozenRightEdge
+        // frozenRightEdge has to be computed before any header is arranged.
         for (int displayIndex = 0; displayIndex < displayedColumnCount; displayIndex++)
         {
             DataGridColumn column = columns.GetDisplayedColumnAtDisplayIndex(displayIndex);
@@ -134,7 +138,8 @@ public sealed class DataGridColumnHeadersPresenter : Panel, IChildIndexProvider
                 hasRightFrozen      =  true;
             }
         }
-        // left and normal：右冻结列只在下方的右侧循环中排列并计宽一次
+        // Left-frozen and scrolling headers. Right-frozen columns are arranged and added to the width only once,
+        // in the loop below.
         for (int displayIndex = 0; displayIndex < displayedColumnCount; displayIndex++)
         {
             DataGridColumn dataGridColumn = columns.GetDisplayedColumnAtDisplayIndex(displayIndex);
@@ -193,7 +198,8 @@ public sealed class DataGridColumnHeadersPresenter : Panel, IChildIndexProvider
                     columnHeader.ClearClipGeometry(); // The layout system could have clipped this because it's not aware of our render transform
                     columnHeader.IsFrozen             =  true;
                     columnHeader.FrozenShadowPosition =  FrozenColumnShadowPosition.Left;
-                    // 填充列位于全部列之后（未滚动时右冻结列处于自然位置）
+                    // The filler column follows all columns, so the scrolling edge also passes the right-frozen headers
+                    // (they sit at their natural position while the grid is not scrolled).
                     scrollingLeftEdge += dataGridColumn.ActualWidth;
                     columnHeader.IsShowFrozenShadow   =  dataGridColumn == firstRightFrozenColumn &&
                                                          OwningGrid.IsRightFrozenShadowVisible;
@@ -347,56 +353,10 @@ public sealed class DataGridColumnHeadersPresenter : Panel, IChildIndexProvider
         }
     }
 
-    /// <summary>
-    /// Clips the DragIndicator and DropLocationIndicator controls according to current ColumnHeaderPresenter constraints.
-    /// </summary>
-    /// <param name="control">The DragIndicator or DropLocationIndicator</param>
-    /// <param name="height">The available height</param>
-    /// <param name="frozenColumnsWidth">The width of the frozen column region</param>
-    /// <param name="controlLeftEdge">The left edge of the control to clip</param>
-    // private void EnsureColumnReorderingClip(Control control, double height, double frozenColumnsWidth, double controlLeftEdge)
-    // {
-    //     Debug.Assert(OwningGrid != null);
-    //     Debug.Assert(DragColumn != null);
-    //     double leftEdge  = 0;
-    //     double rightEdge = OwningGrid.CellsWidth;
-    //     double width     = control.Bounds.Width;
-    //     if (DragColumn.IsFrozen)
-    //     {
-    //         // If we're dragging a frozen column, we want to clip the corresponding DragIndicator control when it goes
-    //         // into the scrolling columns region, but not the DropLocationIndicator.
-    //         if (control == DragIndicator)
-    //         {
-    //             rightEdge = Math.Min(rightEdge, frozenColumnsWidth);
-    //         }
-    //     }
-    //     else if (OwningGrid.LeftFrozenColumnCount > 0)
-    //     {
-    //         // If we're dragging a scrolling column, we want to clip both the DragIndicator and the DropLocationIndicator
-    //         // controls when they go into the frozen column range.
-    //         leftEdge = frozenColumnsWidth;
-    //     }
-    //     RectangleGeometry? rg = null;
-    //     if (leftEdge > controlLeftEdge)
-    //     {
-    //         rg = new RectangleGeometry();
-    //         double xClip = Math.Min(width, leftEdge - controlLeftEdge);
-    //         rg.Rect = new Rect(xClip, 0, width - xClip, height);
-    //     }
-    //     if (controlLeftEdge + width >= rightEdge)
-    //     {
-    //         if (rg == null)
-    //         {
-    //             rg = new RectangleGeometry();
-    //         }
-    //         rg.Rect = new Rect(rg.Rect.X, rg.Rect.Y, Math.Max(0, rightEdge - controlLeftEdge - rg.Rect.X), height);
-    //     }
-    //     control.Clip = rg;
-    // }
 
     /// <summary>
-    /// Measures the children of a <see cref="T:AtomUI.Desktop.Controls.DataGridColumnHeadersPresenter" /> to 
-    /// prepare for arranging them during the <see cref="M:System.Windows.FrameworkElement.ArrangeOverride(System.Windows.Size)" /> pass.
+    /// Measures the children of a <see cref="DataGridColumnHeadersPresenter" /> to prepare for arranging them
+    /// during the <see cref="ArrangeOverride" /> pass.
     /// </summary>
     /// <param name="availableSize">
     /// The available size that this element can give to child elements. Indicates an upper limit that child elements should not exceed.
@@ -536,6 +496,10 @@ public sealed class DataGridColumnHeadersPresenter : Panel, IChildIndexProvider
         return new Size(columns.VisibleEdgedColumnsWidth, height);
     }
 
+    /// <summary>
+    /// Calls the base implementation, then invalidates the cached child indexes so that the headers are
+    /// reported again through <see cref="IChildIndexProvider" />.
+    /// </summary>
     protected override void ChildrenChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
         base.ChildrenChanged(sender, e);

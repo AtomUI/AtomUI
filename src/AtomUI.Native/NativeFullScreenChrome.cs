@@ -14,10 +14,12 @@ namespace AtomUI.Native;
 /// <param name="ControlInset">
 /// The leading and trailing widths taken by platform controls laid over the managed full-screen title bar.
 /// </param>
-/// <param name="PersistentInset">The client height covered by platform chrome that stays presented.</param>
+/// <param name="PersistentInset">
+/// The client height covered by platform chrome that stays presented.
+/// </param>
 /// <param name="IsChromePresented">
 /// Whether the platform currently shows chrome of its own inside the client area. It is reported by the platform
-/// rather than derived from <paramref name="Extent"/>: platform chrome can be presented without covering any client
+/// rather than derived from <paramref name="Extent" />: platform chrome can be presented without covering any client
 /// height that the managed title bar has to stay clear of.
 /// </param>
 internal readonly record struct FullScreenNativeChromeMetrics(
@@ -29,10 +31,18 @@ internal readonly record struct FullScreenNativeChromeMetrics(
 /// <summary>
 /// What AppKit currently reports about the title strip of a full-screen window, in client DIPs.
 /// </summary>
-/// <param name="TopOffset">The strip's top edge measured down from the top of the client area; negative above it.</param>
-/// <param name="Height">The height of the strip.</param>
-/// <param name="Alpha">The alpha of the system window that hosts the strip.</param>
-/// <param name="IsFused">Whether the strip is transparent and laid over the managed surface.</param>
+/// <param name="TopOffset">
+/// The strip's top edge measured down from the top of the client area; negative above it.
+/// </param>
+/// <param name="Height">
+/// The height of the strip.
+/// </param>
+/// <param name="Alpha">
+/// The alpha of the system window that hosts the strip.
+/// </param>
+/// <param name="IsFused">
+/// Whether the strip is transparent and laid over the managed surface.
+/// </param>
 /// <param name="ButtonsTrailingEdge">
 /// The distance from the leading edge of the client area to the trailing edge reserved for the platform buttons.
 /// </param>
@@ -49,8 +59,12 @@ internal readonly record struct TitleStripState(
 /// </summary>
 internal static class MacOSFullScreenChromeGeometry
 {
-    /// <param name="persistentInset">The client height covered by platform chrome that stays presented.</param>
-    /// <param name="strip">The observed title strip; <c>null</c> when the window has none.</param>
+    /// <param name="persistentInset">
+    /// The client height covered by platform chrome that stays presented.
+    /// </param>
+    /// <param name="strip">
+    /// The observed title strip; <c>null</c> when the window has none.
+    /// </param>
     public static FullScreenNativeChromeMetrics Compute(double persistentInset, TitleStripState? strip)
     {
         if (strip is not { } state)
@@ -84,8 +98,12 @@ internal static class MacOSFullScreenChromeGeometry
 /// <summary>
 /// How the platform title strip is fused into the managed full-screen title bar.
 /// </summary>
-/// <param name="IsEnabled">Whether the title strip is made transparent and laid over the managed surface.</param>
-/// <param name="SurfaceHeight">The managed surface height the platform buttons are centred in.</param>
+/// <param name="IsEnabled">
+/// Whether the title strip is made transparent and laid over the managed surface.
+/// </param>
+/// <param name="SurfaceHeight">
+/// The managed surface height the platform buttons are centered in.
+/// </param>
 /// <param name="ButtonOffsetX">
 /// The leading x of the first platform button; <c>NaN</c> keeps the platform position. The platform keeps its own
 /// spacing between the buttons.
@@ -109,10 +127,17 @@ internal interface IFullScreenNativeChrome : IDisposable
 internal static class FullScreenNativeChromeExtensions
 {
     /// <summary>
-    /// Starts tracking the platform's own full-screen chrome of <paramref name="window"/>.
+    /// Starts tracking the platform's own full-screen chrome of <paramref name="window" />.
     /// </summary>
-    /// <param name="metricsChanged">Invoked on the UI thread whenever <see cref="IFullScreenNativeChrome.Metrics"/> changes.</param>
-    /// <returns><c>null</c> on platforms that present no chrome of their own in full screen.</returns>
+    /// <param name="window">
+    /// The window whose own full-screen chrome is tracked.
+    /// </param>
+    /// <param name="metricsChanged">
+    /// Invoked on the UI thread whenever <see cref="IFullScreenNativeChrome.Metrics" /> changes.
+    /// </param>
+    /// <returns>
+    /// <c>null</c> on platforms that present no chrome of their own in full screen.
+    /// </returns>
     public static IFullScreenNativeChrome? AttachFullScreenNativeChrome(this Window window, Action metricsChanged)
     {
         if (OperatingSystem.IsMacOS())

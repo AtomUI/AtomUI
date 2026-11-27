@@ -5,7 +5,6 @@ internal interface INavMenuInteractionHandler
     /// <summary>
     /// Attaches the interaction handler to a menu.
     /// </summary>
-    /// <param name="menu">The menu.</param>
     void Attach(NavMenu menu);
 
     /// <summary>

@@ -3,7 +3,9 @@ using AtomUI.Theme.Languages;
 
 namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 
-/// <summary>The PrimeNG view of <see cref="TransferTreeViewToken"/>.</summary>
+/// <summary>
+/// The PrimeNG view of <see cref="TransferTreeViewToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class TransferTreeViewTokenRule : IControlTokenRule<PrimeNGToken, TransferTreeViewToken>
 {
@@ -11,7 +13,7 @@ internal sealed class TransferTreeViewTokenRule : IControlTokenRule<PrimeNGToken
     {
         var token  = target.Own;
         var global = target.Global;
-        // PrimeNG: the control-global overrides, read by the formulas below.
+        // PrimeNG: no control-global overrides; EvaluateGlobal writes nothing.
         PrimeNGTransferTreeViewTokens.EvaluateGlobal(in context, global);
         TreeViewTokenCalculator.Calculate(in context, global, token);
         // PrimeNG: the preset's control values, over the formulas.

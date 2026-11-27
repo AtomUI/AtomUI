@@ -3,7 +3,9 @@ using AtomUI.Theme.Languages;
 
 namespace AtomUI.Desktop.Controls.Themes.AntDesign;
 
-/// <summary>The AntDesign view of <see cref="AutoCompleteToken"/>.</summary>
+/// <summary>
+/// The AntDesign view of <see cref="AutoCompleteToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class AutoCompleteTokenRule : IControlTokenRule<AntDesignToken, AutoCompleteToken>
 {

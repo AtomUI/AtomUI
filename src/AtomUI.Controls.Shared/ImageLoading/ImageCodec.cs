@@ -1,5 +1,16 @@
 namespace AtomUI.Controls;
 
+/// <summary>
+/// Base class of the image codecs, which decide whether they can decode probed content and decode it into a cache
+/// entry; <c>SvgImageCodec</c> in AtomUI.Controls derives from it.
+/// </summary>
+/// <remarks>
+/// <see cref="CreateDecodeKey" /> derives the key of a decoded result from the request partition, the content id,
+/// the codec <c>Id</c> and <c>Version</c> and the security policy version. The requested pixel size and
+/// <c>DecodeToCover</c> are part of the key only while <c>IsDecodeSizeDependent</c> is <see langword="true" />; a
+/// codec whose result does not depend on the decode size overrides it to <see langword="false" />, so that one
+/// decoded image serves every size.
+/// </remarks>
 internal abstract class ImageCodec
 {
     internal abstract string Id { get; }

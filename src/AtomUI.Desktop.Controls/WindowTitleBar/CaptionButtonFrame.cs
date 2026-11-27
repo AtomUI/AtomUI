@@ -4,8 +4,9 @@ using Avalonia.Controls;
 namespace AtomUI.Desktop.Controls;
 
 /// <summary>
-/// managed caption button 的共享几何外壳：内缩的圆角背景层加上决定布局盒的内容层。
-/// 背景层只收视觉、不改变命中面，caption band 与 WindowTitleBar AddOn 按钮通过它共用同一套几何来源。
+/// Shared geometry shell of a managed caption button: an inset rounded background layer plus the content layer
+/// that determines the layout box. The background layer only carries visuals and does not change the hit area.
+/// The caption band and the <c>WindowTitleBar</c> add-on buttons share the same geometry source through it.
 /// </summary>
 internal class CaptionButtonFrame : ContentControl
 {
@@ -13,7 +14,8 @@ internal class CaptionButtonFrame : ContentControl
         AvaloniaProperty.Register<CaptionButtonFrame, Thickness>(nameof(BackgroundInset));
 
     /// <summary>
-    /// 背景层相对布局盒的内缩。它只影响背景视觉，布局盒始终由内容层与 <c>Padding</c> 决定。
+    /// Inset of the background layer from the layout box. It only affects the painted background; the layout box is
+    /// always determined by the content layer and <c>Padding</c>.
     /// </summary>
     public Thickness BackgroundInset
     {

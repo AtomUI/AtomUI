@@ -9,19 +9,20 @@ namespace AtomUI.Theme.Resources;
 /// </summary>
 /// <remarks>
 /// <para>
-/// An inherited entry resolves like an <see cref="OwnerTokenBinding"/> on the same target: the owner's unbound Effective
-/// Global key, or the plain <see cref="SharedTokenKind"/> without an owner or with an owner the target's registry does not
-/// register. The set re-resolves on <see cref="StyledElement.ResourcesChanged"/> (checking a theme publish's
-/// <see cref="ThemePublishDelta"/> per entry first), on <see cref="StyledElement.ActualThemeVariantChanged"/> and when
-/// the inherited <see cref="ThemeScope.TokenOwnerProperty"/> changes. Fixed entries use the original resource key.
+/// An inherited entry resolves like an <see cref="OwnerTokenBinding" /> on the same target: the owner's unbound
+/// Effective Global key, or the plain <see cref="SharedTokenKind" /> without an owner or with an owner the target's
+/// registry does not register. The set re-resolves on <see cref="StyledElement.ResourcesChanged" /> (checking a theme
+/// publish's <see cref="ThemePublishDelta" /> per entry first), on <see cref="StyledElement.ActualThemeVariantChanged"
+/// /> and when the inherited <see cref="ThemeScope.TokenOwnerProperty" /> changes. Fixed entries use the original
+/// resource key.
 /// </para>
 /// <para>
 /// Controls use it for theme variables they compute from several Tokens: one subscription per element instead of one
 /// binding per Token keeps attach cost and handler chains flat. The set only listens to its target, so it lives and dies
-/// with it; <see cref="Dispose"/> exists for owners that replace it.
+/// with it; <see cref="Dispose" /> exists for owners that replace it.
 /// </para>
 /// <para>
-/// An entry resolves on its first <see cref="GetValue"/>, like a style setter binding that only starts when its style
+/// An entry resolves on its first <see cref="GetValue" />, like a style setter binding that only starts when its style
 /// activates: variables read only in an interaction state cost nothing until that state occurs. Only entries that have
 /// been read follow later changes and report them; an unread entry has nothing to report.
 /// </para>
@@ -40,15 +41,23 @@ internal sealed class OwnerTokenSet : ITokenOwnerListener, IDisposable
     private ThemePublishTracker _publishes;
     private bool _subscribed;
 
-    /// <param name="target">The element whose owner, resources and theme variant the entries follow.</param>
-    /// <param name="count">The number of entries.</param>
-    /// <param name="changed">Called with the entry index, the old and the new value whenever an entry's value changes.</param>
+    /// <param name="target">
+    /// The element whose owner, resources and theme variant the entries follow.
+    /// </param>
+    /// <param name="count">
+    /// The number of entries.
+    /// </param>
+    /// <param name="changed">
+    /// Called with the entry index, the old and the new value whenever an entry's value changes.
+    /// </param>
     internal OwnerTokenSet(StyledElement target, int count, Action<int, object?, object?> changed)
         : this(target, count, changed ?? throw new ArgumentNullException(nameof(changed)), null)
     {
     }
 
-    /// <summary>Reports one change after all changed values of a refresh are available to the consumer.</summary>
+    /// <summary>
+    /// Reports one change after all changed values of a refresh are available to the consumer.
+    /// </summary>
     internal OwnerTokenSet(StyledElement target, int count, Action changed)
         : this(target, count, null, changed ?? throw new ArgumentNullException(nameof(changed)))
     {
@@ -95,11 +104,13 @@ internal sealed class OwnerTokenSet : ITokenOwnerListener, IDisposable
         return _values[index];
     }
 
-    /// <summary>How often the set resolved an entry; contract tests pin the publish early-exit with it.</summary>
+    /// <summary>
+    /// How often the set resolved an entry; contract tests pin the publish early-exit with it.
+    /// </summary>
     internal int ResolveCount { get; private set; }
 
     /// <summary>
-    /// Points an entry at <paramref name="kind"/> (null clears it). An entry that has been read resolves again now and
+    /// Points an entry at <paramref name="kind" /> (null clears it). An entry that has been read resolves again now and
     /// reports a change; an unread one resolves on its first read.
     /// </summary>
     internal void SetKind(int index, SharedTokenKind? kind)
@@ -113,7 +124,9 @@ internal sealed class OwnerTokenSet : ITokenOwnerListener, IDisposable
         SetEntry(index, kind, key);
     }
 
-    /// <summary>Points an entry at the exact resource key used by the original consumer.</summary>
+    /// <summary>
+    /// Points an entry at the exact resource key used by the original consumer.
+    /// </summary>
     internal void SetResourceKey(int index, object? key)
     {
         if (_kinds[index] is null && Equals(_keys[index], key))

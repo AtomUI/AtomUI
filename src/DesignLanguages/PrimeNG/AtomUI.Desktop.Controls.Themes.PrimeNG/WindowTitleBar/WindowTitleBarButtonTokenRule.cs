@@ -4,7 +4,9 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 
-/// <summary>The PrimeNG view of <see cref="WindowTitleBarButtonToken"/>.</summary>
+/// <summary>
+/// The PrimeNG view of <see cref="WindowTitleBarButtonToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class WindowTitleBarButtonTokenRule : IControlTokenRule<PrimeNGToken, WindowTitleBarButtonToken>
 {

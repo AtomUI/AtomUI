@@ -3,7 +3,9 @@ using AtomUI.Theme.Languages;
 
 namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 
-/// <summary>The PrimeNG view of <see cref="ButtonSpinnerToken"/>.</summary>
+/// <summary>
+/// The PrimeNG view of <see cref="ButtonSpinnerToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class ButtonSpinnerTokenRule : IControlTokenRule<PrimeNGToken, ButtonSpinnerToken>
 {
@@ -11,7 +13,7 @@ internal sealed class ButtonSpinnerTokenRule : IControlTokenRule<PrimeNGToken, B
     {
         var token  = target.Own;
         var global = target.Global;
-        // PrimeNG: the control-global overrides, read by the formulas below.
+        // PrimeNG: no control-global overrides; EvaluateGlobal writes nothing.
         PrimeNGButtonSpinnerTokens.EvaluateGlobal(in context, global);
         ButtonSpinnerTokenCalculator.Calculate(in context, global, token);
         token.ControlWidth = 90;

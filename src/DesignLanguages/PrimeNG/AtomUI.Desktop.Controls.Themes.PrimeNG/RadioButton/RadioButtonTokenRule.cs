@@ -4,7 +4,9 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 
-/// <summary>The PrimeNG view of <see cref="RadioButtonToken"/>.</summary>
+/// <summary>
+/// The PrimeNG view of <see cref="RadioButtonToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class RadioButtonTokenRule : IControlTokenRule<PrimeNGToken, RadioButtonToken>
 {
@@ -12,14 +14,14 @@ internal sealed class RadioButtonTokenRule : IControlTokenRule<PrimeNGToken, Rad
     {
         var token  = target.Own;
         var global = target.Global;
-        // PrimeNG: the control-global overrides, read by the formulas below.
+        // PrimeNG: no control-global overrides; EvaluateGlobal writes nothing.
         PrimeNGRadioButtonTokens.EvaluateGlobal(in context, global);
         var lineWidth        = global.LineWidth;
         var fontSizeLG       = global.FontSizeLG;
         var colorPrimary     = global.ColorPrimary;
         var colorWhite       = global.ColorWhite;
 
-        var dotPadding = 4; // 魔术值，需要看有没有好办法消除
+        var dotPadding = 4; // Magic value; check whether there is a good way to remove it.
         var radioSize  = fontSizeLG;
 
         var radioDotSize = radioSize - (dotPadding + lineWidth) * 2;

@@ -5,9 +5,15 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls.Themes.AntDesign;
 
-/// <summary>The AntDesign values of the shared <see cref="AbstractSelectInputToken"/> layer.</summary>
+/// <summary>
+/// The AntDesign values of the shared <see cref="AbstractSelectInputToken" /> layer.
+/// </summary>
 public static class SelectInputTokenCalculator
 {
+    /// <summary>
+    /// Assigns the Ant Design values of the shared <see cref="AbstractSelectInputToken" /> layer to
+    /// <paramref name="token" />: item heights, fonts, colors and selector paddings of the Select input.
+    /// </summary>
     public static void Calculate(in TokenEvaluationContext<AntDesignToken> context, DesignToken global, AbstractSelectInputToken token)
     {
 

@@ -6,7 +6,9 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls.Themes.Shadcn;
 
-/// <summary>The shadcn view of <see cref="NavMenuToken"/>.</summary>
+/// <summary>
+/// The shadcn view of <see cref="NavMenuToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class NavMenuTokenRule : IControlTokenRule<ShadcnToken, NavMenuToken>
 {
@@ -16,6 +18,8 @@ internal sealed class NavMenuTokenRule : IControlTokenRule<ShadcnToken, NavMenuT
         var global = target.Global;
 
         var colorTextLightSolid = global.ColorTextLightSolid;
+        // The item values keep the Ant formula; the registry values are merged at the end of the method: submenu
+        // background, selected and hover fills, dark rows and the popup shadow.
         token.ActiveBarScaleX = 1.0d;
         token.ActiveBarHeight = global.LineWidthBold;
         token.ItemContentMargin = new Thickness(
@@ -131,6 +135,7 @@ internal sealed class NavMenuTokenRule : IControlTokenRule<ShadcnToken, NavMenuT
             token.DarkItemHoverBg       = ShadcnRecipes.CompositeOver(navLanguage.Foreground, 0.12, token.DarkMenuBg);
             token.DarkItemSelectedBg    = ShadcnRecipes.CompositeOver(navLanguage.Foreground, 0.25, token.DarkMenuBg);
         }
+        // The popup of an inline item: the outline ring ahead of the menu shadow of the style.
         token.MenuPopupShadows = navLanguage.GetMenuOverlayRecipe(global).ShadowsWithOutline;
     }
 }

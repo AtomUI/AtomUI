@@ -88,8 +88,9 @@ internal sealed class WindowsBackgroundHook : INativeWindowBackgroundHook
                 _isSizeMoving = false;
                 break;
             case WindowUtilsInterop.WM_ERASEBKGND:
-                // live resize 期间不填充：RedirectionSurface 下 GDI 填充会先于渲染帧被 DWM 合成，
-                // 表现为整窗闪背景色。此时交还 Avalonia 默认行为（窗口类无背景画刷，不擦除）。
+                // Do not fill during a live resize. Under a RedirectionSurface the DWM composites the GDI fill ahead
+                // of the rendered frame, which shows as the whole window flashing the background color. Fall back to
+                // Avalonia's default behavior: the window class has no background brush and erases nothing.
                 if (_isSizeMoving)
                 {
                     break;

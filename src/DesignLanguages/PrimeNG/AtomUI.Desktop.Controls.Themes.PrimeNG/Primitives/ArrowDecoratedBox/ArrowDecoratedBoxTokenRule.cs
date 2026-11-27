@@ -4,7 +4,9 @@ using AtomUI.Theme.Languages;
 
 namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 
-/// <summary>The PrimeNG view of <see cref="ArrowDecoratedBoxToken"/>.</summary>
+/// <summary>
+/// The PrimeNG view of <see cref="ArrowDecoratedBoxToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class ArrowDecoratedBoxTokenRule : IControlTokenRule<PrimeNGToken, ArrowDecoratedBoxToken>
 {
@@ -12,7 +14,7 @@ internal sealed class ArrowDecoratedBoxTokenRule : IControlTokenRule<PrimeNGToke
     {
         var token  = target.Own;
         var global = target.Global;
-        // PrimeNG: the control-global overrides, read by the formulas below.
+        // PrimeNG: no control-global overrides; EvaluateGlobal writes nothing.
         PrimeNGArrowDecoratedBoxTokens.EvaluateGlobal(in context, global);
         // antd genRoundedArrow: sizePopupArrow wide, half as high, borderRadiusXS at the tip and borderRadiusOuter
         // where the sides meet the box.

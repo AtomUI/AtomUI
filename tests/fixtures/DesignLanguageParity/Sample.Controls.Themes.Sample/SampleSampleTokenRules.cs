@@ -5,7 +5,9 @@ using Sample.DesignLanguage;
 
 namespace Sample.Controls.Themes.Sample;
 
-/// <summary>The sample language's view of <see cref="SampleBadgeToken"/>: the badge takes the brand accent.</summary>
+/// <summary>
+/// The sample language's view of <see cref="SampleBadgeToken" />: the badge takes the brand accent.
+/// </summary>
 [ControlTokenRule]
 internal sealed class SampleSampleBadgeTokenRule : IControlTokenRule<SampleToken, SampleBadgeToken>
 {

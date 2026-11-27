@@ -7,9 +7,16 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls.Themes.AntDesign;
 
-/// <summary>The AntDesign values of the shared <see cref="AbstractImagePreviewerToken"/> layer.</summary>
+/// <summary>
+/// The AntDesign values of the shared <see cref="AbstractImagePreviewerToken" /> layer.
+/// </summary>
 public static class ImagePreviewerTokenCalculator
 {
+    /// <summary>
+    /// Assigns the Ant Design values of the shared <see cref="AbstractImagePreviewerToken" /> layer to
+    /// <paramref name="token" />. Most values come from <paramref name="global" />; the title bar background also
+    /// follows the appearance in <paramref name="context" />.
+    /// </summary>
     public static void Calculate(in TokenEvaluationContext<AntDesignToken> context, DesignToken global, AbstractImagePreviewerToken token)
     {
         // Floating controls can cover light or dark image content. Pair a dark scrim with light icons.
@@ -36,7 +43,7 @@ public static class ImagePreviewerTokenCalculator
         token.NavButtonBgColor             = global.ColorBlack.SetAlphaF(0.72);
         token.NavButtonBgHoverColor        = global.ColorBlack.SetAlphaF(0.84);
         token.FloatToolbarPadding          = new Thickness(global.UniformlyPaddingLG, 0);
-        // The index indicator is transparent and centred above the actions, so only its block padding shows; the default
+        // The index indicator is transparent and centered above the actions, so only its block padding shows; the default
         // adds none (the former inline-only default never rendered).
         token.FloatToolbarIndicatorPadding = new Thickness(0);
     }

@@ -42,10 +42,11 @@ internal static class WindowUtilsWindows
     }
 
     /// <summary>
-    /// 获取 Windows 系统默认的标题栏高度。
-    /// 使用 Avalonia 的 WindowDecorationMargin 属性获取标题栏高度。
+    /// Gets the default title bar height of the Windows system, from Avalonia's WindowDecorationMargin.
     /// </summary>
-    /// <returns>非 Windows 或无窗口句柄时返回 <c>null</c>。</returns>
+    /// <returns>
+    /// <c>null</c> when not on Windows, when the window has no handle, or when the top margin is not positive.
+    /// </returns>
     public static double? GetSystemTitleBarHeightWindows(Window window)
     {
         if (!OperatingSystem.IsWindows())
@@ -53,8 +54,8 @@ internal static class WindowUtilsWindows
             return null;
         }
 
-        // 使用 Avalonia 提供的 WindowDecorationMargin 属性
-        // Top 值就是标题栏高度
+        // Use the WindowDecorationMargin property that Avalonia provides.
+        // Its Top value is the title bar height.
         var margin = window.WindowDecorationMargin;
         return margin.Top > 0 ? margin.Top : null;
     }

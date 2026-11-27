@@ -7,821 +7,749 @@ namespace AtomUI.Theme.DesignTokens;
 public partial class DesignToken
 {
     /// <summary>
-    /// 内容区域背景色（悬停）
-    /// 控制内容区域背景色在鼠标悬停时的样式。
+    /// Background of a content region while it is hovered.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial Color ColorFillContentHover { get; set; }
 
     /// <summary>
-    /// 替代背景色
-    /// 控制元素替代背景色。
+    /// Alternate background of an element, used in place of its default background to set it apart.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial Color ColorFillAlter { get; set; }
 
     /// <summary>
-    /// 内容区域背景色
-    /// 控制内容区域的背景色。
+    /// Background of a content region.
+    /// Use <see cref="ColorFillContentHover" /> while the region is hovered.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial Color ColorFillContent { get; set; }
 
     /// <summary>
-    /// 容器禁用态下的背景色
-    /// 控制容器在禁用状态下的背景色。
+    /// Background of a container while it is disabled.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial Color ColorBgContainerDisabled { get; set; }
 
     /// <summary>
-    /// 文本悬停态背景色
-    /// 控制文本在悬停状态下的背景色。
+    /// Background painted behind text while it is hovered.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial Color ColorBgTextHover { get; set; }
 
     /// <summary>
-    /// 文本激活态背景色
-    /// 控制文本在激活状态下的背景色。
+    /// Background painted behind text while it is in the active state.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial Color ColorBgTextActive { get; set; }
 
     /// <summary>
-    /// 背景边框颜色
-    /// 控制元素背景边框的颜色。
+    /// Background color that separates an element from what is behind it, for example the shadow of a count badge
+    /// or dot badge and the border of an avatar in a group.
+    /// Defaults to <see cref="ColorBgContainer" />.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial Color ColorBorderBg { get; set; }
 
     /// <summary>
-    /// 分割线颜色
-    /// 用于作为分割线的颜色，此颜色和 colorBorderSecondary 的颜色一致，但是用的是透明色。
+    /// Color of separator lines.
+    /// It is the same color as <c>ColorBorderSecondary</c>, but defined with transparency.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial Color ColorSplit { get; set; }
 
     /// <summary>
-    /// 占位文本颜色
-    /// 控制占位文本的颜色。
+    /// Color of the placeholder text shown by an empty input.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial Color ColorTextPlaceholder { get; set; }
 
     /// <summary>
-    /// 禁用字体颜色
-    /// 控制禁用状态下的字体颜色。
+    /// Text color while the control is disabled.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial Color ColorTextDisabled { get; set; }
 
     /// <summary>
-    /// 标题字体颜色
-    /// 控制标题字体颜色。
+    /// Text color of headings.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial Color ColorTextHeading { get; set; }
 
     /// <summary>
-    /// 文本标签字体颜色
-    /// 控制文本标签字体颜色。
+    /// Text color of labels.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial Color ColorTextLabel { get; set; }
 
     /// <summary>
-    /// 文本描述字体颜色
-    /// 控制文本描述字体颜色。
+    /// Text color of descriptive text.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial Color ColorTextDescription { get; set; }
 
     /// <summary>
-    /// 固定文本高亮颜色
-    /// 控制带背景色的文本，例如 Primary Button 组件中的文本高亮颜色。
+    /// Fixed light text color for text painted on a coloured background,
+    /// for example the label of a primary button.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial Color ColorTextLightSolid { get; set; }
 
     /// <summary>
-    /// 弱操作图标颜色
-    /// 控制弱操作图标的颜色，例如 allowClear 或 Alert 关闭按钮。
+    /// Color of icons for secondary actions,
+    /// such as the clear button of an input or the close button of an Alert.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial Color ColorIcon { get; set; }
 
     /// <summary>
-    /// 弱操作图标悬浮态颜色
-    /// 控制弱操作图标在悬浮状态下的颜色，例如 allowClear 或 Alert 关闭按钮。
+    /// Hover color of the icons that use <see cref="ColorIcon" />,
+    /// such as the clear button of an input or the close button of an Alert.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial Color ColorIconHover { get; set; }
 
     /// <summary>
-    /// 高亮颜色
-    /// 控制页面元素高亮时的颜色。
+    /// Color used to highlight an element on a page.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial Color ColorHighlight { get; set; }
 
     /// <summary>
-    /// 输入组件的 Outline 颜色
-    /// 控制输入组件的外轮廓线颜色。
+    /// Color of the outline drawn around an input control.
+    /// The warning and error states use
+    /// <see cref="ColorWarningOutline" /> and <see cref="ColorErrorOutline" /> instead.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial Color ColorControlOutline { get; set; }
 
     /// <summary>
-    /// 警告状态下的 Outline 颜色
-    /// 控制输入组件警告状态下的外轮廓线颜色。
+    /// Color of the outline drawn around an input control in the warning state.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial Color ColorWarningOutline { get; set; }
 
     /// <summary>
-    /// 错误状态下的 Outline 颜色
-    /// 控制输入组件错误状态下的外轮廓线颜色。
+    /// Color of the outline drawn around an input control in the error state.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial Color ColorErrorOutline { get; set; }
 
     // Font
     /// <summary>
-    /// 选择器、级联选择器等中的操作图标字体大小
-    /// 控制选择器、级联选择器等中的操作图标字体大小。正常情况下与 fontSizeSM 相同。
+    /// Font size of operation icons inside select-like controls such as Select and Cascader.
+    /// It normally equals <c>FontSizeSM</c>.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial double FontSizeIcon { get; set; }
 
     /// <summary>
-    /// 内联 Icon 大小定义, 最小的尺寸
+    /// Smallest size in the scale of inline icons.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial double IconSizeXS { get; set; }
 
     /// <summary>
-    /// 内联 Icon 大小定义
+    /// Small size in the scale of inline icons.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial double IconSizeSM { get; set; }
 
     /// <summary>
-    /// 内联 Icon 大小定义, 正常的尺寸
+    /// Normal size in the scale of inline icons.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial double IconSize { get; set; }
 
     /// <summary>
-    /// 内联 Icon 大小定义, 最大的尺寸
+    /// Largest size in the scale of inline icons.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial double IconSizeLG { get; set; }
 
     /// <summary>
-    /// 标题类组件（如 h1、h2、h3）或选中项的字体粗细
-    /// 控制标题类组件（如 h1、h2、h3）或选中项的字体粗细。
+    /// Font weight of headings and of selected items.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial FontWeight FontWeightStrong { get; set; }
 
     // Control
     /// <summary>
-    /// 输入组件的外轮廓线宽度
-    /// 控制标题类组件（如 h1、h2、h3）或选中项的字体粗细。
+    /// Width of the outline drawn around an input control.
+    /// <see cref="ColorControlOutline" /> supplies its color.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial double ControlOutlineWidth { get; set; }
 
     /// <summary>
-    /// 输入类控件中号内容内边距。
+    /// Content padding of a medium-size input control.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial Thickness InputPadding { get; set; }
 
     /// <summary>
-    /// 输入类控件小号内容内边距。
+    /// Content padding of a small-size input control.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial Thickness InputPaddingSM { get; set; }
 
     /// <summary>
-    /// 输入类控件大号内容内边距。
+    /// Content padding of a large-size input control.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial Thickness InputPaddingLG { get; set; }
 
     /// <summary>
-    /// 输入类控件内容相对边框的补偿边距。
+    /// Compensation margin between the content of an input control and its border.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial Thickness InputContentMargin { get; set; }
 
     /// <summary>
-    /// 输入类控件聚焦（激活）态的边框颜色。
-    /// Border colour of a focused (active) input control; pairs with <see cref="InputActiveShadow"/>.
+    /// Border color of a focused (active) input control; pairs with <see cref="InputActiveShadow" />.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial Color InputActiveBorderColor { get; set; }
 
     /// <summary>
-    /// 输入类控件激活态外轮廓阴影。
+    /// Box shadow that draws the outline around an input control in the focused (active) state.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial BoxShadows InputActiveShadow { get; set; }
 
     /// <summary>
-    /// 输入类控件错误激活态外轮廓阴影。
+    /// Box shadow that draws the outline around an input control
+    /// that is focused (active) and in the error state.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial BoxShadows InputErrorActiveShadow { get; set; }
 
     /// <summary>
-    /// 输入类控件警告激活态外轮廓阴影。
+    /// Box shadow that draws the outline around an input control
+    /// that is focused (active) and in the warning state.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial BoxShadows InputWarningActiveShadow { get; set; }
 
     /// <summary>
-    /// 控制组件项在鼠标悬浮时的背景颜色
+    /// Background of a control item while the pointer is over it.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
-    public partial Color ControlItemBgHover { get; set; } // Note. It also is a color
+    public partial Color ControlItemBgHover { get; set; }
 
     /// <summary>
-    /// 控制组件项在激活状态下的背景颜色
+    /// Background of a control item in the selected (active) state.
+    /// The text on it uses <see cref="ControlItemColorActive" />.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
-    public partial Color ControlItemBgActive { get; set; } // Note. It also is a color
+    public partial Color ControlItemBgActive { get; set; }
 
     /// <summary>
-    /// 控制组件项在鼠标悬浮且激活状态下的背景颜色
+    /// Background of a selected (active) control item while the pointer is over it.
+    /// The text on it uses <see cref="ControlItemColorActive" />.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
-    public partial Color ControlItemBgActiveHover { get; set; } // Note. It also is a color
+    public partial Color ControlItemBgActiveHover { get; set; }
 
     /// <summary>
-    /// The text colour of a selected (active) item drawn on <see cref="ControlItemBgActive"/> and
-    /// <see cref="ControlItemBgActiveHover"/>: the selected option, list item, tree node, data-grid row and range or
-    /// time cell. Defaults to <see cref="ColorText"/>; a theme whose selected background is a solid colour sets the
-    /// matching contrast colour once here, and the controls' own selected-text tokens default to it.
+    /// The text color of a selected (active) item drawn on <see cref="ControlItemBgActive" /> and
+    /// <see cref="ControlItemBgActiveHover" />: the selected option, list item, tree node, data-grid row and range or
+    /// time cell. Defaults to <see cref="ColorText" />; a theme whose selected background is a solid color sets the
+    /// matching contrast color once here, and the controls' own selected-text tokens default to it.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial Color ControlItemColorActive { get; set; }
 
     /// <summary>
-    /// 控制组件的交互大小
+    /// Size, in pixels, of the interactive indicator inside a control: the check indicator of a CheckBox uses it
+    /// directly, and the expand icon and expand column of a data grid are sized from it.
+    /// Defaults to half of <c>ControlHeight</c>.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial double ControlInteractiveSize { get; set; }
 
     /// <summary>
-    /// 控制组件项在禁用状态下的激活背景颜色
+    /// Background of a selected (active) control item while it is disabled.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
-    public partial Color ControlItemBgActiveDisabled { get; set; } // Note. It also is a color
+    public partial Color ControlItemBgActiveDisabled { get; set; }
 
     /// <summary>
-    /// 线条宽度(聚焦态)
+    /// Line width used in the focused state.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial double LineWidthFocus { get; set; }
     
     /// <summary>
-    /// 聚焦态边框厚度
+    /// Border thickness of the focus visual in the focused state.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial Thickness FocusVisualBorderThickness {  get; set; }
     
     /// <summary>
-    /// 聚焦态边框颜色
+    /// Border color of the focus visual in the focused state;
+    /// <see cref="FocusVisualBorderThickness" /> sets its thickness.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial Color ColorFocusBorder { get; set; }
 
     /// <summary>
-    /// 波浪动画的波动范围
+    /// Range over which the wave animation spreads.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial double WaveAnimationRange { get; set; }
 
     /// <summary>
-    /// 波浪动画的初始透明度
+    /// Opacity at which the wave animation starts.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial double WaveStartOpacity { get; set; }
 
     // Padding
     /// <summary>
-    /// 极小内间距
-    /// 控制元素的极小内间距。
+    /// Extra-extra-small (XXS) step of the padding scale, as a single value for all four sides.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial double UniformlyPaddingXXS { get; set; }
     
     // Padding
     /// <summary>
-    /// 极小内间距
-    /// 控制元素的极小内间距。
+    /// Extra-extra-small (XXS) step of the padding scale, with a value for each of the four sides.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial Thickness PaddingXXS { get; set; }
 
     /// <summary>
-    /// 特小内间距
-    /// 控制元素的特小内间距。
+    /// Extra-small (XS) step of the padding scale, as a single value for all four sides.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial double UniformlyPaddingXS { get; set; }
     
     /// <summary>
-    /// 特小内间距
-    /// 控制元素的特小内间距。
+    /// Extra-small (XS) step of the padding scale, with a value for each of the four sides.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial Thickness PaddingXS { get; set; }
 
     /// <summary>
-    /// 小内间距
-    /// 控制元素的小内间距。
+    /// Small (SM) step of the padding scale, as a single value for all four sides.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial double UniformlyPaddingSM { get; set; }
     
     /// <summary>
-    /// 小内间距
-    /// 控制元素的小内间距。
+    /// Small (SM) step of the padding scale, with a value for each of the four sides.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial Thickness PaddingSM { get; set; }
 
     /// <summary>
-    /// 内间距
-    /// 控制元素的内间距。
+    /// Base step of the padding scale, as a single value for all four sides.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial double UniformlyPadding { get; set; }
     
     /// <summary>
-    /// 内间距
-    /// 控制元素的内间距。
+    /// Base step of the padding scale, with a value for each of the four sides.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial Thickness Padding { get; set; }
 
     /// <summary>
-    /// 中等内间距
-    /// 控制元素的中等内间距。
+    /// Medium (MD) step of the padding scale, as a single value for all four sides.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial double UniformlyPaddingMD { get; set; }
     
     /// <summary>
-    /// 中等内间距
-    /// 控制元素的中等内间距。
+    /// Medium (MD) step of the padding scale, with a value for each of the four sides.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial Thickness PaddingMD { get; set; }
 
     /// <summary>
-    /// 大内间距
-    /// 控制元素的大内间距。
+    /// Large (LG) step of the padding scale, as a single value for all four sides.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial double UniformlyPaddingLG { get; set; }
     
     /// <summary>
-    /// 大内间距
-    /// 控制元素的大内间距。
+    /// Large (LG) step of the padding scale, with a value for each of the four sides.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial Thickness PaddingLG { get; set; }
 
     /// <summary>
-    /// 特大内间距
-    /// 控制元素的特大内间距。
+    /// Extra-large (XL) step of the padding scale, as a single value for all four sides.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial double UniformlyPaddingXL { get; set; }
     
     /// <summary>
-    /// 特大内间距
-    /// 控制元素的特大内间距。
+    /// Extra-large (XL) step of the padding scale, with a value for each of the four sides.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial Thickness PaddingXL { get; set; }
 
     // Padding Content
     /// <summary>
-    /// 内容水平内间距（LG）
-    /// 控制内容元素水平内间距，适用于大屏幕设备。
+    /// Large (LG) horizontal padding of content, for large screens.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial double PaddingContentHorizontalLG { get; set; }
 
     /// <summary>
-    /// 内容水平内间距
-    /// 控制内容元素水平内间距。
+    /// Horizontal padding of content.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial double PaddingContentHorizontal { get; set; }
 
     /// <summary>
-    /// 内容水平内间距（SM）
-    /// 控制内容元素水平内间距，适用于小屏幕设备。
+    /// Small (SM) horizontal padding of content, for small screens.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial double PaddingContentHorizontalSM { get; set; }
 
     /// <summary>
-    /// 内容水平内间距（XS）
-    /// 控制内容元素水平内间距，适用于小屏幕设备。
+    /// Extra-small (XS) horizontal padding of content, for small screens.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial double PaddingContentHorizontalXS { get; set; }
 
     /// <summary>
-    /// 内容垂直内间距（LG）
-    /// 控制内容元素垂直内间距，适用于大屏幕设备。
+    /// Large (LG) vertical padding of content, for large screens.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial double PaddingContentVerticalLG { get; set; }
 
     /// <summary>
-    /// 内容垂直内间距
-    /// 控制内容元素垂直内间距。
+    /// Vertical padding of content.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial double PaddingContentVertical { get; set; }
 
     /// <summary>
-    /// 内容垂直内间距（SM）
-    /// 控制内容元素垂直内间距，适用于小屏幕设备。
+    /// Small (SM) vertical padding of content, for small screens.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial double PaddingContentVerticalSM { get; set; }
 
     /// <summary>
-    /// 外边距 XXS
-    /// 控制元素外边距，最小尺寸。
+    /// Smallest (XXS) step of the margin scale, as a single value for all four sides.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial double UniformlyMarginXXS { get; set; }
     
     /// <summary>
-    /// 外边距 XXS
-    /// 控制元素外边距，最小尺寸。
+    /// Smallest (XXS) step of the margin scale, with a value for each of the four sides.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial Thickness MarginXXS { get; set; }
 
     /// <summary>
-    /// 外边距 XS
-    /// 控制元素外边距，小尺寸。
+    /// Small (XS) step of the margin scale, as a single value for all four sides.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial double UniformlyMarginXS { get; set; }
     
     /// <summary>
-    /// 外边距 XS
-    /// 控制元素外边距，小尺寸。
+    /// Small (XS) step of the margin scale, with a value for each of the four sides.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial Thickness MarginXS { get; set; }
 
     /// <summary>
-    /// 外边距 SM
-    /// 控制元素外边距，中小尺寸。
+    /// Small-to-medium (SM) step of the margin scale, as a single value for all four sides.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial double UniformlyMarginSM { get; set; }
     
     /// <summary>
-    /// 外边距 SM
-    /// 控制元素外边距，中小尺寸。
+    /// Small-to-medium (SM) step of the margin scale, with a value for each of the four sides.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial Thickness MarginSM { get; set; }
 
     /// <summary>
-    /// 外边距
-    /// 控制元素外边距，中等尺寸。
+    /// Medium step of the margin scale, as a single value for all four sides.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial double UniformlyMargin { get; set; }
     
     /// <summary>
-    /// 外边距
-    /// 控制元素外边距，中等尺寸。
+    /// Medium step of the margin scale, with a value for each of the four sides.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial Thickness Margin { get; set; }
 
     /// <summary>
-    /// 外边距 MD
-    /// 控制元素外边距，中大尺寸。
+    /// Medium-to-large (MD) step of the margin scale, as a single value for all four sides.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial double UniformlyMarginMD { get; set; }
     
     /// <summary>
-    /// 外边距 MD
-    /// 控制元素外边距，中大尺寸。
+    /// Medium-to-large (MD) step of the margin scale, with a value for each of the four sides.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial Thickness MarginMD { get; set; }
 
     /// <summary>
-    /// 外边距 LG
-    /// 控制元素外边距，大尺寸。
+    /// Large (LG) step of the margin scale, as a single value for all four sides.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial double UniformlyMarginLG { get; set; }
     
     /// <summary>
-    /// 外边距 LG
-    /// 控制元素外边距，大尺寸。
+    /// Large (LG) step of the margin scale, with a value for each of the four sides.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial Thickness MarginLG { get; set; }
 
     /// <summary>
-    /// 外边距 XL
-    /// 控制元素外边距，超大尺寸。
+    /// Extra-large (XL) step of the margin scale, as a single value for all four sides.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial double UniformlyMarginXL { get; set; }
 
     /// <summary>
-    /// 外边距 XL
-    /// 控制元素外边距，超大尺寸。
+    /// Extra-large (XL) step of the margin scale, with a value for each of the four sides.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial Thickness MarginXL { get; set; }
     
     /// <summary>
-    /// 外边距 XXL
-    /// 控制元素外边距，最大尺寸。
+    /// Largest (XXL) step of the margin scale, as a single value for all four sides.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial double UniformlyMarginXXL { get; set; }
     
     /// <summary>
-    /// 外边距 XXL
-    /// 控制元素外边距，最大尺寸。
+    /// Largest (XXL) step of the margin scale, with a value for each of the four sides.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial Thickness MarginXXL { get; set; }
     
     /// <summary>
-    /// 布局元素之间间隔，最小尺寸。
+    /// Smallest (XXS) gap between layout elements.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial double SpacingXXS { get; set; }
 
     /// <summary>
-    /// 布局元素之间间隔，小尺寸。
+    /// Small (XS) gap between layout elements.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial double SpacingXS { get; set; }
 
     /// <summary>
-    /// 布局元素之间间隔，中小尺寸。
+    /// Small-to-medium (SM) gap between layout elements.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial double SpacingSM { get; set; }
 
     /// <summary>
-    /// 布局元素之间间隔，中等尺寸。
+    /// Medium gap between layout elements.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial double Spacing { get; set; }
 
     /// <summary>
-    /// 布局元素之间间隔，中大尺寸。
+    /// Medium-to-large (MD) gap between layout elements.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial double SpacingMD { get; set; }
 
     /// <summary>
-    /// 布局元素之间间隔，大尺寸。
+    /// Large (LG) gap between layout elements.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial double SpacingLG { get; set; }
     
     /// <summary>
-    /// 布局元素之间间隔，超大尺寸。
+    /// Extra-large (XL) gap between layout elements.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial double SpacingXL { get; set; }
     
     /// <summary>
-    /// 布局元素之间间隔，最大尺寸。
+    /// Largest (XXL) gap between layout elements.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial double SpacingXXL { get; set; }
 
     // =============== Legacy: should be remove ===============
     /// <summary>
-    /// 加载状态透明度
-    /// 控制加载状态的透明度。
+    /// Opacity applied in the loading state.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial double OpacityLoading { get; set; }
 
     /// <summary>
-    /// 一级阴影
-    /// 控制元素阴影样式。
+    /// First-level box shadow of an element.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial BoxShadows BoxShadows { get; set; }
 
     /// <summary>
-    /// 二级阴影
-    /// 控制元素二级阴影样式。
+    /// Second-level box shadow of an element.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial BoxShadows BoxShadowsSecondary { get; set; }
 
     /// <summary>
-    /// 三级阴影
-    /// 控制元素三级盒子阴影样式。
+    /// Third-level box shadow of an element.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial BoxShadows BoxShadowsTertiary { get; set; }
 
     /// <summary>
-    /// 链接文本装饰
-    /// 控制链接文本的装饰样式。
+    /// Text decoration of a link.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial TextDecorationInfo? LinkDecoration { get; set; }
 
     /// <summary>
-    /// 链接鼠标悬浮时文本装饰
-    /// 控制链接鼠标悬浮时文本的装饰样式。
+    /// Text decoration of a link while it is hovered.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial TextDecorationInfo? LinkHoverDecoration { get; set; }
 
     /// <summary>
-    /// 链接聚焦时文本装饰
-    /// 控制链接聚焦时文本的装饰样式。
+    /// Text decoration of a link while it is focused.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial TextDecorationInfo? LinkFocusDecoration { get; set; }
 
     /// <summary>
-    /// 控制水平内间距
-    /// 控制元素水平内间距。
+    /// Horizontal padding of a control.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial double ControlPaddingHorizontal { get; set; }
 
     /// <summary>
-    /// 控制中小尺寸水平内间距
-    /// 控制元素中小尺寸水平内间距。
+    /// Horizontal padding of a small (SM) control.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial double ControlPaddingHorizontalSM { get; set; }
 
     // Media queries breakpoints
     /// <summary>
-    /// 屏幕宽度（像素） - 超小屏幕
-    /// 控制超小屏幕的屏幕宽度。
+    /// Screen width, in pixels, of an extra-small (XS) screen.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial int ScreenXS { get; set; }
 
     /// <summary>
-    /// 屏幕宽度（像素） - 超小屏幕最小值
-    /// 控制超小屏幕的最小宽度。
+    /// Minimum screen width, in pixels, of an extra-small (XS) screen.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial int ScreenXSMin { get; set; }
 
     /// <summary>
-    /// 屏幕宽度（像素） - 超小屏幕最大值
-    /// 控制超小屏幕的最大宽度。
+    /// Maximum screen width, in pixels, of an extra-small (XS) screen.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial int ScreenXSMax { get; set; }
 
     /// <summary>
-    /// 屏幕宽度（像素） - 小屏幕
-    /// 控制小屏幕的屏幕宽度。
+    /// Screen width, in pixels, of a small (SM) screen.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial int ScreenSM { get; set; }
 
     /// <summary>
-    /// 屏幕宽度（像素） - 小屏幕最小值
-    /// 控制小屏幕的最小宽度。
+    /// Minimum screen width, in pixels, of a small (SM) screen.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial int ScreenSMMin { get; set; }
 
     /// <summary>
-    /// 屏幕宽度（像素） - 小屏幕最大值
-    /// 控制小屏幕的最大宽度。
+    /// Maximum screen width, in pixels, of a small (SM) screen.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial int ScreenSMMax { get; set; }
 
     /// <summary>
-    /// 屏幕宽度（像素） - 中等屏幕
-    /// 控制中等屏幕的屏幕宽度。
+    /// Screen width, in pixels, of a medium (MD) screen.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial int ScreenMD { get; set; }
 
     /// <summary>
-    /// 屏幕宽度（像素） - 中等屏幕最小值
-    /// 控制中等屏幕的最小宽度。
+    /// Minimum screen width, in pixels, of a medium (MD) screen.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial int ScreenMDMin { get; set; }
 
     /// <summary>
-    /// 屏幕宽度（像素） - 中等屏幕最大值
-    /// 控制中等屏幕的最大宽度。
+    /// Maximum screen width, in pixels, of a medium (MD) screen.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial int ScreenMDMax { get; set; }
 
     /// <summary>
-    /// 屏幕宽度（像素） - 大屏幕
-    /// 控制大屏幕的屏幕宽度。
+    /// Screen width, in pixels, of a large (LG) screen.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial int ScreenLG { get; set; }
 
     /// <summary>
-    /// 屏幕宽度（像素） - 大屏幕最小值
-    /// 控制大屏幕的最小宽度。
+    /// Minimum screen width, in pixels, of a large (LG) screen.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial int ScreenLGMin { get; set; }
 
     /// <summary>
-    /// 屏幕宽度（像素） - 大屏幕最大值
-    /// 控制大屏幕的最大宽度。
+    /// Maximum screen width, in pixels, of a large (LG) screen.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial int ScreenLGMax { get; set; }
 
     /// <summary>
-    /// 屏幕宽度（像素） - 超大屏幕
-    /// 控制超大屏幕的屏幕宽度。
+    /// Screen width, in pixels, of an extra-large (XL) screen.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial int ScreenXL { get; set; }
 
     /// <summary>
-    /// 屏幕宽度（像素） - 超大屏幕最小值
-    /// 控制超大屏幕的最小宽度。
+    /// Minimum screen width, in pixels, of an extra-large (XL) screen.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial int ScreenXLMin { get; set; }
 
     /// <summary>
-    /// 屏幕宽度（像素） - 超大屏幕最大值
-    /// 控制超大屏幕的最大宽度。
+    /// Maximum screen width, in pixels, of an extra-large (XL) screen.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial int ScreenXLMax { get; set; }
 
     /// <summary>
-    /// 屏幕宽度（像素） - 超超大屏幕
-    /// 控制超超大屏幕的屏幕宽度。
+    /// Screen width, in pixels, of an extra-extra-large (XXL) screen.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial int ScreenXXL { get; set; }
 
     /// <summary>
-    /// 屏幕宽度（像素） - 超超大屏幕最小值
-    /// 控制超超大屏幕的最小宽度。
+    /// Minimum screen width, in pixels, of an extra-extra-large (XXL) screen.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial int ScreenXXLMin { get; set; }
 
     /// <summary>
-    /// 屏幕宽度（像素） - 超超大屏幕最大值
-    /// 控制超超大屏幕的最大宽度。
+    /// Maximum screen width, in pixels, of an extra-extra-large (XXL) screen.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial int ScreenXXLMax { get; set; }
 
     /// <summary>
-    /// 屏幕宽度（像素） - 超超超大屏幕
-    /// 控制超超超大屏幕的屏幕宽度。
+    /// Screen width, in pixels, of an extra-extra-extra-large (XXXL) screen.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial int ScreenXXXL { get; set; }
 
     /// <summary>
-    /// 屏幕宽度（像素） - 超超超大屏幕最小值
-    /// 控制超超超大屏幕的最小宽度。
+    /// Minimum screen width, in pixels, of an extra-extra-extra-large (XXXL) screen.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial int ScreenXXXLMin { get; set; }

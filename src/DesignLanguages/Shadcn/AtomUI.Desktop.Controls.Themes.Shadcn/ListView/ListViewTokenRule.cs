@@ -4,7 +4,9 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls.Themes.Shadcn;
 
-/// <summary>The shadcn view of <see cref="ListViewToken"/>.</summary>
+/// <summary>
+/// The shadcn view of <see cref="ListViewToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class ListViewTokenRule : IControlTokenRule<ShadcnToken, ListViewToken>
 {
@@ -13,6 +15,7 @@ internal sealed class ListViewTokenRule : IControlTokenRule<ShadcnToken, ListVie
         var token  = target.Own;
         var global = target.Global;
         ListViewTokenCalculator.Calculate(in context, global, token);
+        // Ant Design formula kept as is: the list item recipe is merged by ListViewTokenCalculator above.
         token.GroupHeaderPadding = new Thickness(global.UniformlyPaddingSM, global.UniformlyPaddingXS);
         token.SelectedIndicatorMargin = new Thickness(global.UniformlyMarginXXS, 0, 0, 0);
         token.ItemSelectedIndicatorColor = global.ColorPrimary;

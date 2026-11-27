@@ -4,7 +4,9 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 
-/// <summary>The PrimeNG view of <see cref="FloatButtonToken"/>.</summary>
+/// <summary>
+/// The PrimeNG view of <see cref="FloatButtonToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class FloatButtonTokenRule : IControlTokenRule<PrimeNGToken, FloatButtonToken>
 {
@@ -12,8 +14,11 @@ internal sealed class FloatButtonTokenRule : IControlTokenRule<PrimeNGToken, Flo
     {
         var token  = target.Own;
         var global = target.Global;
-        // PrimeNG: the control-global overrides, read by the formulas below.
+        // PrimeNG: no control-global overrides; EvaluateGlobal writes nothing.
         PrimeNGFloatButtonTokens.EvaluateGlobal(in context, global);
+        // Ant Design formula kept as is; the PrimeNG floating button stage
+        // (PrimeNGFloatButtonTokens.EvaluateOwn) replaces the shadow (none) and the Default type's backgrounds
+        // and icon color with button.secondary. The switches, PrimaryColor and the sizes stay.
         token.HasOutline                   = false;
         token.OutlineOnlyShadow            = false;
         token.CapsuleDescription           = false;

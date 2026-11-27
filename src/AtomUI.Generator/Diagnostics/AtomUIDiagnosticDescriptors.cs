@@ -283,7 +283,7 @@ internal static partial class AtomUIDiagnosticDescriptors
         isEnabledByDefault: true,
         customTags: [WellKnownDiagnosticTags.Telemetry]);
 
-    // Spec 14: a control token rule writes each own token before reading it.
+    // A control token rule must write every token of its control: this diagnostic reports a token it never writes.
     public static readonly DiagnosticDescriptor TokenRuleLeavesTokenUnwritten = new(
         AtomUIDiagnosticIds.TokenRuleLeavesTokenUnwritten,
         "A control token rule must write every token of its control",
@@ -300,7 +300,7 @@ internal static partial class AtomUIDiagnosticDescriptors
         DiagnosticSeverity.Error,
         isEnabledByDefault: true);
 
-    // Spec 14 (coverage): a value package supplies a rule for each control token class it covers.
+    // Coverage: a value package supplies a rule for each control token class it covers.
     public static readonly DiagnosticDescriptor ValuePackageMissesTokenRule = new(
         AtomUIDiagnosticIds.ValuePackageMissesTokenRule,
         "A value package must cover every control token class of the packages it covers",
@@ -309,8 +309,8 @@ internal static partial class AtomUIDiagnosticDescriptors
         DiagnosticSeverity.Error,
         isEnabledByDefault: true);
 
-    // Spec 3.3: language packages do not reference control packages; control packages do not reference the language
-    // side; value packages hold no controls.
+    // Language packages do not reference control packages; control packages do not reference the language side;
+    // value packages hold no controls.
     public static readonly DiagnosticDescriptor PackageDependencyDirection = new(
         AtomUIDiagnosticIds.PackageDependencyDirection,
         "Package dependency direction",

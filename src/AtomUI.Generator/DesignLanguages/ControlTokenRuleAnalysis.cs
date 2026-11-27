@@ -5,12 +5,14 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 namespace AtomUI.Generator.DesignLanguages;
 
-/// <summary>One registered rule: its class, the control token it writes and the language token it reads.</summary>
+/// <summary>
+/// One registered rule: its class, the control token it writes and the language token it reads.
+/// </summary>
 internal readonly record struct ControlTokenRuleSymbols(INamedTypeSymbol Rule, INamedTypeSymbol Interface, INamedTypeSymbol Token,
     ITypeSymbol Language, Location Location);
 
 /// <summary>
-/// The build-time checks of a value package (spec 14): every token of a derived control is written (completeness), a
+/// The build-time checks of a value package: every token of a derived control is written (completeness), a
 /// rule does not read a token of its own before writing it, every token class of a covered control package has a
 /// rule (coverage), and a value package holds no controls (dependency direction).
 /// </summary>
@@ -52,7 +54,9 @@ internal static class ControlTokenRuleAnalysis
         ReportControlsInValuePackage(compilation, report, cancellationToken);
     }
 
-    /// <summary>The token properties of a control token class: its public settable properties up to the control token base.</summary>
+    /// <summary>
+    /// The token properties of a control token class: its public settable properties up to the control token base.
+    /// </summary>
     internal static IEnumerable<IPropertySymbol> TokenProperties(Compilation compilation, INamedTypeSymbol token)
     {
         var tokenBase = compilation.GetTypeByMetadataName(ControlTokenBase);
@@ -173,8 +177,8 @@ internal static class ControlTokenRuleAnalysis
                 .Where(type => !type.IsAbstract && type.DeclaredAccessibility == Accessibility.Public &&
                                type.Interfaces.Any(candidate => SymbolEqualityComparer.Default.Equals(candidate, controlToken)))
                 .ToArray();
-            // A derived language (spec 5.6) writes only the controls it changes; the rest resolve to its base language's
-            // value packages along the language token chain, which the startup coverage check verifies.
+            // A derived language writes only the controls it changes; the rest resolve to its base language's value
+            // packages along the language token chain, which the startup coverage check verifies.
             foreach (var language in group.Where(rule => !IsDerivedLanguage(compilation, rule.Language))
                                           .Select(static rule => rule.Language.ToDisplayString()).Distinct())
             {

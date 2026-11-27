@@ -6,7 +6,9 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls.Themes.AntDesign;
 
-/// <summary>The AntDesign view of <see cref="OptionButtonToken"/>.</summary>
+/// <summary>
+/// The AntDesign view of <see cref="OptionButtonToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class OptionButtonTokenRule : IControlTokenRule<AntDesignToken, OptionButtonToken>
 {

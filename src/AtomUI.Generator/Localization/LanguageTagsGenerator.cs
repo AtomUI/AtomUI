@@ -4,12 +4,20 @@ using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace AtomUI.Generator;
 
+/// <summary>
+/// Generates <c>LanguageTags.g.cs</c> and <c>GeneratedStandardLanguageDefinitions.g.cs</c> from the language data
+/// file that carries the <c>AtomUILanguageTagsData</c> additional file metadata.
+/// </summary>
 [Generator]
 public sealed class LanguageTagsGenerator : IIncrementalGenerator
 {
     private const string LanguageTagsDataMetadata =
         "build_metadata.AdditionalFiles.AtomUILanguageTagsData";
 
+    /// <summary>
+    /// Registers the source output that parses the language data files, reports their diagnostics and writes the
+    /// language tags sources when exactly one file was parsed without diagnostics and has entries.
+    /// </summary>
     public void Initialize(IncrementalGeneratorInitializationContext context)
     {
         var languageData = context.AdditionalTextsProvider

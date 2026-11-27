@@ -29,10 +29,12 @@ internal sealed class SemanticPartTemplateValidator
             return true;
         }
 
-        // 显式声明 CrossNestedOwners 且路由越过首个模板边界（">>" 或第二个 "/template/"）
-        // 的部件，把目标锚定在嵌套控件（如 AutoComplete 内嵌的输入控件）自己的模板里，
-        // 宿主模板中不存在其标记类；这类部件改为跨主题资产校验标记存在性。
-        // 未声明 CrossNestedOwners 的既有部件（如 NumericUpDown、LineEdit）继续按宿主模板校验。
+        // A part that declares CrossNestedOwners explicitly and whose route crosses the first template boundary,
+        // (">>" or a second "/template/"), anchors its target in the template of the nested control itself,
+        // such as the input control embedded in AutoComplete; the host template does not contain its marker class.
+        // For such parts the marker is checked across theme assets instead.
+        // Existing parts that do not declare CrossNestedOwners, such as those of NumericUpDown and LineEdit,
+        // are still checked against the host template.
         static bool IsCrossNestedOwnerRoute(SemanticPartDeclaration part)
         {
             if (!part.CrossNestedOwners || part.SelectorRoute is null)
@@ -161,10 +163,13 @@ internal sealed class SemanticPartTemplateValidator
         return ValidateCrossNestedOwnerParts(parts, crossOwnerParts, templates) && valid;
     }
 
-    /// 跨嵌套控件部件：路由中首个边界操作符前的锚点类定位宿主模板里的嵌套控件节点，
-    /// 沿其类型继承链找到承载目标模板的主题资产；锚点与目标之间允许经过同控件已声明的
-    /// RuntimeCreated 部件（以其 ContractType 为节点类型继续解析主题链），保持与宿主模板
-    /// 校验同等级的静态检查能力。
+    /// <summary>
+    /// Validates the parts that cross into a nested control. The anchor class before the first boundary operator of
+    /// the route locates the nested control node in the host template, and the theme assets that carry the target
+    /// template are found along the inheritance chain of its type. Between the anchor and the target the route may
+    /// pass through a RuntimeCreated part declared by the same control, whose ContractType then serves as the node
+    /// type to keep resolving the theme chain; this keeps the static check as strong as the host template validation.
+    /// </summary>
     private bool ValidateCrossNestedOwnerParts(
         IReadOnlyList<SemanticPartDeclaration> allDeclarations,
         IReadOnlyList<SemanticPartDeclaration> parts,
@@ -283,8 +288,9 @@ internal sealed class SemanticPartTemplateValidator
             }
         }
 
-        // 嵌套控件经 StyleKeyOverride 只消费最派生的主题；基类主题（如 SearchEdit 之上的
-        // LineEdit）不参与运行时解析，这里同样剔除，避免重复计数。
+        // Through StyleKeyOverride a nested control consumes only the most derived theme. A base theme, such as the
+        // LineEdit theme under SearchEdit, takes no part in the runtime resolution. It is dropped here as well, so that
+        // the candidates are not counted twice.
         var targetThemeSet = DedupeMostDerivedThemes(candidateThemes, resolvedTargets);
 
         var selectorClass = part.SelectorClass!;
@@ -298,10 +304,11 @@ internal sealed class SemanticPartTemplateValidator
             return targetMarkers;
         }
 
-        // 锚点主题链中不存在目标标记时，允许路由经由中间跳步继续解析：静态标记节点
-        // 按其实际类型下沉到对应主题；同控件已声明的 RuntimeCreated 部件（标记由容器
-        // 创建路径注入，静态主题中不可见）以 ContractType 承转主题链（如 Cascader 的
-        // item 标签容器承转 itemContent / itemRemove）。
+        // When the anchor theme chain does not contain the target marker, the route may continue through
+        // intermediate hops: a static marker node descends to the theme of its actual type; a RuntimeCreated part
+        // declared by the same control (its marker is injected while the container is created, so the static theme
+        // does not show it) carries the theme chain on with its ContractType, as the item tag container of Cascader
+        // does for itemContent / itemRemove.
         var routeClasses = tokens.Where(static token => token.StartsWith(".", StringComparison.Ordinal))
                                  .Select(static token => token.Substring(1))
                                  .ToArray();

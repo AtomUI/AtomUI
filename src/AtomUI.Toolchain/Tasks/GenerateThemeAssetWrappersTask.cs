@@ -6,27 +6,72 @@ using Microsoft.Build.Framework;
 
 namespace AtomUI.Build.Tasks;
 
+/// <summary>
+/// Generates a <c>ResourceDictionary</c> wrapper, with an internal code-behind class, for each theme asset of an
+/// assembly, and writes the code-behind classes to one C# file. Each wrapper merges one dictionary by resource
+/// URI: the asset itself, or, for the default typed <c>ControlTheme</c> of a control, a generated deferred
+/// dictionary that instantiates the theme class, keyed by its target type.
+/// </summary>
 public sealed class GenerateThemeAssetWrappersTask : ITask
 {
+    /// <summary>
+    /// The XAML assets to wrap. The logical resource path is the <c>Link</c> metadata, or the item spec when it is
+    /// empty; the file is read from the item's full path.
+    /// Only a <c>.axaml</c> file in a <c>Themes</c> directory is processed, never one named <c>*Themes.axaml</c>,
+    /// and only when its root is a <c>ResourceDictionary</c> or the default typed <c>ControlTheme</c> of a
+    /// control. Such a theme has an <c>x:Class</c>, a target type whose name starts with neither <c>Abstract</c>
+    /// nor <c>Base</c>, and the file name <c>&lt;type name&gt;Theme.axaml</c>.
+    /// </summary>
     [Required]
     public ITaskItem[] ThemeAssets { get; set; } = [];
 
+    /// <summary>
+    /// Directory that receives the generated <c>.axaml</c> files. It is created when it does not exist.
+    /// </summary>
     [Required]
     public string OutputDirectory { get; set; } = string.Empty;
 
+    /// <summary>
+    /// Name of the assembly that owns the assets. It forms the <c>avares://</c> URIs of the merged sources and the
+    /// namespace of the generated classes.
+    /// </summary>
     [Required]
     public string AssemblyName { get; set; } = string.Empty;
 
+    /// <summary>
+    /// Path of the C# file that declares an internal class per generated wrapper dictionary. The deferred
+    /// dictionaries are merged only and get no class.
+    /// </summary>
     [Required]
     public string GeneratedCodePath { get; set; } = string.Empty;
 
+    /// <summary>
+    /// The generated files: one wrapper per processed asset and, for a typed <c>ControlTheme</c>, its deferred
+    /// dictionary. Each item's spec is the file path and its <c>Link</c> metadata is
+    /// <c>AtomUI.Generated/&lt;class name&gt;.axaml</c>.
+    /// </summary>
     [Output]
     public ITaskItem[] GeneratedAssets { get; set; } = [];
 
+    /// <summary>
+    /// Satisfies <see cref="ITask" />. This task logs nothing and never reads it.
+    /// </summary>
     public IBuildEngine BuildEngine { get; set; } = null!;
 
+    /// <summary>
+    /// Satisfies <see cref="ITask" />. This task never reads it.
+    /// </summary>
     public ITaskHost HostObject { get; set; } = null!;
 
+    /// <summary>
+    /// Generates the wrapper files into <see cref="OutputDirectory" /> and the code file at
+    /// <see cref="GeneratedCodePath" />, collects them in <see cref="GeneratedAssets" />, and leaves files whose
+    /// content is unchanged untouched.
+    /// </summary>
+    /// <returns>
+    /// <see langword="true" /> when the files are written. Assets that are skipped or cannot be loaded do not fail
+    /// the task.
+    /// </returns>
     public bool Execute()
     {
         var generated = new List<ITaskItem>();

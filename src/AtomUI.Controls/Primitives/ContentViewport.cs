@@ -6,9 +6,32 @@ using Avalonia.VisualTree;
 
 namespace AtomUI.Controls.Primitives;
 
-/// <summary>Reports animated content occupancy while arranging its content at its natural size.</summary>
+/// <summary>
+/// Reports animated content occupancy while arranging its content at its natural size.
+/// </summary>
 public class ContentViewport : ContentControl, IMotionLayout
 {
+    /// <summary>
+    /// Takes over the layout of the viewport for one layout transition. Until the returned lease is disposed, the
+    /// viewport measures and arranges with the extent the lease interpolates: from the extent presented when this is
+    /// called, or from zero for a viewport that opens, to the natural extent of the content or to zero, as
+    /// <paramref name="expanded" /> says. The content keeps its natural size and stays attached to the edge opposite
+    /// <paramref name="direction" />.
+    /// </summary>
+    /// <param name="direction">
+    /// The side where space is added or removed. <see cref="Direction.Left" /> and <see cref="Direction.Right" />
+    /// change the width, <see cref="Direction.Top" /> and <see cref="Direction.Bottom" /> the height.
+    /// </param>
+    /// <param name="expanded">
+    /// <see langword="true" /> when the transition ends with the content fully shown; <see langword="false" /> when it
+    /// ends with the content taking no space.
+    /// </param>
+    /// <returns>
+    /// The lease that receives the progress of the transition and stays in charge until it is disposed.
+    /// </returns>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// <paramref name="direction" /> is not a value of <see cref="Direction" />.
+    /// </exception>
     public IMotionLayoutLease BeginLayoutMotion(Direction direction, bool expanded)
     {
         if (!Enum.IsDefined(direction))
@@ -43,11 +66,19 @@ public class ContentViewport : ContentControl, IMotionLayout
         ClipToBoundsProperty.OverrideDefaultValue<ContentViewport>(true);
     }
 
+    /// <summary>
+    /// Calls the base implementation only while no lease is active. With a lease, measures the content at its natural
+    /// size and reports that size with the extent of the lease on the animated axis.
+    /// </summary>
     protected override Size MeasureOverride(Size availableSize)
     {
         return _layout?.Measure(availableSize) ?? base.MeasureOverride(availableSize);
     }
 
+    /// <summary>
+    /// Calls the base implementation with the rect the active lease constrains, or with the rect it received when no
+    /// lease is active, and then re-arranges the ancestors whose desired size changed meanwhile.
+    /// </summary>
     protected override void ArrangeCore(Rect finalRect)
     {
         var layout = _layout;
@@ -73,6 +104,11 @@ public class ContentViewport : ContentControl, IMotionLayout
         }
     }
 
+    /// <summary>
+    /// Calls the base implementation last. Before that, when <see cref="Visual.Bounds" /> changes inside the arrange
+    /// pass of the active lease, it marks the lease as arranged, so that a callback of the change sees its presented
+    /// extent up to date.
+    /// </summary>
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         if (change.Property == BoundsProperty && _arrangingLayout is { } layout && ReferenceEquals(_layout, layout))
@@ -83,11 +119,19 @@ public class ContentViewport : ContentControl, IMotionLayout
         base.OnPropertyChanged(change);
     }
 
+    /// <summary>
+    /// Calls the base implementation only while no lease is active. With a lease, arranges the content at its natural
+    /// size, attached to the edge opposite the direction of the lease, and returns the size it received.
+    /// </summary>
     protected override Size ArrangeOverride(Size finalSize)
     {
         return _layout?.Arrange(finalSize) ?? base.ArrangeOverride(finalSize);
     }
 
+    /// <summary>
+    /// Calls the base implementation first, then disposes the active lease, which ends its transition, and drops the
+    /// recorded desired sizes of the ancestors.
+    /// </summary>
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnDetachedFromVisualTree(e);

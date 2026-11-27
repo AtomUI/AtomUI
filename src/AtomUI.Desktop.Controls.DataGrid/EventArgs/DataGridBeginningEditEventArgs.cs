@@ -8,6 +8,10 @@ using Avalonia.Interactivity;
 
 namespace AtomUI.Desktop.Controls;
 
+/// <summary>
+/// Carries the data for the <see cref="DataGrid.BeginningEdit" /> event, raised before a cell or row enters
+/// edit mode. Cancelling the event keeps the cell from entering edit mode.
+/// </summary>
 public class DataGridBeginningEditEventArgs: CancelEventArgs
 {
     /// <summary>

@@ -16,7 +16,9 @@ namespace AtomUIGallery.Browser;
 
 public partial class BrowserGalleryApplication : Application
 {
-    /// <summary>宿主在 AppBuilder 链上登记 Browser Gallery 的 AtomUI 配置。</summary>
+    /// <summary>
+    /// The host registers the Browser Gallery AtomUI configuration on the AppBuilder chain.
+    /// </summary>
     public static void Configure(IAtomUIBuilder builder)
     {
         ArgumentNullException.ThrowIfNull(builder);

@@ -3,7 +3,9 @@ using AtomUI.Desktop.Controls;
 
 namespace AtomUI.Controls;
 
-/// <summary>Gregorian unit boundaries and culture-aware week numbering.</summary>
+/// <summary>
+/// Gregorian unit boundaries and culture-aware week numbering.
+/// </summary>
 internal static class DateUnitMath
 {
     internal static int DaysInMonth(int year, int month) => DateTime.DaysInMonth(year, month);
@@ -88,6 +90,15 @@ internal static class DateUnitMath
         culture.Name.EndsWith("-BR", StringComparison.OrdinalIgnoreCase);
 }
 
+/// <summary>
+/// The inclusive range of days that one selection unit of a date panel covers: a single date, a week, a month,
+/// a quarter or a year. The date panel algorithms of this assembly produce it for the date viewers of
+/// AtomUI.Desktop.Controls.
+/// </summary>
+/// <remarks>
+/// <see cref="Contains" /> compares only the date of its argument. <c>Start</c> must not carry a time of day,
+/// otherwise the first day of the range is excluded.
+/// </remarks>
 internal readonly record struct DateUnitRange(DateTime Start, DateTime End)
 {
     public bool Contains(DateTime value) => value.Date >= Start && value.Date <= End;

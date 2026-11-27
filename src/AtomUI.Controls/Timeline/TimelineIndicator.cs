@@ -77,7 +77,7 @@ internal class TimelineIndicator : TemplatedControl
     internal static readonly StyledProperty<IBrush?> DefaultIndicatorColorProperty =
         AvaloniaProperty.Register<TimelineIndicator, IBrush?>(nameof(DefaultIndicatorColor));
 
-    // The item colour takes precedence over the theme's default for the dot and icon.
+    // The item color takes precedence over the theme's default for the dot and icon.
     internal static readonly DirectProperty<TimelineIndicator, IBrush?> EffectiveIndicatorColorProperty =
         AvaloniaProperty.RegisterDirect<TimelineIndicator, IBrush?>(nameof(EffectiveIndicatorColor),
             o => o.EffectiveIndicatorColor);
@@ -112,6 +112,15 @@ internal class TimelineIndicator : TemplatedControl
         set => SetValue(DefaultIndicatorColorProperty, value);
     }
 
+    /// <summary>
+    /// The resource keys of the two Timeline Tokens that give the indicator its defaults: the line-height ratio
+    /// behind <see cref="IndicatorMinHeight" /> and the node color behind <see cref="EffectiveIndicatorColor" />.
+    /// While this is set, the indicator subscribes to both Tokens. <see langword="null" /> removes the
+    /// subscription, so <see cref="IndicatorMinHeight" /> follows <see cref="RelativeLineHeight" /> and the fallback
+    /// color is <see cref="DefaultIndicatorColor" />. An explicitly set <see cref="RelativeLineHeight" /> or
+    /// <see cref="DefaultIndicatorColor" /> wins over the Token value. The built-in theme assigns
+    /// <c>TimelineIndicatorResources.IndicatorTokenResourceKeys</c>.
+    /// </summary>
     internal TimelineIndicatorTokenResourceKeys? IndicatorTokenResourceKeys
     {
         get => GetValue(IndicatorTokenResourceKeysProperty);
@@ -123,6 +132,12 @@ internal class TimelineIndicator : TemplatedControl
     private IBrush? _themeIndicatorColor;
     private IBrush? _effectiveIndicatorColor;
 
+    /// <summary>
+    /// Brush of the node ring (<c>PART_Dot</c>) and of the indicator icon: <see cref="IndicatorColor" /> when that
+    /// is set, otherwise <see cref="DefaultIndicatorColor" />. While <see cref="IndicatorTokenResourceKeys" /> is
+    /// set and <see cref="DefaultIndicatorColor" /> is not, the node color of its Token takes the place of that
+    /// fallback. The value is <see langword="null" />, the default, while none of them supplies a brush.
+    /// </summary>
     internal IBrush? EffectiveIndicatorColor
     {
         get => _effectiveIndicatorColor;
@@ -131,6 +146,12 @@ internal class TimelineIndicator : TemplatedControl
 
     private bool _isFirst;
 
+    /// <summary>
+    /// Whether the owning timeline item is the first of the visible items. The timeline assigns the value to the
+    /// item and the item's template forwards it. In a horizontal timeline the rail of the first item starts at its
+    /// own node instead of the item edge; in a vertical one the value changes nothing in the rail. A change
+    /// invalidates the measure and the arrange pass of the indicator.
+    /// </summary>
     internal bool IsFirst
     {
         get => _isFirst;
@@ -139,6 +160,12 @@ internal class TimelineIndicator : TemplatedControl
 
     private bool _isLast;
 
+    /// <summary>
+    /// Whether the owning timeline item is the last of the visible items. The timeline assigns the value to the
+    /// item and the item's template forwards it. In a horizontal timeline the rail of the last item ends at its own
+    /// node instead of the item edge; in a vertical one the last item draws no rail. A change invalidates the
+    /// measure and the arrange pass of the indicator.
+    /// </summary>
     internal bool IsLast
     {
         get => _isLast;
@@ -179,6 +206,11 @@ internal class TimelineIndicator : TemplatedControl
 
     private bool _nextIsPending;
 
+    /// <summary>
+    /// Whether the item that follows the owning timeline item among the visible items is pending. The timeline
+    /// assigns the value to the item and the item's template forwards it. The indicator does not use the value
+    /// itself; a style of the indicator can select on it.
+    /// </summary>
     internal bool NextIsPending
     {
         get => _nextIsPending;
@@ -195,8 +227,8 @@ internal class TimelineIndicator : TemplatedControl
     static TimelineIndicator()
     {
         OrientationProperty.OverrideDefaultValue<TimelineIndicator>(Orientation.Vertical);
-        // rail 要连续延伸到下一项节点顶边，会跨出 indicator 自身的底部边界；
-        // TemplatedControl 默认 ClipToBounds=true 会把这溢出的 rail 段切断。
+        // The rail has to extend past the bottom edge of the indicator to the top edge of the next item's node. The
+        // TemplatedControl default of ClipToBounds=true would cut that part of the rail off.
         ClipToBoundsProperty.OverrideDefaultValue<TimelineIndicator>(false);
         AffectsMeasure<TimelineIndicator>(
             IsFirstProperty,
@@ -367,10 +399,11 @@ internal class TimelineIndicator : TemplatedControl
             Rect railRect;
             if (Orientation == Orientation.Horizontal)
             {
-                // 水平方向：节点位于各 item 中心、items 左右并排，单段 rail 只能覆盖
-                // 到 item 边缘（即两节点连线的中点）。因此水平 rail 贯穿相邻 item 连成
-                // 完整轴线：首项从自身节点起、末项止于自身节点、中间项全宽贯通，与
-                // 相邻 item 的 rail 首尾相接，交叉区域由不透明节点掩膜遮盖。
+                // Horizontal: the node sits at the center of each item and the items lie side by side, so one rail
+                // segment can only reach as far as the item edge (the midpoint between two nodes). The horizontal
+                // rail therefore runs through the adjacent items as one axis: the first item starts at its own node,
+                // the last item ends at its own node and the items in between span their full width, so neighboring
+                // rails meet end to end and the opaque node hides the part that passes through it.
                 var left  = IsFirst ? centerX : 0;
                 var right = IsLast ? centerX : finalSize.Width;
                 railRect = new Rect(
@@ -381,9 +414,10 @@ internal class TimelineIndicator : TemplatedControl
             }
             else
             {
-                // 垂直方向：对齐上游 rail 的分段语义——每段从自身节点底边延伸到下一
-                // 节点顶边（贯穿 item 边界），线在节点处紧贴、由不透明节点掩膜遮盖，
-                // 视觉连续且语义框以节点为界；末项无 rail。
+                // Vertical: keeps the segment semantics of the upstream rail. Each segment runs from the bottom edge
+                // of its own node to the top edge of the next node, crossing the item boundary. The opaque node hides
+                // the line where they meet, so the rail looks continuous while its box is bounded by the nodes. The
+                // last item has no rail.
                 var glyphHalfHeight = Math.Max(
                     boxSize / 2,
                     _iconHost is not null ? _iconHost.Bounds.Height / 2 : 0);
@@ -404,4 +438,10 @@ internal class TimelineIndicator : TemplatedControl
     }
 }
 
+/// <summary>
+/// The resource keys of the Timeline tokens that <see cref="TimelineIndicator" /> reads as its default
+/// line-height ratio and node color. The Timeline theme in AtomUI.Desktop.Controls assigns the pair to
+/// <see cref="TimelineIndicator.IndicatorTokenResourceKeys" />. When that property is <see langword="null" />,
+/// the indicator reads no theme value and uses <c>RelativeLineHeight</c>.
+/// </summary>
 internal sealed record TimelineIndicatorTokenResourceKeys(object LineHeightRatio, object NodeColor);

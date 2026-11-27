@@ -5,7 +5,9 @@ using Avalonia.Controls.Primitives.PopupPositioning;
 
 namespace AtomUI.Controls;
 
-/// <summary>Pure anchor, gravity, and placement conversions for anchored overlays.</summary>
+/// <summary>
+/// Pure anchor, gravity, and placement conversions for anchored overlays.
+/// </summary>
 internal static class PlacementGeometry
 {
     internal static ArrowPosition? CalculateArrowPosition(

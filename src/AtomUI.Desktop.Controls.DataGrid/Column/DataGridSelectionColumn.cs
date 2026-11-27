@@ -9,20 +9,48 @@ using Avalonia.Layout;
 
 namespace AtomUI.Desktop.Controls;
 
+/// <summary>
+/// A column that selects rows with a selector in the cell of each row.
+/// The selector is a radio button while the owning <see cref="DataGrid" /> uses
+/// <see cref="DataGridSelectionMode.Single" /> and a check box otherwise, and it is checked while the row is
+/// selected.
+/// </summary>
+/// <remarks>
+/// Clicking the selector selects the row, or removes a selected row from the selection outside single selection
+/// mode. Outside single selection mode the header also shows a check box that selects all rows or clears the
+/// selection; in extended selection mode it shows the indeterminate state while only some rows are selected.
+/// The column never edits its cells.
+/// </remarks>
 public class DataGridSelectionColumn : DataGridColumn
 {
     private DataGrid? _owningGrid;
     private CheckBox? _headerCheckBox;
     private readonly HashSet<DataGridRow> _trackedRows = new();
 
+    /// <summary>
+    /// Always <see langword="true" />. The override declares no setter: the cells only show a selector and are
+    /// never edited.
+    /// </summary>
     public override bool IsReadOnly => true;
     
+    /// <summary>
+    /// The column never edits its cells, so it creates no editing element.
+    /// </summary>
+    /// <returns>
+    /// Always <see langword="null" />; <paramref name="editBinding" /> is set to <see langword="null" />.
+    /// </returns>
     protected override Control? GenerateEditingElement(DataGridCell cell, object dataItem, out BindingExpressionBase? editBinding)
     {
         editBinding = null;
         return null;
     }
 
+    /// <summary>
+    /// Creates the selector that the cell shows: a radio button while the owning grid uses
+    /// <see cref="DataGridSelectionMode.Single" /> and a check box otherwise.
+    /// The selector is centered in the cell, the cell does not clip it, and it is checked when the row of the cell
+    /// is selected.
+    /// </summary>
     protected override Control GenerateElement(DataGridCell cell, object dataItem)
     {
         EnsureOwningGrid();
@@ -63,6 +91,10 @@ public class DataGridSelectionColumn : DataGridColumn
         return radioButton;
     }
     
+    /// <summary>
+    /// Returns <see langword="null" /> without using the arguments, because a cell of this column never enters
+    /// editing mode.
+    /// </summary>
     protected override object? PrepareCellForEdit(Control editingElement, RoutedEventArgs editingEventArgs)
     {
         return null;
@@ -222,6 +254,11 @@ public class DataGridSelectionColumn : DataGridColumn
         UntrackRow(e.Row);
     }
 
+    /// <summary>
+    /// Called before the column is detached from its owning grid. Calls the base member and then releases the
+    /// grid: unsubscribes from its column collection, row loading and selection events, and stops observing the
+    /// rows.
+    /// </summary>
     protected internal override void NotifyOwningGridAboutToDetached()
     {
         base.NotifyOwningGridAboutToDetached();

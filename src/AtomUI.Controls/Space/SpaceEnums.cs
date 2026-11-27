@@ -1,19 +1,25 @@
 namespace AtomUI.Controls;
 
+/// <summary>
+/// Placement of the items across their line. The cross axis is vertical when the items flow horizontally and
+/// horizontal when they flow vertically.
+/// </summary>
 public enum SpaceItemsAlignment
 {
     /// <summary>
-    /// Items are laid out so the first one in each column/row touches the top/left of the panel.
+    /// Each item is placed at the start of its line along the cross axis: at the top of a row, or at the
+    /// left of a column.
     /// </summary>
     Start,
 
     /// <summary>
-    /// Items are laid out so that each column/row is centred vertically/horizontally within the panel.
+    /// Each item is centered along the cross axis of its line.
     /// </summary>
     Center,
 
     /// <summary>
-    /// Items are laid out so the last one in each column/row touches the bottom/right of the panel.
+    /// Each item is placed at the end of its line along the cross axis: at the bottom of a row,
+    /// or at the right of a column.
     /// </summary>
     End,
 }
@@ -34,7 +40,7 @@ public enum SpaceJustify
     End,
 
     /// <summary>
-    /// Items are packed at the centre of the line.
+    /// Items are packed at the center of the line.
     /// </summary>
     Center,
 

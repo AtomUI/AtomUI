@@ -4,161 +4,147 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
 
+/// <summary>
+/// Own design tokens of the <see cref="Card" />: header, body, actions row, grid items and shadows.
+/// </summary>
 [ControlDesignToken]
 public sealed partial class CardToken : AbstractControlDesignToken
 {
     
     /// <summary>
-    /// 卡片头部背景色
-    /// Background color of card header
+    /// Background color of the card header. A card in inner mode ignores it and uses the global
+    /// <c>ColorFillAlter</c> color.
     /// </summary>
     public partial Color HeaderBg { get; set; }
     
     /// <summary>
-    /// 卡片头部文字大小，大号尺寸
-    /// Font size of card header
+    /// Font size of the card header text in the large size.
     /// </summary>
     public partial double HeaderFontSizeLG { get; set; }
     
     /// <summary>
-    /// 卡片头部文字大小，默认尺寸
-    /// Font size of card header
+    /// Font size of the card header text in the middle size.
     /// </summary>
     public partial double HeaderFontSize { get; set; }
     
     /// <summary>
-    /// 小号卡片头部文字大小
-    /// Font size of small card header
+    /// Font size of the card header text in the small size.
     /// </summary>
     public partial double HeaderFontSizeSM { get; set; }
     
     /// <summary>
-    /// 卡片头部高度，大号尺寸
-    /// Height of card header
+    /// Minimum height of the card header in the large size.
     /// </summary>
     public partial double HeaderHeightLG { get; set; }
     
     /// <summary>
-    /// 卡片头部高度，默认尺寸
-    /// Height of card header
+    /// Minimum height of the card header in the middle size.
     /// </summary>
     public partial double HeaderHeight { get; set; }
     
     /// <summary>
-    /// 小号卡片头部高度
-    /// Height of small card header
+    /// Minimum height of the card header in the small size.
     /// </summary>
     public partial double HeaderHeightSM { get; set; }
     
     /// <summary>
-    /// 卡片内边距，大号
-    /// Padding of card body
+    /// Padding of the card body in the large size; grid items and the tab content area take the same value.
     /// </summary>
     public partial Thickness BodyPaddingLG { get; set; }
     
     /// <summary>
-    /// 卡片内边距
-    /// Padding of card body
+    /// Padding of the card body in the middle size; grid items and the tab content area take the same value.
     /// </summary>
     public partial Thickness BodyPadding { get; set; }
     
     /// <summary>
-    /// 小号卡片内边距
-    /// Padding of small card body
+    /// Padding of the card body in the small size; grid items and the tab content area take the same value.
     /// </summary>
     public partial Thickness BodyPaddingSM { get; set; }
     
     /// <summary>
-    /// 卡片头部内边距,大号
-    /// Padding of card head
+    /// Padding of the card header in the large size.
     /// </summary>
     public partial Thickness HeaderPaddingLG { get; set; }
     
     /// <summary>
-    /// 卡片头部内边距
-    /// Padding of card head
+    /// Padding of the card header in the middle size.
     /// </summary>
     public partial Thickness HeaderPadding { get; set; }
     
     /// <summary>
-    /// 小号卡片头部内边距
-    /// Padding of small card head
+    /// Padding of the card header in the small size.
     /// </summary>
     public partial Thickness HeaderPaddingSM { get; set; }
     
     /// <summary>
-    /// 操作区背景色
-    /// Background color of card actions
+    /// Background color of the actions row at the bottom of the card.
     /// </summary>
     public partial Color ActionsBg { get; set; }
     
     /// <summary>
-    /// 操作区每一项的间距
-    ///  Margin of each item in card actions
+    /// Gap between the items of the actions row. Reserved and without effect: each action fills the whole height of
+    /// the row, so no template reads this value.
     /// </summary>
     [ReservedToken("antd Card actionsLiMargin (the vertical margin of each action). The AtomUI action row is a " +
                    "ControlHeightLG-high row whose actions stretch over the whole cell, so there is no item margin to set.")]
     public partial double ActionsSpacing { get; set; }
     
     /// <summary>
-    /// 内置标签页组件下间距
-    /// Margin bottom of tabs component
+    /// Offset that pulls the tab bar up onto the bottom border of the card header. Reserved and without effect: the
+    /// tab bar of a card with tabs is rendered in the body below the header, so no template reads this value.
     /// </summary>
     [ReservedToken("antd Card tabsMarginBottom (pulls the tabs inside the card head onto the head border). CardTabsContent " +
                    "renders its tab bar in the body below the header, so there is no head to overlap.")]
     public partial Thickness TabsMarginBottom { get; set; }
     
     /// <summary>
-    /// 额外区文字颜色
-    /// Text color of extra area
+    /// Text color of the extra area in the card header.
     /// </summary>
     public partial Color ExtraColor { get; set; }
     
     /// <summary>
-    /// 卡片阴影
-    /// Shadow of card
+    /// Shadow of a hoverable card while the pointer is over it.
     /// </summary>
     public partial BoxShadows CardShadows { get; set; }
 
     /// <summary>
-    /// 卡片静止阴影（AtomUI 扩展，antd 无对应 Token）：非悬停的有边框卡片的阴影，供主题预设表达常驻阴影；
-    /// 默认是与 <see cref="CardShadows"/> 同层数的透明阴影，悬停过渡不会增减阴影层
-    /// Resting shadow of an outlined card (an AtomUI extension for presets; antd has none). Defaults to transparent
-    /// layers matching <see cref="CardShadows"/>, so the hover transition keeps its layer count.
+    /// Resting shadow of an outlined card while the pointer is not over it; an AtomUI extension for presets, antd has
+    /// none. A borderless card ignores it and rests on the global <c>BoxShadowsTertiary</c>. The default is
+    /// transparent layers matching <see cref="CardShadows" />, so the hover transition keeps its layer count.
     /// </summary>
     public partial BoxShadows RestingShadows { get; set; }
     
     /// <summary>
-    /// 卡片头部内边距
-    /// Padding of card header
+    /// Padding of a card header that also holds the tab bar. Reserved and without effect: the tab bar is rendered in
+    /// the body, so the header keeps the height and padding of its size and no template reads this value.
     /// </summary>
     [ReservedToken("antd Card cardHeadPadding (the title padding of a head that also holds the tabs). CardTabsContent " +
                    "renders its tab bar in the body, so the header keeps its normal height and padding.")]
     public partial Thickness CardHeadPadding { get; set; }
     
     /// <summary>
-    /// 卡片基础内边距
-    /// Padding of base card
+    /// Base padding of a card grid item. Reserved and without effect: a grid item follows the card size and takes
+    /// <see cref="BodyPaddingLG" />, <see cref="BodyPadding" /> or <see cref="BodyPaddingSM" />, and no template reads
+    /// this value.
     /// </summary>
     [ReservedToken("antd Card cardPaddingBase (the padding of a grid item). CardGridItem follows the card size with " +
                    "BodyPaddingLG / BodyPadding / BodyPaddingSM instead.")]
     public partial Thickness CardPaddingBase { get; set; }
     
     /// <summary>
-    /// 卡片操作区图标大小
-    /// Size of card actions icon
+    /// Width and height of the icons of the action buttons in the actions row.
     /// </summary>
     public partial double CardActionsIconSize { get; set; }
     
     /// <summary>
-    /// 网格项的常驻装饰阴影。网格分隔线由网格容器绘制。
-    /// Resting decoration of a grid item. The grid container paints the separators.
+    /// Shadow of a card grid item at rest. The separators between grid items are painted by the grid container and
+    /// are not part of this shadow.
     /// </summary>
     public partial BoxShadows CardGridItemShadows { get; set; }
 
     /// <summary>
-    /// 网格项的悬停阴影。
-    /// Hover shadow of a grid item.
+    /// Shadow of a card grid item while the pointer is over it.
     /// </summary>
     public partial BoxShadows CardGridHoverShadows { get; set; }
     

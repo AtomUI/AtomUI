@@ -16,6 +16,12 @@ namespace AtomUI.Controls.Commons;
 
 using AvaloniaSeparator = Avalonia.Controls.Separator;
 
+/// <summary>
+/// Base class of a separator: a horizontal or vertical line with an optional title that splits it into two rails.
+/// The template holds the title text block <c>PART_Title</c> and the rails <c>PART_RailStart</c> and
+/// <c>PART_RailEnd</c>, two <see cref="SeparatorRail" /> that it binds to <see cref="LineColor" />,
+/// <see cref="LineWidth" />, <see cref="Variant" /> and <see cref="Orientation" />.
+/// </summary>
 [PseudoClasses(SeparatorPseudoClass.HasTitleText)]
 public abstract class AbstractSeparator : AvaloniaSeparator, ICustomizableSizeTypeAware
 {
@@ -23,39 +29,71 @@ public abstract class AbstractSeparator : AvaloniaSeparator, ICustomizableSizeTy
     
     #region 公共属性定义
 
+    /// <summary>
+    /// Identifies the <see cref="Title" /> property.
+    /// </summary>
     public static readonly StyledProperty<string?> TitleProperty =
         AvaloniaProperty.Register<AbstractSeparator, string?>(nameof(Title));
 
+    /// <summary>
+    /// Identifies the <see cref="TitlePosition" /> property.
+    /// </summary>
     public static readonly StyledProperty<SeparatorTitlePosition> TitlePositionProperty =
         AvaloniaProperty.Register<AbstractSeparator, SeparatorTitlePosition>(nameof(TitlePosition),
             SeparatorTitlePosition.Center);
 
+    /// <summary>
+    /// Identifies the <see cref="TitleColor" /> property.
+    /// </summary>
     public static readonly StyledProperty<IBrush?> TitleColorProperty =
         AvaloniaProperty.Register<AbstractSeparator, IBrush?>(nameof(TitleColor));
 
+    /// <summary>
+    /// Identifies the <see cref="LineColor" /> property.
+    /// </summary>
     public static readonly StyledProperty<IBrush?> LineColorProperty =
         AvaloniaProperty.Register<AbstractSeparator, IBrush?>(nameof(LineColor));
 
+    /// <summary>
+    /// Identifies the <see cref="Orientation" /> property.
+    /// </summary>
     public static readonly StyledProperty<Orientation> OrientationProperty =
         AvaloniaProperty.Register<AbstractSeparator, Orientation>(nameof(Orientation));
 
+    /// <summary>
+    /// Identifies the <see cref="OrientationMargin" /> property.
+    /// </summary>
     public static readonly StyledProperty<double> OrientationMarginProperty =
         AvaloniaProperty.Register<AbstractSeparator, double>(nameof(OrientationMargin), double.NaN);
     
+    /// <summary>
+    /// Identifies the <see cref="Variant" /> property.
+    /// </summary>
     public static readonly StyledProperty<SeparatorVariant> VariantProperty =
         AvaloniaProperty.Register<AbstractSeparator, SeparatorVariant>(nameof(Variant), SeparatorVariant.Solid);
 
+    /// <summary>
+    /// Identifies the <see cref="LineWidth" /> property.
+    /// </summary>
     public static readonly StyledProperty<double> LineWidthProperty =
         AvaloniaProperty.Register<AbstractSeparator, double>(nameof(LineWidth), 1);
     
+    /// <summary>
+    /// Identifies the <see cref="IsPlain" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsPlainProperty =
         AvaloniaProperty.Register<AbstractSeparator, bool>(nameof(IsPlain), false);
     
+    /// <summary>
+    /// Identifies the <see cref="SizeType" /> property.
+    /// </summary>
     public static readonly StyledProperty<CustomizableSizeType> SizeTypeProperty =
         CustomizableSizeTypeControlProperty.SizeTypeProperty.AddOwner<AbstractSeparator>();
 
     /// <summary>
-    /// 分割线的标题
+    /// Text that breaks a horizontal separator line into two rails. Set it as the XAML content of the control.
+    /// A vertical separator does not lay the title out. <see langword="null" /> or an empty string draws one
+    /// continuous line and clears the <c>:has-title</c> pseudo-class.
     /// </summary>
     [Content]
     public string? Title
@@ -65,7 +103,8 @@ public abstract class AbstractSeparator : AvaloniaSeparator, ICustomizableSizeTy
     }
 
     /// <summary>
-    /// 分割线标题的位置
+    /// End of the line the title is placed at, or its center. Applies to a horizontal separator with a title only.
+    /// <see cref="SeparatorTitlePosition.Center" /> by default.
     /// </summary>
     public SeparatorTitlePosition TitlePosition
     {
@@ -74,7 +113,8 @@ public abstract class AbstractSeparator : AvaloniaSeparator, ICustomizableSizeTy
     }
 
     /// <summary>
-    /// 分割线标题的颜色
+    /// Brush that paints the title text. The default theme supplies its <c>ColorTextHeading</c> token; an explicit
+    /// <see langword="null" /> leaves the title without a brush.
     /// </summary>
     public IBrush? TitleColor
     {
@@ -83,7 +123,8 @@ public abstract class AbstractSeparator : AvaloniaSeparator, ICustomizableSizeTy
     }
 
     /// <summary>
-    /// 分割线标题的颜色
+    /// Brush that paints both rails of the line. The default theme supplies its <c>ColorSplit</c> token; an explicit
+    /// <see langword="null" /> leaves the line unpainted.
     /// </summary>
     public IBrush? LineColor
     {
@@ -92,7 +133,9 @@ public abstract class AbstractSeparator : AvaloniaSeparator, ICustomizableSizeTy
     }
 
     /// <summary>
-    /// 分割线的方向，垂直和水平分割线
+    /// Direction of the line. <see cref="Avalonia.Layout.Orientation.Horizontal" />, the default, draws it across
+    /// the control; <see cref="Avalonia.Layout.Orientation.Vertical" /> draws it from top to bottom, inset by a
+    /// fifth of the height at each end, and ignores the title.
     /// </summary>
     public Orientation Orientation
     {
@@ -101,7 +144,7 @@ public abstract class AbstractSeparator : AvaloniaSeparator, ICustomizableSizeTy
     }
     
     /// <summary>
-    /// 分割线是虚线、点线还是实线
+    /// Line style of both rails, <see cref="SeparatorVariant.Solid" /> by default. The theme binds the rails to it.
     /// </summary>
     public SeparatorVariant Variant
     {
@@ -110,10 +153,13 @@ public abstract class AbstractSeparator : AvaloniaSeparator, ICustomizableSizeTy
     }
 
     /// <summary>
-    /// The margin-left/right between the title and its closest border, while the orientation must be left or right,
-    /// If a numeric value of type string is provided without a unit, it is assumed to be in pixels (px) by default.
+    /// Distance in DIPs between the title and the end it is placed at, with
+    /// <see cref="SeparatorTitlePosition.Left" /> or <see cref="SeparatorTitlePosition.Right" />; the text padding of
+    /// the theme is added between that distance and the title. It is capped at half of the width left around
+    /// the title, and the rail between the title and that end is not drawn.
+    /// <see cref="double.NaN" />, the default, places the title at the theme's default distance, a ratio of the
+    /// width, and draws both rails.
     /// </summary>
-    /// <returns></returns>
     public double OrientationMargin
     {
         get => GetValue(OrientationMarginProperty);
@@ -121,7 +167,9 @@ public abstract class AbstractSeparator : AvaloniaSeparator, ICustomizableSizeTy
     }
     
     /// <summary>
-    /// 分割线的设计宽度，实际绘制厚度会根据当前 render scale 调整
+    /// Design thickness of the line in DIPs. The rails scale it by the render scaling before they draw, and it sets
+    /// the measured thickness of a separator without a title. The default theme supplies the value from its
+    /// <c>LineWidth</c> token.
     /// </summary>
     public double LineWidth
     {
@@ -130,7 +178,8 @@ public abstract class AbstractSeparator : AvaloniaSeparator, ICustomizableSizeTy
     }
     
     /// <summary>
-    /// 文字是否显示为普通正文样式
+    /// <see langword="true" /> renders the title as plain body text. <see langword="false" />, the default, renders
+    /// it as a heading with the large font size and the title font weight. The theme styles the title from this value.
     /// </summary>
     public bool IsPlain
     {
@@ -139,7 +188,11 @@ public abstract class AbstractSeparator : AvaloniaSeparator, ICustomizableSizeTy
     }
     
     /// <summary>
-    /// The size of divider. Only valid for horizontal layout. Custom lets the caller own the margin.
+    /// Size preset of a horizontal separator: the theme selects the margin above and below the line by it.
+    /// <see cref="CustomizableSizeType.Small" />, <see cref="CustomizableSizeType.Middle" /> (the default) and
+    /// <see cref="CustomizableSizeType.Large" /> each map to a block margin of the theme.
+    /// <see cref="CustomizableSizeType.Custom" /> has no size style, so the block margin that the theme sets for a
+    /// horizontal separator stays. A vertical separator ignores the value.
     /// </summary>
     public CustomizableSizeType SizeType
     {
@@ -184,6 +237,11 @@ public abstract class AbstractSeparator : AvaloniaSeparator, ICustomizableSizeTy
         set => SetValue(VerticalMarginInlineProperty, value);
     }
 
+    /// <summary>
+    /// While <see langword="true" />, the separator observes the layout tokens of the Separator design and takes the
+    /// text padding and the edge ratio of a titled separator and the vertical margin of a vertical separator from
+    /// them; while <see langword="false" />, no tokens are observed. The theme sets it to <see langword="true" />.
+    /// </summary>
     internal bool UseSeparatorLayoutTokenResources
     {
         get => GetValue(UseSeparatorLayoutTokenResourcesProperty);
@@ -199,6 +257,14 @@ public abstract class AbstractSeparator : AvaloniaSeparator, ICustomizableSizeTy
     private OwnerTokenSet? _layoutTokens;
     private (double TextPadding, double EdgeRatio, double VerticalMargin) _layoutTokensValues;
 
+    /// <summary>
+    /// Creates the token set that the layout reads when the theme requests it: the padding around the title,
+    /// the ratio that places the title while <see cref="OrientationMargin" /> is <see cref="double.NaN" />, and
+    /// the margin that widens a vertical separator. Returns <see langword="null" /> by default, which reads no
+    /// tokens. <paramref name="changed" /> is raised when a token value changes.
+    /// It is called when the control joins a visual tree and when the request changes while the control is attached.
+    /// The control owns the set it returns and disposes it when it is replaced and when the control is detached.
+    /// </summary>
     private protected virtual OwnerTokenSet? CreateSeparatorLayoutTokenSet(Action changed) => null;
 
     private double EffectiveTextPadding =>
@@ -223,6 +289,12 @@ public abstract class AbstractSeparator : AvaloniaSeparator, ICustomizableSizeTy
             OrientationMarginPercentProperty);
     }
 
+    /// <summary>
+    /// Updates the <c>:has-title</c> pseudo-class when <see cref="Title" /> changes, rebuilds the layout token
+    /// subscription when the theme switches it on or off while the control is attached, and refreshes the layout
+    /// metrics when <see cref="Orientation" /> or <see cref="Title" /> changes while a subscription is active.
+    /// A derived override must call this base member to keep them up to date.
+    /// </summary>
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
@@ -240,12 +312,22 @@ public abstract class AbstractSeparator : AvaloniaSeparator, ICustomizableSizeTy
         }
     }
 
+    /// <summary>
+    /// Builds the subscription to the layout tokens of the theme when the control joins a visual tree. The tokens
+    /// provide the padding around the title, the default position of the title and the margin that widens a vertical
+    /// separator; a theme that does not request them subscribes to nothing. A derived override must call this base
+    /// member for the metrics to be read.
+    /// </summary>
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
         UpdateLayoutTokenSubscription();
     }
 
+    /// <summary>
+    /// Releases the layout token subscription and drops the metrics read from it when the control leaves the visual
+    /// tree. A derived override must call this base member to release the subscription.
+    /// </summary>
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         _layoutTokens?.Dispose();
@@ -302,6 +384,11 @@ public abstract class AbstractSeparator : AvaloniaSeparator, ICustomizableSizeTy
         }
     }
 
+    /// <summary>
+    /// Resolves the template parts <c>PART_Title</c>, <c>PART_RailStart</c> and <c>PART_RailEnd</c> and updates the
+    /// <c>:has-title</c> pseudo-class. A missing part is left out: without the rails no line is arranged, without
+    /// the title block no title is arranged. A derived override must call this base member.
+    /// </summary>
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
@@ -311,8 +398,12 @@ public abstract class AbstractSeparator : AvaloniaSeparator, ICustomizableSizeTy
         UpdatePseudoClasses();
     }
     
-    // 当为水平分隔线的时候，我们设置最小的高度，当为垂直分割线的时候我们设置一个合适宽度
-    // 然后保持尽可能保持文字尽可能的显示，如果小于最小分隔部分的两倍的时候，文字隐藏。
+    /// <summary>
+    /// Stretches the separator along its line and fixes its thickness. A horizontal one is three times
+    /// <see cref="LineWidth" /> high without a title and as high as the title with one; a vertical one is
+    /// <see cref="LineWidth" />, or 1 DIP when that is smaller, plus the vertical margin wide and at least one em
+    /// high. A derived override must call this base member to keep that sizing.
+    /// </summary>
     protected override Size MeasureOverride(Size availableSize)
     {
         var size         = base.MeasureOverride(availableSize);
@@ -343,6 +434,11 @@ public abstract class AbstractSeparator : AvaloniaSeparator, ICustomizableSizeTy
         return new Size(targetWidth, targetHeight);
     }
 
+    /// <summary>
+    /// Arranges the rails and, on a horizontal separator with a visible title, the title, on top of the base
+    /// arrangement. The rails leave out the title and its padding; a vertical separator insets its rail by a
+    /// fifth of the height at each end. A derived override must call this base member to place them.
+    /// </summary>
     protected override Size ArrangeOverride(Size finalSize)
     {
         var size = base.ArrangeOverride(finalSize);
@@ -409,18 +505,17 @@ public abstract class AbstractSeparator : AvaloniaSeparator, ICustomizableSizeTy
         Rect titleRect = default;
         if (Orientation == Orientation.Horizontal && Title?.Length > 0)
         {
-            // 线最小得占到 25 %，拍脑袋
+            // Minimum share of the width that the rails keep beside a long title. The value is a rough estimate.
             var lineMinWidth = finalSize.Width * SEPARATOR_LINE_MIN_PROPORTION;
             var titleWidth   = (_titleLabel?.DesiredSize.Width ?? 0) + 2;
             var remainWidth  = finalSize.Width - titleWidth - GetTextPaddingInline() * 2;
             if (lineMinWidth > remainWidth)
             {
-                // 字过多
+                // The title leaves less than that share to the rails, so its width is capped.
                 titleWidth = Math.Max(finalSize.Width - lineMinWidth, lineMinWidth);
             }
 
-            // 处理完成之后，字的宽度一定在 width 范围内
-            // 计算位置
+            // The cap above keeps the title within three quarters of the width.
             if (TitlePosition == SeparatorTitlePosition.Left)
             {
                 if (!double.IsNaN(OrientationMargin))
@@ -462,7 +557,7 @@ public abstract class AbstractSeparator : AvaloniaSeparator, ICustomizableSizeTy
             }
             else
             {
-                // 居中
+                // Centered: the remaining width is split evenly between the two rails.
                 titleRect = new Rect(new Point((finalSize.Width - titleWidth) / 2, 0),
                     new Size(titleWidth, finalSize.Height));
             }

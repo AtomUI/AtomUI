@@ -14,7 +14,7 @@ function Push-NuGetPackages {
         [string]$Source
     )
 
-    # 获取所有NuGet包
+    # Collects every NuGet package
     $packages = Get-ChildItem -LiteralPath $PackagePath -Filter "*.nupkg" -File |
         Sort-Object Name
 

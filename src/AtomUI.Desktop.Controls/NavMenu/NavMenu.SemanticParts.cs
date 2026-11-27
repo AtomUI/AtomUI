@@ -6,20 +6,25 @@ using Avalonia.Controls.Primitives;
 
 namespace AtomUI.Desktop.Controls;
 
-// NavMenu 的 Semantic Part 声明。上游 Menu 公开的 Semantic 键路径共 12 个：一级 root、item、itemIcon、
-// itemContent、itemTitle、list，子菜单 subMenu.item、subMenu.itemIcon、subMenu.itemContent、subMenu.itemTitle、
-// subMenu.list，以及 popup.root；Part 名称逐字沿用这些键路径。
-//
-// 只有 NavMenu 是 public owner。NavMenuItem、NavMenuGroupItem、NavMenuDividerItem 都是 internal 容器，
-// 既不能持有 descriptor，也不能作为 ContractType，因此全部 Part 声明在 NavMenu 上，容器级 ContractType
-// 使用其最近 public 基类。
-//
-// 菜单项与分组容器由 NavMenuEntryContainerCoordinator 在 prepare 时按语义层级注入互斥 marker：
-//   一级容器  .semantic-item        / .semantic-scope-group
-//   子菜单容器 .semantic-sub-menu-item / .semantic-sub-menu-group
-// 因此 route 一律以 >> 开头（锚点位于运行时创建容器，无法用 /template/ 到达；弹层框体还位于 Popup 的
-// 属性值子树），按生成器 route 语法要求声明 CrossNestedOwners。marker 由静态模板或控件代码添加，
-// 生成器不按 owner 主题资产做静态校验，可达性由 NavMenuSemanticPartTests 证明。
+// Semantic Part declarations of NavMenu. The upstream Menu exposes 12 semantic key paths: root, item,
+// itemIcon, itemContent, itemTitle and list at the top level; subMenu.item, subMenu.itemIcon,
+// subMenu.itemContent, subMenu.itemTitle and subMenu.list in a submenu; and popup.root. The part names reuse
+// those key paths verbatim.
+// NavMenu is the only public owner. NavMenuItem, NavMenuGroupItem and NavMenuDividerItem are internal containers
+// that can neither hold a descriptor nor serve as a ContractType, so every part is declared on NavMenu, and a
+// container-level ContractType is the nearest public base class.
+// When a container is prepared, NavMenuEntryContainerCoordinator adds a mutually exclusive level marker to each
+// item and group container:
+//   top-level container  .semantic-item          / .semantic-scope-group
+//   submenu container    .semantic-sub-menu-item / .semantic-sub-menu-group
+// Every route therefore starts with >>: the anchor is a runtime-created container that /template/ cannot reach,
+// and the popup frame is in the property-value subtree of a Popup. CrossNestedOwners is set because the
+// generator's route syntax requires it. A marker is added by a static template or by control code; the generator
+// does not verify it statically against the owner's theme assets, and NavMenuSemanticPartTests proves that the
+// routes resolve.
+// A menu item placed directly in the menu, at the top level: its whole container. One instance per top-level
+// item, created at runtime.
+// NavMenuItemStyle applies to every top-level item container.
 [SemanticPart(
     "item",
     SelectorClass = "semantic-item",
@@ -29,6 +34,9 @@ namespace AtomUI.Desktop.Controls;
     CrossNestedOwners = true,
     RuntimeCreated = true,
     Since = "6.2.0")]
+// The icon in the header of a top-level menu item. One per top-level item, created at runtime; shown only when
+// the item has an icon.
+// NavMenuItemIconStyle applies to the icon.
 [SemanticPart(
     "itemIcon",
     SelectorClass = "semantic-item-icon",
@@ -38,6 +46,9 @@ namespace AtomUI.Desktop.Controls;
     CrossNestedOwners = true,
     RuntimeCreated = true,
     Since = "6.2.0")]
+// The content area in the header of a top-level menu item. It shows the item title or custom header content.
+// One per top-level item, created at runtime.
+// NavMenuItemContentStyle applies to it.
 [SemanticPart(
     "itemContent",
     SelectorClass = "semantic-item-content",
@@ -47,6 +58,9 @@ namespace AtomUI.Desktop.Controls;
     CrossNestedOwners = true,
     RuntimeCreated = true,
     Since = "6.2.0")]
+// The title of a group placed directly in the menu, at the top level. One per top-level group, created at
+// runtime; the title row is hidden in Horizontal mode and when IsInlineCollapsed is set.
+// NavMenuItemTitleStyle applies to every top-level group title.
 [SemanticPart(
     "itemTitle",
     SelectorClass = "semantic-item-title",
@@ -56,6 +70,8 @@ namespace AtomUI.Desktop.Controls;
     CrossNestedOwners = true,
     RuntimeCreated = true,
     Since = "6.2.0")]
+// The list of entries below the title of a top-level group. One per top-level group, created at runtime.
+// NavMenuListStyle applies to every top-level group list.
 [SemanticPart(
     "list",
     SelectorClass = "semantic-list",
@@ -65,6 +81,9 @@ namespace AtomUI.Desktop.Controls;
     CrossNestedOwners = true,
     RuntimeCreated = true,
     Since = "6.2.0")]
+// A menu item below the top level, inside a submenu: its whole container. One per submenu item, created at
+// runtime; it can lie in a popup, outside the menu's visual root.
+// NavMenuSubMenuItemStyle applies to every submenu item container.
 [SemanticPart(
     "subMenu.item",
     SelectorClass = "semantic-sub-menu-item",
@@ -75,6 +94,9 @@ namespace AtomUI.Desktop.Controls;
     RuntimeCreated = true,
     CrossVisualRoot = true,
     Since = "6.2.0")]
+// The icon in the header of a submenu item. One per submenu item, created at runtime; shown only when the item
+// has an icon.
+// NavMenuSubMenuItemIconStyle applies to the icon.
 [SemanticPart(
     "subMenu.itemIcon",
     SelectorClass = "semantic-sub-menu-item-icon",
@@ -85,6 +107,9 @@ namespace AtomUI.Desktop.Controls;
     RuntimeCreated = true,
     CrossVisualRoot = true,
     Since = "6.2.0")]
+// The content area in the header of a submenu item. It shows the item title or custom header content.
+// One per submenu item, created at runtime.
+// NavMenuSubMenuItemContentStyle applies to it.
 [SemanticPart(
     "subMenu.itemContent",
     SelectorClass = "semantic-sub-menu-item-content",
@@ -95,6 +120,8 @@ namespace AtomUI.Desktop.Controls;
     RuntimeCreated = true,
     CrossVisualRoot = true,
     Since = "6.2.0")]
+// The title of a group nested inside a submenu, below the top level. One per nested group, created at runtime.
+// NavMenuSubMenuItemTitleStyle applies to every nested group title.
 [SemanticPart(
     "subMenu.itemTitle",
     SelectorClass = "semantic-sub-menu-item-title",
@@ -105,6 +132,9 @@ namespace AtomUI.Desktop.Controls;
     RuntimeCreated = true,
     CrossVisualRoot = true,
     Since = "6.2.0")]
+// The list of entries below the title of a group nested inside a submenu. One per nested group, created at
+// runtime.
+// NavMenuSubMenuListStyle applies to every nested group list.
 [SemanticPart(
     "subMenu.list",
     SelectorClass = "semantic-sub-menu-list",
@@ -115,6 +145,9 @@ namespace AtomUI.Desktop.Controls;
     RuntimeCreated = true,
     CrossVisualRoot = true,
     Since = "6.2.0")]
+// The frame of a submenu popup: the border around the items of an open submenu. One per submenu popup, created
+// at runtime in the child subtree of a Popup, outside the menu's visual root.
+// NavMenuPopupRootStyle applies to every submenu popup frame.
 [SemanticPart(
     "popup.root",
     SelectorClass = "semantic-popup-root",

@@ -20,8 +20,23 @@ using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
 
+/// <summary>
+/// Base class of the desktop tab controls <see cref="TabControl" /> and <see cref="CardTabControl" />. It
+/// presents the items as tabs in a tab strip above, below or beside the content of the selected tab, draws
+/// the separator line along the tab strip, and provides tab closing, drag reordering and the overflow list
+/// of the tabs that do not fit in the tab strip.
+/// </summary>
+/// <remarks>
+/// One tab stays selected as long as there are items, and every item is presented by a <see cref="TabItem" />.
+/// </remarks>
 public class BaseTabControl : AbstractTabControl, IMotionAwareControl, ITabOverflowOwner
 {
+    /// <summary>
+    /// Always <see langword="true" />: the base class binds no selection indicator when the template is
+    /// applied and selects no tab on a left button release. A control that shows an indicator binds its own
+    /// template parts itself through <c>SetCustomIndicatorParts</c>, and <see cref="TabItem" /> updates the
+    /// selection from the release.
+    /// </summary>
     private protected override bool UsesCustomIndicatorTransition => true;
 
     private static readonly FuncTemplate<Panel?> DefaultPanel =
@@ -29,85 +44,163 @@ public class BaseTabControl : AbstractTabControl, IMotionAwareControl, ITabOverf
 
     #region 公共属性定义
     
+    /// <summary>
+    /// Identifies the <see cref="TabStripPlacement" /> property.
+    /// </summary>
     public new static readonly StyledProperty<Dock> TabStripPlacementProperty =
         AbstractTabControl.TabStripPlacementProperty.AddOwner<BaseTabControl>();
     
+    /// <summary>
+    /// Identifies the <see cref="BorderDashArray" /> property.
+    /// </summary>
     public static readonly StyledProperty<IReadOnlyList<double>?> BorderDashArrayProperty =
         AvaloniaProperty.Register<BaseTabControl, IReadOnlyList<double>?>(nameof(BorderDashArray));
 
+    /// <summary>
+    /// Identifies the <see cref="BorderDashOffset" /> property.
+    /// </summary>
     public static readonly StyledProperty<double> BorderDashOffsetProperty =
         AvaloniaProperty.Register<BaseTabControl, double>(nameof(BorderDashOffset));
 
+    /// <summary>
+    /// Identifies the <see cref="HorizontalContentAlignment" /> property.
+    /// </summary>
     public static readonly StyledProperty<HorizontalAlignment> HorizontalContentAlignmentProperty =
         ContentControl.HorizontalContentAlignmentProperty.AddOwner<BaseTabControl>();
     
+    /// <summary>
+    /// Identifies the <see cref="VerticalContentAlignment" /> property.
+    /// </summary>
     public static readonly StyledProperty<VerticalAlignment> VerticalContentAlignmentProperty =
         ContentControl.VerticalContentAlignmentProperty.AddOwner<BaseTabControl>();
     
+    /// <summary>
+    /// Identifies the <see cref="ContentTemplate" /> property.
+    /// </summary>
     public new static readonly StyledProperty<IDataTemplate?> ContentTemplateProperty =
         AbstractTabControl.ContentTemplateProperty.AddOwner<BaseTabControl>();
 
+    /// <summary>
+    /// Identifies the <see cref="OverflowPopupTemplate" /> property.
+    /// </summary>
     public static readonly StyledProperty<IDataTemplate?> OverflowPopupTemplateProperty =
         AvaloniaProperty.Register<BaseTabControl, IDataTemplate?>(nameof(OverflowPopupTemplate));
     
+    /// <summary>
+    /// Identifies the <see cref="SelectedContent" /> property.
+    /// </summary>
     public new static readonly DirectProperty<BaseTabControl, object?> SelectedContentProperty =
         AbstractTabControl.SelectedContentProperty.AddOwner<BaseTabControl>(owner => owner.SelectedContent);
 
+    /// <summary>
+    /// Identifies the <see cref="SelectedContentTemplate" /> property.
+    /// </summary>
     public new static readonly DirectProperty<BaseTabControl, IDataTemplate?> SelectedContentTemplateProperty =
         AbstractTabControl.SelectedContentTemplateProperty.AddOwner<BaseTabControl>(owner => owner.SelectedContentTemplate);
     
+    /// <summary>
+    /// Identifies the <see cref="SizeType" /> property.
+    /// </summary>
     public static readonly StyledProperty<SizeType> SizeTypeProperty =
         SizeTypeControlProperty.SizeTypeProperty.AddOwner<BaseTabControl>();
 
+    /// <summary>
+    /// Identifies the <see cref="TabAlignmentCenter" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> TabAlignmentCenterProperty =
         AvaloniaProperty.Register<BaseTabControl, bool>(nameof(TabAlignmentCenter));
 
+    /// <summary>
+    /// Identifies the <see cref="IsTabReorderEnabled" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsTabReorderEnabledProperty =
         AvaloniaProperty.Register<BaseTabControl, bool>(nameof(IsTabReorderEnabled));
 
+    /// <summary>
+    /// Identifies the <see cref="TabActivationTrigger" /> property.
+    /// </summary>
     public static readonly StyledProperty<TabActivationTrigger> TabActivationTriggerProperty =
         AvaloniaProperty.Register<BaseTabControl, TabActivationTrigger>(
             nameof(TabActivationTrigger),
             TabActivationTrigger.PointerReleased);
 
+    /// <summary>
+    /// Identifies the <see cref="IsMotionEnabled" /> property.
+    /// </summary>
     public new static readonly StyledProperty<bool> IsMotionEnabledProperty =
         AbstractTabControl.IsMotionEnabledProperty.AddOwner<BaseTabControl>();
     
+    /// <summary>
+    /// Identifies the <see cref="HeaderStartEdgePadding" /> property.
+    /// </summary>
     public static readonly StyledProperty<double> HeaderStartEdgePaddingProperty = 
         AvaloniaProperty.Register<BaseTabControl, double>(nameof (HeaderStartEdgePadding));
     
+    /// <summary>
+    /// Identifies the <see cref="HeaderEndEdgePadding" /> property.
+    /// </summary>
     public static readonly StyledProperty<double> HeaderEndEdgePaddingProperty = 
         AvaloniaProperty.Register<BaseTabControl, double>(nameof (HeaderEndEdgePadding));
     
+    /// <summary>
+    /// Identifies the <see cref="ContentPadding" /> property.
+    /// </summary>
     public static readonly StyledProperty<Thickness> ContentPaddingProperty = 
         AvaloniaProperty.Register<BaseTabControl, Thickness>(nameof (ContentPadding));
     
+    /// <summary>
+    /// Identifies the <see cref="TabAndContentGutter" /> property.
+    /// </summary>
     public static readonly StyledProperty<double> TabAndContentGutterProperty =
         AvaloniaProperty.Register<BaseTabControl, double>(nameof(TabAndContentGutter));
     
+    /// <summary>
+    /// Identifies the <see cref="HeaderStartExtraContent" /> property.
+    /// </summary>
     public new static readonly StyledProperty<object?> HeaderStartExtraContentProperty =
         AbstractTabControl.HeaderStartExtraContentProperty.AddOwner<BaseTabControl>();
     
+    /// <summary>
+    /// Identifies the <see cref="HeaderStartExtraContentTemplate" /> property.
+    /// </summary>
     public new static readonly StyledProperty<IDataTemplate?> HeaderStartExtraContentTemplateProperty =
         AbstractTabControl.HeaderStartExtraContentTemplateProperty.AddOwner<BaseTabControl>();
     
+    /// <summary>
+    /// Identifies the <see cref="HeaderEndExtraContent" /> property.
+    /// </summary>
     public new static readonly StyledProperty<object?> HeaderEndExtraContentProperty =
         AbstractTabControl.HeaderEndExtraContentProperty.AddOwner<BaseTabControl>();
     
+    /// <summary>
+    /// Identifies the <see cref="HeaderEndExtraContentTemplate" /> property.
+    /// </summary>
     public new static readonly StyledProperty<IDataTemplate?> HeaderEndExtraContentTemplateProperty =
         AbstractTabControl.HeaderEndExtraContentTemplateProperty.AddOwner<BaseTabControl>();
     
+    /// <summary>
+    /// Identifies the <see cref="IsTabClosable" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsTabClosableProperty =
         AvaloniaProperty.Register<BaseTabControl, bool>(nameof(IsTabClosable));
     
+    /// <summary>
+    /// Identifies the <see cref="IsTabAutoHideCloseButton" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsTabAutoHideCloseButtonProperty =
         AvaloniaProperty.Register<BaseTabControl, bool>(nameof(IsTabAutoHideCloseButton));
 
     #region 公共事件定义
     
+    /// <summary>
+    /// Identifies the <see cref="Closing" /> routed event.
+    /// </summary>
     public static readonly RoutedEvent<TabClosingEventArgs> ClosingEvent =
         RoutedEvent.Register<BaseTabControl, TabClosingEventArgs>(nameof(Closing), RoutingStrategies.Bubble);
 
+    /// <summary>
+    /// Identifies the <see cref="Closed" /> routed event.
+    /// </summary>
     public static readonly RoutedEvent<TabClosedEventArgs> ClosedEvent =
         RoutedEvent.Register<BaseTabControl, TabClosedEventArgs>(nameof(Closed), RoutingStrategies.Bubble);
 
@@ -117,24 +210,48 @@ public class BaseTabControl : AbstractTabControl, IMotionAwareControl, ITabOverf
     internal static readonly RoutedEvent<TabReorderedEventArgs> TabReorderedEvent =
         RoutedEvent.Register<BaseTabControl, TabReorderedEventArgs>(nameof(TabReordered), RoutingStrategies.Bubble);
 
+    /// <summary>
+    /// Raised before a tab is closed by <see cref="CloseTab" />, while its item is still in the items list.
+    /// </summary>
+    /// <remarks>
+    /// A handler sets <see cref="TabClosingEventArgs.Cancel" /> to <see langword="true" /> to keep the tab: the
+    /// item then stays in the list and <see cref="Closed" /> is not raised.
+    /// </remarks>
     public event EventHandler<TabClosingEventArgs>? Closing
     {
         add => AddHandler(ClosingEvent, value);
         remove => RemoveHandler(ClosingEvent, value);
     }
 
+    /// <summary>
+    /// Raised after a tab was closed by <see cref="CloseTab" /> and its item was removed from the items list,
+    /// after the selection was updated.
+    /// </summary>
     public event EventHandler<TabClosedEventArgs>? Closed
     {
         add => AddHandler(ClosedEvent, value);
         remove => RemoveHandler(ClosedEvent, value);
     }
 
+    /// <summary>
+    /// Raised before a drag reorder moves a tab to another index, at the end of the drag.
+    /// </summary>
+    /// <remarks>
+    /// A handler sets <see cref="TabReorderingEventArgs.Cancel" /> to <see langword="true" /> to keep the original
+    /// order: the item is not moved and <see cref="TabReordered" /> is not raised.
+    /// </remarks>
     public event EventHandler<TabReorderingEventArgs>? TabReordering
     {
         add => AddHandler(TabReorderingEvent, value);
         remove => RemoveHandler(TabReorderingEvent, value);
     }
 
+    /// <summary>
+    /// Raised after a drag reorder moved a tab to another index and the selection was updated.
+    /// </summary>
+    /// <remarks>
+    /// Not raised when the drop leaves the tab at its index or when <see cref="TabReordering" /> was canceled.
+    /// </remarks>
     public event EventHandler<TabReorderedEventArgs>? TabReordered
     {
         add => AddHandler(TabReorderedEvent, value);
@@ -143,36 +260,70 @@ public class BaseTabControl : AbstractTabControl, IMotionAwareControl, ITabOverf
     
     #endregion
 
+    /// <summary>
+    /// Edge of the control that holds the tab strip; the content of the selected tab takes the remaining space.
+    /// The default is <see cref="Dock.Top" />.
+    /// </summary>
+    /// <remarks>
+    /// The value is copied to every <see cref="TabItem" />, it places <see cref="TabAndContentGutter" /> between
+    /// the tab strip and the content, and it decides which edges <see cref="HeaderStartEdgePadding" /> and
+    /// <see cref="HeaderEndEdgePadding" /> pad. The separator line runs along the side of the tab strip that
+    /// faces the content.
+    /// </remarks>
     public new Dock TabStripPlacement
     {
         get => GetValue(TabStripPlacementProperty);
         set => SetValue(TabStripPlacementProperty, value);
     }
     
+    /// <summary>
+    /// Dash pattern of the frame border around the whole control, given as alternating dash and gap lengths of
+    /// the <c>BorderBrush</c> stroke. <see langword="null" />, the default, draws a solid border.
+    /// </summary>
+    /// <remarks>
+    /// The separator line along the tab strip is drawn by <see cref="Render" /> and stays solid.
+    /// </remarks>
     public IReadOnlyList<double>? BorderDashArray
     {
         get => GetValue(BorderDashArrayProperty);
         set => SetValue(BorderDashArrayProperty, value);
     }
 
+    /// <summary>
+    /// Position within the dash pattern of <see cref="BorderDashArray" /> where the frame border stroke starts.
+    /// The default is 0, the start of the first dash.
+    /// </summary>
     public double BorderDashOffset
     {
         get => GetValue(BorderDashOffsetProperty);
         set => SetValue(BorderDashOffsetProperty, value);
     }
 
+    /// <summary>
+    /// Horizontal alignment of the content of the selected tab inside the content area, which is inset by
+    /// <see cref="ContentPadding" />.
+    /// </summary>
     public HorizontalAlignment HorizontalContentAlignment
     {
         get => GetValue(HorizontalContentAlignmentProperty);
         set => SetValue(HorizontalContentAlignmentProperty, value);
     }
     
+    /// <summary>
+    /// Vertical alignment of the content of the selected tab inside the content area, which is inset by
+    /// <see cref="ContentPadding" />.
+    /// </summary>
     public VerticalAlignment VerticalContentAlignment
     {
         get => GetValue(VerticalContentAlignmentProperty);
         set => SetValue(VerticalContentAlignmentProperty, value);
     }
     
+    /// <summary>
+    /// Template used to present the content of the selected tab when the tab item has no
+    /// <c>ContentTemplate</c> of its own. The default is <see langword="null" />, which leaves the choice to the
+    /// content presenter.
+    /// </summary>
     public new IDataTemplate? ContentTemplate
     {
         get => GetValue(ContentTemplateProperty);
@@ -181,7 +332,7 @@ public class BaseTabControl : AbstractTabControl, IMotionAwareControl, ITabOverf
 
     /// <summary>
     /// Gets or sets the template used to present tabs that are not fully visible in the tab viewport.
-    /// The template data item is a <see cref="TabOverflowPopupContext"/>.
+    /// The template data item is a <see cref="TabOverflowPopupContext" />.
     /// </summary>
     public IDataTemplate? OverflowPopupTemplate
     {
@@ -189,72 +340,140 @@ public class BaseTabControl : AbstractTabControl, IMotionAwareControl, ITabOverf
         set => SetValue(OverflowPopupTemplateProperty, value);
     }
     
+    /// <summary>
+    /// Content of the selected tab, presented in the content area with <see cref="SelectedContentTemplate" />.
+    /// The control updates the value when the selection or the items change; it is <see langword="null" /> when no
+    /// tab is selected.
+    /// </summary>
     public new object? SelectedContent
     {
         get => base.SelectedContent;
         internal set => base.SelectedContent = value;
     }
     
+    /// <summary>
+    /// Template used to present <see cref="SelectedContent" />: the <c>ContentTemplate</c> of the selected tab
+    /// item, or <see cref="ContentTemplate" /> when the tab item has none. It is <see langword="null" /> when no
+    /// tab is selected.
+    /// </summary>
     public new IDataTemplate? SelectedContentTemplate
     {
         get => base.SelectedContentTemplate;
         internal set => base.SelectedContentTemplate = value;
     }
     
+    /// <summary>
+    /// Size grade of the tabs (<c>Large</c>, <c>Middle</c> or <c>Small</c>). The value is copied to every
+    /// <see cref="TabItem" />.
+    /// </summary>
     public SizeType SizeType
     {
         get => GetValue(SizeTypeProperty);
         set => SetValue(SizeTypeProperty, value);
     }
 
+    /// <summary>
+    /// Centers the tab strip header, which holds the extra contents and the tabs, along the edge of the control
+    /// instead of stretching it across the whole control. The default is <see langword="false" />.
+    /// </summary>
     public bool TabAlignmentCenter
     {
         get => GetValue(TabAlignmentCenterProperty);
         set => SetValue(TabAlignmentCenterProperty, value);
     }
 
+    /// <summary>
+    /// Enables reordering the tabs by dragging them with the left mouse button. The default is
+    /// <see langword="false" />.
+    /// </summary>
+    /// <remarks>
+    /// A drag starts only while the control and the pressed tab are enabled, the control has more than one tab
+    /// and the press did not start on a button inside the tab, such as its close button. The move is committed
+    /// when the button is released and reports <see cref="TabReordering" /> and <see cref="TabReordered" />.
+    /// </remarks>
     public bool IsTabReorderEnabled
     {
         get => GetValue(IsTabReorderEnabledProperty);
         set => SetValue(IsTabReorderEnabledProperty, value);
     }
 
+    /// <summary>
+    /// Pointer event that selects a tab: pressing the left button on it (<c>PointerPressed</c>) or releasing it
+    /// over the tab (<c>PointerReleased</c>, the default).
+    /// </summary>
+    /// <remarks>
+    /// With <c>PointerReleased</c>, the release must belong to the press that started on the same tab, must end
+    /// inside the tab, and neither the control nor the tab may be disabled.
+    /// </remarks>
     public TabActivationTrigger TabActivationTrigger
     {
         get => GetValue(TabActivationTriggerProperty);
         set => SetValue(TabActivationTriggerProperty, value);
     }
 
+    /// <summary>
+    /// Controls whether the selection indicator and the scroll that centers the selected tab
+    /// (<c>IsSelectedItemCentered</c>) animate when the selection changes. When <see langword="false" />, both
+    /// take their new position at once.
+    /// </summary>
+    /// <remarks>
+    /// The control theme sets the value from the <c>EnableMotion</c> token, so clearing a local value falls back
+    /// to that token. The value is also passed to every <see cref="TabItem" /> and to the tab scroll viewer.
+    /// </remarks>
     public new bool IsMotionEnabled
     {
         get => GetValue(IsMotionEnabledProperty);
         set => SetValue(IsMotionEnabledProperty, value);
     }
 
+    /// <summary>
+    /// Empty space between the start of the control and the tab strip header, which holds the extra contents and
+    /// the tabs. It pads the left edge for <see cref="Dock.Top" /> and <see cref="Dock.Bottom" />, and the top
+    /// edge for <see cref="Dock.Left" /> and <see cref="Dock.Right" />. The default is 0.
+    /// </summary>
     public double HeaderStartEdgePadding
     {
         get => GetValue(HeaderStartEdgePaddingProperty);
         set => SetValue(HeaderStartEdgePaddingProperty, value);
     }
     
+    /// <summary>
+    /// Empty space between the tab strip header, which holds the extra contents and the tabs, and the end of the
+    /// control. It pads the right edge for <see cref="Dock.Top" /> and <see cref="Dock.Bottom" />, and the bottom
+    /// edge for <see cref="Dock.Left" /> and <see cref="Dock.Right" />. The default is 0.
+    /// </summary>
     public double HeaderEndEdgePadding
     {
         get => GetValue(HeaderEndEdgePaddingProperty);
         set => SetValue(HeaderEndEdgePaddingProperty, value);
     }
     
+    /// <summary>
+    /// Empty space between the frame of the control and the content of the selected tab. It does not pad the tab
+    /// strip. The default is 0.
+    /// </summary>
     public Thickness ContentPadding
     {
         get => GetValue(ContentPaddingProperty);
         set => SetValue(ContentPaddingProperty, value);
     }
     
+    /// <summary>
+    /// Gap between the tab strip and the content of the selected tab, placed on the side of the tab strip that
+    /// faces the content. The default is 0; the <see cref="TabControl" /> and <see cref="CardTabControl" /> themes
+    /// set it from their token of the same name.
+    /// </summary>
     public double TabAndContentGutter
     {
         get => GetValue(TabAndContentGutterProperty);
         set => SetValue(TabAndContentGutterProperty, value);
     }
     
+    /// <summary>
+    /// Extra content placed at the start of the tab strip header, in front of the tab items: on the left of a
+    /// horizontal tab strip and at the top of a vertical one. The default is <see langword="null" />, which shows
+    /// nothing.
+    /// </summary>
     [DependsOn(nameof(HeaderStartExtraContentTemplate))]
     public new object? HeaderStartExtraContent
     {
@@ -262,12 +481,21 @@ public class BaseTabControl : AbstractTabControl, IMotionAwareControl, ITabOverf
         set => SetValue(HeaderStartExtraContentProperty, value);
     }
     
+    /// <summary>
+    /// Template used to build <see cref="HeaderStartExtraContent" />. The default is <see langword="null" />,
+    /// which leaves the choice of a template to the content presenter.
+    /// </summary>
     public new IDataTemplate? HeaderStartExtraContentTemplate
     {
         get => GetValue(HeaderStartExtraContentTemplateProperty);
         set => SetValue(HeaderStartExtraContentTemplateProperty, value);
     }
     
+    /// <summary>
+    /// Extra content placed at the end of the tab strip header, behind the tab items: on the right of a
+    /// horizontal tab strip and at the bottom of a vertical one. The default is <see langword="null" />, which
+    /// shows nothing.
+    /// </summary>
     [DependsOn(nameof(HeaderEndExtraContentTemplate))]
     public new object? HeaderEndExtraContent
     {
@@ -275,18 +503,40 @@ public class BaseTabControl : AbstractTabControl, IMotionAwareControl, ITabOverf
         set => SetValue(HeaderEndExtraContentProperty, value);
     }
     
+    /// <summary>
+    /// Template used to build <see cref="HeaderEndExtraContent" />. The default is <see langword="null" />,
+    /// which leaves the choice of a template to the content presenter.
+    /// </summary>
     public new IDataTemplate? HeaderEndExtraContentTemplate
     {
         get => GetValue(HeaderEndExtraContentTemplateProperty);
         set => SetValue(HeaderEndExtraContentTemplateProperty, value);
     }
     
+    /// <summary>
+    /// Writes <see cref="TabItem.IsClosable" /> onto every tab, so that each tab shows a close button whose click
+    /// calls <see cref="CloseTab" />. The default is <see langword="false" />.
+    /// </summary>
+    /// <remarks>
+    /// The value is written at template priority, so a value set on the tab or supplied by an
+    /// <see cref="ITabItemData" /> item wins. It is written when a tab is prepared and whenever this property
+    /// changes.
+    /// </remarks>
     public bool IsTabClosable
     {
         get => GetValue(IsTabClosableProperty);
         set => SetValue(IsTabClosableProperty, value);
     }
     
+    /// <summary>
+    /// Writes <see cref="TabItem.IsAutoHideCloseButton" /> onto every tab: while <see langword="true" />, the
+    /// close button of a closable tab stays transparent until the pointer is over the tab. The default is
+    /// <see langword="false" />.
+    /// </summary>
+    /// <remarks>
+    /// The value is written at template priority, so a value set on the tab or supplied by an
+    /// <see cref="ITabItemData" /> item wins. It has no effect on tabs that are not closable.
+    /// </remarks>
     public bool IsTabAutoHideCloseButton
     {
         get => GetValue(IsTabAutoHideCloseButtonProperty);
@@ -319,7 +569,18 @@ public class BaseTabControl : AbstractTabControl, IMotionAwareControl, ITabOverf
 
     private const int SeparatorResourceCount = 2;
     private OwnerTokenSet? _chromeTokens;
+    /// <summary>
+    /// The corner radius of the control, read from the token resource that <c>CardRadiusKeys</c> gives for
+    /// the current <c>SizeType</c>, or the default while <c>UseCardRadiusTokenResources</c> is
+    /// <see langword="false" /> or no keys are given. It changes only through the chrome style refresh, which
+    /// then calls <c>OnCardRadiusChanged</c>.
+    /// </summary>
     private protected CornerRadius CardRadius { get; private set; }
+    /// <summary>
+    /// The resource keys of the border-radius tokens watched while <c>UseCardRadiusTokenResources</c> is
+    /// <see langword="true" />, one for each size type in the order small, middle and large. The base property
+    /// returns <see langword="null" />, which keeps <c>CardRadius</c> at its default.
+    /// </summary>
     private protected virtual object[]? CardRadiusKeys => null;
 
     internal static readonly DirectProperty<BaseTabControl, Thickness> TabStripMarginProperty =
@@ -413,6 +674,22 @@ public class BaseTabControl : AbstractTabControl, IMotionAwareControl, ITabOverf
         AddHandler(PointerCaptureLostEvent, HandleTabReorderPointerCaptureLost, RoutingStrategies.Tunnel | RoutingStrategies.Bubble, handledEventsToo: true);
     }
     
+    /// <summary>
+    /// Closes a tab by removing its item from the items list. <see cref="Closing" /> is raised first, and a
+    /// handler cancels the close by setting <see cref="TabClosingEventArgs.Cancel" />; <see cref="Closed" /> is
+    /// raised after the item was removed.
+    /// </summary>
+    /// <param name="tabItem">
+    /// The tab container to close.
+    /// </param>
+    /// <returns>
+    /// <see langword="true" /> when the item was removed; <see langword="false" /> when the tab is not closable,
+    /// its item is not found in the items list, the list cannot be changed or the close was canceled.
+    /// </returns>
+    /// <remarks>
+    /// When the closed tab was selected, the tab before it is selected instead, or the tab after it when the
+    /// first tab is closed. Nothing is selected when the last tab is closed.
+    /// </remarks>
     public bool CloseTab(TabItem tabItem)
     {
         if (!tabItem.IsClosable)
@@ -485,6 +762,15 @@ public class BaseTabControl : AbstractTabControl, IMotionAwareControl, ITabOverf
         return previousIndex >= FirstItemIndex ? previousIndex : FirstItemIndex;
     }
     
+    /// <summary>
+    /// Resolves the template parts when the template is applied: the items presenter, the tab scroll viewer,
+    /// which then takes this control as its overflow owner, and the alignment wrapper that positions the
+    /// separator line. It then copies <see cref="TabStripPlacement" /> to the tabs and updates the tab strip
+    /// margin and the header padding. A pending tab activation and a running drag reorder are canceled first.
+    /// </summary>
+    /// <remarks>
+    /// An override must call the base method, and should do so before it looks up its own parts.
+    /// </remarks>
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         ClearPendingTabActivation();
@@ -519,6 +805,13 @@ public class BaseTabControl : AbstractTabControl, IMotionAwareControl, ITabOverf
         ConfigureEffectiveHeaderPadding();
     }
 
+    /// <summary>
+    /// Refreshes the subscription to the separator and card radius tokens and registers this control as the
+    /// overflow owner of its tab scroll viewer. The base method runs first.
+    /// </summary>
+    /// <remarks>
+    /// An override must call the base method.
+    /// </remarks>
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
@@ -526,6 +819,13 @@ public class BaseTabControl : AbstractTabControl, IMotionAwareControl, ITabOverf
         _tabReorderScrollViewer?.AttachOverflowOwner(this);
     }
 
+    /// <summary>
+    /// Disposes the token subscription, unregisters this control from its tab scroll viewer, and cancels a
+    /// pending tab activation and a running drag reorder without committing it. The base method runs last.
+    /// </summary>
+    /// <remarks>
+    /// An override must call the base method.
+    /// </remarks>
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         _chromeTokens?.Dispose();
@@ -545,6 +845,22 @@ public class BaseTabControl : AbstractTabControl, IMotionAwareControl, ITabOverf
         _tabReorderScrollViewer = null;
     }
     
+    /// <summary>
+    /// Decides whether a left button press or release on a tab selects the tab, following
+    /// <see cref="TabActivationTrigger" />.
+    /// </summary>
+    /// <param name="selectable">
+    /// The tab that received the pointer event.
+    /// </param>
+    /// <param name="eventArgs">
+    /// The pointer event.
+    /// </param>
+    /// <returns>
+    /// For a release: <see langword="true" /> only when the trigger is <c>PointerReleased</c>, the control and the
+    /// tab are enabled, and the release ends the press that started on the same tab inside its bounds. For a
+    /// press: the result of the base method when the trigger is <c>PointerPressed</c>, otherwise
+    /// <see langword="false" />.
+    /// </returns>
     protected override bool ShouldTriggerSelection(Visual selectable, PointerEventArgs eventArgs)
     {
         if (eventArgs.Properties.PointerUpdateKind == PointerUpdateKind.LeftButtonReleased)
@@ -560,6 +876,20 @@ public class BaseTabControl : AbstractTabControl, IMotionAwareControl, ITabOverf
                base.ShouldTriggerSelection(selectable, eventArgs);
     }
 
+    /// <summary>
+    /// Updates the selection for an input event on a tab container. A focus change that was not caused by
+    /// directional keys never selects the tab.
+    /// </summary>
+    /// <param name="container">
+    /// The tab container that raised the event.
+    /// </param>
+    /// <param name="eventArgs">
+    /// The input event.
+    /// </param>
+    /// <returns>
+    /// <see langword="false" /> for a <see cref="FocusChangedEventArgs" /> whose navigation method is not
+    /// <see cref="NavigationMethod.Directional" />; otherwise the result of the base method.
+    /// </returns>
     public override bool UpdateSelectionFromEvent(Control container, RoutedEventArgs eventArgs)
     {
         if (eventArgs is FocusChangedEventArgs { NavigationMethod: not NavigationMethod.Directional })
@@ -701,16 +1031,57 @@ public class BaseTabControl : AbstractTabControl, IMotionAwareControl, ITabOverf
         UpdateIconSlotReservation();
     }
     
+    /// <summary>
+    /// Creates the container for an item: always a new <see cref="TabItem" />.
+    /// </summary>
     protected override Control CreateContainerForItemOverride(object? item, int index, object? recycleKey)
     {
         return new TabItem();
     }
     
+    /// <summary>
+    /// Decides whether an item needs a container: an item that is not a <see cref="TabItem" /> does, an item that
+    /// already is one is its own container.
+    /// </summary>
+    /// <param name="item">
+    /// The item to present.
+    /// </param>
+    /// <param name="index">
+    /// The index of the item.
+    /// </param>
+    /// <param name="recycleKey">
+    /// Receives the key that a recycled container must match for this item.
+    /// </param>
+    /// <returns>
+    /// <see langword="true" /> when the item needs a container, otherwise <see langword="false" />.
+    /// </returns>
     protected override bool NeedsContainerOverride(object? item, int index, out object? recycleKey)
     {
         return NeedsContainer<TabItem>(item, out recycleKey);
     }
     
+    /// <summary>
+    /// Prepares a tab container for its item. It copies <see cref="TabStripPlacement" /> to the tab, binds
+    /// <see cref="SizeType" /> and <see cref="IsMotionEnabled" /> from this control, fills the tab from a
+    /// non-visual item and its <see cref="ITabItemData" /> values where the tab has no value of its own, and
+    /// updates the selected content when the tab is the selected one.
+    /// </summary>
+    /// <param name="container">
+    /// The <see cref="TabItem" /> container.
+    /// </param>
+    /// <param name="item">
+    /// The item the container presents.
+    /// </param>
+    /// <param name="index">
+    /// The index of the item.
+    /// </param>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// Thrown when <paramref name="container" /> is not a <see cref="TabItem" />.
+    /// </exception>
+    /// <remarks>
+    /// <see cref="PrepareTabItem" /> runs before <see cref="IsTabClosable" /> and
+    /// <see cref="IsTabAutoHideCloseButton" /> are written onto the tab at template priority.
+    /// </remarks>
     protected override void PrepareContainerForItemOverride(Control container, object? item, int index)
     {
         if (index == SelectedIndex)
@@ -774,6 +1145,10 @@ public class BaseTabControl : AbstractTabControl, IMotionAwareControl, ITabOverf
         }
     }
 
+    /// <summary>
+    /// Updates the reserved icon slot of the tabs once a container was prepared. On a vertical tab strip, every
+    /// tab reserves room for an icon as soon as one tab shows an icon.
+    /// </summary>
     protected override void ContainerForItemPreparedOverride(Control container, object? item, int index)
     {
         base.ContainerForItemPreparedOverride(container, item, index);
@@ -783,15 +1158,39 @@ public class BaseTabControl : AbstractTabControl, IMotionAwareControl, ITabOverf
         }
     }
 
+    /// <summary>
+    /// Called for a tab container after its values were filled from the item and before
+    /// <see cref="IsTabClosable" /> and <see cref="IsTabAutoHideCloseButton" /> are written onto it. The default
+    /// implementation does nothing.
+    /// </summary>
+    /// <param name="tabItem">
+    /// The prepared tab container.
+    /// </param>
+    /// <param name="item">
+    /// The item the container presents.
+    /// </param>
+    /// <param name="index">
+    /// The index of the item.
+    /// </param>
+    /// <remarks>
+    /// A value set here on the tab wins over those two control values, because they are written at template
+    /// priority. The base method need not be called.
+    /// </remarks>
     protected virtual void PrepareTabItem(TabItem tabItem, object? item, int index)
     {
     }
     
+    /// <inheritdoc />
     protected override void ContainerIndexChangedOverride(Control container, int oldIndex, int newIndex)
     {
         base.ContainerIndexChangedOverride(container, oldIndex, newIndex);
     }
     
+    /// <summary>
+    /// Clears a tab container that is no longer used for its item: it resets the reserved icon slot, disposes the
+    /// bindings this control created on the tab through <see cref="ReleaseTabItemOwnerBindings" />, and then
+    /// updates the reserved icon slot of all tabs and the selected content.
+    /// </summary>
     protected override void ClearContainerForItemOverride(Control element)
     {
         base.ClearContainerForItemOverride(element);
@@ -816,8 +1215,18 @@ public class BaseTabControl : AbstractTabControl, IMotionAwareControl, ITabOverf
         BindingOperations.GetBindingExpressionBase(tabItem, TabItem.ContentTemplateProperty)?.Dispose();
     }
     
+    /// <inheritdoc />
     protected override bool RegisterContentPresenter(ContentPresenter presenter) => base.RegisterContentPresenter(presenter);
 
+    /// <summary>
+    /// Reacts to property changes after the base method: it refreshes the token subscription, copies
+    /// <see cref="TabStripPlacement" /> to the tabs, updates the tab strip margin and the header padding,
+    /// forwards <c>TabOnceActiveElement</c> to the items panel, rewrites <see cref="IsTabClosable" /> and
+    /// <see cref="IsTabAutoHideCloseButton" /> on the tabs, and tells the overflow popup about selection changes.
+    /// </summary>
+    /// <remarks>
+    /// An override must call the base method.
+    /// </remarks>
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
@@ -928,6 +1337,12 @@ public class BaseTabControl : AbstractTabControl, IMotionAwareControl, ITabOverf
         }
     }
 
+    /// <summary>
+    /// Called right after <c>CardRadius</c> received a different corner radius. That happens when the chrome
+    /// style refreshes while <c>UseCardRadiusTokenResources</c> is <see langword="true" /> and
+    /// <c>CardRadiusKeys</c> is not <see langword="null" />: on a change of <c>SizeType</c>, when the token
+    /// subscription is rebuilt, and when a watched radius resource changes. The base method is empty.
+    /// </summary>
     private protected virtual void OnCardRadiusChanged()
     {
     }
@@ -1008,6 +1423,10 @@ public class BaseTabControl : AbstractTabControl, IMotionAwareControl, ITabOverf
         }
     }
 
+    /// <summary>
+    /// Draws the separator line along the side of the tab strip that faces the content, with the separator brush
+    /// and thickness read from the theme tokens. Nothing is drawn while the control has no items.
+    /// </summary>
     public override void Render(DrawingContext context)
     {
         if (Items.Count > 0)
@@ -1703,25 +2122,59 @@ public class BaseTabControl : AbstractTabControl, IMotionAwareControl, ITabOverf
 }
 
 
+/// <summary>
+/// Carries the data of the <see cref="BaseTabControl.Closing" /> event.
+/// </summary>
 public class TabClosingEventArgs : RoutedEventArgs
 {
+    /// <summary>
+    /// Creates the event data for a tab that is about to be closed.
+    /// </summary>
+    /// <param name="routedEvent">
+    /// The routed event to raise.
+    /// </param>
+    /// <param name="tabItem">
+    /// The tab that is about to be closed.
+    /// </param>
     public TabClosingEventArgs(RoutedEvent routedEvent, TabItem tabItem)
         : base(routedEvent)
     {
         TabItem = tabItem;
     }
     
+    /// <summary>
+    /// The tab that is about to be closed.
+    /// </summary>
     public TabItem TabItem { get; }
+    /// <summary>
+    /// Set to <see langword="true" /> to cancel the close and keep the tab. The default is
+    /// <see langword="false" />.
+    /// </summary>
     public bool Cancel { get; set; }
 }
 
+/// <summary>
+/// Carries the data of the <see cref="BaseTabControl.Closed" /> event.
+/// </summary>
 public class TabClosedEventArgs : RoutedEventArgs
 {
+    /// <summary>
+    /// Creates the event data for a tab that was closed.
+    /// </summary>
+    /// <param name="routedEvent">
+    /// The routed event to raise.
+    /// </param>
+    /// <param name="tabItem">
+    /// The tab that was closed.
+    /// </param>
     public TabClosedEventArgs(RoutedEvent routedEvent, TabItem tabItem)
         : base(routedEvent)
     {
         TabItem = tabItem;
     }
     
+    /// <summary>
+    /// The tab that was closed.
+    /// </summary>
     public TabItem TabItem { get; }
 }

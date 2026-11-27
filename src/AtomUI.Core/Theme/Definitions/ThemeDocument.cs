@@ -35,10 +35,14 @@ internal sealed class ControlThemeDocument
 
     public ThemeControlDocumentIdentity Identity { get; }
 
-    /// <summary>The appearance the control is fixed to; only allowed in the base section.</summary>
+    /// <summary>
+    /// The appearance the control is fixed to; only allowed in the base section.
+    /// </summary>
     public ThemeAppearance? Appearance { get; }
 
-    /// <summary>The density the control is fixed to; only allowed in the base section.</summary>
+    /// <summary>
+    /// The density the control is fixed to; only allowed in the base section.
+    /// </summary>
     public string? Density { get; }
 
     public IReadOnlyList<ThemeTokenDocument> Tokens { get; }
@@ -67,7 +71,9 @@ internal sealed class ThemeSectionDocument
     public bool IsEmpty => Tokens.Count == 0 && LanguageTokens.Count == 0 && Controls.Count == 0;
 }
 
-/// <summary>A <c>&lt;When&gt;</c> section: the condition attributes it was written with and its values.</summary>
+/// <summary>
+/// A <c>&lt;When&gt;</c> section: the condition attributes it was written with and its values.
+/// </summary>
 internal sealed class ThemeConditionDocument
 {
     internal ThemeConditionDocument(
@@ -96,7 +102,9 @@ internal sealed class ThemeConditionDocument
     public bool HasCondition => Style is not null || Appearance is not null || Density is not null || Idiom is not null;
 }
 
-/// <summary>A theme definition XML document (format v2, spec 7.2), before binding to the registry.</summary>
+/// <summary>
+/// A theme definition XML document in the v2 format, before binding to the registry.
+/// </summary>
 internal sealed class ThemeDocument
 {
     internal ThemeDocument(
@@ -124,22 +132,34 @@ internal sealed class ThemeDocument
     public string Id { get; }
     public string Name { get; }
 
-    /// <summary>The design language the theme belongs to.</summary>
+    /// <summary>
+    /// The design language the theme belongs to.
+    /// </summary>
     public string Language { get; }
 
-    /// <summary>The fixed style, or <see langword="null"/> when the theme leaves the style open.</summary>
+    /// <summary>
+    /// The fixed style, or <see langword="null" /> when the theme leaves the style open.
+    /// </summary>
     public string? Style { get; }
 
-    /// <summary>The fixed appearance, or <see langword="null"/> when the theme leaves it open.</summary>
+    /// <summary>
+    /// The fixed appearance, or <see langword="null" /> when the theme leaves it open.
+    /// </summary>
     public ThemeAppearance? Appearance { get; }
 
-    /// <summary>The fixed density, or <see langword="null"/> when the theme leaves it open.</summary>
+    /// <summary>
+    /// The fixed density, or <see langword="null" /> when the theme leaves it open.
+    /// </summary>
     public string? Density { get; }
 
-    /// <summary>The base section.</summary>
+    /// <summary>
+    /// The base section.
+    /// </summary>
     public ThemeSectionDocument Values { get; }
 
-    /// <summary>The condition sections, in document order.</summary>
+    /// <summary>
+    /// The condition sections, in document order.
+    /// </summary>
     public IReadOnlyList<ThemeConditionDocument> Conditions { get; }
 
     public ThemeSourceLocation Location { get; }

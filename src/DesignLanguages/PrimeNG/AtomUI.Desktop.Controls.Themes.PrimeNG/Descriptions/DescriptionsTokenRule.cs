@@ -4,7 +4,9 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 
-/// <summary>The PrimeNG view of <see cref="DescriptionsToken"/>.</summary>
+/// <summary>
+/// The PrimeNG view of <see cref="DescriptionsToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class DescriptionsTokenRule : IControlTokenRule<PrimeNGToken, DescriptionsToken>
 {
@@ -12,7 +14,8 @@ internal sealed class DescriptionsTokenRule : IControlTokenRule<PrimeNGToken, De
     {
         var token  = target.Own;
         var global = target.Global;
-        // PrimeNG: the control-global overrides, read by the formulas below.
+        // PrimeNG: the control-global overrides (ColorSplit, ColorBorderSecondary); the Descriptions theme reads only
+        // ColorSplit (BorderBrush), the formulas below neither.
         PrimeNGDescriptionsTokens.EvaluateGlobal(in context, global);
         token.LabelBg      = global.ColorFillAlter;
         token.LabelColor   = global.ColorTextTertiary;

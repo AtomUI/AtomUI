@@ -13,111 +13,213 @@ using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
 
+/// <summary>
+/// Two-part input for choosing a range of dates, or of dates with a time, in a calendar popup. Each endpoint is
+/// shown in its own input box and can also be typed. The endpoints of a range committed from the popup are
+/// ordered by date before they are written to <see cref="RangeStartSelectedDate" /> and
+/// <see cref="RangeEndSelectedDate" />.
+/// </summary>
 public partial class RangeDatePicker : RangeInfoPickerInput
 {
     #region 公共属性定义
     
+    /// <summary>
+    /// Identifies the <see cref="RangeStartSelectedDate" /> property.
+    /// </summary>
     public static readonly StyledProperty<DateTime?> RangeStartSelectedDateProperty =
         AvaloniaProperty.Register<RangeDatePicker, DateTime?>(nameof(RangeStartSelectedDate),
             defaultBindingMode: BindingMode.TwoWay,
             enableDataValidation: true);
     
+    /// <summary>
+    /// Identifies the <see cref="RangeEndSelectedDate" /> property.
+    /// </summary>
     public static readonly StyledProperty<DateTime?> RangeEndSelectedDateProperty =
         AvaloniaProperty.Register<RangeDatePicker, DateTime?>(nameof(RangeEndSelectedDate),
             defaultBindingMode: BindingMode.TwoWay,
             enableDataValidation: true);
     
+    /// <summary>
+    /// Identifies the <see cref="IsNeedConfirm" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsNeedConfirmProperty =
         AvaloniaProperty.Register<RangeDatePicker, bool>(nameof(IsNeedConfirm));
     
+    /// <summary>
+    /// Identifies the <see cref="IsShowNow" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsShowNowProperty =
         DatePicker.IsShowNowProperty.AddOwner<RangeDatePicker>();
     
+    /// <summary>
+    /// Identifies the <see cref="IsShowTime" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsShowTimeProperty =
         DatePicker.IsShowTimeProperty.AddOwner<RangeDatePicker>();
 
+    /// <summary>
+    /// Identifies the <see cref="ClockIdentifier" /> property.
+    /// </summary>
     public static readonly StyledProperty<ClockIdentifierType> ClockIdentifierProperty =
         DatePicker.ClockIdentifierProperty.AddOwner<RangeDatePicker>();
 
+    /// <summary>
+    /// Identifies the <see cref="Format" /> property.
+    /// </summary>
     public static readonly StyledProperty<string?> FormatProperty =
         DatePicker.FormatProperty.AddOwner<RangeDatePicker>();
 
+    /// <summary>
+    /// Identifies the <see cref="PickerMode" /> property.
+    /// </summary>
     public static readonly StyledProperty<DatePickerMode> PickerModeProperty =
         DatePicker.PickerModeProperty.AddOwner<RangeDatePicker>();
 
+    /// <summary>
+    /// Identifies the <see cref="PickerDisplayDate" /> property.
+    /// </summary>
     public static readonly StyledProperty<DateTime?> PickerDisplayDateProperty =
         DatePicker.PickerDisplayDateProperty.AddOwner<RangeDatePicker>();
 
+    /// <summary>
+    /// Identifies the <see cref="MinDate" /> property.
+    /// </summary>
     public static readonly StyledProperty<DateTime?> MinDateProperty =
         DatePicker.MinDateProperty.AddOwner<RangeDatePicker>();
 
+    /// <summary>
+    /// Identifies the <see cref="MaxDate" /> property.
+    /// </summary>
     public static readonly StyledProperty<DateTime?> MaxDateProperty =
         DatePicker.MaxDateProperty.AddOwner<RangeDatePicker>();
     
+    /// <summary>
+    /// Gets or sets the start of the selected range, or <see langword="null" /> while no start is chosen. The
+    /// first input box shows it formatted for display. Bindings to it are two-way by default.
+    /// </summary>
     public DateTime? RangeStartSelectedDate
     {
         get => GetValue(RangeStartSelectedDateProperty);
         set => SetValue(RangeStartSelectedDateProperty, value);
     }
 
+    /// <summary>
+    /// Gets or sets the end of the selected range, or <see langword="null" /> while no end is chosen. The
+    /// second input box shows it formatted for display. Bindings to it are two-way by default.
+    /// </summary>
     public DateTime? RangeEndSelectedDate
     {
         get => GetValue(RangeEndSelectedDateProperty);
         set => SetValue(RangeEndSelectedDateProperty, value);
     }
 
+    /// <summary>
+    /// Gets or sets the date and time that <see cref="Reset" /> restores for the start of the range. It is also
+    /// assigned to <see cref="RangeStartSelectedDate" /> when the control attaches to the logical tree and no
+    /// start is selected. <see cref="Clear" /> does not apply it.
+    /// </summary>
     public DateTime? RangeStartDefaultDate { get; set; }
 
+    /// <summary>
+    /// Gets or sets the date and time that <see cref="Reset" /> restores for the end of the range. It is also
+    /// assigned to <see cref="RangeEndSelectedDate" /> when the control attaches to the logical tree and no end
+    /// is selected. <see cref="Clear" /> does not apply it.
+    /// </summary>
     public DateTime? RangeEndDefaultDate { get; set; }
     
+    /// <summary>
+    /// Gets or sets whether endpoints picked in the panel become the value only after the user presses the confirm
+    /// button. The popup shows that button also when <see cref="IsShowTime" /> is <see langword="true" /> in
+    /// <see cref="DatePickerMode.Date" /> mode, and the endpoints then need confirmation regardless of this property.
+    /// Each endpoint is written as soon as it is confirmed, and a typed endpoint that is not confirmed is discarded
+    /// when the popup closes. Without the confirm button, a picked endpoint is committed at once, and a typed endpoint
+    /// that was accepted is kept when the popup closes unless the edit is canceled.
+    /// </summary>
     public bool IsNeedConfirm
     {
         get => GetValue(IsNeedConfirmProperty);
         set => SetValue(IsNeedConfirmProperty, value);
     }
     
+    /// <summary>
+    /// Gets or sets whether the popup shows the Today button, or the Now button when the time selection is visible.
+    /// The button appears only in <see cref="DatePickerMode.Date" /> mode.
+    /// </summary>
     public bool IsShowNow
     {
         get => GetValue(IsShowNowProperty);
         set => SetValue(IsShowNowProperty, value);
     }
     
+    /// <summary>
+    /// Gets or sets whether the user also selects a time for each endpoint. The time selection is shown only in
+    /// <see cref="DatePickerMode.Date" /> mode, and the default input format then includes the time.
+    /// </summary>
     public bool IsShowTime
     {
         get => GetValue(IsShowTimeProperty);
         set => SetValue(IsShowTimeProperty, value);
     }
     
+    /// <summary>
+    /// Gets or sets whether the time uses a 12-hour or a 24-hour clock. It selects the default time format and the
+    /// AM/PM designators, so it has an effect only when the input text shows a time.
+    /// </summary>
     public ClockIdentifierType ClockIdentifier
     {
         get => GetValue(ClockIdentifierProperty);
         set => SetValue(ClockIdentifierProperty, value);
     }
     
+    /// <summary>
+    /// Gets or sets the .NET date and time format string used to show both endpoints in the input boxes and to
+    /// parse typed text, which must match the displayed format in full. <see langword="null" /> selects a
+    /// built-in format for the <see cref="PickerMode" />. In <see cref="DatePickerMode.Date" /> mode it is
+    /// <c>yyyy-MM-dd</c>, plus the time when <see cref="IsShowTime" /> is <see langword="true" />. A string that
+    /// is not <see langword="null" /> is used as is.
+    /// </summary>
     public string? Format
     {
         get => GetValue(FormatProperty);
         set => SetValue(FormatProperty, value);
     }
 
+    /// <summary>
+    /// Gets or sets the unit of the selectable value: a day, a week, a month, a quarter or a year. The mode selects
+    /// the panel layout and, when <see cref="Format" /> is <see langword="null" />, the format of the input text.
+    /// </summary>
     public DatePickerMode PickerMode
     {
         get => GetValue(PickerModeProperty);
         set => SetValue(PickerModeProperty, value);
     }
 
+    /// <summary>
+    /// Gets or sets the date the calendar panel is positioned on when the popup opens.
+    /// </summary>
     public DateTime? PickerDisplayDate
     {
         get => GetValue(PickerDisplayDateProperty);
         set => SetValue(PickerDisplayDateProperty, value);
     }
 
+    /// <summary>
+    /// Gets or sets the earliest selectable date for both endpoints; the boundary date itself can be selected. The
+    /// bound is normalized to the unit of the <see cref="PickerMode" />. <see langword="null" /> leaves the
+    /// range open on this side, and a value later than <see cref="MaxDate" /> narrows the selectable range to
+    /// this single date.
+    /// </summary>
     public DateTime? MinDate
     {
         get => GetValue(MinDateProperty);
         set => SetValue(MinDateProperty, value);
     }
 
+    /// <summary>
+    /// Gets or sets the latest selectable date for both endpoints; the boundary date itself can be selected. The
+    /// bound is normalized to the unit of the <see cref="PickerMode" />. <see langword="null" /> leaves the
+    /// range open on this side, and an earlier <see cref="MinDate" /> narrows the selectable range to that date.
+    /// </summary>
     public DateTime? MaxDate
     {
         get => GetValue(MaxDateProperty);
@@ -214,6 +316,9 @@ public partial class RangeDatePicker : RangeInfoPickerInput
     private bool _isApplyingTypedText;
     private ILanguageManager? _languageManager;
 
+    /// <summary>
+    /// Calls the base method, then subscribes to language changes of the application and refreshes both input texts.
+    /// </summary>
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
@@ -226,6 +331,9 @@ public partial class RangeDatePicker : RangeInfoPickerInput
         RefreshRangeTexts();
     }
 
+    /// <summary>
+    /// Unsubscribes from language changes and calls the base method.
+    /// </summary>
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         if (_languageManager is not null)
@@ -254,6 +362,10 @@ public partial class RangeDatePicker : RangeInfoPickerInput
         RangeEndSelectedDateProperty.Changed.AddClassHandler<RangeDatePicker>((picker, args) => picker.HandleSelectedValueChanged(args));
     }
     
+    /// <summary>
+    /// Creates the <c>RangeDatePickerPresenter</c> shown in the popup and binds its endpoints and picker options
+    /// two-way to the properties of this control.
+    /// </summary>
     protected override Control CreatePickerPresenter()
     {
         var presenter = new RangeDatePickerPresenter();
@@ -272,6 +384,10 @@ public partial class RangeDatePicker : RangeInfoPickerInput
         return presenter;
     }
 
+    /// <summary>
+    /// Clears both endpoints and the input texts, drops any typed draft and closes the popup.
+    /// <see cref="RangeStartDefaultDate" /> and <see cref="RangeEndDefaultDate" /> are not applied.
+    /// </summary>
     public override void Clear()
     {
         // The values and the picker texts are cleared before the input boxes, so clearing the boxes is not taken for
@@ -284,12 +400,20 @@ public partial class RangeDatePicker : RangeInfoPickerInput
         ClosePickerFlyout();
     }
 
+    /// <summary>
+    /// Assigns <see cref="RangeStartDefaultDate" /> and <see cref="RangeEndDefaultDate" /> to the two endpoints. A
+    /// default of <see langword="null" /> clears its endpoint.
+    /// </summary>
     public void Reset()
     {
         RangeStartSelectedDate = RangeStartDefaultDate;
         RangeEndSelectedDate   = RangeEndDefaultDate;
     }
 
+    /// <summary>
+    /// Calls the base method, keeps the presenter created for the popup as the range presenter of the open
+    /// session and enables its repair of a reversed range.
+    /// </summary>
     protected override void NotifyPickerPresenterCreated(Control pickerPresenter)
     {
         base.NotifyPickerPresenterCreated(pickerPresenter);
@@ -297,12 +421,21 @@ public partial class RangeDatePicker : RangeInfoPickerInput
         _pickerPresenter?.NotifyRepairReverseRange(true);
     }
 
+    /// <summary>
+    /// Calls the base method and drops the stored range presenter.
+    /// </summary>
     protected override void NotifyPickerPresenterCleared(Control pickerPresenter)
     {
         base.NotifyPickerPresenterCleared(pickerPresenter);
         _pickerPresenter = null;
     }
 
+    /// <summary>
+    /// Calls the base method, then starts a popup session on the presenter. When no part is activated, the start
+    /// part is activated if no start is selected, else the end part if no end is selected, else the start part.
+    /// The presenter receives the selected endpoints, a reset pick and panel state, and this control subscribes
+    /// to its events.
+    /// </summary>
     protected override void NotifyPickerOpened()
     {
         base.NotifyPickerOpened();
@@ -337,6 +470,11 @@ public partial class RangeDatePicker : RangeInfoPickerInput
         }
     }
 
+    /// <summary>
+    /// Calls the base method, then unsubscribes from the events of the presenter and restores the committed range
+    /// in it. It leaves the choosing state, updates the pseudo-classes and refreshes the input texts and the
+    /// preferred width.
+    /// </summary>
     protected override void NotifyPickerClosed()
     {
         base.NotifyPickerClosed();
@@ -356,6 +494,12 @@ public partial class RangeDatePicker : RangeInfoPickerInput
         CalculatePreferredWidth();
     }
 
+    /// <summary>
+    /// Called by the base class before the popup flyout closes. Unless it is a lifecycle close, it commits the
+    /// range ordered by date, taking over a typed endpoint only when the text was accepted, the edit is not being
+    /// canceled and the presenter requires no confirmation. It then drops the typed draft and calls the base
+    /// method, which clears the activated part.
+    /// </summary>
     protected override void NotifyFlyoutAboutToClose(bool selectedIsValid)
     {
         // The base clears the activated part here, so a typed endpoint is settled while its part is still known:
@@ -477,8 +621,20 @@ public partial class RangeDatePicker : RangeInfoPickerInput
             formatInfo, out value);
     }
 
+    /// <summary>
+    /// Returns <see langword="true" /> while the activated input box shows text typed in this open session rather
+    /// than a formatted value. The base class then leaves navigation keys to the input instead of passing them to
+    /// <see cref="NotifyNavigationKey" />.
+    /// </summary>
     private protected override bool HasPendingInputText => _typedText is not null;
 
+    /// <summary>
+    /// Handles Enter while the popup is open. When the popup has no presenter, it closes the popup. A typed endpoint
+    /// that was not accepted keeps the popup open and is not submitted. Otherwise the candidate is submitted from the
+    /// keyboard, which needs no confirm button. When the input box shows a formatted value and the keyboard has moved
+    /// the panel focus, Enter activates the focused cell instead. The popup closes when the submission commits
+    /// nothing.
+    /// </summary>
     private protected override void NotifyInputSubmit()
     {
         if (_pickerPresenter is null)
@@ -505,9 +661,24 @@ public partial class RangeDatePicker : RangeInfoPickerInput
         }
     }
 
+    /// <summary>
+    /// Forwards a key pressed without modifiers to the panel of the popup. Returns <see langword="true" /> when the
+    /// panel consumed it for keyboard navigation, even when its focus did not move; keys pressed with a modifier and
+    /// keys the panel does not use are left to the input.
+    /// </summary>
     private protected override bool NotifyNavigationKey(Key key, KeyModifiers modifiers) =>
         modifiers == KeyModifiers.None && _pickerPresenter?.NavigateByKey(key) == true;
 
+    /// <summary>
+    /// Handles Tab in an input box while the popup is open and text is being typed. It submits the typed endpoint from
+    /// the keyboard, moves focus to the other input box and returns <see langword="true" /> only when Tab leads from
+    /// the start part to the end part, or with Shift from the end part to the start part. Otherwise it returns
+    /// <see langword="false" /> and leaves focus to the input: typed text that was not accepted is dropped, and
+    /// accepted text that is left behind is settled when the popup closes.
+    /// </summary>
+    /// <param name="isBackward">
+    /// <see langword="true" /> when Shift is held.
+    /// </param>
     private protected override bool NotifyInputTab(bool isBackward)
     {
         if (!IsPickerOpen || _pickerPresenter is null || _typedText is null)
@@ -539,6 +710,11 @@ public partial class RangeDatePicker : RangeInfoPickerInput
         return true;
     }
 
+    /// <summary>
+    /// Called when the edit of the open session is canceled, for example by Escape. The presenter reverts its
+    /// candidate to the committed range, the typed text is forgotten and both input boxes show the committed
+    /// endpoints again at once, so that nothing is left over when the popup is pinned open.
+    /// </summary>
     private protected override void NotifyEditCanceled()
     {
         _pickerPresenter?.CancelEdit();
@@ -570,6 +746,11 @@ public partial class RangeDatePicker : RangeInfoPickerInput
         CalculatePreferredWidth();
     }
     
+    /// <summary>
+    /// Formats an endpoint for its input box with <see cref="Format" />, <see cref="PickerMode" />,
+    /// <see cref="IsShowTime" /> and <see cref="ClockIdentifier" />, or returns an empty string when it is
+    /// <see langword="null" />.
+    /// </summary>
     protected string FormatDateTime(DateTime? dateTime)
     {
         if (dateTime is null)
@@ -647,7 +828,9 @@ public partial class RangeDatePicker : RangeInfoPickerInput
         ClosePickerFlyout();
     }
 
-    /// <summary>Writes both endpoints ordered by date; endpoints on the same day keep their clock order.</summary>
+    /// <summary>
+    /// Writes both endpoints ordered by date; endpoints on the same day keep their clock order.
+    /// </summary>
     private void CommitRange(DateTime? rangeStart, DateTime? rangeEnd)
     {
         if (rangeStart is not null && rangeEnd is not null && rangeEnd.Value.Date < rangeStart.Value.Date)
@@ -667,6 +850,12 @@ public partial class RangeDatePicker : RangeInfoPickerInput
         }
     }
 
+    /// <summary>
+    /// Calls the base method, then reacts to the changed property: a new activated part drops a typed draft and
+    /// notifies the part change; a property that affects the formatted input text or the preferred width
+    /// updates them; and while the control is attached to the visual tree a new endpoint updates its input text
+    /// and the preferred width.
+    /// </summary>
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
@@ -744,9 +933,10 @@ public partial class RangeDatePicker : RangeInfoPickerInput
     
     private void CalculatePreferredWidth()
     {
-        // 输入框预留宽度始终按内容基线计算：placeholder 与选中值共用同一宽度基线，
-        // 避免显式 Width / Stretch 场景下输入区宽度随文本内容跳变；控件总宽在显式
-        // Width / Stretch 时仍交给外部布局决定（PreferredWidth 置 0 关闭总宽放大）。
+        // The reserved width of each input box always follows a content baseline shared by the placeholder and the
+        // selected value. Under an explicit Width or Stretch the input area therefore keeps its width while the text
+        // changes, and the total control width is left to the outer layout: PreferredWidth is set to 0, which turns
+        // off the widening of the control.
         var formatInfo = DatePickerFormattingHelper.CreateFormatInfo(ClockIdentifier, AmText, PmText);
         var preferredInputWidth = DatePickerFormattingHelper.CalculateBoundedRangePreferredInputWidth(
             Format,
@@ -766,6 +956,10 @@ public partial class RangeDatePicker : RangeInfoPickerInput
             : preferredInputWidth;
     }
     
+    /// <summary>
+    /// Updates the range picker indicator for the new activated part and tells the presenter whether the start or
+    /// the end is being chosen. The base method is not called.
+    /// </summary>
     protected override void NotifyRangeActivatedPartChanged()
     {
         SetupPickerIndicatorPosition();
@@ -779,6 +973,10 @@ public partial class RangeDatePicker : RangeInfoPickerInput
         }
     }
 
+    /// <summary>
+    /// Arranges as the base method does and returns its size unchanged, then positions the range picker indicator
+    /// under the activated input box, inset by a tenth of the box width on each side.
+    /// </summary>
     protected override Size ArrangeOverride(Size finalSize)
     {
         var size = base.ArrangeOverride(finalSize);
@@ -801,11 +999,19 @@ public partial class RangeDatePicker : RangeInfoPickerInput
         return size;
     }
 
+    /// <summary>
+    /// Returns <see langword="true" /> when the start or the end of the range is selected, so the clear button is
+    /// also shown for a half-selected range.
+    /// </summary>
     protected override bool ShowClearButtonPredicate()
     {
         return RangeStartSelectedDate is not null || RangeEndSelectedDate is not null;
     }
     
+    /// <summary>
+    /// Measures as the base method does, then widens the result, but never below the width of the base method, so
+    /// that each input box can take <c>PreferredWidth</c> when it is positive.
+    /// </summary>
     protected override Size MeasureOverride(Size availableSize)
     {
         var size   = base.MeasureOverride(availableSize);
@@ -823,6 +1029,11 @@ public partial class RangeDatePicker : RangeInfoPickerInput
         return new Size(width, height);
     }
 
+    /// <summary>
+    /// Calls the base method, then assigns <see cref="RangeStartDefaultDate" /> and
+    /// <see cref="RangeEndDefaultDate" /> to the start and the end of the range while they are
+    /// <see langword="null" />.
+    /// </summary>
     protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
     {
         base.OnAttachedToLogicalTree(e);
@@ -837,6 +1048,10 @@ public partial class RangeDatePicker : RangeInfoPickerInput
         }
     }
 
+    /// <summary>
+    /// Calls the base method, then subscribes to text changes of the two input boxes, falls back to a calendar icon
+    /// when no info icon is set, and refreshes the input texts and the preferred width.
+    /// </summary>
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
@@ -850,6 +1065,10 @@ public partial class RangeDatePicker : RangeInfoPickerInput
     }
     
     #region 实现 FormItem 接口
+    /// <summary>
+    /// Assigns a value of type <c>(DateTime?, DateTime?)</c> to the start and the end of the range. A value of any
+    /// other type, including <see langword="null" />, leaves the range unchanged.
+    /// </summary>
     protected override void NotifySetFormValue(object? value)
     {
         var rangeValue = value as (DateTime?, DateTime?)?;
@@ -860,6 +1079,10 @@ public partial class RangeDatePicker : RangeInfoPickerInput
         }
     }
 
+    /// <summary>
+    /// Returns the start and the end of the range as a <c>(DateTime?, DateTime?)</c> tuple, or
+    /// <see langword="null" /> when either endpoint is <see langword="null" />.
+    /// </summary>
     protected override object? NotifyGetFormValue()
     {
         if (RangeStartSelectedDate == null || RangeEndSelectedDate == null)
@@ -869,6 +1092,9 @@ public partial class RangeDatePicker : RangeInfoPickerInput
         return (RangeStartSelectedDate, RangeEndSelectedDate);
     }
 
+    /// <summary>
+    /// Clears the start and the end of the range.
+    /// </summary>
     protected override void NotifyClearFormValue()
     {
         RangeStartSelectedDate = null;

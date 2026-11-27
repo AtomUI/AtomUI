@@ -78,7 +78,7 @@
                                    InitialDeferredLoadItemCount="4"
                                    DeferredLoadBatchSize="2"
                                    ContentMargin="28,10,28,28">
-                <!-- 1. 基本使用 -->
+                <!-- 1. Basic usage -->
                 <gallery:ShowCaseItem Title="{gallery:AutoCompleteShowCaseLangResource BasicTitle}"
                                       Description="{gallery:AutoCompleteShowCaseLangResource BasicDescription}"
                                       IsDeferredContentEnabled="True">
@@ -98,7 +98,7 @@
                     </gallery:ShowCaseItem.DeferredContentTemplate>
                 </gallery:ShowCaseItem>
 
-                <!-- 2. 自定义选项 -->
+                <!-- 2. Custom options -->
                 <gallery:ShowCaseItem Title="{gallery:AutoCompleteShowCaseLangResource CustomOptionsTitle}"
                                       Description="{gallery:AutoCompleteShowCaseLangResource CustomOptionsDescription}"
                                       IsDeferredContentEnabled="True">
@@ -112,7 +112,7 @@
                     </gallery:ShowCaseItem.DeferredContentTemplate>
                 </gallery:ShowCaseItem>
 
-                <!-- 3. 自定义输入组件 -->
+                <!-- 3. Custom input component -->
                 <gallery:ShowCaseItem Title="{gallery:AutoCompleteShowCaseLangResource CustomInputTitle}"
                                       Description="{gallery:AutoCompleteShowCaseLangResource CustomInputDescription}"
                                       IsDeferredContentEnabled="True">
@@ -127,7 +127,7 @@
                     </gallery:ShowCaseItem.DeferredContentTemplate>
                 </gallery:ShowCaseItem>
 
-                <!-- 4. 不区分大小写 -->
+                <!-- 4. Case insensitive -->
                 <gallery:ShowCaseItem Title="{gallery:AutoCompleteShowCaseLangResource NonCaseSensitiveTitle}"
                                       Description="{gallery:AutoCompleteShowCaseLangResource NonCaseSensitiveDescription}"
                                       IsDeferredContentEnabled="True">
@@ -142,7 +142,7 @@
                     </gallery:ShowCaseItem.DeferredContentTemplate>
                 </gallery:ShowCaseItem>
 
-                <!-- 5. 查询模式 - 确定类目 -->
+                <!-- 5. Search mode - certain category -->
                 <gallery:ShowCaseItem Title="{gallery:AutoCompleteShowCaseLangResource CertainCategoryTitle}"
                                       Description="{gallery:AutoCompleteShowCaseLangResource CertainCategoryDescription}"
                                       IsDeferredContentEnabled="True">
@@ -169,7 +169,7 @@
                                 <atom:AutoCompleteSearchEdit.OptionTemplate>
                                     <DataTemplate x:DataType="vm:CategoryAutoCompleteOption">
                                         <Panel>
-                                            <!-- 类目标题行 -->
+                                            <!-- Category title row -->
                                             <Border Classes="group-header"
                                                     IsVisible="{Binding IsGroupHeader}"
                                                     Padding="0,8,0,8"
@@ -185,7 +185,7 @@
                                                                Foreground="{atom:SharedTokenResource ColorPrimary}" />
                                                 </Grid>
                                             </Border>
-                                            <!-- 类目条目行 -->
+                                            <!-- Category item row -->
                                             <Grid ColumnDefinitions="*,Auto"
                                                   Margin="16,0,0,0"
                                                   IsVisible="{Binding IsGroupItem}">
@@ -207,7 +207,7 @@
                     </gallery:ShowCaseItem.DeferredContentTemplate>
                 </gallery:ShowCaseItem>
 
-                <!-- 6. 查询模式 - 不确定类目 -->
+                <!-- 6. Search mode - uncertain category -->
                 <gallery:ShowCaseItem Title="{gallery:AutoCompleteShowCaseLangResource UncertainCategoryTitle}"
                                       Description="{gallery:AutoCompleteShowCaseLangResource UncertainCategoryDescription}"
                                       IsDeferredContentEnabled="True">
@@ -237,7 +237,7 @@
                     </gallery:ShowCaseItem.DeferredContentTemplate>
                 </gallery:ShowCaseItem>
 
-                <!-- 7. 自定义状态 -->
+                <!-- 7. Custom status -->
                 <gallery:ShowCaseItem Title="{gallery:AutoCompleteShowCaseLangResource StatusTitle}"
                                       Description="{gallery:AutoCompleteShowCaseLangResource StatusDescription}"
                                       IsDeferredContentEnabled="True">
@@ -257,7 +257,7 @@
                     </gallery:ShowCaseItem.DeferredContentTemplate>
                 </gallery:ShowCaseItem>
 
-                <!-- 8. 多种形态 -->
+                <!-- 8. Variants -->
                 <gallery:ShowCaseItem Title="{gallery:AutoCompleteShowCaseLangResource VariantTitle}"
                                       Description="{gallery:AutoCompleteShowCaseLangResource VariantDescription}"
                                       IsDeferredContentEnabled="True">
@@ -289,7 +289,7 @@
                     </gallery:ShowCaseItem.DeferredContentTemplate>
                 </gallery:ShowCaseItem>
 
-                <!-- 9. 自定义清除按钮 -->
+                <!-- 9. Custom clear button -->
                 <gallery:ShowCaseItem Title="{gallery:AutoCompleteShowCaseLangResource AllowClearTitle}"
                                       Description="{gallery:AutoCompleteShowCaseLangResource AllowClearDescription}"
                                       IsDeferredContentEnabled="True">
@@ -311,7 +311,7 @@
                     </gallery:ShowCaseItem.DeferredContentTemplate>
                 </gallery:ShowCaseItem>
 
-                <!-- 10. 自定义语义结构的样式 -->
+                <!-- 10. Styles for the custom semantic structure -->
                 <gallery:ShowCaseItem Title="{gallery:AutoCompleteShowCaseLangResource StyleClassTitle}"
                                       Description="{gallery:AutoCompleteShowCaseLangResource StyleClassDescription}"
                                       SourceKey="auto-complete-semantic-part"

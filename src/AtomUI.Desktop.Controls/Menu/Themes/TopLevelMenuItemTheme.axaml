@@ -17,8 +17,10 @@
                             VerticalAlignment="Center">
                         <Grid>
                             <Grid.ColumnDefinitions>
-                                <!-- 菜单栏各项按自身内容排布，不做跨项图标列对齐：不参与 SharedSizeGroup，
-                                     否则无图标项会被迫让出图标列宽，产生幽灵间距。 -->
+                                <!-- Each menu bar item is laid out by its own content, without aligning an icon column
+                                across items: it takes no part in SharedSizeGroup, otherwise items without an icon
+                                would be forced to reserve the icon column width and leave a ghost gap.
+                                -->
                                 <ColumnDefinition Width="Auto" />
                                 <ColumnDefinition Width="*" />
                             </Grid.ColumnDefinitions>
@@ -178,9 +180,11 @@
             </Style>
         </Style>
 
-        <!-- 菜单栏一级项的图标必须与弹层内菜单项同样显式定尺寸：IconPresenter 自身不测量图标，
-             缺少尺寸时图标渲染为 0x0，而图标与文字的间距仍会占位，菜单栏文字被无谓右移。
-             图标为空时由 IsVisible 折叠，间距随节点一起消失。 -->
+        <!-- The icon of a first-level menu bar item must be sized explicitly, like the icons of the menu items inside
+        popups: IconPresenter does not measure the icon itself, and without a size the icon renders as 0x0 while
+        the gap between icon and text still takes space, pushing the menu bar text to the right for nothing. When
+        the icon is empty it collapses through IsVisible and the gap disappears with the node.
+        -->
         <Setter Property="IconMarginInlineEnd" Value="{CompiledBinding $self.(atom:MenuPopupScrollHost.ItemIconEndMargin)}" />
         <Style Selector="^ /template/ atom|IconPresenter#ItemIconPresenter">
             <Setter Property="Width" Value="{CompiledBinding $self.(atom:MenuPopupScrollHost.ItemIconSize)}" />

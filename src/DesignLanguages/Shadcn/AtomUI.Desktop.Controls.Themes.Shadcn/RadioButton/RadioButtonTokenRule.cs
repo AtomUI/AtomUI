@@ -4,7 +4,9 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls.Themes.Shadcn;
 
-/// <summary>The shadcn view of <see cref="RadioButtonToken"/>.</summary>
+/// <summary>
+/// The shadcn view of <see cref="RadioButtonToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class RadioButtonTokenRule : IControlTokenRule<ShadcnToken, RadioButtonToken>
 {
@@ -17,11 +19,12 @@ internal sealed class RadioButtonTokenRule : IControlTokenRule<ShadcnToken, Radi
         var colorPrimary     = global.ColorPrimary;
         var colorWhite       = global.ColorWhite;
 
-        var dotPadding = 4; // 魔术值，需要看有没有好办法消除
+        var dotPadding = 4; // Magic value; see whether there is a good way to remove it.
         var radioSize  = fontSizeLG;
 
         var radioDotSize = radioSize - (dotPadding + lineWidth) * 2;
 
+        // Sizes and colors keep the Ant formula; the only registry radio-group value merged is the dark selected dot.
         token.DotPadding       = dotPadding;
         token.RadioSize        = radioSize;
         token.DotSize          = radioDotSize;

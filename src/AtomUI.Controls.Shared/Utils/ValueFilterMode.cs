@@ -1,9 +1,14 @@
 namespace AtomUI.Controls.Utils;
 
+/// <summary>
+/// Names the built-in matching rules of an <see cref="IValueFilter" />. A rule combines the relation to the filter
+/// text (starts with, contains or equals) with the comparison (culture-sensitive or ordinal, case-sensitive or not).
+/// </summary>
 public enum ValueFilterMode
 {
     /// <summary>
-    /// Specifies that no filter is used. All items are returned.
+    /// No built-in filter: <see cref="ValueFilterFactory.BuildFilter" /> returns <see langword="null" />, and the
+    /// control decides for itself how items are matched without a filter.
     /// </summary>
     None = 0,
     

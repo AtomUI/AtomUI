@@ -83,10 +83,12 @@
                 <Setter Property="CornerRadius"
                         Value="{atom:NavMenuTokenResource HorizontalItemBorderRadius}" />
 
-                <!-- 水平顶层项的垂直 Padding 必须为 0（浅深一致）：文字靠 HorizontalLineHeight
-                     撑满整项高度实现 CSS line-height 式居中；若继承垂直菜单的
-                     ItemContentPadding 上下内边距，文字视口矮于行盒，字形贴行盒底部渲染，
-                     视觉偏下（此前深色分支漏掉重置即为此缺陷）。 -->
+                <!-- The vertical Padding of a horizontal top-level item must be 0 in every appearance: the text is
+                centered the CSS line-height way by filling the whole item height through HorizontalLineHeight.
+                With the vertical ItemContentPadding inherited from the vertical menu, the text viewport is shorter
+                than the line box, the glyphs render at the bottom of the line box, and the text looks too low (the
+                dark branch missed this reset before).
+                -->
                 <Setter Property="Padding" Value="0" />
 
                 <!-- antd horizontal menu: hover / open use the hover background, the selected item its own background

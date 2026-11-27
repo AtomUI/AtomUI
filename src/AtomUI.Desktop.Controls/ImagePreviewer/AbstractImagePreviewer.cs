@@ -20,155 +20,275 @@ using Avalonia.Metadata;
 
 namespace AtomUI.Desktop.Controls;
 
+/// <summary>
+/// Base class of controls that show the images of <see cref="ItemsSource" /> and open a full preview of them.
+/// The preview opens in a <see cref="ImagePreviewerDialog" /> window, or in an overlay of the current window
+/// when the platform has no native windows. <see cref="ImagePreviewer" /> shows a single cover while closed,
+/// <see cref="ImageGroupPreviewer" /> shows every image as a cover.
+/// </summary>
 public abstract class AbstractImagePreviewer : TemplatedControl,
                                                IMotionAwareControl,
                                                ISemanticPartCrossRootProvider
 {
     #region 公共属性定义
 
+    /// <summary>
+    /// Identifies the <see cref="ItemsSource" /> property.
+    /// </summary>
     public static readonly StyledProperty<IEnumerable<ImagePreviewItem>?> ItemsSourceProperty =
         AvaloniaProperty.Register<AbstractImagePreviewer, IEnumerable<ImagePreviewItem>?>(nameof(ItemsSource));
 
+    /// <summary>
+    /// Identifies the <see cref="PreviewTitle" /> property.
+    /// </summary>
     public static readonly StyledProperty<string?> PreviewTitleProperty =
         AvaloniaProperty.Register<AbstractImagePreviewer, string?>(nameof(PreviewTitle));
 
+    /// <summary>
+    /// Identifies the <see cref="PreviewTitleIcon" /> property.
+    /// </summary>
     public static readonly StyledProperty<PathIcon?> PreviewTitleIconProperty =
         AvaloniaProperty.Register<AbstractImagePreviewer, PathIcon?>(nameof(PreviewTitleIcon));
 
+    /// <summary>
+    /// Identifies the <see cref="PreviewTitleResolver" /> property.
+    /// </summary>
     public static readonly StyledProperty<IImagePreviewTitleResolver?> PreviewTitleResolverProperty =
         AvaloniaProperty.Register<AbstractImagePreviewer, IImagePreviewTitleResolver?>(
             nameof(PreviewTitleResolver),
             DefaultImagePreviewTitleResolver.Instance);
 
+    /// <summary>
+    /// Identifies the <see cref="LoadingContent" /> property.
+    /// </summary>
     public static readonly StyledProperty<object?> LoadingContentProperty =
         AvaloniaProperty.Register<AbstractImagePreviewer, object?>(nameof(LoadingContent));
 
+    /// <summary>
+    /// Identifies the <see cref="LoadingContentTemplate" /> property.
+    /// </summary>
     public static readonly StyledProperty<IDataTemplate?> LoadingContentTemplateProperty =
         AvaloniaProperty.Register<AbstractImagePreviewer, IDataTemplate?>(nameof(LoadingContentTemplate));
 
+    /// <summary>
+    /// Identifies the <see cref="ErrorContent" /> property.
+    /// </summary>
     public static readonly StyledProperty<object?> ErrorContentProperty =
         AvaloniaProperty.Register<AbstractImagePreviewer, object?>(nameof(ErrorContent));
 
+    /// <summary>
+    /// Identifies the <see cref="ErrorContentTemplate" /> property.
+    /// </summary>
     public static readonly StyledProperty<IDataTemplate?> ErrorContentTemplateProperty =
         AvaloniaProperty.Register<AbstractImagePreviewer, IDataTemplate?>(nameof(ErrorContentTemplate));
 
+    /// <summary>
+    /// Identifies the <see cref="IsOpen" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsOpenProperty =
         AvaloniaProperty.Register<AbstractImagePreviewer, bool>(
             nameof(IsOpen),
             defaultBindingMode: BindingMode.TwoWay);
 
+    /// <summary>
+    /// Identifies the <see cref="IsMotionEnabled" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<AbstractImagePreviewer>();
 
+    /// <summary>
+    /// Identifies the <see cref="CoverWidth" /> property.
+    /// </summary>
     public static readonly StyledProperty<double> CoverWidthProperty =
         AvaloniaProperty.Register<AbstractImagePreviewer, double>(nameof(CoverWidth), double.NaN);
 
+    /// <summary>
+    /// Identifies the <see cref="CoverHeight" /> property.
+    /// </summary>
     public static readonly StyledProperty<double> CoverHeightProperty =
         AvaloniaProperty.Register<AbstractImagePreviewer, double>(nameof(CoverHeight), double.NaN);
 
+    /// <summary>
+    /// Identifies the <see cref="CurrentIndex" /> property.
+    /// </summary>
     public static readonly StyledProperty<int> CurrentIndexProperty =
         AvaloniaProperty.Register<AbstractImagePreviewer, int>(
             nameof(CurrentIndex),
             0,
             defaultBindingMode: BindingMode.TwoWay);
 
+    /// <summary>
+    /// Identifies the <see cref="CoverIndex" /> property.
+    /// </summary>
     public static readonly StyledProperty<int> CoverIndexProperty =
         AvaloniaProperty.Register<AbstractImagePreviewer, int>(
             nameof(CoverIndex),
             0,
             coerce: CoerceNonNegativeValue);
 
+    /// <summary>
+    /// Identifies the <see cref="PreloadCount" /> property.
+    /// </summary>
     public static readonly StyledProperty<int> PreloadCountProperty =
         AvaloniaProperty.Register<AbstractImagePreviewer, int>(
             nameof(PreloadCount),
             1,
             coerce: CoerceNonNegativeValue);
 
+    /// <summary>
+    /// Identifies the <see cref="ImageSwitchMode" /> property.
+    /// </summary>
     public static readonly StyledProperty<ImageSwitchMode> ImageSwitchModeProperty =
         AvaloniaProperty.Register<AbstractImagePreviewer, ImageSwitchMode>(
             nameof(ImageSwitchMode),
             ImageSwitchMode.Immediate);
 
+    /// <summary>
+    /// Identifies the <see cref="CurrentItem" /> property.
+    /// </summary>
     public static readonly DirectProperty<AbstractImagePreviewer, ImagePreviewItem?> CurrentItemProperty =
         AvaloniaProperty.RegisterDirect<AbstractImagePreviewer, ImagePreviewItem?>(
             nameof(CurrentItem),
             control => control.CurrentItem);
 
+    /// <summary>
+    /// Identifies the <see cref="CurrentLoadState" /> property.
+    /// </summary>
     public static readonly DirectProperty<AbstractImagePreviewer, ImageLoadState> CurrentLoadStateProperty =
         AvaloniaProperty.RegisterDirect<AbstractImagePreviewer, ImageLoadState>(
             nameof(CurrentLoadState),
             control => control.CurrentLoadState);
 
+    /// <summary>
+    /// Identifies the <see cref="CurrentLoadError" /> property.
+    /// </summary>
     public static readonly DirectProperty<AbstractImagePreviewer, ImageLoadError?> CurrentLoadErrorProperty =
         AvaloniaProperty.RegisterDirect<AbstractImagePreviewer, ImageLoadError?>(
             nameof(CurrentLoadError),
             control => control.CurrentLoadError);
 
+    /// <summary>
+    /// Identifies the <see cref="CurrentLoadProgress" /> property.
+    /// </summary>
     public static readonly DirectProperty<AbstractImagePreviewer, ImageLoadProgress?> CurrentLoadProgressProperty =
         AvaloniaProperty.RegisterDirect<AbstractImagePreviewer, ImageLoadProgress?>(
             nameof(CurrentLoadProgress),
             control => control.CurrentLoadProgress);
 
+    /// <summary>
+    /// Identifies the <see cref="IsCurrentLoading" /> property.
+    /// </summary>
     public static readonly DirectProperty<AbstractImagePreviewer, bool> IsCurrentLoadingProperty =
         AvaloniaProperty.RegisterDirect<AbstractImagePreviewer, bool>(
             nameof(IsCurrentLoading),
             control => control.IsCurrentLoading);
 
+    /// <summary>
+    /// Identifies the <see cref="IsCurrentLoaded" /> property.
+    /// </summary>
     public static readonly DirectProperty<AbstractImagePreviewer, bool> IsCurrentLoadedProperty =
         AvaloniaProperty.RegisterDirect<AbstractImagePreviewer, bool>(
             nameof(IsCurrentLoaded),
             control => control.IsCurrentLoaded);
 
+    /// <summary>
+    /// Identifies the <see cref="IsCurrentFailed" /> property.
+    /// </summary>
     public static readonly DirectProperty<AbstractImagePreviewer, bool> IsCurrentFailedProperty =
         AvaloniaProperty.RegisterDirect<AbstractImagePreviewer, bool>(
             nameof(IsCurrentFailed),
             control => control.IsCurrentFailed);
 
+    /// <summary>
+    /// Identifies the <see cref="IsImageMovable" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsImageMovableProperty =
         AvaloniaProperty.Register<AbstractImagePreviewer, bool>(nameof(IsImageMovable), true);
 
+    /// <summary>
+    /// Identifies the <see cref="ImageScaleStep" /> property.
+    /// </summary>
     public static readonly StyledProperty<double> ImageScaleStepProperty =
         AvaloniaProperty.Register<AbstractImagePreviewer, double>(nameof(ImageScaleStep), 0.5);
 
+    /// <summary>
+    /// Identifies the <see cref="ImageMinScale" /> property.
+    /// </summary>
     public static readonly StyledProperty<double> ImageMinScaleProperty =
         AvaloniaProperty.Register<AbstractImagePreviewer, double>(nameof(ImageMinScale), 1.0);
 
+    /// <summary>
+    /// Identifies the <see cref="ImageMaxScale" /> property.
+    /// </summary>
     public static readonly StyledProperty<double> ImageMaxScaleProperty =
         AvaloniaProperty.Register<AbstractImagePreviewer, double>(nameof(ImageMaxScale), 50.0);
 
+    /// <summary>
+    /// Identifies the <see cref="IsWheelZoomEnabled" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsWheelZoomEnabledProperty =
         AvaloniaProperty.Register<AbstractImagePreviewer, bool>(nameof(IsWheelZoomEnabled), true);
 
+    /// <summary>
+    /// Identifies the <see cref="IsDialogModal" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsDialogModalProperty =
         AvaloniaProperty.Register<AbstractImagePreviewer, bool>(nameof (IsDialogModal), false);
 
+    /// <summary>
+    /// Identifies the <see cref="IsDialogTopmost" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsDialogTopmostProperty =
         AvaloniaProperty.Register<AbstractImagePreviewer, bool>(nameof(IsDialogTopmost));
 
+    /// <summary>
+    /// Gets or sets the images to preview. Null entries are skipped. When the control is attached, a source that
+    /// implements <see cref="INotifyCollectionChanged" /> is followed: add, remove, replace and single-item move
+    /// notifications update the covers, and the loaded images of items that stay are kept. <see langword="null" />
+    /// or an empty collection leaves nothing to preview, and the preview does not open.
+    /// </summary>
     public IEnumerable<ImagePreviewItem>? ItemsSource
     {
         get => GetValue(ItemsSourceProperty);
         set => SetValue(ItemsSourceProperty, value);
     }
 
+    /// <summary>
+    /// Gets or sets the fixed title of the native preview window. A non-blank value wins over the title of the
+    /// current item and over <see cref="PreviewTitleResolver" />. When it is <see langword="null" /> or blank, the
+    /// title comes from the current item. The overlay host has no title and ignores this value.
+    /// </summary>
     public string? PreviewTitle
     {
         get => GetValue(PreviewTitleProperty);
         set => SetValue(PreviewTitleProperty, value);
     }
 
+    /// <summary>
+    /// Gets or sets the icon of the native preview window's title, relayed to
+    /// <see cref="ImagePreviewerDialog.TitleIcon" />. The overlay host has no title and ignores this value.
+    /// </summary>
     public PathIcon? PreviewTitleIcon
     {
         get => GetValue(PreviewTitleIconProperty);
         set => SetValue(PreviewTitleIconProperty, value);
     }
 
+    /// <summary>
+    /// Gets or sets the object that derives the title of the native preview window from the current item. It is
+    /// consulted when <see cref="PreviewTitle" /> is blank and the item has no title of its own. The default is
+    /// <see cref="DefaultImagePreviewTitleResolver.Instance" />; <see langword="null" /> turns the derivation off.
+    /// </summary>
     public IImagePreviewTitleResolver? PreviewTitleResolver
     {
         get => GetValue(PreviewTitleResolverProperty);
         set => SetValue(PreviewTitleResolverProperty, value);
     }
 
+    /// <summary>
+    /// Gets or sets the content shown in place of the image while the image is loading, on the cover and in the open
+    /// preview. <see langword="null" /> shows the built-in loading indicator.
+    /// </summary>
     [DependsOn(nameof(LoadingContentTemplate))]
     public object? LoadingContent
     {
@@ -176,12 +296,20 @@ public abstract class AbstractImagePreviewer : TemplatedControl,
         set => SetValue(LoadingContentProperty, value);
     }
 
+    /// <summary>
+    /// Gets or sets the template that presents <see cref="LoadingContent" />. When <see langword="null" />, the
+    /// content is presented by the default DataTemplate lookup.
+    /// </summary>
     public IDataTemplate? LoadingContentTemplate
     {
         get => GetValue(LoadingContentTemplateProperty);
         set => SetValue(LoadingContentTemplateProperty, value);
     }
 
+    /// <summary>
+    /// Gets or sets the content shown in place of the image when the image failed to load, on the cover and in the
+    /// open preview. <see langword="null" /> shows the built-in error indicator.
+    /// </summary>
     [DependsOn(nameof(ErrorContentTemplate))]
     public object? ErrorContent
     {
@@ -189,54 +317,102 @@ public abstract class AbstractImagePreviewer : TemplatedControl,
         set => SetValue(ErrorContentProperty, value);
     }
 
+    /// <summary>
+    /// Gets or sets the template that presents <see cref="ErrorContent" />. When <see langword="null" />, the
+    /// content is presented by the default DataTemplate lookup.
+    /// </summary>
     public IDataTemplate? ErrorContentTemplate
     {
         get => GetValue(ErrorContentTemplateProperty);
         set => SetValue(ErrorContentTemplateProperty, value);
     }
 
+    /// <summary>
+    /// Gets or sets whether the preview is open. Setting <see langword="true" /> opens it and setting
+    /// <see langword="false" /> closes it. The control updates the value itself while opening and closing; the
+    /// default binding mode is two way, so a binding follows the actual state. It is <see langword="true" /> once
+    /// the preview is shown, and stays so when <see cref="DialogClosing" /> cancels the close.
+    /// </summary>
     public bool IsOpen
     {
         get => GetValue(IsOpenProperty);
         set => SetValue(IsOpenProperty, value);
     }
 
+    /// <summary>
+    /// Gets or sets whether the open preview animates. The value is relayed to the preview host, which uses it for
+    /// the transitions of the image viewer and the preview title bar. Without a local value the theme decides:
+    /// <see cref="ImageGroupPreviewer" /> takes it from its <c>EnableMotion</c> token, <see cref="ImagePreviewer" />
+    /// from <c>ImageViewer.DefaultMotionEnabled</c>.
+    /// </summary>
     public bool IsMotionEnabled
     {
         get => GetValue(IsMotionEnabledProperty);
         set => SetValue(IsMotionEnabledProperty, value);
     }
 
+    /// <summary>
+    /// Gets or sets the width of the cover shown while the preview is closed, in logical pixels. It also determines
+    /// the width the cover bitmap is decoded at. <see cref="double.NaN" /> (the default) lets the cover take its
+    /// size from the control. <see cref="ImageGroupPreviewer" /> takes the value from
+    /// <c>ImageViewer.CoverImageSize</c> when it is not set.
+    /// </summary>
     public double CoverWidth
     {
         get => GetValue(CoverWidthProperty);
         set => SetValue(CoverWidthProperty, value);
     }
 
+    /// <summary>
+    /// Gets or sets the height of the cover shown while the preview is closed, in logical pixels. It also determines
+    /// the height the cover bitmap is decoded at. <see cref="double.NaN" /> (the default) lets the cover take its
+    /// size from the control.
+    /// </summary>
     public double CoverHeight
     {
         get => GetValue(CoverHeightProperty);
         set => SetValue(CoverHeightProperty, value);
     }
 
+    /// <summary>
+    /// Gets or sets the zero-based index in <see cref="ItemsSource" /> of the item shown in the preview, counting
+    /// only non-null entries. It is bound both ways to the open preview, so navigating inside the preview updates
+    /// it. Values outside the range are clamped where the control uses the index; the stored value is not changed.
+    /// </summary>
     public int CurrentIndex
     {
         get => GetValue(CurrentIndexProperty);
         set => SetValue(CurrentIndexProperty, value);
     }
 
+    /// <summary>
+    /// Gets or sets the zero-based index in <see cref="ItemsSource" /> of the item shown on the cover while the
+    /// preview is closed, counting only non-null entries. Negative values are treated as 0 and values beyond the
+    /// last item are clamped when the cover item is determined. Only <see cref="ImagePreviewer" /> reads it;
+    /// <see cref="ImageGroupPreviewer" /> shows every item.
+    /// </summary>
     public int CoverIndex
     {
         get => GetValue(CoverIndexProperty);
         set => SetValue(CoverIndexProperty, value);
     }
 
+    /// <summary>
+    /// Gets or sets how many items on each side of <see cref="CurrentIndex" /> are loaded ahead while the preview is
+    /// open. 0 loads only the current item, and negative values are treated as 0. Pending full-image loads of the
+    /// other items are canceled.
+    /// </summary>
     public int PreloadCount
     {
         get => GetValue(PreloadCountProperty);
         set => SetValue(PreloadCountProperty, value);
     }
 
+    /// <summary>
+    /// Gets or sets how the display changes when the current item changes. <c>Immediate</c> clears the old image at
+    /// once and shows the loading placeholder. <c>WaitForLoaded</c> keeps the previous image until the image of the
+    /// new item is available. It applies to the cover and to the open preview, and a change takes effect at once.
+    /// </summary>
     public ImageSwitchMode ImageSwitchMode
     {
         get => GetValue(ImageSwitchModeProperty);
@@ -245,68 +421,118 @@ public abstract class AbstractImagePreviewer : TemplatedControl,
 
     private ImagePreviewItem? _currentItem;
 
+    /// <summary>
+    /// Gets the item at <see cref="CurrentIndex" />, or <see langword="null" /> when there is no current item.
+    /// </summary>
     public ImagePreviewItem? CurrentItem => _currentItem;
 
     private ImageLoadState _currentLoadState;
 
+    /// <summary>
+    /// Gets the load state of the full image of <see cref="CurrentItem" />. It is <see cref="ImageLoadState.Idle" />
+    /// when there is no current item.
+    /// </summary>
     public ImageLoadState CurrentLoadState => _currentLoadState;
 
     private ImageLoadError? _currentLoadError;
 
+    /// <summary>
+    /// Gets the error of the full-image load of <see cref="CurrentItem" /> when that load failed, or
+    /// <see langword="null" /> when it did not fail or there is no current item.
+    /// </summary>
     public ImageLoadError? CurrentLoadError => _currentLoadError;
 
     private ImageLoadProgress? _currentLoadProgress;
 
+    /// <summary>
+    /// Gets the progress reported by the full-image load of <see cref="CurrentItem" />, or <see langword="null" />
+    /// when none was reported or there is no current item.
+    /// </summary>
     public ImageLoadProgress? CurrentLoadProgress => _currentLoadProgress;
 
     private bool _isCurrentLoading;
 
+    /// <summary>
+    /// Gets a value indicating whether the full image of <see cref="CurrentItem" /> is loading.
+    /// </summary>
     public bool IsCurrentLoading => _isCurrentLoading;
 
     private bool _isCurrentLoaded;
 
+    /// <summary>
+    /// Gets a value indicating whether the full image of <see cref="CurrentItem" /> is loaded.
+    /// </summary>
     public bool IsCurrentLoaded => _isCurrentLoaded;
 
     private bool _isCurrentFailed;
 
+    /// <summary>
+    /// Gets a value indicating whether the full image of <see cref="CurrentItem" /> failed to load.
+    /// </summary>
     public bool IsCurrentFailed => _isCurrentFailed;
 
+    /// <summary>
+    /// Gets or sets whether the user can drag the image in the open preview with the left mouse button to move it.
+    /// Zooming is not affected.
+    /// </summary>
     public bool IsImageMovable
     {
         get => GetValue(IsImageMovableProperty);
         set => SetValue(IsImageMovableProperty, value);
     }
 
+    /// <summary>
+    /// Gets or sets the amount by which one zoom step changes the scale of the image in the open preview. The
+    /// default is 0.5.
+    /// </summary>
     public double ImageScaleStep
     {
         get => GetValue(ImageScaleStepProperty);
         set => SetValue(ImageScaleStepProperty, value);
     }
 
+    /// <summary>
+    /// Gets or sets the smallest scale the image in the open preview can have. The default is 1.0.
+    /// </summary>
     public double ImageMinScale
     {
         get => GetValue(ImageMinScaleProperty);
         set => SetValue(ImageMinScaleProperty, value);
     }
 
+    /// <summary>
+    /// Gets or sets the largest scale the image in the open preview can have. The default is 50.0.
+    /// </summary>
     public double ImageMaxScale
     {
         get => GetValue(ImageMaxScaleProperty);
         set => SetValue(ImageMaxScaleProperty, value);
     }
 
+    /// <summary>
+    /// Gets or sets whether rotating the mouse wheel over the image zooms it. The default is <see langword="true" />.
+    /// </summary>
     public bool IsWheelZoomEnabled
     {
         get => GetValue(IsWheelZoomEnabledProperty);
         set => SetValue(IsWheelZoomEnabledProperty, value);
     }
 
+    /// <summary>
+    /// Gets or sets whether the preview opens as a modal dialog that blocks its owner window. The default is
+    /// <see langword="false" />, which opens a modeless window. The value is read when the preview opens, and it is
+    /// passed on to the overlay host on platforms without native windows.
+    /// </summary>
     public bool IsDialogModal
     {
         get => GetValue(IsDialogModalProperty);
         set => SetValue(IsDialogModalProperty, value);
     }
 
+    /// <summary>
+    /// Gets or sets whether the preview window stays above other windows. It is read when the preview opens, so a
+    /// later change applies to the next opening. It has no effect on the overlay host, which has no window.
+    /// </summary>
     public bool IsDialogTopmost
     {
         get => GetValue(IsDialogTopmostProperty);
@@ -317,14 +543,36 @@ public abstract class AbstractImagePreviewer : TemplatedControl,
 
     #region 公共事件定义
 
+    /// <summary>
+    /// Occurs after the preview host has closed and the bindings and handlers of the preview session are released.
+    /// It is not raised when <see cref="CloseDialog" /> finds no preview open.
+    /// </summary>
     public event EventHandler? DialogClosed;
 
+    /// <summary>
+    /// Occurs after the preview is shown and <see cref="IsOpen" /> became <see langword="true" />, right before
+    /// <see cref="CrossRootsChanged" />.
+    /// </summary>
     public event EventHandler? DialogOpened;
 
+    /// <summary>
+    /// Occurs when a close is requested, before anything is closed and while the preview is still open. It is also
+    /// raised when <see cref="CloseDialog" /> finds no preview open, so handlers must not expect an open preview.
+    /// Setting <see cref="CancelEventArgs.Cancel" /> to <see langword="true" /> aborts the close.
+    /// </summary>
     public event EventHandler<CancelEventArgs>? DialogClosing;
 
+    /// <summary>
+    /// Occurs when the full image of <see cref="CurrentItem" /> finishes loading. It is raised after
+    /// <see cref="CurrentLoadState" /> is updated, and again for an image that is already loaded when its item
+    /// becomes the current item.
+    /// </summary>
     public event EventHandler<ImagePreviewOpenedEventArgs>? ImageOpened;
 
+    /// <summary>
+    /// Occurs when the full image of <see cref="CurrentItem" /> fails to load. It is raised after
+    /// <see cref="CurrentLoadState" /> is updated. The arguments carry the item, its index and the error.
+    /// </summary>
     public event EventHandler<ImagePreviewFailedEventArgs>? ImageFailed;
 
     /// <inheritdoc />
@@ -349,9 +597,11 @@ public abstract class AbstractImagePreviewer : TemplatedControl,
     }
 
     /// <summary>
-    /// 最近一个完成全图加载且图像仍可用的 entry。WaitForLoaded 模式下作为保留帧种子：
-    /// 当切换快于加载完成时，当前项可能在完成前被取代，保留帧必须能从任何完成者补充，
-    /// 否则显示会回退占位符并随偶发完成振荡（频闪）。
+    /// The most recent entry whose full image finished loading and is still usable, or <see langword="null" />.
+    /// In <c>WaitForLoaded</c> mode it seeds the retained frame. When the user switches faster than images load,
+    /// the current entry can be replaced before it completes, so the retained frame must be replenished from
+    /// whichever entry completes; otherwise the display falls back to the placeholder and flickers with each
+    /// completion.
     /// </summary>
     internal ImagePreviewEntry? LatestLoadedFullEntry =>
         _latestLoadedFullEntry is { IsFullLoaded: true, FullImage: not null }
@@ -461,9 +711,10 @@ public abstract class AbstractImagePreviewer : TemplatedControl,
     }
 
     /// <summary>
-    /// 预览面承载在独立 Window（ImagePreviewerDialog）中，属 owner 视觉树之外的跨根宿主；
-    /// 语义预览经该契约发现宿主并在打开/关闭/表面就绪时跟随刷新。overlay 宿主
-    /// （同窗口内）同样经此上报，两路径统一。
+    /// Returns the visual root of the open preview host: the <see cref="ImagePreviewerDialog" /> window, or the
+    /// overlay host when the preview is shown inside the same window. The host lies outside the visual tree of this
+    /// control, so semantic preview finds it through this contract and refreshes on open, on close and once the
+    /// dialog template is applied. The list is empty while no preview is open.
     /// </summary>
     public IReadOnlyList<Visual> GetCrossRoots()
     {
@@ -472,6 +723,14 @@ public abstract class AbstractImagePreviewer : TemplatedControl,
             : Array.Empty<Visual>();
     }
 
+    /// <summary>
+    /// Called when a styled property of this control changes. It calls the base implementation first, then reacts
+    /// to the properties of this class. A change of <see cref="ItemsSource" /> rebuilds the entries. A change of
+    /// <see cref="CurrentIndex" /> or <see cref="PreloadCount" /> re-selects the current entry and re-requests the
+    /// loads while the preview is open. While the preview is closed, a change of <see cref="CoverWidth" /> or
+    /// <see cref="CoverHeight" /> re-requests the loads. A new <see cref="ImageSwitchMode" /> is pushed to the
+    /// open host. Overrides must call the base implementation, otherwise these reactions are lost.
+    /// </summary>
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
@@ -536,6 +795,10 @@ public abstract class AbstractImagePreviewer : TemplatedControl,
         SetEffectiveItems(entries, preserved);
     }
 
+    /// <summary>
+    /// Called after the entries were built from <see cref="ItemsSource" /> or updated by a collection notification,
+    /// and before the loads of the current state are requested. The base implementation does nothing.
+    /// </summary>
     private protected virtual void OnEffectiveItemsChanged()
     {
     }
@@ -560,10 +823,21 @@ public abstract class AbstractImagePreviewer : TemplatedControl,
         entry.LoadThumbnail(width, height, priority, reload);
     }
 
+    /// <summary>
+    /// Requests the image loads of the closed state, in which the covers are shown. The control calls it when it is
+    /// loaded, after the preview closed, when the entries or the decode size change while the preview is closed, and
+    /// when <see cref="CoverWidth" /> or <see cref="CoverHeight" /> changes while the preview is closed. The base
+    /// implementation does nothing; a derived class overrides it to load what its covers need.
+    /// </summary>
     private protected virtual void RequestClosedStateLoads()
     {
     }
 
+    /// <summary>
+    /// Requests the full image of <see cref="CurrentItem" /> to be loaded again. It is decoded at the size the open
+    /// preview needs, or at a size derived from the top level window when the preview has not calculated one. The
+    /// call does nothing when there is no current item.
+    /// </summary>
     public void ReloadCurrent()
     {
         if (_currentEntry is null)
@@ -575,6 +849,16 @@ public abstract class AbstractImagePreviewer : TemplatedControl,
         RequestFullLoad(_currentEntry, size.Width, size.Height, ImageRequestPriority.Critical, reload: true);
     }
 
+    /// <summary>
+    /// Requests the full image of the item at <paramref name="index" /> to be loaded again. The current item is
+    /// decoded at the size the open preview needs; any other item at a size derived from the top level window.
+    /// </summary>
+    /// <param name="index">
+    /// Zero-based position in <see cref="ItemsSource" />, counting only non-null entries.
+    /// </param>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// <paramref name="index" /> is negative or not below the number of items.
+    /// </exception>
     public void ReloadItem(int index)
     {
         if (EffectiveItems is null || index < 0 || index >= EffectiveItems.Count)
@@ -603,6 +887,11 @@ public abstract class AbstractImagePreviewer : TemplatedControl,
         return Math.Clamp(index, 0, count - 1);
     }
 
+    /// <summary>
+    /// Called after the control is loaded. It calls the base implementation, starts following the size and scaling
+    /// of the top level, builds the entries when needed, selects the current entry and requests the loads of the
+    /// closed state. Overrides must call the base implementation.
+    /// </summary>
     protected override void OnLoaded(RoutedEventArgs args)
     {
         base.OnLoaded(args);
@@ -615,6 +904,11 @@ public abstract class AbstractImagePreviewer : TemplatedControl,
         RequestClosedStateLoads();
     }
 
+    /// <summary>
+    /// Called when the control is attached to the visual tree. It calls the base implementation, then starts
+    /// following the size and scaling of the top level and the changes of <see cref="ItemsSource" />, and builds the
+    /// entries. Overrides must call the base implementation, otherwise no image is ever loaded.
+    /// </summary>
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
@@ -624,6 +918,11 @@ public abstract class AbstractImagePreviewer : TemplatedControl,
         MaterializeEffectiveItems();
     }
 
+    /// <summary>
+    /// Called when the control is detached from the visual tree. It stops the subscriptions, cancels the pending
+    /// loads and releases the decoded images, so they are loaded again on the next attach, then calls the base
+    /// implementation. Overrides must call the base implementation to keep that release.
+    /// </summary>
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         _isAttachedToVisualTree = false;
@@ -633,12 +932,25 @@ public abstract class AbstractImagePreviewer : TemplatedControl,
         base.OnDetachedFromVisualTree(e);
     }
 
+    /// <summary>
+    /// Called when a pointer is released over the control. It calls the base implementation and then opens the
+    /// preview, whatever the button.
+    /// </summary>
     protected override void OnPointerReleased(PointerReleasedEventArgs e)
     {
         base.OnPointerReleased(e);
         OpenDialog();
     }
 
+    /// <summary>
+    /// Opens the preview of <see cref="ItemsSource" />, starting at <see cref="CurrentIndex" />, and raises
+    /// <see cref="DialogOpened" />. The preview is a <see cref="ImagePreviewerDialog" /> window when the platform
+    /// supports native windows, and an overlay in the current window otherwise. The call does nothing while the
+    /// preview is open or opening, and when there is no item to preview.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">
+    /// The control is not attached to a top level.
+    /// </exception>
     public void OpenDialog()
     {
         if (_openState != null || _dialogOpening)
@@ -763,6 +1075,11 @@ public abstract class AbstractImagePreviewer : TemplatedControl,
         _dialogOpening = false;
     }
 
+    /// <summary>
+    /// Called at the start of <see cref="OpenDialog" />, before it checks whether there is an item to preview. The
+    /// base implementation builds the entries when they do not exist yet. Overrides must call the base member,
+    /// otherwise <see cref="OpenDialog" /> does nothing while the entries are missing.
+    /// </summary>
     private protected virtual void PrepareDialogOpen()
     {
         if (EffectiveItems is null)
@@ -771,6 +1088,13 @@ public abstract class AbstractImagePreviewer : TemplatedControl,
         }
     }
 
+    /// <summary>
+    /// Closes the open preview. It raises <see cref="DialogClosing" /> first and stops when the event is canceled.
+    /// Otherwise it disposes the open state, which closes the host and raises <see cref="DialogClosed" /> when
+    /// the host has closed. It then releases the full images, requests the loads of the closed state and sets
+    /// <see cref="IsOpen" /> to <see langword="false" />. When no preview is open, only <see cref="IsOpen" /> is
+    /// reset.
+    /// </summary>
     protected virtual void CloseDialog()
     {
         if (_dialogClosing)
@@ -809,6 +1133,13 @@ public abstract class AbstractImagePreviewer : TemplatedControl,
         }
     }
 
+    /// <summary>
+    /// Relays the properties that the native preview window follows to <paramref name="dialogHost" />: the items and
+    /// <see cref="CurrentIndex" /> in both directions, the image interaction settings, the loading and error content,
+    /// the title settings, <see cref="IsMotionEnabled" /> and <see cref="IsDialogModal" />. Each relay binding goes
+    /// into <paramref name="disposables" />. It is called while the preview opens, before the window is shown.
+    /// Overrides must call the base implementation, otherwise the window shows none of these values.
+    /// </summary>
     private protected virtual void RelayDialogHostBindings(CompositeDisposable disposables, ImagePreviewerDialog dialogHost)
     {
         // The dialog is created in a separate visual root, outside this control's template.
@@ -1053,7 +1384,8 @@ public abstract class AbstractImagePreviewer : TemplatedControl,
         if (args.PropertyName is nameof(ImagePreviewEntry.IsFullLoaded) or
             nameof(ImagePreviewEntry.FullImage))
         {
-            // 保留帧种子：任何 entry 完成全图加载都更新；图像失效（卸载/释放）时清除
+            // Retained-frame seed: any entry that finishes its full-image load updates it; it is cleared when
+            // that image becomes unusable (unloaded or released).
             if (sender is ImagePreviewEntry { IsFullLoaded: true, FullImage: not null } loaded)
             {
                 _latestLoadedFullEntry = loaded;
@@ -1321,7 +1653,8 @@ public abstract class AbstractImagePreviewer : TemplatedControl,
             dialogOpenState.SetPresenterSubscription(presenterSubscription);
         }
 
-        // 对话框表面模板就绪晚于 Show 的同步路径；语义预览的跨根扫描以此刻为准。
+        // The dialog surface's template is applied only after the synchronous Show path, so the cross-root scan of the
+        // semantic preview is keyed to this moment.
         RaiseCrossRootsChanged();
     }
 
@@ -1375,7 +1708,10 @@ public abstract class AbstractImagePreviewer : TemplatedControl,
     {
         TopLevel TopLevel { get; }
 
-        /// <summary>存活宿主的视觉根（native 对话框窗口 / overlay 宿主），供跨根契约上报。</summary>
+        /// <summary>
+        /// Visual root of the live host (the native dialog window or the overlay host), reported to the cross-root
+        /// contract.
+        /// </summary>
         Visual? RootVisual { get; }
 
         void RefreshImageSwitchMode();

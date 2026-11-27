@@ -3,6 +3,8 @@ using Avalonia.Controls;
 
 namespace AtomUI.Desktop.Controls;
 
+// The square block behind the image icon that shows the shimmer. Repeatable, one per placeholder block;
+// SkeletonImageContentStyle applies to each.
 [SemanticPart(
     "content",
     SelectorClass = "semantic-content",

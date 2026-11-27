@@ -7,12 +7,12 @@ using Avalonia.Media.TextFormatting;
 namespace AtomUI.Desktop.Controls;
 
 /// <summary>
-/// 分隔符内容呈现器：把任意文本字形的墨迹中心平移到自身行盒中心。
-/// 星号等字形的墨迹绘制在行盒上半区、偏 advance 左侧，连字符等则接近
-/// 行盒中心，这由字体设计决定；本呈现器在显示时按当前字体的 glyph
-/// metrics 实测墨迹盒并生成反向平移，任意字符、字体和字号都自动居中，
-/// 不再需要逐字符人工校准。非文本内容（自定义 SeparatorTemplate）不做
-/// 处理，居中由内容自行负责。
+/// Presenter of a separator. It moves the ink center of any text glyph onto the center of its own line box.
+/// By font design, the ink of glyphs such as the asterisk lies in the upper half of the line box and to the
+/// left of the advance, while glyphs such as the hyphen already lie near the center. At display time the
+/// presenter measures the ink box from the glyph metrics of the current font and applies the opposite
+/// translation, so every character, font and font size centers itself without manual calibration per
+/// character. Non-text content from a custom SeparatorTemplate is not adjusted and must center itself.
 /// </summary>
 internal sealed class OtpSeparatorPresenter : ContentControl
 {
@@ -74,7 +74,7 @@ internal sealed class OtpSeparatorPresenter : ContentControl
 
         using var glyphRun = new GlyphRun(glyphTypeface, FontSize, memory, shaped, null, 0);
 
-        // 多字符时沿 advance 逐字形平移并取墨迹并集。
+        // With several characters, shift each glyph along its advance and take the union of the ink boxes.
         var penX       = 0d;
         var inkLeft    = double.MaxValue;
         var inkRight   = double.MinValue;

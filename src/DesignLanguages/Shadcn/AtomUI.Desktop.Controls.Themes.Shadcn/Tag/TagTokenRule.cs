@@ -5,7 +5,9 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls.Themes.Shadcn;
 
-/// <summary>The shadcn view of <see cref="TagToken"/>.</summary>
+/// <summary>
+/// The shadcn view of <see cref="TagToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class TagTokenRule : IControlTokenRule<ShadcnToken, TagToken>
 {
@@ -14,6 +16,7 @@ internal sealed class TagTokenRule : IControlTokenRule<ShadcnToken, TagToken>
         var token  = target.Own;
         var global = target.Global;
         TagTokenCalculator.Calculate(in context, global, token);
+        // Ant Design formula kept as is: no registry value is merged into the tag tokens.
         token.TagCloseIconSize = global.IconSizeXS;
         token.DefaultBg        = ColorUtils.OnBackground(global.ColorFillTertiary, global.ColorBgContainer);
         token.DefaultColor     = global.ColorText;

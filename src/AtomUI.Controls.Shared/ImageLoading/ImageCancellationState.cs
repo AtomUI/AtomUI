@@ -1,5 +1,15 @@
 namespace AtomUI.Controls;
 
+/// <summary>
+/// The cancellation source of one image load, shared by the controller that owns the load and the operation that
+/// runs it; <c>ImagePreviewEntry</c> in AtomUI.Controls owns one per thumbnail and full image load.
+/// </summary>
+/// <remarks>
+/// <c>Cancel</c> requests cancellation once and ignores the non-fatal exceptions that cancellation callbacks throw,
+/// because those callbacks run outside the image state machine. The source is disposed only after both
+/// <c>ReleaseController</c> and <c>ReleaseOperation</c> have been called and no cancellation is running, so either
+/// side may release first; a later <c>Cancel</c> then does nothing.
+/// </remarks>
 internal sealed class ImageCancellationState
 {
     private readonly CancellationTokenSource _source = new();

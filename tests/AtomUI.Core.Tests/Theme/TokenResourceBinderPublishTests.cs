@@ -17,8 +17,9 @@ using Xunit;
 namespace AtomUI.Core.Tests.Theme;
 
 /// <summary>
-/// <see cref="TokenResourceBinder"/> bindings on a StyledElement host resolve through <see cref="TokenResourceObservable"/>:
-/// a theme publish that leaves the bound key's value unchanged is skipped, everything else refreshes.
+/// <see cref="TokenResourceBinder" /> bindings on a StyledElement host resolve through <see
+/// cref="TokenResourceObservable" />: a theme publish that leaves the bound key's value unchanged is skipped,
+/// everything else refreshes.
 /// </summary>
 [Collection(ThemeConfigProviderTestCollection.Name)]
 public class TokenResourceBinderPublishTests

@@ -98,8 +98,9 @@ internal class DataGridHeaderViewItem : ContentControl
         _owningGridBinding = Bind(BorderThicknessProperty, OwningGrid[!BorderThicknessProperty]);
     }
 
-    // 视图项在分组表头重建时被丢弃：释放对表格的绑定并交还承载的列头，
-    // 否则表格会经由绑定持有旧视图项及其中已移除的列。
+    // The view item is discarded when the group headers are rebuilt: release its binding to the grid and hand
+    // the column headers it hosts back, because otherwise the grid keeps the old view item, and the columns
+    // already removed from it, alive through the binding.
     internal void Release()
     {
         _owningGridBinding?.Dispose();

@@ -4,19 +4,18 @@ using Avalonia.Media;
 namespace AtomUI.DesignLanguages.PrimeNG.Presets;
 
 /// <summary>
-/// The Lara rule table (spec 4.7), transcribed from the four pre-algorithm Lara XML profiles (the acceptance
-/// baseline). The colour rows equal the Aura ones: the semantic colour scheme of the <c>lara</c> and
+/// The Lara rule table, transcribed from the four pre-algorithm Lara XML profiles (the acceptance
+/// baseline). The color rows equal the Aura ones: the semantic color scheme of the <c>lara</c> and
 /// <c>lara-compat</c> presets of <c>@primeuix/themes</c> 3.1.1 matches <c>aura</c> there. Lara differs in the focus
-/// treatment (a glow, no ring), the select overlay shadow, the control height and the control values; the README of
-/// this package lists the sources row by row.
+/// treatment (a glow, no ring), the select overlay shadow, the control height and the control values.
 /// </summary>
 internal static class PrimeNGLaraPreset
 {
     private const int White = PrimeNGShade.White;
     private const int Black = PrimeNGShade.Black;
 
-    // The colour rows equal Aura's by design: each preset is transcribed from its own XML and is expected to diverge
-    // (see "Lara rules" in the README).
+    // The color rows equal Aura's by design: each preset is transcribed from its own XML and is expected to diverge
+    // .
     internal static readonly PrimeNGPreset Table = new(
         Light: new PrimeNGAppearanceRules(
             Surface: PrimeNGTailwindPalettes.Slate,
@@ -101,7 +100,7 @@ internal static class PrimeNGLaraPreset
             SelectionForeground: new(900),
             // PrimeUIX focus.ring.shadow, dark: primary.color mixed with 80% transparent.
             ControlOutline: static token => PrimeNGPalette.WithOpacity(token.ColorPrimary, 0.2),
-            // PrimeUIX lara focus.ring.shadow, dark: the primary colour at 20%.
+            // PrimeUIX lara focus.ring.shadow, dark: the primary color at 20%.
             FocusBorder: static token => PrimeNGPalette.WithOpacity(token.ColorPrimary, 0.2),
             CardBorderSecondary: null,
             // PrimeUIX highlight: P400 at 16% / 24% (ColorPrimaryBg / BgHover) with white at 87% (ColorPrimaryText).
@@ -142,8 +141,8 @@ internal static class PrimeNGLaraPreset
             CheckIndicatorSize: 20,
             CheckedMarkSize: 14,
             // PrimeUIX list.option.padding 0.5rem 0.875rem (14, 8) and list.padding 0.5rem 0 (0, 8), on the size
-            // ladder; the panel padding has no compact counterpart that a size token gives (the old compact XML
-            // wrote 4), see the README.
+            // ladder; the panel padding has no compact counterpart that a size token gives, so the compact Lara
+            // density keeps the 4 of the old compact XML profiles.
             SelectOptionPadding: static global =>
                 new Thickness(global.UniformlyPaddingSM + 2, global.UniformlyPaddingXS),
             SelectPopupContentPadding: static global => new Thickness(0, global.UniformlyPaddingXS),

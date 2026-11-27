@@ -4,7 +4,9 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 
-/// <summary>The PrimeNG view of <see cref="DropdownButtonToken"/>.</summary>
+/// <summary>
+/// The PrimeNG view of <see cref="DropdownButtonToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class DropdownButtonTokenRule : IControlTokenRule<PrimeNGToken, DropdownButtonToken>
 {
@@ -12,7 +14,8 @@ internal sealed class DropdownButtonTokenRule : IControlTokenRule<PrimeNGToken, 
     {
         var token  = target.Own;
         var global = target.Global;
-        // PrimeNG: the control-global overrides, read by the formulas below.
+        // PrimeNG: the control-global overrides (ColorBgSolid by the formulas below; BorderRadiusSM, BorderRadiusLG,
+        // OpacityLoading by the DropdownButton theme (CornerRadius, Opacity); the other six by neither).
         var colors = PrimeNGButtonFamilyTokens<DropdownButtonToken>.EvaluateGlobal(in context, global);
         ButtonGeometryTokenCalculator.Calculate(in context, global, token);
         token.ContentFontSize = global.FontSize;

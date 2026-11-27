@@ -7,165 +7,164 @@ namespace AtomUI.Theme.DesignTokens;
 public partial class DesignToken
 {
     /// <summary>
-    /// 品牌主色
-    /// 品牌色是体现产品特性和传播理念最直观的视觉元素之一。在你完成品牌主色的选取之后，我们会自动帮你生成一套完整的色板，并赋予它们有效的设计语义
+    /// The brand primary color. It is the input the primary color palette is generated from, and that palette
+    /// supplies the primary color gradient.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Seed)]
     public partial Color ColorPrimary { get; set; }
 
     /// <summary>
-    /// 成功色
-    /// 用于表示操作成功的 Token 序列，如 Result、Progress 等组件会使用该组梯度变量。
+    /// The success color. It is the input of the success color gradient, which components use to report a
+    /// successful operation, for example Result and Progress.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Seed)]
     public partial Color ColorSuccess { get; set; }
 
     /// <summary>
-    /// 警戒色
-    /// 用于表示操作警告的 Token 序列，如 Notification、 Alert等警告类组件或 Input 输入类等组件会使用该组梯度变量。
+    /// The warning color. It is the input of the warning color gradient, which components use to report a
+    /// warning, such as Notification and Alert, and which input components use in the warning state.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Seed)]
     public partial Color ColorWarning { get; set; }
 
     /// <summary>
-    /// 错误色
-    /// 用于表示操作失败的 Token 序列，如失败按钮、错误状态提示（Result）组件等。
+    /// The error color. It is the input of the error color gradient, which components use to report a failed
+    /// operation, for example the button of a failed action or the error state of Result.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Seed)]
     public partial Color ColorError { get; set; }
 
     /// <summary>
-    /// 信息色
-    /// 用于表示操作信息的 Token 序列，如 Alert 、Tag、 Progress 等组件都有用到该组梯度变量。
+    /// The info color. It is the input of the info color gradient, which components use to present information,
+    /// for example Alert, Tag and Progress.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Seed)]
     public partial Color ColorInfo { get; set; }
 
     /// <summary>
-    /// 基础文本色
-    /// 用于派生文本色梯度的基础变量，v5 中我们添加了一层文本色的派生算法可以产出梯度明确的文本色的梯度变量。但请不要在代码中直接使用该 Seed Token ！
+    /// The base color the text color gradient is derived from. Do not use this seed directly in control code;
+    /// read a text color token derived from it instead.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Seed)]
     public partial Color? ColorTextBase { get; set; }
 
     /// <summary>
-    /// 基础背景色
-    /// 用于派生背景色梯度的基础变量，v5 中我们添加了一层背景色的派生算法可以产出梯度明确的背景色的梯度变量。但请不要在代码中直接使用该 Seed Token ！
+    /// The base color the background color gradient is derived from. Do not use this seed directly in control
+    /// code; read a background color token derived from it instead.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Seed)]
     public partial Color? ColorBgBase { get; set; }
 
     /// <summary>
-    /// 超链接颜色
-    /// 控制超链接的颜色。
+    /// The hyperlink color. It is the input of the link color gradient.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Seed)]
     public partial Color? ColorLink { get; set; }
 
     /// <summary>
-    /// 透明色
+    /// A fully transparent color. Controls use it where they paint no background, for example the item
+    /// background of ListBox and ListView.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Seed)]
     public partial Color ColorTransparent { get; set; }
 
     //  ----------   Font   ---------- //
     /// <summary>
-    /// 字体
-    /// 字体家族优先使用系统默认的界面字体，同时提供一套利于屏显的备用字体库，保证在不同平台与显示密度下字体始终保持良好的易读性与可读性。
+    /// The base font family of every text. The default starts with the bundled Alibaba Sans and then falls back
+    /// to the interface fonts of each platform, so that text stays legible on every platform and display density.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Seed)]
     public partial FontFamily? FontFamily { get; set; }
 
     /// <summary>
-    /// 默认字号
-    /// 设计系统中使用最广泛的字体大小，文本梯度也将基于该字号进行派生。
+    /// The default font size, used by most text. The font size gradient, from <see cref="FontSizeSM" /> to the
+    /// heading sizes, is derived from it.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Seed)]
     public partial double FontSize { get; set; } = 14;
 
     //  ----------   Line   ---------- //
     /// <summary>
-    /// 基础线宽
-    /// 用于控制组件边框、分割线等的宽度
+    /// The base line width, used for component borders and dividers.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Seed)]
     public partial double LineWidth { get; set; } = 1;
 
     /// <summary>
-    /// 线条样式
-    /// 用于控制组件边框、分割线等的样式，默认是实线
+    /// The style of the lines of component borders and dividers, such as solid or dashed. The default is solid.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Seed)]
     public partial LineStyle LineType { get; set; } = LineStyle.Solid;
 
     //  ----------   BorderRadius   ---------- //
     /// <summary>
-    /// 基础圆角
-    /// 基础组件的圆角大小，例如按钮、输入框、卡片等
+    /// The base corner radius of controls such as buttons, inputs and cards. The other corner radius tokens are
+    /// derived from its top-left corner.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Seed)]
     public partial CornerRadius BorderRadius { get; set; }
 
     /// <summary>
-    /// 尺寸变化单位
-    /// 用于控制组件尺寸的变化单位，基础单位为 4，便于更加细致地控制尺寸梯度
+    /// The unit of the size gradient: every size token is a multiple of it. It is also used directly for
+    /// spacing, such as the paddings and the logo size of the window title bar.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Seed)]
     public partial double SizeUnit { get; set; } = 4;
 
     /// <summary>
-    /// 尺寸步长
-    /// 用于控制组件尺寸的基础步长，尺寸步长结合尺寸变化单位，就可以派生各种尺寸梯度。通过调整步长即可得到不同的布局模式，例如 V5 紧凑模式下的尺寸步长为 2
+    /// The base step of the size gradient: <see cref="Size" /> equals <see cref="SizeUnit" /> times this value,
+    /// and the other size tokens are <see cref="SizeUnit" /> times this value plus or minus an offset. A compact
+    /// layout derives the gradient from a smaller step.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Seed)]
     public partial double SizeStep { get; set; } = 4;
 
     /// <summary>
-    /// 基础高度
-    /// Ant Design 中按钮和输入框等基础控件的高度
+    /// The size of the arrow of popups such as tooltips.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Seed)]
     public partial double SizePopupArrow { get; set; } = 16;
 
     /// <summary>
-    /// 基础高度
-    /// Ant Design 中按钮和输入框等基础控件的高度
+    /// The base height of controls such as buttons and inputs. <see cref="ControlHeightXS" />,
+    /// <see cref="ControlHeightSM" /> and <see cref="ControlHeightLG" /> are derived from it as fractions of it.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Seed)]
     public partial double ControlHeight { get; set; } = 32;
 
     //  ----------   zIndex   ---------- //
     /// <summary>
-    /// 浮层基础 zIndex
-    /// 所有组件的基础 Z 轴值，用于一些悬浮类的组件的可以基于该值 Z 轴控制层级，例如 BackTop、 Affix 等
+    /// The base Z order of components on a page. Elements that float over the page, such as BackTop and Affix,
+    /// derive their Z order from it.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Seed)]
     public partial int ZIndexBase { get; set; } = 0;
 
     /// <summary>
-    /// 浮层基础 zIndex
-    /// 浮层类组件的基础 Z 轴值，用于一些悬浮类的组件的可以基于该值 Z 轴控制层级，例如 FloatButton、 Affix、Modal 等
+    /// The base Z order of popups and other elements that open a layer above the page, such as Modal, Affix and
+    /// FloatButton.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Seed)]
     public partial int ZIndexPopupBase { get; set; } = 1000;
 
     //  ----------   Opacity   ---------- //
     /// <summary>
-    /// 图片不透明度
+    /// The opacity of images, from 0 for fully transparent to 1 for fully opaque.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Seed)]
     public partial double OpacityImage { get; set; } = 1.0;
 
     //  ----------   motion   ---------- //
     /// <summary>
-    /// 动画时长变化单位
-    /// 用于控制动画时长的变化单位
+    /// The unit of the motion durations, in milliseconds. The durations are <see cref="MotionBase" /> plus 1, 2,
+    /// 3 and 8 times this value.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Seed)]
     public partial int MotionUnit { get; set; } = 100;
 
     /// <summary>
-    /// 动画基础时长。
+    /// The base of the motion durations, in milliseconds: every duration is this value plus a multiple of
+    /// <see cref="MotionUnit" />.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Seed)]
     public partial int MotionBase { get; set; } = 0;
@@ -173,17 +172,17 @@ public partial class DesignToken
     //  ----------   Style   ---------- //
 
     /// <summary>
-    /// 动画风格
-    /// 
-    /// 用于配置动画效果，为 `false` 时则关闭动画
+    /// Enables motion. When <see langword="false" />, the theme compiler sets <see cref="MotionDurationFast" />,
+    /// <see cref="MotionDurationMid" />, <see cref="MotionDurationSlow" /> and
+    /// <see cref="MotionDurationVerySlow" /> to a zero duration.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Seed)]
     public partial bool EnableMotion { get; set; } = true;
     
     /// <summary>
-    /// 是否开启波浪动画
-    ///
-    /// 按钮，单选按钮等点击后的波浪动画效果
+    /// Enables the wave animation that buttons and radio buttons play when clicked. When
+    /// <see langword="false" />, the theme compiler sets <c>WaveAnimationRange</c> and
+    /// <c>WaveStartOpacity</c> to 0.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Seed)]
     public partial bool EnableWaveSpirit { get; set; } = true;

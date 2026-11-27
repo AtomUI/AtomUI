@@ -3,7 +3,7 @@ using AtomUI.Theme.Schema;
 namespace AtomUI.Theme.Languages;
 
 /// <summary>
-/// The values a design language offers on each axis, and the seeds an application may adjust in it (spec 5.2, 5.3).
+/// The values a design language offers on each axis, and the seeds an application may adjust in it.
 /// Requesting a value the language does not declare fails when the configuration is committed.
 /// </summary>
 public sealed record DesignLanguageAxes(
@@ -20,7 +20,9 @@ public sealed record DesignLanguageAxes(
     public IReadOnlyDictionary<string, IReadOnlySet<string>> SeedDerivations { get; init; } =
         new Dictionary<string, IReadOnlySet<string>>(StringComparer.Ordinal);
 
-    /// <summary>Whether <paramref name="variant"/> uses only values this language declares.</summary>
+    /// <summary>
+    /// Whether <paramref name="variant" /> uses only values this language declares.
+    /// </summary>
     public bool Supports(in DesignVariant variant) =>
         Styles.Contains(variant.Style) && Densities.Contains(variant.Density) && Idioms.Contains(variant.Idiom);
 }

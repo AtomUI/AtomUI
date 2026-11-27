@@ -108,10 +108,11 @@
             <Setter Property="MaskOpacity" Value="1" />
         </Style>
 
-        <!-- 语义部件预览显现契约：Gallery 高亮会话对 RestHidden 部件目标设置
-             SemanticPartPreviewState.IsPreviewTarget（静止态透明的悬停遮罩在预览时显形），
-             各控件 ControlTheme 自行决定显现方式；Style 优先级高于 TemplateBinding，
-             状态移除后自动回落到 MaskOpacity 绑定。 -->
+        <!-- Preview visibility contract of the semantic part: the Gallery highlight session sets
+        SemanticPartPreviewState.IsPreviewTarget on targets of RestHidden parts (the hover mask, transparent at
+        rest, becomes visible in the preview). Each control theme decides how it appears. The style outranks the
+        TemplateBinding, and the state falls back to the MaskOpacity binding automatically once it is removed.
+        -->
         <Style Selector="^ /template/ Border#Mask[(atom|SemanticPartPreviewState.IsPreviewTarget)=True]">
             <Setter Property="Opacity" Value="1" />
         </Style>

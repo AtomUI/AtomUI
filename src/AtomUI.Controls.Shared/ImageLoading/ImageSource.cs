@@ -7,6 +7,14 @@ using Avalonia.Platform.Storage;
 
 namespace AtomUI.Controls;
 
+/// <summary>
+/// The base class of the sources an image is loaded from: a download, a file, an application asset, a
+/// storage file, a byte array, a stream or an image the caller already has. Create one of the sealed
+/// subclasses, or convert a string with <see cref="Parse" />.
+/// </summary>
+/// <remarks>
+/// The class is closed: external code cannot derive from it, so these are the only source kinds.
+/// </remarks>
 [TypeConverter(typeof(ImageSourceConverter))]
 public abstract class ImageSource
 {
@@ -18,6 +26,10 @@ public abstract class ImageSource
         DisplayName = displayName;
     }
 
+    /// <summary>
+    /// A short name of the source for diagnostics, such as a file name, or <see langword="null" /> when none was
+    /// derived or passed.
+    /// </summary>
     public string? DisplayName { get; }
 
     internal abstract ImageSourceKind Kind { get; }
@@ -28,6 +40,22 @@ public abstract class ImageSource
 
     internal virtual bool CanPersistSourceSnapshot => false;
 
+    /// <summary>
+    /// Converts the text of a source into an <see cref="ImageSource" />, as XAML does.
+    /// </summary>
+    /// <param name="source">
+    /// A fully qualified path, or a URI with the <c>http</c>, <c>https</c>, <c>avares</c> or <c>file</c> scheme.
+    /// </param>
+    /// <returns>
+    /// The matching <see cref="FileImageSource" />, <see cref="HttpImageSource" /> or
+    /// <see cref="AssetImageSource" />.
+    /// </returns>
+    /// <exception cref="ArgumentException">
+    /// <paramref name="source" /> is <see langword="null" />, empty or white space.
+    /// </exception>
+    /// <exception cref="FormatException">
+    /// <paramref name="source" /> is not a supported image source.
+    /// </exception>
     public static ImageSource Parse(string source)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(source);
@@ -38,6 +66,19 @@ public abstract class ImageSource
         return result!;
     }
 
+    /// <summary>
+    /// Tries to convert the text of a source into an <see cref="ImageSource" />.
+    /// </summary>
+    /// <param name="source">
+    /// The text to convert; <see cref="Parse" /> lists the accepted forms.
+    /// </param>
+    /// <param name="result">
+    /// The converted source, or <see langword="null" /> when the method returns <see langword="false" />.
+    /// </param>
+    /// <returns>
+    /// <see langword="true" /> when the text was converted; <see langword="false" /> when it is blank, has an
+    /// unknown form or scheme, or is a URI that the constructor of the matching source rejects.
+    /// </returns>
     public static bool TryParse(string? source, out ImageSource? result)
     {
         result = null;
@@ -72,6 +113,9 @@ public abstract class ImageSource
         }
     }
 
+    /// <summary>
+    /// Returns <see cref="DisplayName" />, or the cache identity of the source when it has no display name.
+    /// </summary>
     public override string ToString() => DisplayName ?? CacheIdentity;
 
     internal static long GetObjectIdentity(object value)
@@ -109,8 +153,21 @@ public abstract class ImageSource
     private sealed record IdentityHolder(long Value);
 }
 
+/// <summary>
+/// An image that the loader downloads with an HTTP GET request. The response is cached under the caching
+/// headers of the server.
+/// </summary>
 public sealed class HttpImageSource : ImageSource
 {
+    /// <summary>
+    /// Creates a source for <paramref name="uri" />.
+    /// </summary>
+    /// <param name="uri">
+    /// An absolute HTTP or HTTPS URI with a host and without user information.
+    /// </param>
+    /// <exception cref="ArgumentException">
+    /// <paramref name="uri" /> does not meet these conditions.
+    /// </exception>
     public HttpImageSource(Uri uri)
         : this(Normalize(uri), true)
     {
@@ -122,6 +179,10 @@ public sealed class HttpImageSource : ImageSource
         Uri = uri;
     }
 
+    /// <summary>
+    /// The URI that is requested. Its scheme and host are in lower case, the fragment is removed and a default
+    /// port is omitted.
+    /// </summary>
     public Uri Uri { get; }
 
     internal override ImageSourceKind Kind => ImageSourceKind.Http;
@@ -157,8 +218,24 @@ public sealed class HttpImageSource : ImageSource
     }
 }
 
+/// <summary>
+/// An image that is read from a file on disk. Direct file access is not available in Browser applications,
+/// where a load fails with <see cref="ImageLoadErrorCode.AccessDenied" />.
+/// </summary>
 public sealed class FileImageSource : ImageSource
 {
+    /// <summary>
+    /// Creates a source for <paramref name="path" />.
+    /// </summary>
+    /// <param name="path">
+    /// The path of the file, relative to the current working directory or absolute.
+    /// </param>
+    /// <param name="validation">
+    /// How the loader detects that the file changed.
+    /// </param>
+    /// <exception cref="ArgumentException">
+    /// <paramref name="path" /> is <see langword="null" />, empty or white space.
+    /// </exception>
     public FileImageSource(
         string path,
         ImageFileValidationMode validation = ImageFileValidationMode.Metadata)
@@ -169,8 +246,14 @@ public sealed class FileImageSource : ImageSource
         Validation = validation;
     }
 
+    /// <summary>
+    /// The absolute path of the file.
+    /// </summary>
     public string Path { get; }
 
+    /// <summary>
+    /// How the loader checks that a cached copy of the file is still current when the file is loaded again.
+    /// </summary>
     public ImageFileValidationMode Validation { get; }
 
     internal override ImageSourceKind Kind => ImageSourceKind.File;
@@ -189,8 +272,21 @@ public sealed class FileImageSource : ImageSource
         OperatingSystem.IsWindows() ? path.ToUpperInvariant() : path;
 }
 
+/// <summary>
+/// An image that comes from an application asset. Assets are treated as unchanging, so after the first load
+/// the cached image is reused without reading the asset again, unless a load forces a refresh.
+/// </summary>
 public sealed class AssetImageSource : ImageSource
 {
+    /// <summary>
+    /// Creates a source for <paramref name="uri" />.
+    /// </summary>
+    /// <param name="uri">
+    /// An absolute <c>avares</c> URI with a host, without user information, query or fragment.
+    /// </param>
+    /// <exception cref="ArgumentException">
+    /// <paramref name="uri" /> does not meet these conditions.
+    /// </exception>
     public AssetImageSource(Uri uri)
         : this(Normalize(uri), true)
     {
@@ -202,6 +298,9 @@ public sealed class AssetImageSource : ImageSource
         Uri = uri;
     }
 
+    /// <summary>
+    /// The URI of the asset.
+    /// </summary>
     public Uri Uri { get; }
 
     internal override ImageSourceKind Kind => ImageSourceKind.Asset;
@@ -230,8 +329,27 @@ public sealed class AssetImageSource : ImageSource
     }
 }
 
+/// <summary>
+/// An image that is read through a file of a storage provider.
+/// </summary>
 public sealed class StorageFileImageSource : ImageSource
 {
+    /// <summary>
+    /// Creates a source that reads <paramref name="file" />.
+    /// </summary>
+    /// <param name="file">
+    /// The storage file to read.
+    /// </param>
+    /// <param name="revision">
+    /// A token that changes whenever the content of the file changes, or <see langword="null" /> when the caller
+    /// cannot supply one.
+    /// </param>
+    /// <exception cref="ArgumentNullException">
+    /// <paramref name="file" /> is <see langword="null" />.
+    /// </exception>
+    /// <exception cref="ArgumentException">
+    /// <paramref name="revision" /> is empty or white space.
+    /// </exception>
     public StorageFileImageSource(IStorageFile file, string? revision = null)
         : base((file ?? throw new ArgumentNullException(nameof(file))).Name)
     {
@@ -240,8 +358,16 @@ public sealed class StorageFileImageSource : ImageSource
         Revision = revision;
     }
 
+    /// <summary>
+    /// The storage file that is read.
+    /// </summary>
     public IStorageFile File { get; }
 
+    /// <summary>
+    /// A token that identifies the content of the file. While it stays the same, a cached copy is reused instead
+    /// of reading the file and the content may enter the disk cache. Without it the file is read on every load
+    /// and stays out of the disk cache.
+    /// </summary>
     public string? Revision { get; }
 
     internal override ImageSourceKind Kind => ImageSourceKind.StorageFile;
@@ -255,11 +381,25 @@ public sealed class StorageFileImageSource : ImageSource
     internal override bool CanPersistSourceSnapshot => Revision is not null;
 }
 
+/// <summary>
+/// An image whose encoded bytes are held in memory. The bytes are identified by a hash of their content, so
+/// equal byte arrays share one cached image.
+/// </summary>
 public sealed class BytesImageSource : ImageSource
 {
     private readonly byte[] _bytes;
     private readonly string _digest;
 
+    /// <summary>
+    /// Creates a source for <paramref name="bytes" />. The bytes are copied, so later changes to the buffer of
+    /// the caller do not affect the source.
+    /// </summary>
+    /// <param name="bytes">
+    /// The encoded image.
+    /// </param>
+    /// <param name="displayName">
+    /// The name of the source for diagnostics.
+    /// </param>
     public BytesImageSource(ReadOnlyMemory<byte> bytes, string? displayName = null)
         : base(displayName)
     {
@@ -267,6 +407,9 @@ public sealed class BytesImageSource : ImageSource
         _digest = Convert.ToHexString(SHA256.HashData(_bytes)).ToLowerInvariant();
     }
 
+    /// <summary>
+    /// A copy of the encoded bytes.
+    /// </summary>
     public ReadOnlyMemory<byte> Bytes => _bytes.ToArray();
 
     internal ReadOnlyMemory<byte> Content => _bytes;
@@ -278,8 +421,35 @@ public sealed class BytesImageSource : ImageSource
     internal override ImageSourceVersion? SourceRevision => new(_digest);
 }
 
+/// <summary>
+/// An image that is read from a stream which a factory opens for every read of the source.
+/// </summary>
 public sealed class StreamImageSource : ImageSource
 {
+    /// <summary>
+    /// Creates a source that reads the stream which <paramref name="openStream" /> opens.
+    /// </summary>
+    /// <param name="openStream">
+    /// Opens a readable stream. The loader calls it for every read of the source, owns the returned stream and
+    /// disposes it.
+    /// </param>
+    /// <param name="identity">
+    /// A key that identifies the content across instances of this source.
+    /// </param>
+    /// <param name="revision">
+    /// A token that changes whenever the content changes, or <see langword="null" /> when the caller cannot
+    /// supply one.
+    /// </param>
+    /// <param name="displayName">
+    /// The name of the source for diagnostics. <see langword="null" /> falls back to
+    /// <paramref name="identity" />.
+    /// </param>
+    /// <exception cref="ArgumentNullException">
+    /// <paramref name="openStream" /> is <see langword="null" />.
+    /// </exception>
+    /// <exception cref="ArgumentException">
+    /// <paramref name="identity" /> or <paramref name="revision" /> is empty or white space.
+    /// </exception>
     public StreamImageSource(
         Func<CancellationToken, ValueTask<Stream>> openStream,
         string? identity = null,
@@ -294,10 +464,22 @@ public sealed class StreamImageSource : ImageSource
         Revision = revision;
     }
 
+    /// <summary>
+    /// The factory that opens the stream. It must return a new readable stream on every call; a
+    /// <see langword="null" /> result fails the load with <see cref="ImageLoadErrorCode.InvalidSource" />.
+    /// </summary>
     public Func<CancellationToken, ValueTask<Stream>> OpenStream { get; }
 
+    /// <summary>
+    /// A key that lets instances of this source share cached content. Without it the cache identity is tied to
+    /// the factory of this instance.
+    /// </summary>
     public string? Identity { get; }
 
+    /// <summary>
+    /// A token that identifies the content. While it stays the same, a cached copy is reused instead of opening
+    /// the stream. Together with <see cref="Identity" /> it also allows the content to enter the disk cache.
+    /// </summary>
     public string? Revision { get; }
 
     internal override ImageSourceKind Kind => ImageSourceKind.Stream;
@@ -311,14 +493,33 @@ public sealed class StreamImageSource : ImageSource
     internal override bool CanPersistSourceSnapshot => Identity is not null && Revision is not null;
 }
 
+/// <summary>
+/// An image that is already decoded and is supplied by the caller. The loader returns it as is: it is not
+/// validated, not resampled to a decode size and never disposed by the loader.
+/// </summary>
 public sealed class BorrowedImageSource : ImageSource
 {
+    /// <summary>
+    /// Creates a source that supplies <paramref name="image" />.
+    /// </summary>
+    /// <param name="image">
+    /// The decoded image.
+    /// </param>
+    /// <param name="displayName">
+    /// The name of the source for diagnostics.
+    /// </param>
+    /// <exception cref="ArgumentNullException">
+    /// <paramref name="image" /> is <see langword="null" />.
+    /// </exception>
     public BorrowedImageSource(IImage image, string? displayName = null)
         : base(displayName)
     {
         Image = image ?? throw new ArgumentNullException(nameof(image));
     }
 
+    /// <summary>
+    /// The image of the caller. Its size is reported as both the original and the decoded size.
+    /// </summary>
     public IImage Image { get; }
 
     internal override ImageSourceKind Kind => ImageSourceKind.Borrowed;

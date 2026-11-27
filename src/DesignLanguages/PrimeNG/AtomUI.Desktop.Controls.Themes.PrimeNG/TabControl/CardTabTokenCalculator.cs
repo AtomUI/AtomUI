@@ -5,9 +5,17 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 
-/// <summary>The PrimeNG values of the shared <see cref="AbstractCardTabToken"/> layer.</summary>
+/// <summary>
+/// The PrimeNG values of the shared <see cref="AbstractCardTabToken" /> layer.
+/// </summary>
 public static class CardTabTokenCalculator
 {
+    /// <summary>
+    /// Calls <see cref="TabTokenCalculator.Calculate" /> and then writes the PrimeNG values into the shared card tab
+    /// layer: the card background, the bar padding of each size, the padding of items in the vertical layout, the
+    /// gutter between the items and the margins of the add-tab button. <see cref="CalculateCardPadding" /> derives the
+    /// padding that is in effect from the card size.
+    /// </summary>
     public static void Calculate(in TokenEvaluationContext<PrimeNGToken> context, DesignToken global, AbstractCardTabToken token)
     {
         TabTokenCalculator.Calculate(in context, global, token);
@@ -24,6 +32,11 @@ public static class CardTabTokenCalculator
     }
 
 
+    /// <summary>
+    /// Returns <c>CardPadding</c>, the padding of the card tab bar for a card of <paramref name="cardSize" />:
+    /// <c>UniformlyPadding</c> on the left and right; top and bottom each take half of what is left of the size by one
+    /// text line (<c>FontSize</c> times <c>RelativeLineHeight</c>, rounded) and one border width.
+    /// </summary>
     public static Thickness CalculateCardPadding(AbstractCardTabToken token, DesignToken global, double cardSize) =>
         new(global.UniformlyPadding,
             (cardSize - Math.Round(global.FontSize * global.RelativeLineHeight)) / 2 - global.LineWidth);

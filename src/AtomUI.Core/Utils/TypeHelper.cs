@@ -56,10 +56,24 @@ internal static class TypeHelper
     /// over string indexers.  If found, this method will return the associated PropertyInfo and set the out index
     /// argument to its appropriate value.  If not found, the return value will be null, as will the index.
     /// </summary>
-    /// <param name="members">Collection of members to search through for an indexer.</param>
-    /// <param name="stringIndex">String value of indexer argument.</param>
-    /// <param name="index">Resultant index value.</param>
-    /// <returns>Indexer PropertyInfo if found, null otherwise.</returns>
+    /// <param name="members">
+    /// Collection of members to search through for an indexer.
+    /// </param>
+    /// <param name="stringIndexSpan">
+    /// The text between the brackets of the path, for example <c>abc</c> for <c>[abc]</c>. It is used as an int
+    /// index when it is a non-negative integer, and as the string index otherwise.
+    /// </param>
+    /// <param name="stringIndex">
+    /// The string index to pass to a string indexer. When it is <see langword="null" /> and a string indexer is
+    /// found, it is set to the text of <paramref name="stringIndexSpan" />.
+    /// </param>
+    /// <param name="index">
+    /// Set to a one-element array that holds the index to pass to the returned indexer, or <see langword="null" />
+    /// when no indexer is found.
+    /// </param>
+    /// <returns>
+    /// Indexer PropertyInfo if found, null otherwise.
+    /// </returns>
     private static PropertyInfo? FindIndexerInMembers(MemberInfo?[] members,
                                                        ReadOnlySpan<char> stringIndexSpan,
                                                        ref string? stringIndex,
@@ -113,8 +127,12 @@ internal static class TypeHelper
     /// <summary>
     /// Gets the default member name that is used for an indexer (e.g. "Item").
     /// </summary>
-    /// <param name="type">Type to check.</param>
-    /// <returns>Default member name.</returns>
+    /// <param name="type">
+    /// Type to check.
+    /// </param>
+    /// <returns>
+    /// Default member name.
+    /// </returns>
     private static string? GetDefaultMemberName(this Type type)
     {
         var memberName = s_defaultMemberNames.GetOrAdd(type, static memberType =>
@@ -142,9 +160,15 @@ internal static class TypeHelper
     /// the value of GetShortName on its DisplayAttribute, if one exists. GetShortName will return
     /// the value of Name if there is no ShortName specified.
     /// </summary>
-    /// <param name="type">Type to search</param>
-    /// <param name="propertyPath">property path</param>
-    /// <returns>DisplayAttribute.ShortName if it exists, null otherwise</returns>
+    /// <param name="type">
+    /// Type to search
+    /// </param>
+    /// <param name="propertyPath">
+    /// property path
+    /// </param>
+    /// <returns>
+    /// DisplayAttribute.ShortName if it exists, null otherwise
+    /// </returns>
     [RequiresUnreferencedCode("Dynamic data property paths reflect over public property metadata.")]
     internal static string? GetDisplayName(this Type type, string propertyPath)
     {
@@ -185,11 +209,18 @@ internal static class TypeHelper
     /// Retrieves the value and type of a property. That property can be nested and its path
     /// can include indexers. Each element of the path needs to be a public instance property.
     /// </summary>
-    /// <param name="parentType">The parent Type</param>
-    /// <param name="propertyPath">Property path</param>
-    /// <param name="exception">Potential exception</param>
-    /// <param name="item">Parent item which will be set to the property value if non-null.</param>
-    /// <returns></returns>
+    /// <param name="parentType">
+    /// The parent Type
+    /// </param>
+    /// <param name="propertyPath">
+    /// Property path
+    /// </param>
+    /// <param name="exception">
+    /// Potential exception
+    /// </param>
+    /// <param name="item">
+    /// Parent item which will be set to the property value if non-null.
+    /// </param>
     [RequiresUnreferencedCode("Dynamic data property paths reflect over public property and indexer metadata.")]
     private static PropertyInfo? GetNestedProperty(this Type? parentType, string? propertyPath,
                                                    out Exception? exception, ref object? item)
@@ -262,13 +293,21 @@ internal static class TypeHelper
     }
 
     /// <summary>
-    /// Finds the leaf PropertyInfo for the specified property path, and returns its value
-    /// if the item is non-null.
+    /// Finds the leaf PropertyInfo for the specified property path. When the path cannot be resolved, the item is
+    /// set to null instead.
     /// </summary>
-    /// <param name="parentType">Type to search.</param>
-    /// <param name="propertyPath">Property path.</param>
-    /// <param name="item">Parent item which will be set to the property value if non-null.</param>
-    /// <returns>The PropertyInfo.</returns>
+    /// <param name="parentType">
+    /// Type to search.
+    /// </param>
+    /// <param name="propertyPath">
+    /// Property path.
+    /// </param>
+    /// <param name="item">
+    /// Parent item which will be set to the property value if non-null.
+    /// </param>
+    /// <returns>
+    /// The PropertyInfo, or <see langword="null" /> when the path cannot be resolved.
+    /// </returns>
     [RequiresUnreferencedCode("Dynamic data property paths reflect over public property and indexer metadata.")]
     internal static PropertyInfo? GetNestedProperty(this Type parentType, string? propertyPath, ref object? item)
     {
@@ -288,10 +327,15 @@ internal static class TypeHelper
     }
 
     /// <summary>
-    /// Returns the friendly name for a type
+    /// Returns the simple name of a type without its namespace. For a nullable type the name of its non-nullable
+    /// form is returned with a trailing <c>?</c>.
     /// </summary>
-    /// <param name="type">The type to get the name from</param>
-    /// <returns>Textual representation of the input type</returns>
+    /// <param name="type">
+    /// The type to get the name from
+    /// </param>
+    /// <returns>
+    /// Textual representation of the input type
+    /// </returns>
     internal static string GetTypeName(this Type type)
     {
         Type   baseType = type.GetNonNullableType();
@@ -324,13 +368,24 @@ internal static class TypeHelper
     /// <summary>
     /// Retrieves the value of a property. That property can be nested and its path can
     /// include indexers. Each element of the path needs to be a public instance property.
-    /// The return value will either be of type propertyType or it will be null.
+    /// The return value will either be of type propertyType or it will be null. When the path is null or empty, the
+    /// item itself is returned.
     /// </summary>
-    /// <param name="item">Object that exposes the property</param>
-    /// <param name="propertyPath">Property path</param>
-    /// <param name="propertyType">Property type</param>
-    /// <param name="exception">Potential exception</param>
-    /// <returns>Property value</returns>
+    /// <param name="item">
+    /// Object that exposes the property
+    /// </param>
+    /// <param name="propertyPath">
+    /// Property path
+    /// </param>
+    /// <param name="propertyType">
+    /// Property type
+    /// </param>
+    /// <param name="exception">
+    /// Potential exception
+    /// </param>
+    /// <returns>
+    /// Property value
+    /// </returns>
     [RequiresUnreferencedCode("Dynamic data property paths reflect over public property and indexer metadata.")]
     internal static object? GetNestedPropertyValue(object? item, string? propertyPath, Type propertyType,
                                                    out Exception? exception)
@@ -363,9 +418,16 @@ internal static class TypeHelper
     /// <summary>
     /// Gets the value of a given property path on a particular data item.
     /// </summary>
-    /// <param name="item">Parent data item.</param>
-    /// <param name="propertyPath">Property path.</param>
-    /// <returns>Value.</returns>
+    /// <param name="item">
+    /// Parent data item.
+    /// </param>
+    /// <param name="propertyPath">
+    /// Property path.
+    /// </param>
+    /// <returns>
+    /// The value of the property, which is <see langword="null" /> when the item is null or the path cannot be
+    /// resolved; <paramref name="item" /> itself when the path is null or empty.
+    /// </returns>
     [RequiresUnreferencedCode("Dynamic data property paths reflect over public property and indexer metadata.")]
     internal static object? GetNestedPropertyValue(object? item, string? propertyPath)
     {
@@ -403,10 +465,18 @@ internal static class TypeHelper
     /// specified in the property path.  This method only supports indexers with a single parameter
     /// that is either an int or a string.  Int parameters take priority over string parameters.
     /// </summary>
-    /// <param name="type">Type to search.</param>
-    /// <param name="propertyPath">Property path.</param>
-    /// <param name="index">Set to the index if return value is an indexer, otherwise null.</param>
-    /// <returns>PropertyInfo for either a property or an indexer.</returns>
+    /// <param name="type">
+    /// Type to search.
+    /// </param>
+    /// <param name="propertyPath">
+    /// Property path.
+    /// </param>
+    /// <param name="index">
+    /// Set to the index if return value is an indexer, otherwise null.
+    /// </param>
+    /// <returns>
+    /// PropertyInfo for either a property or an indexer.
+    /// </returns>
     [RequiresUnreferencedCode("Dynamic data property paths reflect over public property and indexer metadata.")]
     internal static PropertyInfo? GetPropertyOrIndexer(this Type type, string? propertyPath, out object[]? index)
     {
@@ -500,9 +570,15 @@ internal static class TypeHelper
     /// If the specified property is an indexer, this method will prepend the object's
     /// default member name to it (e.g. "[foo]" returns "Item[foo]").
     /// </summary>
-    /// <param name="item">Declaring data item.</param>
-    /// <param name="property">Property name.</param>
-    /// <returns>Property with default member name prepended, or property if unchanged.</returns>
+    /// <param name="item">
+    /// Declaring data item.
+    /// </param>
+    /// <param name="property">
+    /// Property name.
+    /// </param>
+    /// <returns>
+    /// Property with default member name prepended, or property if unchanged.
+    /// </returns>
     internal static string? PrependDefaultMemberName(object? item, string? property)
     {
         if (item != null && !string.IsNullOrEmpty(property) && property[0] == LeftIndexerToken)
@@ -520,11 +596,16 @@ internal static class TypeHelper
     }
 
     /// <summary>
-    /// If the specified property is an indexer, this method will remove the object's
-    /// default member name from it (e.g. "Item[foo]" returns "[foo]").
+    /// If the specified property ends with an indexer, this method removes the text that precedes the indexer
+    /// (e.g. "Item[foo]" returns "[foo]").
     /// </summary>
-    /// <param name="property">Property name.</param>
-    /// <returns>Property with default member name removed, or property if unchanged.</returns>
+    /// <param name="property">
+    /// Property name.
+    /// </param>
+    /// <returns>
+    /// The property from its first <c>[</c> on, or the property unchanged when it does not end with <c>]</c> or
+    /// contains no <c>[</c>.
+    /// </returns>
     internal static string RemoveDefaultMemberName(string property)
     {
         if (!string.IsNullOrEmpty(property) && property[property.Length - 1] == RightIndexerToken)
@@ -545,8 +626,12 @@ internal static class TypeHelper
     /// property path which may include indexers.  For example, the string "abc.d[efg][h].ijk"
     /// would return the substrings: "abc", "d", "[efg]", "[h]", and "ijk".
     /// </summary>
-    /// <param name="propertyPath">Path to split.</param>
-    /// <returns>List of property substrings.</returns>
+    /// <param name="propertyPath">
+    /// Path to split.
+    /// </param>
+    /// <returns>
+    /// List of property substrings.
+    /// </returns>
     internal static List<string> SplitPropertyPath(string? propertyPath)
     {
         if (string.IsNullOrEmpty(propertyPath))

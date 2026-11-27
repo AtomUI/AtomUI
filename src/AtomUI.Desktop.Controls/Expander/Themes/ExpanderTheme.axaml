@@ -9,12 +9,15 @@
     <ControlTheme x:Key="{x:Type atom:Expander}" TargetType="atom:Expander">
         <Setter Property="Template">
             <ControlTemplate>
-                <!-- ClipContentToCornerRadius 是必需的，不是可选优化：PART_Frame 自己画圆角，
-                     但 header/body 是它的子节点且各自带背景。ClipToBounds 只做矩形裁剪，不做圆角裁剪，
-                     所以不开启时子节点的不透明背景会平铺到方形边界、覆盖掉圆角，视觉上圆角失效。
-                     默认主题的 HeaderBg 是 alpha≈2% 的 ColorFillAlter，缺陷几乎不可见；一旦用户通过
-                     Semantic Part 或 IsGhostStyle 设置不透明背景就会显形。开启后由本节点统一把
-                     整棵子树裁到圆角内框，与展开状态、ExpandDirection 无关。 -->
+                <!-- ClipContentToCornerRadius is required, not an optional optimization. PART_Frame paints the rounded
+                corners itself, but header and body are its child nodes and each has its own background.
+                ClipToBounds only clips to a rectangle, not to the corner radius, so without it the opaque
+                backgrounds of the children tile out to the square bounds and cover the corners, and the radius
+                visually disappears. The default theme's HeaderBg is ColorFillAlter with alpha about 2%, where the
+                defect is nearly invisible; it shows as soon as a user sets an opaque background through a Semantic
+                Part or IsGhostStyle. With it on, this node clips the whole subtree to the rounded inner frame,
+                independent of the expand state and ExpandDirection.
+                -->
                 <atom:PixelAlignedBorder Name="PART_Frame"
                                          ClipToBounds="True"
                                          ClipContentToCornerRadius="True"

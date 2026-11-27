@@ -3,8 +3,30 @@ using Avalonia.Controls;
 
 namespace AtomUI.Theme.Schema;
 
+/// <summary>
+/// The run-time description of one semantic part of a control. The source generator creates one for each
+/// <see cref="SemanticPartAttribute" /> declaration on the control and one for the implicit <c>root</c> part.
+/// The Gallery semantic preview reads them to locate and outline the parts.
+/// </summary>
 public sealed class SemanticPartDescriptor
 {
+    /// <summary>
+    /// Validates the values and stores each of them in the property of the same name. A part named <c>root</c> is
+    /// accepted only as the implicit root: path <c>root</c>, <see cref="SemanticPartCardinality.Single" />
+    /// cardinality, <see cref="SemanticPartCustomization.Root" /> customization and no other metadata.
+    /// </summary>
+    /// <exception cref="System.ArgumentNullException">
+    /// <paramref name="name" />, <paramref name="path" /> or <paramref name="contractType" /> is
+    /// <see langword="null" />, or <paramref name="selectorClass" /> is <see langword="null" /> for a part other
+    /// than the root.
+    /// </exception>
+    /// <exception cref="System.ArgumentOutOfRangeException">
+    /// <paramref name="cardinality" /> or <paramref name="customization" /> is not a defined enumeration value.
+    /// </exception>
+    /// <exception cref="System.ArgumentException">
+    /// A value is malformed or not allowed for the part, or <paramref name="theme" /> does not match
+    /// <paramref name="customization" />.
+    /// </exception>
     public SemanticPartDescriptor(
         string name,
         string path,
@@ -129,22 +151,80 @@ public sealed class SemanticPartDescriptor
         StyleType = styleType;
     }
 
+    /// <summary>
+    /// The name of the part, unique within its control; <c>root</c> for the implicit root part.
+    /// See <see cref="SemanticPartAttribute.Name" />.
+    /// </summary>
     public string Name { get; }
+    /// <summary>
+    /// The path of the part, which names its dedicated style class; <c>root</c> for the implicit root part.
+    /// See <see cref="SemanticPartAttribute.Path" />.
+    /// </summary>
     public string Path { get; }
+    /// <summary>
+    /// The class token on the part element, or <see langword="null" /> for the implicit root part.
+    /// See <see cref="SemanticPartAttribute.SelectorClass" />.
+    /// </summary>
     public string? SelectorClass { get; }
+    /// <summary>
+    /// The selector route from the control to the part element. It is <see langword="null" /> for the implicit
+    /// root part only; for a declared part an undeclared route is stored as <c>/template/ .</c> followed by
+    /// <see cref="SelectorClass" />. See <see cref="SemanticPartAttribute.SelectorRoute" />.
+    /// </summary>
     public string? SelectorRoute { get; }
+    /// <summary>
+    /// The type of element that implements the part; the control type itself for the implicit root part.
+    /// See <see cref="SemanticPartAttribute.ContractType" />.
+    /// </summary>
     public Type ContractType { get; }
+    /// <summary>
+    /// The number of elements the part has; <see cref="SemanticPartCardinality.Single" /> for the implicit root
+    /// part. See <see cref="SemanticPartAttribute.Cardinality" />.
+    /// </summary>
     public SemanticPartCardinality Cardinality { get; }
+    /// <summary>
+    /// How applications restyle the part; <see cref="SemanticPartCustomization.Root" /> for the implicit root
+    /// part. See <see cref="SemanticPartAttribute.Customization" />.
+    /// </summary>
     public SemanticPartCustomization Customization { get; }
+    /// <summary>
+    /// The theme metadata of the part. It is required when <see cref="Customization" /> is
+    /// <see cref="SemanticPartCustomization.SelectorAndTheme" /> and <see langword="null" /> for every other
+    /// customization. It describes the <see cref="Avalonia.Styling.ControlTheme" /> property of the control that
+    /// <see cref="SemanticPartAttribute.ThemePropertyName" /> names.
+    /// </summary>
     public ControlThemeSemanticPartDescriptor? Theme { get; }
+    /// <summary>
+    /// Whether the part element lives in another visual root than the control, so that the semantic preview must
+    /// locate and highlight it there. See <see cref="SemanticPartAttribute.CrossVisualRoot" />.
+    /// </summary>
     public bool CrossVisualRoot { get; }
+    /// <summary>
+    /// The release version in which the part was introduced, or <see langword="null" /> when the value was blank.
+    /// See <see cref="SemanticPartAttribute.Since" />.
+    /// </summary>
     public string? Since { get; }
+    /// <summary>
+    /// Whether the control creates the part element in code at run time instead of the theme template.
+    /// See <see cref="SemanticPartAttribute.RuntimeCreated" />.
+    /// </summary>
     public bool RuntimeCreated { get; }
+    /// <summary>
+    /// Whether the selector route crosses from the control's template into a nested control that has a template
+    /// of its own. See <see cref="SemanticPartAttribute.CrossNestedOwners" />.
+    /// </summary>
     public bool CrossNestedOwners { get; }
 
-    /// <summary>部件静止态透明/隐藏是设计语义；语义预览定位跳过 Opacity 资格过滤。</summary>
+    /// <summary>
+    /// Whether the part is transparent or hidden by design while the control is at rest, in which case the
+    /// semantic preview skips its <c>Opacity</c> &gt; 0 eligibility check and still outlines the part.
+    /// See <see cref="SemanticPartAttribute.RestHidden" />.
+    /// </summary>
     public bool RestHidden { get; }
 
+    /// <summary>
+    /// The type of the dedicated style class of the part, or <see langword="null" /> for the implicit root part.
+    /// </summary>
     public Type? StyleType { get; }
 
     private static void ValidatePartName(string value, string parameterName)
@@ -256,7 +336,7 @@ public sealed class SemanticPartDescriptor
         }
 
         var remaining = value.AsSpan();
-        // 可选的首段自锚点：owner 节点自身携带的过滤类（方向限定等场景）。
+        // Optional leading self-anchor: a filter class that the owner node itself carries, such as a direction limit.
         if (remaining[0] == '.')
         {
             var separator = remaining.IndexOf(' ');

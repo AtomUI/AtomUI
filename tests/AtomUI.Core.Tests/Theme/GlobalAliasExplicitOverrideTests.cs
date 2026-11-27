@@ -96,8 +96,8 @@ public class GlobalAliasExplicitOverrideTests
 
         var snapshot = ThemeTestSnapshotFactory.Compile(config, ThemeCompilerTests.CreateCompilerButtonDescriptor());
 
-        // Spec 6.4: a control's Map or Alias override replaces that one value and triggers no derivation; only a
-        // control that overrides a seed or fixes an axis is its own evaluation unit.
+        // A control's Map or Alias override replaces that one value and triggers no derivation; only a control that
+        // overrides a seed or fixes an axis is its own evaluation unit.
         snapshot.EffectiveGlobal<double>(s_button, "ControlOutlineWidth").ShouldBe(0);
         snapshot.EffectiveGlobal<BoxShadows>(s_button, "InputActiveShadow")[0].Spread.ShouldBe(2);
         snapshot.Global<double>("ControlOutlineWidth").ShouldBe(2);

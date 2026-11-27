@@ -4,7 +4,9 @@
     xmlns:atom="https://atomui.net"
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:Masonry}" TargetType="atom:Masonry">
-        <!-- Item 动效时长（appear/glide 用 Slow，leave 用 Fast），全局禁用动效时 token 值为 0，动效自动退化为瞬时 -->
+        <!-- Item motion duration (Slow for appear/glide, Fast for leave). With motion disabled globally the token value
+        is 0 and the motion degrades to instant.
+        -->
         <Setter Property="MotionDuration"
                 Value="{atom:MasonryTokenResource MotionDurationSlow}" />
         <Setter Property="LeaveMotionDuration"
@@ -21,8 +23,9 @@
                     <Grid>
                         <ItemsPresenter Name="PART_ItemsPresenter"
                                         ItemsPanel="{TemplateBinding ItemsPanel}" />
-                        <!-- 离场淡出托管层：移除的容器在原位置淡出（antd CSSMotion leave 期间节点保留），
-                             不参与命中测试与布局 -->
+                        <!-- Leave fade-out host layer: a removed container fades out in place (antd CSSMotion keeps the
+                        node during leave). It takes no part in hit testing or layout.
+                        -->
                         <Canvas Name="PART_MotionGhostLayer"
                                 IsHitTestVisible="False" />
                     </Grid>

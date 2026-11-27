@@ -4,7 +4,9 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls.Themes.Shadcn;
 
-/// <summary>The shadcn view of <see cref="CheckBoxToken"/>.</summary>
+/// <summary>
+/// The shadcn view of <see cref="CheckBoxToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class CheckBoxTokenRule : IControlTokenRule<ShadcnToken, CheckBoxToken>
 {
@@ -23,6 +25,7 @@ internal sealed class CheckBoxTokenRule : IControlTokenRule<ShadcnToken, CheckBo
         }
         token.CheckIndicatorSize        = global.ControlInteractiveSize;
 
+        // Ant Design formula kept as is: the registry `checkbox` values are merged into the control's globals only.
         token.CheckedMarkSize           = token.CheckIndicatorSize * 0.6;
         token.IndicatorTristateMarkSize = global.FontSizeLG / 2;
         token.IndicatorHoverBorderColor = global.ColorPrimaryHover;

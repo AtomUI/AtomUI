@@ -7,20 +7,79 @@ using Microsoft.Build.Framework;
 
 namespace AtomUI.Build.Tasks;
 
-/// <summary>Separates native-link validation from exact consumption of its published copy.</summary>
+/// <summary>
+/// Separates native-link validation from exact consumption of its published copy.
+/// </summary>
 public sealed class VerifyNative8RegistrationTask : RegistrationBuildTask
 {
+    /// <summary>
+    /// Identifier of the native compilation invocation: a caller-generated lowercase GUID of 32 hex digits. The
+    /// compilation receipt, the analysis report, the linked proof and the exported compilation symbol must all
+    /// carry it.
+    /// </summary>
     [Required] public string InvocationId { get; set; } = string.Empty;
+    /// <summary>
+    /// Absolute root directory of this invocation. Every input except a published <see cref="NativeBinary" /> must
+    /// be under it, and the receipts the task writes are placed in it.
+    /// </summary>
     [Required] public string OwnedRoot { get; set; } = string.Empty;
+    /// <summary>
+    /// Verification phase, <c>linked</c> or <c>published</c>; anything else fails the task. <c>linked</c> verifies
+    /// the image the SDK just linked and records its proof, and fails when a proof already exists. <c>published</c>
+    /// verifies that a published copy still matches that proof, and fails when no proof exists.
+    /// </summary>
     [Required] public string Phase { get; set; } = string.Empty;
+    /// <summary>
+    /// Hash of the linked proof as <see cref="LinkedReceiptHash" /> returned it in the <c>linked</c> phase. In the
+    /// <c>published</c> phase the task fails when the stored proof no longer has this hash. It is not read in the
+    /// <c>linked</c> phase.
+    /// </summary>
     public string ExpectedLinkedReceiptHash { get; set; } = string.Empty;
+    /// <summary>
+    /// Path of the compilation receipt, the invocation's <c>receipt.json</c>. The native compilation task wrote it
+    /// for this invocation: it must carry the invocation's identifier and name the analysis report with its hash.
+    /// </summary>
     [Required] public string ReceiptPointer { get; set; } = string.Empty;
+    /// <summary>
+    /// Object file of the native compilation. It must lie under <see cref="OwnedRoot" /> and match the path and
+    /// hash that the analysis report records.
+    /// </summary>
     [Required] public string NativeObject { get; set; } = string.Empty;
+    /// <summary>
+    /// Export list of the native compilation, one symbol per line. It must lie under <see cref="OwnedRoot" /> and
+    /// match the path and hash in the analysis report, and contain the compilation export exactly once.
+    /// </summary>
     [Required] public string ExportsFile { get; set; } = string.Empty;
+    /// <summary>
+    /// The native executable to verify. In the <c>linked</c> phase it is the image the SDK just linked: it must be
+    /// under <see cref="OwnedRoot" />, be a thin 64-bit Mach-O executable and export the receipt symbol with the
+    /// symbol's own name stored at the exported address. In the <c>published</c> phase it is the published copy,
+    /// given as an absolute path that contains no link and byte-identical to the verified linked image.
+    /// </summary>
     [Required] public string NativeBinary { get; set; } = string.Empty;
+    /// <summary>
+    /// Path of the receipt to hand to the next task. In the <c>linked</c> phase it is the linked proof
+    /// (<c>linked.json</c>). In the <c>published</c> phase it is a new receipt (<c>verified.json</c>) that binds
+    /// the published copy to that proof. Empty when the task failed.
+    /// </summary>
     [Output] public string VerifiedReceipt { get; set; } = string.Empty;
+    /// <summary>
+    /// Hash of the linked proof, set in both phases. Pass it back as <see cref="ExpectedLinkedReceiptHash" /> when
+    /// the <c>published</c> phase runs. Empty when the task failed.
+    /// </summary>
     [Output] public string LinkedReceiptHash { get; set; } = string.Empty;
 
+    /// <summary>
+    /// Verifies that the native image, the object file and the export list belong to this invocation and come from
+    /// its unchanged frozen inputs, then writes the receipt that <see cref="VerifiedReceipt" /> names.
+    /// </summary>
+    /// <returns>
+    /// <see langword="true" /> when the image was verified; <see langword="false" /> when an input is stale, foreign,
+    /// changed or malformed. On failure the task logs the error as <c>ATOMUIREG008</c> and empties both outputs.
+    /// It deletes the receipt it wrote in the <c>published</c> phase, or, in the <c>linked</c> phase before a proof
+    /// exists, the object file, export list, binary, compilation receipt and analysis report. An existing linked
+    /// proof is never deleted.
+    /// </returns>
     public override bool Execute()
     {
         Native8Invocation? invocation = null;

@@ -5,7 +5,9 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls.Themes.Shadcn;
 
-/// <summary>The shadcn view of <see cref="HyperLinkButtonToken"/>.</summary>
+/// <summary>
+/// The shadcn view of <see cref="HyperLinkButtonToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class HyperLinkButtonTokenRule : IControlTokenRule<ShadcnToken, HyperLinkButtonToken>
 {
@@ -23,6 +25,7 @@ internal sealed class HyperLinkButtonTokenRule : IControlTokenRule<ShadcnToken, 
         token.ContentLineHeightSM = CalculateLineHeight(token.ContentFontSizeSM);
         token.ContentLineHeightLG = CalculateLineHeight(token.ContentFontSizeLG);
 
+        // Ant Design formula kept as is: no registry value is merged into the hyperlink button tokens.
         var lineWidth = global.LineWidth;
         var controlHeightSM = global.ControlHeightSM;
         var controlHeight = global.ControlHeight;

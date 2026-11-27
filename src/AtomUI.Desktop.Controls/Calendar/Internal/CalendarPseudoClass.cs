@@ -1,7 +1,8 @@
 namespace AtomUI.Desktop.Controls.Internal.Calendar;
 
 /// <summary>
-/// Calendar 根控件伪类。
+/// Pseudo-classes that the <see cref="AtomUI.Desktop.Controls.Calendar" /> sets on its root control for its
+/// layout, mode and week column.
 /// </summary>
 internal static class CalendarRootPseudoClass
 {

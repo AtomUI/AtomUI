@@ -93,10 +93,14 @@ public class SampleTag : TemplatedControl;
 [ControlDesignToken]
 public sealed partial class SampleBadgeToken : AbstractControlDesignToken
 {
-    /// <summary>Surface color of the badge.</summary>
+    /// <summary>
+    /// Surface color of the badge.
+    /// </summary>
     public partial Color BadgeBackground { get; set; }
 
-    /// <summary>Edge length of the badge.</summary>
+    /// <summary>
+    /// Edge length of the badge.
+    /// </summary>
     public partial double BadgeSize { get; set; }
 }
 ```

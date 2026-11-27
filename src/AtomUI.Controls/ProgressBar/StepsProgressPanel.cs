@@ -11,6 +11,11 @@ internal sealed class ProgressStepRectangle : Rectangle
     internal static readonly StyledProperty<IBrush?> StepBrushProperty =
         AvaloniaProperty.Register<ProgressStepRectangle, IBrush?>(nameof(StepBrush));
 
+    /// <summary>
+    /// Fill of one step of a steps progress bar. The panel that owns the rectangle sets it whenever the step count,
+    /// the percentage or a progress brush of the owner changes: a step within the filled range gets the step brush
+    /// of the owner, every later step gets the groove brush. The theme binds the <c>Fill</c> of the rectangle to it.
+    /// </summary>
     internal IBrush? StepBrush
     {
         get => GetValue(StepBrushProperty);

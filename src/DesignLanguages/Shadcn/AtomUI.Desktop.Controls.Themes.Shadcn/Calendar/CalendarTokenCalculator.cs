@@ -5,9 +5,15 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls.Themes.Shadcn;
 
-/// <summary>The shadcn values of the shared <see cref="AbstractCalendarToken"/> layer.</summary>
+/// <summary>
+/// The shadcn values of the shared <see cref="AbstractCalendarToken" /> layer.
+/// </summary>
 public static class CalendarTokenCalculator
 {
+    /// <summary>
+    /// Assigns the shadcn values to <paramref name="token" />, the shared
+    /// <see cref="AbstractCalendarToken" /> layer of the calendar and the lunar calendar.
+    /// </summary>
     public static void Calculate(in TokenEvaluationContext<ShadcnToken> context, DesignToken global, AbstractCalendarToken token)
     {
 
@@ -16,6 +22,7 @@ public static class CalendarTokenCalculator
         token.FullPanelBg = global.ColorBgContainer;
         token.ItemActiveBg = global.ControlItemBgActive;
         token.ItemActiveColor = global.ColorPrimary;
+        // Ant Design formula kept as is: no registry value is merged into these sizes.
         token.YearControlWidth = 80;
         token.MonthControlWidth = 70;
         token.WeekHeaderHeight = global.ControlHeightSM * 0.75 +

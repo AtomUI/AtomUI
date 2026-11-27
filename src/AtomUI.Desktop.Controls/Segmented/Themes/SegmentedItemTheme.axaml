@@ -35,7 +35,9 @@
         </Style>
 
         <Style Selector="^:selected">
-            <!-- 选中背景始终由轨道层滑块承载（含滑块飞行途中），item 自身不绘制选中背景，避免目标项提前点亮 -->
+            <!-- The selected background is always carried by the track-layer thumb (including while the thumb is
+            flying); the item paints no selected background itself, so the target item does not light up early.
+            -->
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="Foreground"
                     Value="{atom:SegmentedTokenResource ItemSelectedColor}" />
@@ -71,7 +73,9 @@
             </Style>
         </Style>
 
-        <!-- 滑块飞行期间屏蔽非选中项的 hover/pressed 遮罩，对齐 antd thumb ~ item::after transparent 规则 -->
+        <!-- While the thumb flies, the hover/pressed masks of the unselected items are suppressed, as in the antd rule
+        thumb ~ item::after transparent.
+        -->
         <Style Selector="^[IsThumbMotionActive=True]:not(^:selected)">
             <Setter Property="Background" Value="Transparent" />
         </Style>
@@ -82,7 +86,9 @@
                     <Transitions>
                         <atom:SolidColorBrushTransition Property="Background"
                                                         atom:TokenTransitions.Duration="MotionDurationMid" />
-                        <!-- 文字颜色即时跟随选中值并柔化切换（antd item color transition） -->
+                        <!-- The text color follows the selected value immediately and softens the switch (the antd item
+                        color transition).
+                        -->
                         <atom:SolidColorBrushTransition Property="Foreground"
                                                         atom:TokenTransitions.Duration="MotionDurationMid" />
                     </Transitions>

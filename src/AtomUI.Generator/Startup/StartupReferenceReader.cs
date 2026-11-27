@@ -9,7 +9,9 @@ internal sealed record StartupThemeReference(int Version, string PackageId, stri
 internal sealed record StartupReferenceData(string AssemblyName, int Version, string? PackageId, string? PackageData,
     ValueArray<StartupLanguageReference> Languages, string? Error, ValueArray<StartupThemeReference> Themes = default);
 
-/// <summary>Reads raw string contracts per immutable metadata reference, cached across source edits.</summary>
+/// <summary>
+/// Reads raw string contracts per immutable metadata reference, cached across source edits.
+/// </summary>
 internal static class StartupReferenceReader
 {
     internal static IncrementalValueProvider<ImmutableArray<StartupReferenceData>> Create(

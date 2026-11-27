@@ -18,6 +18,10 @@ public sealed class DesignLanguageRegistrationGenerator : IIncrementalGenerator
 {
     private const string BuilderMetadataName = "AtomUI.Theme.IThemeManagerBuilder";
 
+    /// <summary>
+    /// Registers the pipeline that collects every class marked with <c>[LanguageDesignToken]</c> or
+    /// <c>[DesignLanguage]</c>, and builds the language token schemas and the registration class once per compilation.
+    /// </summary>
     public void Initialize(IncrementalGeneratorInitializationContext initContext)
     {
         var tokens = initContext.SyntaxProvider.ForAttributeWithMetadataName(
@@ -58,7 +62,7 @@ public sealed class DesignLanguageRegistrationGenerator : IIncrementalGenerator
             }
         }
 
-        // Spec 3.3: a language package does not reference any control package.
+        // A language package does not reference any control package.
         if (!languageNames.IsEmpty)
         {
             foreach (var reference in compilation.SourceModule.ReferencedAssemblySymbols)
@@ -260,7 +264,9 @@ public sealed class DesignLanguageRegistrationGenerator : IIncrementalGenerator
         output.ReportDiagnostic(Diagnostic.Create(AtomUIDiagnosticDescriptors.CompiledThemeBindingFailed, location, message));
 }
 
-/// <summary>The token properties of one language token class, its own and the inherited ones, ordered by name.</summary>
+/// <summary>
+/// The token properties of one language token class, its own and the inherited ones, ordered by name.
+/// </summary>
 internal sealed class LanguageTokenSchema
 {
     private LanguageTokenSchema(string typeName, string shortName, string memberName, IReadOnlyList<SchemaTokenInfo> tokens)
@@ -428,7 +434,10 @@ internal static class LocalLanguageModel
         return result;
     }
 
-    /// <summary>The registration creates the language with <c>new T()</c>: a concrete, non-generic class with a public parameterless constructor.</summary>
+    /// <summary>
+    /// The registration creates the language with <c>new T()</c>: a concrete, non-generic class with a public
+    /// parameterless constructor.
+    /// </summary>
     internal static bool IsRegistrable(INamedTypeSymbol type) =>
         !type.IsAbstract && !type.IsGenericType &&
         type.InstanceConstructors.Any(static constructor =>

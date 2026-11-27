@@ -4,7 +4,9 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls.Themes.Shadcn;
 
-/// <summary>The shadcn view of <see cref="DropdownButtonToken"/>.</summary>
+/// <summary>
+/// The shadcn view of <see cref="DropdownButtonToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class DropdownButtonTokenRule : IControlTokenRule<ShadcnToken, DropdownButtonToken>
 {
@@ -14,6 +16,8 @@ internal sealed class DropdownButtonTokenRule : IControlTokenRule<ShadcnToken, D
         var global = target.Global;
         ButtonTokenCalculator.CalculateGlobal(in context, global);
         ButtonGeometryTokenCalculator.Calculate(in context, global, token);
+        // Ant Design formula kept as is: the registry `button` values are merged by ButtonTokenCalculator, before
+        // and after this geometry.
         token.ContentFontSize = global.FontSize;
         token.ContentLineHeight = ButtonGeometryTokenCalculator.CalculateContentLineHeight(token.ContentFontSize);
         token.ContentPadding = ButtonGeometryTokenCalculator.CalculateContentPadding(token, global, token.ContentLineHeight, CustomizableSizeType.Middle);

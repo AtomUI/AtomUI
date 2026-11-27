@@ -4,43 +4,44 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
 
+/// <summary>
+/// Design tokens of <see cref="Pagination" />, the pager with numbered page items. It adds the colors, the font
+/// weight and the padding of a page item to the tokens it shares with the simple pager.
+/// </summary>
 [ControlDesignToken]
 public sealed partial class PaginationToken : AbstractPaginationToken
 {
 
     /// <summary>
-    /// 页码选项背景色
-    /// Background color of Pagination item
+    /// Background color of a page item when it is neither hovered nor the current page.
     /// </summary>
     public partial Color ItemBg { get; set; }
     
         
     /// <summary>
-    /// 页码激活态背景色
-    /// Background color of active Pagination item
+    /// Background color of the page item of the current page.
     /// </summary>
     public partial Color ItemActiveBg { get; set; }
     
     
     /// <summary>
-    /// 页码链接背景色
-    /// Background color of Pagination item link
+    /// Background color of the previous and next buttons of a bordered pager. AtomUI has no bordered pager, so no
+    /// element draws this value.
     /// </summary>
     [ReservedToken("antd Pagination itemLinkBg: the background of the bordered pagination's previous / next buttons. " +
                    "AtomUI Pagination has no bordered variant, so no element draws it.")]
     public partial Color ItemLinkBg { get; set; }
     
     /// <summary>
-    /// 页码激活态禁用状态背景色
-    /// Background color of disabled active Pagination item
+    /// Background color of the page item of the current page while the item is disabled.
     /// </summary>
     public partial Color ItemActiveBgDisabled { get; set; }
     
     
     
     /// <summary>
-    /// 输入框轮廓偏移量
-    /// Outline offset of input
+    /// Horizontal offset of the focus shadow around the page number input of the simple pager. That input is a
+    /// LineEdit drawn with the focus shadow of the input family, so no element draws this value.
     /// </summary>
     [ReservedToken("antd Pagination inputOutlineOffset (internal): the x offset of the simple pager input's focus " +
                    "box-shadow. The simple pager input here is a LineEdit drawn with the Input family's focus shadow.")]
@@ -52,36 +53,33 @@ public sealed partial class PaginationToken : AbstractPaginationToken
     
     
     /// <summary>
-    /// 页码激活态文本颜色
-    /// Text color of the active Pagination item
+    /// Text color of the page item of the current page.
     /// </summary>
     public partial Color ItemActiveColor { get; set; }
 
     /// <summary>
-    /// 页码激活态边框颜色
-    /// Border color of the active Pagination item
+    /// Border color of the page item of the current page.
     /// </summary>
     public partial Color ItemActiveBorderColor { get; set; }
 
     /// <summary>
-    /// 页码激活态悬停文本颜色
-    /// Text color of the hovered active Pagination item
+    /// Text color of the page item of the current page while the pointer is over it.
     /// </summary>
     public partial Color ItemActiveHoverColor { get; set; }
 
     /// <summary>
-    /// 页码激活态悬停边框颜色
-    /// Border color of the hovered active Pagination item
+    /// Border color of the page item of the current page while the pointer is over it.
     /// </summary>
     public partial Color ItemActiveHoverBorderColor { get; set; }
 
     /// <summary>
-    /// 页码激活态字重
-    /// Font weight of the active Pagination item
+    /// Font weight of the page number in the page item of the current page.
     /// </summary>
     public partial FontWeight ItemActiveFontWeight { get; set; }
     
-    /// <summary>Inline padding between the page number and the edges of its pagination item.</summary>
+    /// <summary>
+    /// Inline padding between the page number and the edges of its pagination item.
+    /// </summary>
     public partial Thickness PaginationItemPaddingInline { get; set; }
     
 }

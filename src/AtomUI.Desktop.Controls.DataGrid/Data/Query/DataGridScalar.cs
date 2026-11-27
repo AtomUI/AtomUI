@@ -1,20 +1,63 @@
 namespace AtomUI.Desktop.Controls;
 
+/// <summary>
+/// The family of CLR types that a <see cref="DataGridScalar" /> carries. It decides which payload holds the value
+/// and how two scalars of that kind are compared. Members are declared in the order that
+/// <see cref="DataGridScalar.CompareTo(DataGridScalar)" /> uses to sort scalars of different kinds.
+/// </summary>
 public enum DataGridScalarKind : byte
 {
+    /// <summary>
+    /// No value. Every scalar of this kind is <see cref="DataGridScalar.Null" />.
+    /// </summary>
     Null,
+    /// <summary>
+    /// A <see cref="bool" />, stored as 0 or 1.
+    /// </summary>
     Boolean,
+    /// <summary>
+    /// A signed integer of any width, widened to 64 bits.
+    /// </summary>
     SignedInteger,
+    /// <summary>
+    /// An unsigned integer of any width, widened to 64 bits.
+    /// </summary>
     UnsignedInteger,
+    /// <summary>
+    /// A finite <see cref="float" /> or <see cref="double" />, stored as <see cref="double" />.
+    /// </summary>
     Double,
+    /// <summary>
+    /// A <see cref="decimal" />.
+    /// </summary>
     Decimal,
+    /// <summary>
+    /// A <see cref="System.String" />, compared ordinally.
+    /// </summary>
     String,
+    /// <summary>
+    /// A <see cref="System.Guid" />.
+    /// </summary>
     Guid,
+    /// <summary>
+    /// A <see cref="System.DateOnly" />, stored as its day number.
+    /// </summary>
     DateOnly,
+    /// <summary>
+    /// A <see cref="System.TimeOnly" />, stored as its ticks.
+    /// </summary>
     TimeOnly,
+    /// <summary>
+    /// A <see cref="System.DateTimeOffset" />, stored as its UTC ticks. The offset is not kept, so two scalars
+    /// of this kind are equal when they are the same instant.
+    /// </summary>
     DateTimeOffset
 }
 
+/// <summary>
+/// An immutable field value of one of the kinds in <see cref="DataGridScalarKind" />: the form in which a data
+/// source reports a value to the DataGrid and in which a filter or an edit passes values back to it.
+/// </summary>
 public readonly struct DataGridScalar : IEquatable<DataGridScalar>, IComparable<DataGridScalar>
 {
     private readonly long _signedValue;
@@ -42,19 +85,44 @@ public readonly struct DataGridScalar : IEquatable<DataGridScalar>, IComparable<
         _guidValue = guidValue;
     }
 
+    /// <summary>
+    /// The kind of CLR value this scalar carries, or <see cref="DataGridScalarKind.Null" /> when there is none.
+    /// </summary>
     public DataGridScalarKind Kind { get; }
 
+    /// <summary>
+    /// The scalar that carries no value, which is also what <c>default(DataGridScalar)</c> yields. Every scalar
+    /// of kind <see cref="DataGridScalarKind.Null" /> is equal to it.
+    /// </summary>
     public static DataGridScalar Null => default;
 
+    /// <summary>
+    /// Creates a scalar of kind <see cref="DataGridScalarKind.Boolean" />.
+    /// </summary>
     public static DataGridScalar FromBoolean(bool value) =>
         new(DataGridScalarKind.Boolean, signedValue: value ? 1 : 0);
 
+    /// <summary>
+    /// Creates a scalar of kind <see cref="DataGridScalarKind.SignedInteger" />. Values of the narrower signed
+    /// integer types share this kind after widening.
+    /// </summary>
     public static DataGridScalar FromInt64(long value) =>
         new(DataGridScalarKind.SignedInteger, signedValue: value);
 
+    /// <summary>
+    /// Creates a scalar of kind <see cref="DataGridScalarKind.UnsignedInteger" />. Values of the narrower unsigned
+    /// integer types share this kind after widening.
+    /// </summary>
     public static DataGridScalar FromUInt64(ulong value) =>
         new(DataGridScalarKind.UnsignedInteger, unsignedValue: value);
 
+    /// <summary>
+    /// Creates a scalar of kind <see cref="DataGridScalarKind.Double" />, which is also the kind of
+    /// <see cref="float" /> values. Negative zero is stored as positive zero.
+    /// </summary>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// <paramref name="value" /> is NaN or infinite.
+    /// </exception>
     public static DataGridScalar FromDouble(double value)
     {
         if (!double.IsFinite(value))
@@ -64,27 +132,54 @@ public readonly struct DataGridScalar : IEquatable<DataGridScalar>, IComparable<
         return new DataGridScalar(DataGridScalarKind.Double, doubleValue: value == 0d ? 0d : value);
     }
 
+    /// <summary>
+    /// Creates a scalar of kind <see cref="DataGridScalarKind.Decimal" />.
+    /// </summary>
     public static DataGridScalar FromDecimal(decimal value) =>
         new(DataGridScalarKind.Decimal, decimalValue: value);
 
+    /// <summary>
+    /// Creates a scalar of kind <see cref="DataGridScalarKind.String" /> that carries the given string unchanged.
+    /// </summary>
+    /// <exception cref="ArgumentNullException">
+    /// <paramref name="value" /> is <see langword="null" />.
+    /// </exception>
     public static DataGridScalar FromString(string value)
     {
         ArgumentNullException.ThrowIfNull(value);
         return new DataGridScalar(DataGridScalarKind.String, stringValue: value);
     }
 
+    /// <summary>
+    /// Creates a scalar of kind <see cref="DataGridScalarKind.Guid" />.
+    /// </summary>
     public static DataGridScalar FromGuid(Guid value) =>
         new(DataGridScalarKind.Guid, guidValue: value);
 
+    /// <summary>
+    /// Creates a scalar of kind <see cref="DataGridScalarKind.DateOnly" />.
+    /// </summary>
     public static DataGridScalar FromDateOnly(DateOnly value) =>
         new(DataGridScalarKind.DateOnly, signedValue: value.DayNumber);
 
+    /// <summary>
+    /// Creates a scalar of kind <see cref="DataGridScalarKind.TimeOnly" />.
+    /// </summary>
     public static DataGridScalar FromTimeOnly(TimeOnly value) =>
         new(DataGridScalarKind.TimeOnly, signedValue: value.Ticks);
 
+    /// <summary>
+    /// Creates a scalar of kind <see cref="DataGridScalarKind.DateTimeOffset" />.
+    /// </summary>
     public static DataGridScalar FromDateTimeOffset(DateTimeOffset value) =>
         new(DataGridScalarKind.DateTimeOffset, signedValue: value.UtcTicks);
 
+    /// <summary>
+    /// Returns the string carried by a scalar of kind <see cref="DataGridScalarKind.String" />.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">
+    /// <see cref="Kind" /> is not <see cref="DataGridScalarKind.String" />.
+    /// </exception>
     public string GetString()
     {
         if (Kind != DataGridScalarKind.String)
@@ -96,7 +191,8 @@ public readonly struct DataGridScalar : IEquatable<DataGridScalar>, IComparable<
     }
 
     /// <summary>
-    /// Returns the boxed CLR value carried by the scalar, using UTC for <see cref="DateTimeOffset"/>.
+    /// Returns the boxed CLR value carried by the scalar, using UTC for <see cref="DateTimeOffset" />, or
+    /// <see langword="null" /> when the kind is <see cref="DataGridScalarKind.Null" />.
     /// </summary>
     internal object? ToValue() => Kind switch
     {
@@ -114,6 +210,20 @@ public readonly struct DataGridScalar : IEquatable<DataGridScalar>, IComparable<
         _ => throw new InvalidOperationException($"Unknown scalar kind '{Kind}'.")
     };
 
+    /// <summary>
+    /// Converts a boxed CLR value to a scalar when a kind supports its type.
+    /// </summary>
+    /// <param name="value">
+    /// The value to convert. <see langword="null" /> yields <see cref="Null" />. Narrower integers and
+    /// <see cref="float" /> are widened as the <c>From</c> methods of this struct widen them.
+    /// </param>
+    /// <param name="scalar">
+    /// The converted scalar, or <see cref="Null" /> when the conversion fails.
+    /// </param>
+    /// <returns>
+    /// <c>true</c> when the value was converted. <c>false</c> when no kind supports the type of the value, or
+    /// when it is a <see cref="float" /> or <see cref="double" /> that is NaN or infinite.
+    /// </returns>
     internal static bool TryFromValue(object? value, out DataGridScalar scalar)
     {
         switch (value)
@@ -178,6 +288,15 @@ public readonly struct DataGridScalar : IEquatable<DataGridScalar>, IComparable<
         }
     }
 
+    /// <summary>
+    /// Compares this scalar with <paramref name="other" /> for order. Scalars of different kinds are ordered by
+    /// <see cref="Kind" />, which puts <see cref="DataGridScalarKind.Null" /> first. Scalars of the same kind are
+    /// ordered by the value they carry, ordinally for strings.
+    /// </summary>
+    /// <returns>
+    /// A negative value when this scalar precedes <paramref name="other" />, zero when the two are equal, and a
+    /// positive value otherwise.
+    /// </returns>
     public int CompareTo(DataGridScalar other)
     {
         var kindComparison = Kind.CompareTo(other.Kind);
@@ -203,6 +322,11 @@ public readonly struct DataGridScalar : IEquatable<DataGridScalar>, IComparable<
         };
     }
 
+    /// <summary>
+    /// Returns whether <paramref name="other" /> carries the same kind and the same value. Scalars of different
+    /// kinds are never equal, so the same number given to <see cref="FromInt64(long)" /> and to
+    /// <see cref="FromDouble(double)" /> does not compare equal.
+    /// </summary>
     public bool Equals(DataGridScalar other)
     {
         if (Kind != other.Kind)
@@ -227,8 +351,15 @@ public readonly struct DataGridScalar : IEquatable<DataGridScalar>, IComparable<
         };
     }
 
+    /// <summary>
+    /// Returns whether <paramref name="obj" /> is a <see cref="DataGridScalar" /> that equals this one.
+    /// </summary>
     public override bool Equals(object? obj) => obj is DataGridScalar other && Equals(other);
 
+    /// <summary>
+    /// Returns a hash code that is the same for any two scalars that
+    /// <see cref="Equals(DataGridScalar)" /> reports as equal.
+    /// </summary>
     public override int GetHashCode() => Kind switch
     {
         DataGridScalarKind.Null => 0,
@@ -246,18 +377,46 @@ public readonly struct DataGridScalar : IEquatable<DataGridScalar>, IComparable<
         _ => 0
     };
 
+    /// <summary>
+    /// Returns whether <paramref name="left" /> and <paramref name="right" /> carry the same kind and value.
+    /// </summary>
     public static bool operator ==(DataGridScalar left, DataGridScalar right) => left.Equals(right);
 
+    /// <summary>
+    /// Returns whether <paramref name="left" /> and <paramref name="right" /> differ in kind or in value.
+    /// </summary>
     public static bool operator !=(DataGridScalar left, DataGridScalar right) => !left.Equals(right);
 
+    /// <summary>
+    /// Returns whether <paramref name="left" /> precedes <paramref name="right" /> in the order of
+    /// <see cref="CompareTo(DataGridScalar)" />.
+    /// </summary>
     public static bool operator <(DataGridScalar left, DataGridScalar right) => left.CompareTo(right) < 0;
 
+    /// <summary>
+    /// Returns whether <paramref name="left" /> precedes or equals <paramref name="right" /> in the order of
+    /// <see cref="CompareTo(DataGridScalar)" />.
+    /// </summary>
     public static bool operator <=(DataGridScalar left, DataGridScalar right) => left.CompareTo(right) <= 0;
 
+    /// <summary>
+    /// Returns whether <paramref name="left" /> follows <paramref name="right" /> in the order of
+    /// <see cref="CompareTo(DataGridScalar)" />.
+    /// </summary>
     public static bool operator >(DataGridScalar left, DataGridScalar right) => left.CompareTo(right) > 0;
 
+    /// <summary>
+    /// Returns whether <paramref name="left" /> follows or equals <paramref name="right" /> in the order of
+    /// <see cref="CompareTo(DataGridScalar)" />.
+    /// </summary>
     public static bool operator >=(DataGridScalar left, DataGridScalar right) => left.CompareTo(right) >= 0;
 
+    /// <summary>
+    /// Formats the carried value as a string that does not depend on the current culture: the stored number for
+    /// the numeric and date and time kinds, "0" or "1" for <see cref="DataGridScalarKind.Boolean" />, the "D" form
+    /// for <see cref="DataGridScalarKind.Guid" />, the string itself for <see cref="DataGridScalarKind.String" />,
+    /// and an empty string for <see cref="DataGridScalarKind.Null" />.
+    /// </summary>
     internal string ToCanonicalString() => Kind switch
     {
         DataGridScalarKind.Null => string.Empty,

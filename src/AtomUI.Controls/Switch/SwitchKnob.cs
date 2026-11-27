@@ -56,7 +56,7 @@ internal class SwitchKnob : TemplatedControl
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<SwitchKnob>();
     
     /// <summary>
-    /// Stroke width of the loading arc; the theme fills it from a line-width Token.
+    /// Identifies the <see cref="LoadIndicatorThickness" /> property.
     /// </summary>
     internal static readonly StyledProperty<double> LoadIndicatorThicknessProperty =
         AvaloniaProperty.Register<SwitchKnob, double>(nameof(LoadIndicatorThickness));
@@ -78,30 +78,59 @@ internal class SwitchKnob : TemplatedControl
         set => SetValue(RotationProperty, value);
     }
     
+    /// <summary>
+    /// Brush of the loading arc that the knob draws while it is loading. The switch theme sets it on the knob part
+    /// from the <c>OffStateLoadIndicatorColor</c> Token and, while the switch is checked, from the
+    /// <c>SwitchColor</c> Token. The default is <see langword="null" />.
+    /// </summary>
     internal IBrush? LoadIndicatorBrush
     {
         get => GetValue(LoadIndicatorBrushProperty);
         set => SetValue(LoadIndicatorBrushProperty, value);
     }
     
+    /// <summary>
+    /// Size of the knob, in DIPs. The knob reports it as its desired size; its painted height is the height it is
+    /// arranged with. The switch copies its own <c>KnobSize</c> to the knob after the template is applied and
+    /// whenever that value changes; its theme takes that value from the <c>HandleSizeSM</c> Token for the small size
+    /// and from the <c>HandleSize</c> Token for the other sizes.
+    /// </summary>
     internal Size KnobSize
     {
         get => GetValue(KnobSizeProperty);
         set => SetValue(KnobSizeProperty, value);
     }
     
+    /// <summary>
+    /// Extra width of the knob, in DIPs, on top of the width of <see cref="KnobSize" />. The switch sets it to the
+    /// difference between the stretched handle width and the knob width while it is pressed and press stretch is
+    /// enabled, and to <c>0</c> otherwise; its template forwards the value to the knob. The knob paints a circle
+    /// when its extended width equals its arranged height and a pill otherwise.
+    /// </summary>
     internal double KnobWidthExtension
     {
         get => GetValue(KnobWidthExtensionProperty);
         set => SetValue(KnobWidthExtensionProperty, value);
     }
     
+    /// <summary>
+    /// Whether the knob rotates the loading arc while it is loading; <see langword="true" /> by default. The
+    /// rotation runs while this is <see langword="true" />, the knob is attached to a visual tree and visible with
+    /// every visual ancestor, the effective <see cref="MotionActivity" /> source is active and
+    /// <see cref="LoadingAnimationDuration" /> is positive; setting this to <see langword="false" /> stops a running
+    /// rotation. The switch template forwards the value of the switch to the knob.
+    /// </summary>
     internal bool IsMotionEnabled
     {
         get => GetValue(IsMotionEnabledProperty);
         set => SetValue(IsMotionEnabledProperty, value);
     }
     
+    /// <summary>
+    /// Stroke width of the loading arc, in DIPs. An explicitly set value is used as it is. Without one, the
+    /// thickness of the Token that <see cref="LoadingIndicatorTokenResourceKeys" /> names is used while the knob
+    /// is loading and the keys are set; otherwise the raw value applies, <c>0</c> by default.
+    /// </summary>
     internal double LoadIndicatorThickness
     {
         get => IsSet(LoadIndicatorThicknessProperty) || _loadingPaintTokens is null
@@ -110,6 +139,11 @@ internal class SwitchKnob : TemplatedControl
         set => SetValue(LoadIndicatorThicknessProperty, value);
     }
 
+    /// <summary>
+    /// Duration of one turn of the loading arc. A change restarts a running rotation with the new duration.
+    /// <see cref="TimeSpan.Zero" />, the default, keeps the arc from rotating. The knob theme sets it from the
+    /// <c>LoadingAnimationDuration</c> Token.
+    /// </summary>
     internal TimeSpan LoadingAnimationDuration
     {
         get => GetValue(LoadingAnimationDurationProperty);
@@ -123,6 +157,13 @@ internal class SwitchKnob : TemplatedControl
         set => SetAndRaise(LoadingBgOpacityProperty, ref _loadingBgOpacity, value);
     }
 
+    /// <summary>
+    /// The resource keys of the two Tokens that style the loading arc, its opacity and its stroke thickness. While
+    /// the knob is loading and this is set, the knob subscribes to both Tokens, <see cref="LoadingBgOpacity" />
+    /// returns the opacity of its Token and <see cref="LoadIndicatorThickness" /> returns the thickness of its Token
+    /// unless a value is set explicitly. <see langword="null" /> removes the subscription. The knob theme assigns
+    /// <c>ToggleSwitchResources.LoadingIndicatorTokenResourceKeys</c>.
+    /// </summary>
     internal SwitchLoadingIndicatorTokenResourceKeys? LoadingIndicatorTokenResourceKeys
     {
         get => GetValue(LoadingIndicatorTokenResourceKeysProperty);
@@ -223,8 +264,9 @@ internal class SwitchKnob : TemplatedControl
         {
             if (KnobBoxShadow != null)
             {
-                // 派生效值以 Style 优先级写入即时帧；同优先级下用户样式帧后添加、后求值，
-                // 因此语义样式可以覆盖主题派生的把手阴影
+                // The derived value is written at Style priority into the current value frame. A user style frame added
+                // later at the same priority is evaluated later, so a semantic style can override the knob shadow that
+                // the theme derived.
                 SetValue(EffectProperty, (IEffect?)new DropShadowEffect
                 {
                     OffsetX    = KnobBoxShadow.Value.OffsetX,
@@ -418,4 +460,11 @@ internal class SwitchKnob : TemplatedControl
     }
 }
 
+/// <summary>
+/// The resource keys of the Tokens that style the loading indicator of a switch: its opacity and its stroke
+/// thickness; <c>LoadingIndicatorTokenResourceKeys</c> of the switch in AtomUI.Desktop.Controls exposes them.
+/// </summary>
+/// <remarks>
+/// Each component is a Token resource key, not a value.
+/// </remarks>
 internal sealed record SwitchLoadingIndicatorTokenResourceKeys(object Opacity, object Thickness);

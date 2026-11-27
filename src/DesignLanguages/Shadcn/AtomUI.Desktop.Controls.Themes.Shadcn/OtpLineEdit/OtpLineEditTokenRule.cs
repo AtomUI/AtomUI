@@ -3,7 +3,9 @@ using AtomUI.Theme.Languages;
 
 namespace AtomUI.Desktop.Controls.Themes.Shadcn;
 
-/// <summary>The shadcn view of <see cref="OtpLineEditToken"/>.</summary>
+/// <summary>
+/// The shadcn view of <see cref="OtpLineEditToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class OtpLineEditTokenRule : IControlTokenRule<ShadcnToken, OtpLineEditToken>
 {

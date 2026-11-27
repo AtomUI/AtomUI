@@ -7,7 +7,9 @@ using AtomUI.Build.Tasks.Registration;
 
 namespace AtomUI.Build.Tasks;
 
-/// <summary>Combines a maintainer-built managed ILC8 bundle with SDK-restored host native helpers.</summary>
+/// <summary>
+/// Combines a maintainer-built managed ILC8 bundle with SDK-restored host native helpers.
+/// </summary>
 public sealed class PrepareNative8RegistrationTask : RegistrationBuildTask
 {
     private const string SourceCommit = "a6bde67c455f2ac219988c7a66171631090b6f65";
@@ -17,24 +19,111 @@ public sealed class PrepareNative8RegistrationTask : RegistrationBuildTask
         "ILCompiler.Compiler.dll", "ILCompiler.TypeSystem.dll", "ILCompiler.MetadataTransform.dll",
         "ILCompiler.DependencyAnalysisFramework.dll", "ILCompiler.RyuJit.dll"
     ];
+    /// <summary>
+    /// Directory of the maintainer-built managed ILC8 compiler. It must contain exactly the audited compiler files
+    /// and the <c>atomui-ilc8-capability.json</c> that describes them, with no subdirectory and no symbolic link,
+    /// and every compiler file must match the hash that the capability file records.
+    /// </summary>
     [Required] public string ManagedCompilerBundle { get; set; } = string.Empty;
+    /// <summary>
+    /// Directory of the SDK-restored <c>runtime.osx-arm64.microsoft.dotnet.ilcompiler</c> 8.x package. The native
+    /// helpers <c>libjitinterface</c>, <c>libobjwriter</c> and the JIT for <see cref="TargetRid" /> are read from
+    /// its <c>tools</c> subdirectory.
+    /// </summary>
     [Required] public string IlcHostPackagePath { get; set; } = string.Empty;
+    /// <summary>
+    /// Runtime identifier of the build host. It must be <c>osx-arm64</c>, and the process must run on macOS ARM64;
+    /// any other host or target fails the task. It is part of <see cref="HostFingerprint" />.
+    /// </summary>
     [Required] public string HostRid { get; set; } = string.Empty;
+    /// <summary>
+    /// Runtime identifier that the native compilation targets, <c>osx-arm64</c> or <c>osx-x64</c>. It selects the
+    /// JIT helper that is copied from <see cref="IlcHostPackagePath" /> and is part of
+    /// <see cref="HostFingerprint" />.
+    /// </summary>
     [Required] public string TargetRid { get; set; } = string.Empty;
+    /// <summary>
+    /// Identifier of this native compilation invocation. The task records it with <see cref="OwnedRoot" /> in the
+    /// invocation file under that root, and the launchers pass it to the cleanup command that they run after a
+    /// failure.
+    /// </summary>
     [Required] public string InvocationId { get; set; } = string.Empty;
+    /// <summary>
+    /// Absolute root directory of this invocation. <see cref="NativeObject" />, <see cref="ExportsFile" /> and
+    /// <see cref="NativeBinary" /> must lie under it; the task replaces them with the result of that ownership
+    /// check. The invocation file is written under this root, the receipt is expected under it, and a failed run
+    /// deletes the files that it created there.
+    /// </summary>
     [Required] public string OwnedRoot { get; set; } = string.Empty;
+    /// <summary>
+    /// Root directory for what this task derives from its inputs: the inputs directory
+    /// <see cref="PrepareInputsRoot" />, the prepared host under <c>hosts</c> and the lock file that serializes the
+    /// preparation of a host.
+    /// </summary>
     [Required] public string IntermediateRoot { get; set; } = string.Empty;
+    /// <summary>
+    /// Path of the dotnet host that executes the managed compiler. The generated <c>ilc</c> launcher runs
+    /// <c>host/ilc.dll</c> through it with <c>exec --roll-forward Major</c>, and the cleanup command appended to
+    /// both launchers runs the compiler through it with <c>--atomui-cleanup-invocation</c>.
+    /// </summary>
     [Required] public string DotNetHostPath { get; set; } = string.Empty;
+    /// <summary>
+    /// Path of the object file that the native compilation produces. It must lie under <see cref="OwnedRoot" />
+    /// and is passed to the cleanup command that the launchers run after a failure.
+    /// </summary>
     [Required] public string NativeObject { get; set; } = string.Empty;
+    /// <summary>
+    /// Path of the export list that the native compilation produces, one symbol per line. It must lie under
+    /// <see cref="OwnedRoot" /> and is passed to the cleanup command that the launchers run after a failure.
+    /// </summary>
     [Required] public string ExportsFile { get; set; } = string.Empty;
+    /// <summary>
+    /// Path of the native binary that the native compilation produces. It must lie under <see cref="OwnedRoot" />
+    /// and is passed to the cleanup command that the launchers run after a failure.
+    /// </summary>
     [Required] public string NativeBinary { get; set; } = string.Empty;
+    /// <summary>
+    /// Path of the native linker. The generated <c>native-linker</c> launcher calls it with every argument it
+    /// received and, when the linker exits non-zero, runs the cleanup command of this invocation.
+    /// </summary>
     [Required] public string NativeLinker { get; set; } = string.Empty;
+    /// <summary>
+    /// The <c>tools</c> directory of the prepared host, with a trailing directory separator. It holds the generated
+    /// <c>ilc</c> and <c>native-linker</c> launchers. It is empty when the task fails.
+    /// </summary>
     [Output] public string ScopedIlcToolsPath { get; set; } = string.Empty;
+    /// <summary>
+    /// Path of the generated <c>native-linker</c> launcher in the prepared host. It is empty when the task fails.
+    /// </summary>
     [Output] public string ScopedNativeLinkerPath { get; set; } = string.Empty;
+    /// <summary>
+    /// Directory <c>inputs</c> under <see cref="IntermediateRoot" /> that this task designates for the inputs of
+    /// the native compilation. The task only names the directory and does not create it. It is empty when the
+    /// task fails.
+    /// </summary>
     [Output] public string PrepareInputsRoot { get; set; } = string.Empty;
+    /// <summary>
+    /// Path of the <c>receipt.json</c> file of this invocation under <see cref="OwnedRoot" />, where the receipt of
+    /// the native compilation is expected and is read back by the verification step. It is empty when the task
+    /// fails.
+    /// </summary>
     [Output] public string ReceiptPointer { get; set; } = string.Empty;
+    /// <summary>
+    /// SHA-256 of the serialized host state: the host and target RIDs with the path and hash of every file that is
+    /// copied into the prepared host. It names the host directory under <c>hosts</c> and the lock file that guards
+    /// its preparation. It is empty when the task fails.
+    /// </summary>
     [Output] public string HostFingerprint { get; set; } = string.Empty;
 
+    /// <summary>
+    /// Validates the invocation, the compiler bundle and the host package, then prepares the native host. It writes
+    /// <c>invocation.json</c> under <see cref="OwnedRoot" />, assembles the compiler files, the native helpers and
+    /// the generated launchers, and stores them in the directory under <c>hosts</c> in
+    /// <see cref="IntermediateRoot" /> that <see cref="HostFingerprint" /> names, so that an unchanged host is
+    /// prepared only once. Returns <see langword="true" /> when the host is ready. Otherwise it deletes the files
+    /// that it created under <see cref="OwnedRoot" />, empties every output, logs error ATOMUIREG008 and returns
+    /// <see langword="false" />.
+    /// </summary>
     public override bool Execute()
     {
         Native8Invocation? invocation = null;

@@ -52,5 +52,6 @@ public static class Program
     }
 }
 
-// 本工程引用 AtomUI 生成器：应用类声明为 partial，由生成器补上 RegisterServices 挂接。
+// This project references the AtomUI generator: the app class is declared partial and the generator
+// adds the RegisterServices hook.
 public partial class FixtureApplication : Application;

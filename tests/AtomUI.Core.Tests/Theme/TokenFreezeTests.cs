@@ -6,7 +6,7 @@ using Xunit;
 namespace AtomUI.Core.Tests.Theme;
 
 /// <summary>
-/// Freeze by name (spec 5.3): an explicit value is frozen before the derivation runs, and the generated setter ignores a
+/// Freeze by name: an explicit value is frozen before the derivation runs, and the generated setter ignores a
 /// later write to a frozen token. A rejected token throws on write; accepted writes can be tracked.
 /// </summary>
 public class TokenFreezeTests

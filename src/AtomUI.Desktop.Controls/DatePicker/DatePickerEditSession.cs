@@ -2,7 +2,9 @@ using AtomUI.Desktop.Controls.Internal.DateViewer;
 
 namespace AtomUI.Desktop.Controls;
 
-/// <summary>One editor owns raw candidates, clock cursor and confirmation progress. No visuals or popup.</summary>
+/// <summary>
+/// One editor owns raw candidates, clock cursor and confirmation progress. No visuals or popup.
+/// </summary>
 internal sealed class DatePickerEditSession
 {
     public DateViewerRange Draft { get; private set; } = new(null, null);

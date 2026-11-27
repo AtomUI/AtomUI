@@ -16,54 +16,91 @@ namespace AtomUI.Controls;
 
 /// <summary>
 /// Base of every skeleton. A group of nested skeletons shares one shimmer: only the outermost skeleton of the group,
-/// the <i>shimmer host</i>, runs it. Blocks are <see cref="Border"/>s marked with <see cref="IsShimmerBlockProperty"/>;
+/// the <i>shimmer host</i>, runs it. Blocks are <see cref="Border" />s marked with <see cref="IsShimmerBlockProperty" />;
 /// each registers with its host. While the shimmer runs, the host hides the blocks' own backgrounds and a custom
 /// composition visual on the host's shimmer layer paints every block with one band on the render thread. Whether it
-/// runs is decided by <see cref="MotionGate"/> together with <see cref="IsActive"/>, <see cref="IsMotionEnabled"/> and
-/// <see cref="MotionDuration"/>.
+/// runs is decided by <see cref="MotionGate" /> together with <see cref="IsActive" />, <see cref="IsMotionEnabled" /> and
+/// <see cref="MotionDuration" />.
 /// </summary>
 public abstract class AbstractSkeleton : TemplatedControl
 {
-    /// <summary>Template part the shimmer visual hangs on; a composite skeleton looks it up in its placeholder.</summary>
+    /// <summary>
+    /// Template part the shimmer visual hangs on; a composite skeleton looks it up in its placeholder.
+    /// </summary>
     internal const string ShimmerLayerPart = "PART_ShimmerLayer";
 
-    /// <summary>Background layer of the element templates; the shimmer layer when no <see cref="ShimmerLayerPart"/>
-    /// exists.</summary>
+    /// <summary>
+    /// Background layer of the element templates; the shimmer layer when no <see cref="ShimmerLayerPart" />
+    /// exists.
+    /// </summary>
     internal const string ContentLayerPart = "PART_ContentLayer";
 
     #region 公共属性定义
 
+    /// <summary>
+    /// Identifies the <see cref="IsActive" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsActiveProperty =
         AvaloniaProperty.Register<AbstractSkeleton, bool>(nameof(IsActive));
 
+    /// <summary>
+    /// Identifies the <see cref="IsMotionEnabled" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<AbstractSkeleton>();
 
+    /// <summary>
+    /// Identifies the <see cref="MotionDuration" /> property.
+    /// </summary>
     public static readonly StyledProperty<TimeSpan> MotionDurationProperty =
         MotionAwareControlProperty.MotionDurationProperty.AddOwner<AbstractSkeleton>();
 
+    /// <summary>
+    /// Identifies the <see cref="MotionEasingCurve" /> property.
+    /// </summary>
     public static readonly StyledProperty<Easing?> MotionEasingCurveProperty =
         AvaloniaProperty.Register<AbstractSkeleton, Easing?>(nameof(MotionEasingCurve));
 
+    /// <summary>
+    /// Switches the shimmer of this skeleton on or off. While true, and motion is allowed, one band sweeps the
+    /// blocks of this skeleton and of the nested skeletons it hosts; while false the blocks keep their base color.
+    /// Only the shimmer host acts on it: a skeleton nested in another skeleton shares that host's shimmer whatever
+    /// its own value. The default is false. A composite skeleton shimmers only while it is loading.
+    /// </summary>
     public bool IsActive
     {
         get => GetValue(IsActiveProperty);
         set => SetValue(IsActiveProperty, value);
     }
 
-    /// <summary>Usually bound to the <c>EnableMotion</c> token; when false the skeleton rests on its base colour.</summary>
+    /// <summary>
+    /// Allows the shimmer to run; when false the skeleton rests on its base color. The default is true, so a
+    /// skeleton shimmers unless a theme binds the property, usually to the <c>EnableMotion</c> token. As with
+    /// <see cref="IsActive" />, only the shimmer host acts on it.
+    /// </summary>
     public bool IsMotionEnabled
     {
         get => GetValue(IsMotionEnabledProperty);
         set => SetValue(IsMotionEnabledProperty, value);
     }
 
+    /// <summary>
+    /// Duration of one sweep of the band across the blocks. The skeleton theme binds it to the
+    /// <c>LoadingMotionDuration</c> token. Zero or less keeps the shimmer stopped; a change while it runs applies
+    /// to the running band without restarting the cycle.
+    /// </summary>
     public TimeSpan MotionDuration
     {
         get => GetValue(MotionDurationProperty);
         set => SetValue(MotionDurationProperty, value);
     }
 
+    /// <summary>
+    /// Easing of the band's motion across the blocks, evaluated on the render thread; <see langword="null" /> uses
+    /// the default cubic spline. A custom easing must be stateless and must not change after it is assigned; a
+    /// <see cref="SplineEasing" /> is copied for each scene, so it is safe to share. A change while the shimmer runs
+    /// applies without restarting the cycle.
+    /// </summary>
     public Easing? MotionEasingCurve
     {
         get => GetValue(MotionEasingCurveProperty);
@@ -74,12 +111,16 @@ public abstract class AbstractSkeleton : TemplatedControl
 
     #region 内部属性定义
 
-    /// <summary>Base colour of the band; the theme sets it to the blocks' background colour. Colour tokens are
-    /// published as solid brushes, so the property takes the brush and the scene uses its colour.</summary>
+    /// <summary>
+    /// Base color of the band; the theme sets it to the blocks' background color. Color tokens are
+    /// published as solid brushes, so the property takes the brush and the scene uses its color.
+    /// </summary>
     internal static readonly StyledProperty<IBrush?> ShimmerFromColorProperty =
         AvaloniaProperty.Register<AbstractSkeleton, IBrush?>(nameof(ShimmerFromColor));
 
-    /// <summary>Highlight colour of the band, as a solid brush.</summary>
+    /// <summary>
+    /// Highlight color of the band, as a solid brush.
+    /// </summary>
     internal static readonly StyledProperty<IBrush?> ShimmerToColorProperty =
         AvaloniaProperty.Register<AbstractSkeleton, IBrush?>(nameof(ShimmerToColor));
 
@@ -87,8 +128,8 @@ public abstract class AbstractSkeleton : TemplatedControl
         AvaloniaProperty.Register<AbstractSkeleton, SkeletonShimmerColorTokenResourceKeys?>(nameof(ShimmerColorTokenResourceKeys));
 
     /// <summary>
-    /// Marks a <see cref="Border"/> as a shimmer block. A marked, attached border registers with its host: the
-    /// outermost <see cref="AbstractSkeleton"/> among its visual ancestors, where a composite skeleton counts only
+    /// Marks a <see cref="Border" /> as a shimmer block. A marked, attached border registers with its host: the
+    /// outermost <see cref="AbstractSkeleton" /> among its visual ancestors, where a composite skeleton counts only
     /// for visuals inside its placeholder. Template infrastructure: public only because the XAML compiler resolves
     /// attached properties through public members, so skeleton templates in other assemblies can mark blocks.
     /// </summary>
@@ -113,21 +154,35 @@ public abstract class AbstractSkeleton : TemplatedControl
         set => SetValue(ShimmerToColorProperty, value);
     }
 
+    /// <summary>
+    /// Resource keys of the two colors the shimmer moves between. The skeleton observes them when it first reads its
+    /// colors and repaints when a value changes; <see cref="ShimmerFromColor" /> and <see cref="ShimmerToColor" />
+    /// set explicitly take precedence. <see langword="null" /> observes nothing. The theme sets the keys.
+    /// </summary>
     internal SkeletonShimmerColorTokenResourceKeys? ShimmerColorTokenResourceKeys
     {
         get => GetValue(ShimmerColorTokenResourceKeysProperty);
         set => SetValue(ShimmerColorTokenResourceKeysProperty, value);
     }
 
+    /// <summary>
+    /// Returns whether <paramref name="border" /> is marked as a shimmer block.
+    /// </summary>
     [EditorBrowsable(EditorBrowsableState.Never)]
     public static bool GetIsShimmerBlock(Border border) => border.GetValue(IsShimmerBlockProperty);
 
+    /// <summary>
+    /// Marks <paramref name="border" /> as a shimmer block or removes the mark. A marked border registers with its
+    /// shimmer host while it is attached, so the host's band paints it and hides its own background meanwhile.
+    /// </summary>
     [EditorBrowsable(EditorBrowsableState.Never)]
     public static void SetIsShimmerBlock(Border border, bool value) => border.SetValue(IsShimmerBlockProperty, value);
 
     private bool _isShimmerRunning;
 
-    /// <summary>True while this skeleton's shimmer visual is sweeping.</summary>
+    /// <summary>
+    /// True while this skeleton's shimmer visual is sweeping.
+    /// </summary>
     internal bool IsShimmerRunning
     {
         get => _isShimmerRunning;
@@ -157,14 +212,20 @@ public abstract class AbstractSkeleton : TemplatedControl
     private bool _isShimmerHost;
     private bool _isTemplateApplied;
 
-    /// <summary>True when this skeleton is attached and no qualifying skeleton ancestor hosts it.</summary>
+    /// <summary>
+    /// True when this skeleton is attached and no qualifying skeleton ancestor hosts it.
+    /// </summary>
     internal bool IsShimmerHost => _isShimmerHost;
 
-    /// <summary>Blocks registered with this host.</summary>
+    /// <summary>
+    /// Blocks registered with this host.
+    /// </summary>
     internal int ShimmerBlockCount => _shimmerBlocks.Count;
 
-    /// <summary>Where the shimmer visual hangs: <see cref="ShimmerLayerPart"/>, else <see cref="ContentLayerPart"/>,
-    /// else the skeleton itself.</summary>
+    /// <summary>
+    /// Where the shimmer visual hangs: <see cref="ShimmerLayerPart" />, else <see cref="ContentLayerPart" />,
+    /// else the skeleton itself.
+    /// </summary>
     internal Control? ShimmerLayer => _shimmerLayer;
 
     internal CompositionCustomVisual? ShimmerVisual => _shimmerVisual;
@@ -177,18 +238,24 @@ public abstract class AbstractSkeleton : TemplatedControl
 
     internal int ShimmerVisualReleaseCount { get; private set; }
 
-    /// <summary>How many times the block geometry was rebuilt; the scene is re-sent without a rebuild when only
-    /// colours or timing change.</summary>
+    /// <summary>
+    /// How many times the block geometry was rebuilt; the scene is re-sent without a rebuild when only
+    /// colors or timing change.
+    /// </summary>
     internal int ShimmerSceneBuildCount { get; private set; }
 
     internal Easing EffectiveShimmerEasing => MotionEasingCurve ?? DefaultShimmerEasing;
 
-    /// <summary>Extra run condition of a skeleton kind; a composite skeleton shimmers only while loading.</summary>
+    /// <summary>
+    /// Extra run condition of a skeleton kind; a composite skeleton shimmers only while loading.
+    /// </summary>
     internal virtual bool CanRunShimmer => true;
 
-    /// <summary>True once the parts the shimmer hangs on exist: the template is applied (and, for a composite that
+    /// <summary>
+    /// True once the parts the shimmer hangs on exist: the template is applied (and, for a composite that
     /// should show its placeholder, the placeholder is built). Starting earlier would hang the visual on the wrong
-    /// layer only to move it again.</summary>
+    /// layer only to move it again.
+    /// </summary>
     internal virtual bool IsShimmerReady => _isTemplateApplied;
 
     static AbstractSkeleton()
@@ -198,6 +265,11 @@ public abstract class AbstractSkeleton : TemplatedControl
         IsShimmerBlockProperty.Changed.AddClassHandler<Border>(HandleIsShimmerBlockChanged);
     }
 
+    /// <summary>
+    /// Re-evaluates whether the shimmer runs when <see cref="IsActive" /> or <see cref="IsMotionEnabled" /> changes,
+    /// and re-sends the scene while it runs when the duration, the easing, the shimmer colors or the color token
+    /// keys change. Overrides must call the base member.
+    /// </summary>
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
@@ -231,6 +303,10 @@ public abstract class AbstractSkeleton : TemplatedControl
         }
     }
 
+    /// <summary>
+    /// Decides whether this skeleton is the shimmer host of its group and, if so, creates the motion gate, then
+    /// re-evaluates the shimmer. Overrides must call the base member.
+    /// </summary>
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
@@ -245,6 +321,10 @@ public abstract class AbstractSkeleton : TemplatedControl
         UpdateShimmer();
     }
 
+    /// <summary>
+    /// Re-evaluates the shimmer once the whole subtree is attached, which is when the shimmer layer gets its
+    /// compositor and the shimmer can actually start. Overrides must call the base member.
+    /// </summary>
     protected override void OnLoaded(RoutedEventArgs e)
     {
         base.OnLoaded(e);
@@ -252,6 +332,10 @@ public abstract class AbstractSkeleton : TemplatedControl
         UpdateShimmer();
     }
 
+    /// <summary>
+    /// Stops the shimmer, releases the shimmer visual and the motion gate and gives up the host role; attaching the
+    /// skeleton again starts from scratch. Overrides must call the base member.
+    /// </summary>
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnDetachedFromVisualTree(e);
@@ -262,6 +346,10 @@ public abstract class AbstractSkeleton : TemplatedControl
         _isShimmerHost = false;
     }
 
+    /// <summary>
+    /// Locates the layer the shimmer hangs on in the new template and marks the template as applied, which lets the
+    /// shimmer start. Overrides must call the base member.
+    /// </summary>
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
@@ -271,22 +359,30 @@ public abstract class AbstractSkeleton : TemplatedControl
         RefreshShimmerLayer();
     }
 
-    /// <summary>Asks the shimmer host of this skeleton to re-evaluate whether the shimmer runs.</summary>
+    /// <summary>
+    /// Asks the shimmer host of this skeleton to re-evaluate whether the shimmer runs.
+    /// </summary>
     protected void StartActiveAnimation()
     {
         RequestShimmerUpdate();
     }
 
-    /// <summary>Asks the shimmer host of this skeleton to re-evaluate whether the shimmer runs.</summary>
+    /// <summary>
+    /// Asks the shimmer host of this skeleton to re-evaluate whether the shimmer runs.
+    /// </summary>
     protected void StopActiveAnimation()
     {
         RequestShimmerUpdate();
     }
 
-    /// <summary>The shimmer layer this skeleton would use now.</summary>
+    /// <summary>
+    /// The shimmer layer this skeleton would use now.
+    /// </summary>
     internal virtual Control ResolveShimmerLayer() => _templateShimmerLayer ?? this;
 
-    /// <summary>Re-resolves the shimmer layer; a running shimmer moves to the new layer.</summary>
+    /// <summary>
+    /// Re-resolves the shimmer layer; a running shimmer moves to the new layer.
+    /// </summary>
     internal void RefreshShimmerLayer()
     {
         var layer = ResolveShimmerLayer();
@@ -313,7 +409,9 @@ public abstract class AbstractSkeleton : TemplatedControl
 
     private void HandleShouldRunChanged(bool shouldRun) => UpdateShimmer();
 
-    /// <summary>Starts or stops the shimmer to match the run conditions.</summary>
+    /// <summary>
+    /// Starts or stops the shimmer to match the run conditions.
+    /// </summary>
     internal void UpdateShimmer()
     {
         var shouldRun = _isShimmerHost &&
@@ -333,7 +431,9 @@ public abstract class AbstractSkeleton : TemplatedControl
         }
     }
 
-    /// <summary>Stops a running shimmer, restoring the blocks' backgrounds.</summary>
+    /// <summary>
+    /// Stops a running shimmer, restoring the blocks' backgrounds.
+    /// </summary>
     internal void StopShimmer()
     {
         if (!_isShimmerRunning)
@@ -514,10 +614,10 @@ public abstract class AbstractSkeleton : TemplatedControl
     }
 
     /// <summary>
-    /// The easing the render thread evaluates. A <see cref="SplineEasing"/> keeps mutable state (its key spline caches
+    /// The easing the render thread evaluates. A <see cref="SplineEasing" /> keeps mutable state (its key spline caches
     /// parameters and rebuilds lazily, and its control points are settable), so the render thread gets a private copy
     /// per scene instead of an instance the UI thread may also use. Avalonia's other built-in easings hold no state
-    /// and pass through. A custom <see cref="Easing"/> passes through as well and must therefore be pure: no state
+    /// and pass through. A custom <see cref="Easing" /> passes through as well and must therefore be pure: no state
     /// written by <c>Ease</c> and none changed after it is assigned.
     /// </summary>
     internal static Easing CreateRenderEasing(Easing easing)
@@ -529,7 +629,7 @@ public abstract class AbstractSkeleton : TemplatedControl
         return easing;
     }
 
-    // A solid brush's colour with the brush opacity folded into its alpha; any other brush shimmers transparent.
+    // A solid brush's color with the brush opacity folded into its alpha; any other brush shimmers transparent.
     internal static Color ToShimmerColor(IBrush? brush)
     {
         if (brush is not ISolidColorBrush solid)
@@ -598,7 +698,7 @@ public abstract class AbstractSkeleton : TemplatedControl
     #region 微光块登记
 
     /// <summary>
-    /// The shimmer host for a visual: the outermost qualifying <see cref="AbstractSkeleton"/> among its visual
+    /// The shimmer host for a visual: the outermost qualifying <see cref="AbstractSkeleton" /> among its visual
     /// ancestors, or null. Any skeleton qualifies except a composite one, which qualifies only when the visual lies
     /// inside its placeholder; a composite's content is outside its shimmer.
     /// </summary>
@@ -710,7 +810,7 @@ public abstract class AbstractSkeleton : TemplatedControl
     }
 
     // A registered block and, while the shimmer runs, the animation-priority null that hides its own background so
-    // the base colour is not painted twice under the band.
+    // the base color is not painted twice under the band.
     private readonly record struct ShimmerBlock(Border Border, IDisposable? Suppression)
     {
         public ShimmerBlock Suppress()

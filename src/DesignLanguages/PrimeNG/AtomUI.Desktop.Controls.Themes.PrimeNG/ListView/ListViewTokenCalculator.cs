@@ -5,9 +5,15 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 
-/// <summary>The PrimeNG values of the shared <see cref="AbstractListViewToken"/> layer.</summary>
+/// <summary>
+/// The PrimeNG values of the shared <see cref="AbstractListViewToken" /> layer.
+/// </summary>
 public static class ListViewTokenCalculator
 {
+    /// <summary>
+    /// Writes the PrimeNG values into the shared list view layer: the item colors and backgrounds in the normal,
+    /// hover, selected and disabled states, the item paddings of each size and the group header color.
+    /// </summary>
     public static void Calculate(in TokenEvaluationContext<PrimeNGToken> context, DesignToken global, AbstractListViewToken token)
     {
         var colorTextDisabled  = global.ColorTextDisabled;
@@ -24,6 +30,10 @@ public static class ListViewTokenCalculator
 
         token.ItemDisabledColor = colorTextDisabled;
 
+        // Ant Design formula kept as is; the PrimeNG list view stage (PrimeNGListViewTokens.EvaluateOwn)
+        // replaces ItemPadding and ContentPadding here, the item and hover text colors and the hover
+        // background above, and the group header color, with the PrimeUIX list values. The SM and LG item
+        // paddings stay.
         token.ItemPaddingLG = new Thickness(global.UniformlyPadding, 0);
         token.ItemPaddingSM = new Thickness(global.UniformlyPaddingXS, 0);
         token.ItemPadding   = new Thickness(global.UniformlyPaddingSM, 0);

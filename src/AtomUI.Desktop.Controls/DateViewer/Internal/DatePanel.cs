@@ -16,7 +16,9 @@ using DateViewerControl = AtomUI.Desktop.Controls.DateViewer;
 
 namespace AtomUI.Desktop.Controls.Internal.DateViewer;
 
-/// <summary>One realized grid consuming a shared interaction session.</summary>
+/// <summary>
+/// One realized grid consuming a shared interaction session.
+/// </summary>
 internal sealed class DatePanel : TemplatedControl
 {
     public static readonly StyledProperty<DatePanelSession?> SessionProperty =
@@ -69,7 +71,7 @@ internal sealed class DatePanel : TemplatedControl
     public double WeekHeaderMinHeight { get => GetValue(WeekHeaderMinHeightProperty); set => SetValue(WeekHeaderMinHeightProperty, value); }
     public Thickness WeekHeaderPadding { get => GetValue(WeekHeaderPaddingProperty); set => SetValue(WeekHeaderPaddingProperty, value); }
     /// <summary>
-    /// The week-day row's height with the names centred in it; 0 gives each name <see cref="WeekHeaderMinHeight"/>
+    /// The week-day row's height with the names centered in it; 0 gives each name <see cref="WeekHeaderMinHeight" />
     /// (the cell row height) instead.
     /// </summary>
     public double WeekHeaderHeight { get => GetValue(WeekHeaderHeightProperty); set => SetValue(WeekHeaderHeightProperty, value); }

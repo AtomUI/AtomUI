@@ -3,7 +3,9 @@ using AtomUI.Theme.Languages;
 
 namespace AtomUI.Desktop.Controls.Themes.Shadcn;
 
-/// <summary>The shadcn view of <see cref="ListTransferToken"/>.</summary>
+/// <summary>
+/// The shadcn view of <see cref="ListTransferToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class ListTransferTokenRule : IControlTokenRule<ShadcnToken, ListTransferToken>
 {
@@ -12,6 +14,7 @@ internal sealed class ListTransferTokenRule : IControlTokenRule<ShadcnToken, Lis
         var token  = target.Own;
         var global = target.Global;
         TransferTokenCalculator.Calculate(in context, global, token);
+        // Ant Design formula kept as is: shadcn has no Transfer, so the language has no values of its own.
         token.ListWidthLG = 250;
     }
 }

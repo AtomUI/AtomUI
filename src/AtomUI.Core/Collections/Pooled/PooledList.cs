@@ -20,8 +20,8 @@ namespace AtomUI.Collections.Pooled;
 /// internal array.
 /// </summary>
 /// <remarks>
-/// This class is based on the code for <see cref="List{T}"/> but it supports <see cref="Span{T}"/>
-/// and uses <see cref="ArrayPool{T}"/> when allocating internal arrays.
+/// This class is based on the code for <see cref="List{T}" /> but it supports <see cref="Span{T}" />
+/// and uses <see cref="ArrayPool{T}" /> when allocating internal arrays.
 /// </remarks>
 [DebuggerDisplay("Count = {Count}")]
 [DebuggerTypeProxy(typeof(ICollectionDebugView<>))]
@@ -48,7 +48,7 @@ internal class PooledList<T> : IList<T>, IReadOnlyPooledList<T>, IList, IDisposa
     /// <summary>
     /// Constructs a PooledList. The list is initially empty and has a capacity
     /// of zero. Upon adding the first element to the list the capacity is
-    /// increased to DefaultCapacity, and then increased in multiples of two
+    /// increased to at least DefaultCapacity, and then increased in multiples of two
     /// as required.
     /// </summary>
     public PooledList() : this(ClearMode.Auto, ArrayPool<T>.Shared) { }
@@ -56,7 +56,7 @@ internal class PooledList<T> : IList<T>, IReadOnlyPooledList<T>, IList, IDisposa
     /// <summary>
     /// Constructs a PooledList. The list is initially empty and has a capacity
     /// of zero. Upon adding the first element to the list the capacity is
-    /// increased to DefaultCapacity, and then increased in multiples of two
+    /// increased to at least DefaultCapacity, and then increased in multiples of two
     /// as required.
     /// </summary>
     public PooledList(ClearMode clearMode) : this(clearMode, ArrayPool<T>.Shared) { }
@@ -64,7 +64,7 @@ internal class PooledList<T> : IList<T>, IReadOnlyPooledList<T>, IList, IDisposa
     /// <summary>
     /// Constructs a PooledList. The list is initially empty and has a capacity
     /// of zero. Upon adding the first element to the list the capacity is
-    /// increased to DefaultCapacity, and then increased in multiples of two
+    /// increased to at least DefaultCapacity, and then increased in multiples of two
     /// as required.
     /// </summary>
     public PooledList(ArrayPool<T> customPool) : this(ClearMode.Auto, customPool) { }
@@ -72,7 +72,7 @@ internal class PooledList<T> : IList<T>, IReadOnlyPooledList<T>, IList, IDisposa
     /// <summary>
     /// Constructs a PooledList. The list is initially empty and has a capacity
     /// of zero. Upon adding the first element to the list the capacity is
-    /// increased to DefaultCapacity, and then increased in multiples of two
+    /// increased to at least DefaultCapacity, and then increased in multiples of two
     /// as required.
     /// </summary>
     public PooledList(ClearMode clearMode, ArrayPool<T> customPool)
@@ -90,9 +90,8 @@ internal class PooledList<T> : IList<T>, IReadOnlyPooledList<T>, IList, IDisposa
     public PooledList(int capacity) : this(capacity, ClearMode.Auto, ArrayPool<T>.Shared) { }
 
     /// <summary>
-    /// Constructs a List with a given initial capacity. The list is
-    /// initially empty, but will have room for the given number of elements
-    /// before any reallocations are required.
+    /// Constructs a PooledList with a given initial capacity. The list starts with capacity default elements when
+    /// sizeToCapacity is true; otherwise it is initially empty and has room for the given number of elements.
     /// </summary>
     public PooledList(int capacity, bool sizeToCapacity) : this(capacity, ClearMode.Auto, ArrayPool<T>.Shared, sizeToCapacity) { }
 
@@ -104,9 +103,8 @@ internal class PooledList<T> : IList<T>, IReadOnlyPooledList<T>, IList, IDisposa
     public PooledList(int capacity, ClearMode clearMode) : this(capacity, clearMode, ArrayPool<T>.Shared) { }
 
     /// <summary>
-    /// Constructs a List with a given initial capacity. The list is
-    /// initially empty, but will have room for the given number of elements
-    /// before any reallocations are required.
+    /// Constructs a PooledList with a given initial capacity. The list starts with capacity default elements when
+    /// sizeToCapacity is true; otherwise it is initially empty and has room for the given number of elements.
     /// </summary>
     public PooledList(int capacity, ClearMode clearMode, bool sizeToCapacity) : this(capacity, clearMode, ArrayPool<T>.Shared, sizeToCapacity) { }
 
@@ -118,9 +116,8 @@ internal class PooledList<T> : IList<T>, IReadOnlyPooledList<T>, IList, IDisposa
     public PooledList(int capacity, ArrayPool<T> customPool) : this(capacity, ClearMode.Auto, customPool) { }
 
     /// <summary>
-    /// Constructs a List with a given initial capacity. The list is
-    /// initially empty, but will have room for the given number of elements
-    /// before any reallocations are required.
+    /// Constructs a PooledList with a given initial capacity. The list starts with capacity default elements when
+    /// sizeToCapacity is true; otherwise it is initially empty and has room for the given number of elements.
     /// </summary>
     public PooledList(int capacity, ArrayPool<T> customPool, bool sizeToCapacity) : this(capacity, ClearMode.Auto, customPool, sizeToCapacity) { }
 
@@ -132,9 +129,9 @@ internal class PooledList<T> : IList<T>, IReadOnlyPooledList<T>, IList, IDisposa
     public PooledList(int capacity, ClearMode clearMode, ArrayPool<T> customPool) : this(capacity, clearMode, customPool, false) { }
 
     /// <summary>
-    /// Constructs a List with a given initial capacity. The list is
-    /// initially empty, but will have room for the given number of elements
-    /// before any reallocations are required.
+    /// Constructs a PooledList with a given initial capacity. The list starts with capacity default elements when
+    /// sizeToCapacity is true; otherwise it is initially empty and has room for the given number of elements.
+    /// ClearMode.Never leaves the initial elements as the rented array contained them.
     /// </summary>
     public PooledList(int capacity, ClearMode clearMode, ArrayPool<T> customPool, bool sizeToCapacity)
     {
@@ -167,57 +164,49 @@ internal class PooledList<T> : IList<T>, IReadOnlyPooledList<T>, IList, IDisposa
 
     /// <summary>
     /// Constructs a PooledList, copying the contents of the given collection. The
-    /// size and capacity of the new list will both be equal to the size of the
-    /// given collection.
+    /// capacity of the new list is at least the size of the given collection.
     /// </summary>
     public PooledList(T[] array) : this(array.AsSpan(), ClearMode.Auto, ArrayPool<T>.Shared) { }
 
     /// <summary>
     /// Constructs a PooledList, copying the contents of the given collection. The
-    /// size and capacity of the new list will both be equal to the size of the
-    /// given collection.
+    /// capacity of the new list is at least the size of the given collection.
     /// </summary>
     public PooledList(T[] array, ClearMode clearMode) : this(array.AsSpan(), clearMode, ArrayPool<T>.Shared) { }
 
     /// <summary>
     /// Constructs a PooledList, copying the contents of the given collection. The
-    /// size and capacity of the new list will both be equal to the size of the
-    /// given collection.
+    /// capacity of the new list is at least the size of the given collection.
     /// </summary>
     public PooledList(T[] array, ArrayPool<T> customPool) : this(array.AsSpan(), ClearMode.Auto, customPool) { }
 
     /// <summary>
     /// Constructs a PooledList, copying the contents of the given collection. The
-    /// size and capacity of the new list will both be equal to the size of the
-    /// given collection.
+    /// capacity of the new list is at least the size of the given collection.
     /// </summary>
     public PooledList(T[] array, ClearMode clearMode, ArrayPool<T> customPool) : this(array.AsSpan(), clearMode, customPool) { }
 
     /// <summary>
     /// Constructs a PooledList, copying the contents of the given collection. The
-    /// size and capacity of the new list will both be equal to the size of the
-    /// given collection.
+    /// capacity of the new list is at least the size of the given collection.
     /// </summary>
     public PooledList(ReadOnlySpan<T> span) : this(span, ClearMode.Auto, ArrayPool<T>.Shared) { }
 
     /// <summary>
     /// Constructs a PooledList, copying the contents of the given collection. The
-    /// size and capacity of the new list will both be equal to the size of the
-    /// given collection.
+    /// capacity of the new list is at least the size of the given collection.
     /// </summary>
     public PooledList(ReadOnlySpan<T> span, ClearMode clearMode) : this(span, clearMode, ArrayPool<T>.Shared) { }
 
     /// <summary>
     /// Constructs a PooledList, copying the contents of the given collection. The
-    /// size and capacity of the new list will both be equal to the size of the
-    /// given collection.
+    /// capacity of the new list is at least the size of the given collection.
     /// </summary>
     public PooledList(ReadOnlySpan<T> span, ArrayPool<T> customPool) : this(span, ClearMode.Auto, customPool) { }
 
     /// <summary>
     /// Constructs a PooledList, copying the contents of the given collection. The
-    /// size and capacity of the new list will both be equal to the size of the
-    /// given collection.
+    /// capacity of the new list is at least the size of the given collection.
     /// </summary>
     public PooledList(ReadOnlySpan<T> span, ClearMode clearMode, ArrayPool<T> customPool)
     {
@@ -239,29 +228,25 @@ internal class PooledList<T> : IList<T>, IReadOnlyPooledList<T>, IList, IDisposa
 
     /// <summary>
     /// Constructs a PooledList, copying the contents of the given collection. The
-    /// size and capacity of the new list will both be equal to the size of the
-    /// given collection.
+    /// capacity of the new list is at least the size of the given collection.
     /// </summary>
     public PooledList(IEnumerable<T> collection) : this(collection, ClearMode.Auto, ArrayPool<T>.Shared) { }
 
     /// <summary>
     /// Constructs a PooledList, copying the contents of the given collection. The
-    /// size and capacity of the new list will both be equal to the size of the
-    /// given collection.
+    /// capacity of the new list is at least the size of the given collection.
     /// </summary>
     public PooledList(IEnumerable<T> collection, ClearMode clearMode) : this(collection, clearMode, ArrayPool<T>.Shared) { }
 
     /// <summary>
     /// Constructs a PooledList, copying the contents of the given collection. The
-    /// size and capacity of the new list will both be equal to the size of the
-    /// given collection.
+    /// capacity of the new list is at least the size of the given collection.
     /// </summary>
     public PooledList(IEnumerable<T> collection, ArrayPool<T> customPool) : this(collection, ClearMode.Auto, customPool) { }
 
     /// <summary>
     /// Constructs a PooledList, copying the contents of the given collection. The
-    /// size and capacity of the new list will both be equal to the size of the
-    /// given collection.
+    /// capacity of the new list is at least the size of the given collection.
     /// </summary>
     public PooledList(IEnumerable<T> collection, ClearMode clearMode, ArrayPool<T> customPool)
     {
@@ -305,11 +290,12 @@ internal class PooledList<T> : IList<T>, IReadOnlyPooledList<T>, IList, IDisposa
     #endregion
 
     /// <summary>
-    /// Gets a <see cref="System.Span{T}"/> for the items currently in the collection.
+    /// Gets a <see cref="System.Span{T}" /> for the items currently in the collection.
+    /// Items should not be added or removed from the list while the returned span is in use.
     /// </summary>
     public Span<T> Span => _items.AsSpan(0, _size);
 
-    /// <inheritdoc/>
+    /// <inheritdoc />
     ReadOnlySpan<T> IReadOnlyPooledList<T>.Span => Span;
 
     /// <summary>
@@ -502,7 +488,7 @@ internal class PooledList<T> : IList<T>, IReadOnlyPooledList<T>, IList, IDisposa
 
 #pragma warning disable CS0419
     /// <summary>
-    /// Adds the elements of the given <see cref="ReadOnlySpan{T}"/> to the end of this list. If
+    /// Adds the elements of the given <see cref="ReadOnlySpan{T}" /> to the end of this list. If
     /// required, the capacity of the list is increased to twice the previous
     /// capacity or the new size, whichever is larger.
     /// </summary>
@@ -514,43 +500,43 @@ internal class PooledList<T> : IList<T>, IReadOnlyPooledList<T>, IList, IDisposa
     }
 
     /// <summary>
-    /// Advances the <see cref="Count"/> by the number of items specified,
+    /// Advances the <see cref="Count" /> by the number of items specified,
     /// increasing the capacity if required, then returns a Span representing
     /// the set of items to be added, allowing direct writes to that section
     /// of the collection.
     /// </summary>
-    /// <param name="count">The number of items to add.</param>
+    /// <param name="count">
+    /// The number of items to add.
+    /// </param>
     public Span<T> AddSpan(int count)
         => InsertSpan(_size, count);
 
     public ReadOnlyCollection<T> AsReadOnly()
         => new ReadOnlyCollection<T>(this);
 
-    /// <summary>Gets a <see cref="T:System.Span`1" /> view over the data in a list.
-    /// Items should not be added or removed from the list while the returned span is in use.</summary>
+    /// <summary>
+    /// Gets a <see cref="T:System.Span`1" /> view over the data in a list.
+    /// Items should not be added or removed from the list while the returned span is in use.
+    /// </summary>
     public Span<T> AsSpan() => new(_items, 0, _size);
 
     /// <summary>
-    /// Searches a section of the list for a given element using a binary search
-    /// algorithm. 
+    /// Searches a section of the list for a given element using a binary search algorithm.
     /// </summary>
-    /// 
-    /// <remarks><para>Elements of the list are compared to the search value using
-    /// the given IComparer interface. If comparer is null, elements of
-    /// the list are compared to the search value using the IComparable
-    /// interface, which in that case must be implemented by all elements of the
-    /// list and the given search value. This method assumes that the given
-    /// section of the list is already sorted; if this is not the case, the
-    /// result will be incorrect.</para>
-    ///
-    /// <para>The method returns the index of the given value in the list. If the
-    /// list does not contain the given value, the method returns a negative
-    /// integer. The bitwise complement operator (~) can be applied to a
-    /// negative result to produce the index of the first element (if any) that
-    /// is larger than the given search value. This is also the index at which
-    /// the search value should be inserted into the list in order for the list
-    /// to remain sorted.
-    /// </para></remarks>
+    /// <remarks>
+    /// <para>
+    /// Elements of the list are compared to the search value using the given IComparer interface. If comparer is
+    /// null, elements of the list are compared to the search value using the IComparable interface, which in that
+    /// case must be implemented by all elements of the list and the given search value. This method assumes that
+    /// the given section of the list is already sorted; if this is not the case, the result will be incorrect.
+    /// </para>
+    /// <para>
+    /// The method returns the index of the given value in the list. If the list does not contain the given value,
+    /// the method returns a negative integer. The bitwise complement operator (~) can be applied to a negative
+    /// result to produce the index of the first element (if any) that is larger than the given search value. This
+    /// is also the index at which the search value should be inserted into the list for the list to remain sorted.
+    /// </para>
+    /// </remarks>
     public int BinarySearch(int index, int count, T item, IComparer<T>? comparer)
     {
         if (index < 0)
@@ -573,16 +559,16 @@ internal class PooledList<T> : IList<T>, IReadOnlyPooledList<T>, IList, IDisposa
 
     /// <summary>
     /// Searches the list for a given element using a binary search
-    /// algorithm. If the item implements <see cref="IComparable{T}"/>
-    /// then that is used for comparison, otherwise <see cref="Comparer{T}.Default"/> is used.
+    /// algorithm. If the item implements <see cref="IComparable{T}" />
+    /// then that is used for comparison, otherwise <see cref="Comparer{T}.Default" /> is used.
     /// </summary>
     public int BinarySearch(T item)
         => BinarySearch(0, Count, item, null);
 
     /// <summary>
     /// Searches the list for a given element using a binary search
-    /// algorithm. If the item implements <see cref="IComparable{T}"/>
-    /// then that is used for comparison, otherwise <see cref="Comparer{T}.Default"/> is used.
+    /// algorithm and the given <see cref="IComparer{T}" />. When the comparer
+    /// is <see langword="null" />, <see cref="Comparer{T}.Default" /> is used.
     /// </summary>
     public int BinarySearch(T item, IComparer<T> comparer)
         => BinarySearch(0, Count, item, comparer);
@@ -879,10 +865,9 @@ internal class PooledList<T> : IList<T>, IReadOnlyPooledList<T>, IList, IDisposa
     }
 
     /// <summary>
-    /// Returns an enumerator for this list with the given
-    /// permission for removal of elements. If modifications made to the list 
-    /// while an enumeration is in progress, the MoveNext and 
-    /// GetObject methods of the enumerator will throw an exception.
+    /// Returns an enumerator that walks the list from the first element. Any change to the list after the enumerator
+    /// was created, including assigning an element through the indexer, makes its MoveNext throw an
+    /// InvalidOperationException.
     /// </summary>
     public Enumerator GetEnumerator()
         => new Enumerator(this);
@@ -935,7 +920,7 @@ internal class PooledList<T> : IList<T>, IReadOnlyPooledList<T>, IList, IDisposa
     /// <summary>
     /// Returns the index of the first occurrence of a given value in a range of
     /// this list. The list is searched forwards, starting at index
-    /// index and ending at count number of elements. 
+    /// index and ending at the last element of the list.
     /// </summary>
     public int IndexOf(T item, int index)
     {
@@ -1096,10 +1081,9 @@ internal class PooledList<T> : IList<T>, IReadOnlyPooledList<T>, IList, IDisposa
     }
 
     /// <summary>
-    /// Advances the <see cref="Count"/> by the number of items specified,
-    /// increasing the capacity if required, then returns a Span representing
-    /// the set of items to be added, allowing direct writes to that section
-    /// of the collection.
+    /// Makes room for <paramref name="count" /> elements at the given index and returns a span over the new slots, so
+    /// that the caller can fill them. Later elements move to higher indexes and <see cref="Count" /> grows by
+    /// <paramref name="count" />. The capacity is increased when required.
     /// </summary>
     public Span<T> InsertSpan(int index, int count)
         => InsertSpan(index, count, true);
@@ -1194,8 +1178,12 @@ internal class PooledList<T> : IList<T>, IReadOnlyPooledList<T>, IList, IDisposa
         return Array.LastIndexOf(_items, item, index, count);
     }
 
-    // Removes the element at the given index. The size of the list is
-    // decreased by one.
+    /// <summary>
+    /// Removes the first element that equals the given item.
+    /// </summary>
+    /// <returns>
+    /// true when an element was removed.
+    /// </returns>
     public bool Remove(T item)
     {
         int index = IndexOf(item);
@@ -1378,7 +1366,6 @@ internal class PooledList<T> : IList<T>, IReadOnlyPooledList<T>, IList, IDisposa
     /// Sorts the elements in this list.  Uses Array.Sort with the
     /// provided comparer.
     /// </summary>
-    /// <param name="comparer"></param>
     public void Sort(IComparer<T> comparer)
         => Sort(0, Count, comparer);
 
@@ -1447,11 +1434,11 @@ internal class PooledList<T> : IList<T>, IReadOnlyPooledList<T>, IList, IDisposa
     }
 
     /// <summary>
-    /// Sets the capacity of this list to the size of the list. This method can
-    /// be used to minimize a list's memory overhead once it is known that no
-    /// new elements will be added to the list. To completely clear a list and
-    /// release all memory referenced by the list, execute the following
-    /// statements:
+    /// Requests a capacity equal to the size of the list when the size is below 90 percent of the current
+    /// capacity; the rented array may be larger than requested. This method can be used to minimize a
+    /// list's memory overhead once it is known that no new elements will be added to the list.
+    /// To completely clear a list and release all memory referenced by the list, execute the
+    /// following statements:
     /// <code>
     /// list.Clear();
     /// list.TrimExcess();

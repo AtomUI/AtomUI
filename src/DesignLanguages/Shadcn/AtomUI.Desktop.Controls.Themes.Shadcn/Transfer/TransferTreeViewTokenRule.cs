@@ -3,7 +3,9 @@ using AtomUI.Theme.Languages;
 
 namespace AtomUI.Desktop.Controls.Themes.Shadcn;
 
-/// <summary>The shadcn view of <see cref="TransferTreeViewToken"/>.</summary>
+/// <summary>
+/// The shadcn view of <see cref="TransferTreeViewToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class TransferTreeViewTokenRule : IControlTokenRule<ShadcnToken, TransferTreeViewToken>
 {

@@ -7,10 +7,18 @@ using Mono.Linker.Steps;
 
 namespace AtomUI.Registration.ILLink8;
 
-/// <summary>Installs the marking mechanism on the official ILLink8 engine. Metadata parsing, source identity and receipts belong to the build adapter.</summary>
+/// <summary>
+/// Installs the marking mechanism on the official ILLink8 engine. Metadata parsing, source identity and receipts belong
+/// to the build adapter.
+/// </summary>
 public static class ConditionalRegistrationBackend
 {
-    // Read from metadata by the build host; it names the mechanism ABI, not an engine servicing version.
+    /// <summary>
+    /// The capability string of the ILLink8 conditional registration backend.
+    /// </summary>
+    /// <remarks>
+    /// The build host reads this constant from metadata. It names the mechanism ABI, not an engine servicing version.
+    /// </remarks>
     public const string LinkerCapability = Net8EngineToolchain.BackendCapability;
 
     internal static string ActualLinkerVersion =>

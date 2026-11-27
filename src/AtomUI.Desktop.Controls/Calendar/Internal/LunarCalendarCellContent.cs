@@ -5,7 +5,9 @@ using Avalonia.Styling;
 
 namespace AtomUI.Desktop.Controls.Internal.Calendar;
 
-/// <summary>Lunar text presentation only. All interaction belongs to DateViewerCell.</summary>
+/// <summary>
+/// Lunar text presentation only. All interaction belongs to DateViewerCell.
+/// </summary>
 internal sealed class LunarCalendarCellContent : TemplatedControl
 {
     public static readonly StyledProperty<LunarCalendarCellContext?> ContextProperty =
@@ -36,7 +38,7 @@ internal sealed class LunarCalendarCellContent : TemplatedControl
             RaisePropertyChanged(ShowMarkerProperty, default, ShowMarker);
         }
 
-        // Fullscreen selected dates take the active-item colours in dark appearance; see DateViewerCell.
+        // Fullscreen selected dates take the active-item colors in dark appearance; see DateViewerCell.
         if (change.Property == ThemeVariantScope.ActualThemeVariantProperty)
         {
             PseudoClasses.Set(DateViewer.DateViewerCell.DarkVariantPseudoClass,

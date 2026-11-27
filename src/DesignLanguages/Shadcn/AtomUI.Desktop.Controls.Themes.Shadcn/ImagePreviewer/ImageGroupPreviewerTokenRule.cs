@@ -3,7 +3,9 @@ using AtomUI.Theme.Languages;
 
 namespace AtomUI.Desktop.Controls.Themes.Shadcn;
 
-/// <summary>The shadcn view of <see cref="ImageGroupPreviewerToken"/>.</summary>
+/// <summary>
+/// The shadcn view of <see cref="ImageGroupPreviewerToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class ImageGroupPreviewerTokenRule : IControlTokenRule<ShadcnToken, ImageGroupPreviewerToken>
 {

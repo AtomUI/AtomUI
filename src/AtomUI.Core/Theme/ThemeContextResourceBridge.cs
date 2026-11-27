@@ -3,6 +3,12 @@ using Avalonia.Styling;
 
 namespace AtomUI.Theme;
 
+/// <summary>
+/// A resource provider that resolves the lookups of its host through the resource provider of one
+/// <see cref="ThemeContext" />, and raises a resources-changed notification when that context publishes.
+/// <see cref="ThemeContextLease" /> merges it into the resources of the leased host; the drawer container of
+/// AtomUI.Desktop.Controls keeps one. After <c>Dispose</c> it reports no resources and every lookup fails.
+/// </summary>
 internal sealed class ThemeContextResourceBridge : ResourceProvider, IDisposable
 {
     private ThemeContext? _ownerContext;

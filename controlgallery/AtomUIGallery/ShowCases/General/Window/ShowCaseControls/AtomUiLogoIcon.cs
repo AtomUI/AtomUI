@@ -4,8 +4,9 @@ using AtomUI.Controls;
 
 namespace AtomUIGallery.ShowCases.Window;
 
-// Window showcase 各演示窗口共用的 AtomUI Logo（path 数据来自官方 atom-ui.svg）
-// 走 AtomUI Icon 渲染管线（与 AntDesign 图标一致），裸 PathIcon 不做 ViewBox 缩放不可用
+// The AtomUI logo shared by the Window showcase demo windows (path data from the official atom-ui.svg).
+// It goes through the AtomUI icon pipeline like the AntDesign icons; a bare PathIcon does not scale by
+// ViewBox and is not usable here.
 internal class AtomUiLogoIcon : AtomUI.Controls.Icon
 {
     public AtomUiLogoIcon()
@@ -13,7 +14,8 @@ internal class AtomUiLogoIcon : AtomUI.Controls.Icon
         ViewBox  = new Rect(0, 0, 1024, 1024);
         Width    = 16;
         Height   = 16;
-        // Icon 渲染取色只认 FillBrush/StrokeBrush 属性（Foreground 不参与），Fill 模式必须设 FillBrush
+        // Icon rendering takes its color only from FillBrush and StrokeBrush (Foreground is not used),
+        // so Fill mode requires FillBrush.
         FillBrush = new SolidColorBrush(Color.Parse("#CF1322"));
     }
 

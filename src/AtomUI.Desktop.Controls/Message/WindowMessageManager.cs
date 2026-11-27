@@ -10,6 +10,11 @@ using Avalonia.Threading;
 
 namespace AtomUI.Desktop.Controls;
 
+/// <summary>
+/// Shows transient messages at an edge of a window. Each message becomes a <see cref="MessageCard" /> that is
+/// listed or folded into a stack with the other cards, and that closes by itself after its expiration. A manager
+/// created with a <see cref="TopLevel" /> installs itself into the feedback layer of that window.
+/// </summary>
 [TemplatePart("PART_Items", typeof(FeedbackStackPresenter))]
 [PseudoClasses(NotificationPseudoClass.TopLeft,
     NotificationPseudoClass.TopRight,
@@ -19,22 +24,40 @@ namespace AtomUI.Desktop.Controls;
     NotificationPseudoClass.BottomCenter)]
 public partial class WindowMessageManager : TemplatedControl, IMessageManager, IMotionAwareControl, IDisposable
 {
+    /// <summary>
+    /// Identifies the <see cref="Position" /> property.
+    /// </summary>
     public static readonly StyledProperty<NotificationPosition> PositionProperty =
         AvaloniaProperty.Register<WindowMessageManager, NotificationPosition>(
             nameof(Position), NotificationPosition.TopCenter);
 
+    /// <summary>
+    /// Identifies the <see cref="MaxItems" /> property.
+    /// </summary>
     public static readonly StyledProperty<int> MaxItemsProperty =
         AvaloniaProperty.Register<WindowMessageManager, int>(nameof(MaxItems));
 
+    /// <summary>
+    /// Identifies the <see cref="IsStackEnabled" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsStackEnabledProperty =
         AvaloniaProperty.Register<WindowMessageManager, bool>(nameof(IsStackEnabled));
 
+    /// <summary>
+    /// Identifies the <see cref="StackThreshold" /> property.
+    /// </summary>
     public static readonly StyledProperty<int> StackThresholdProperty =
         AvaloniaProperty.Register<WindowMessageManager, int>(nameof(StackThreshold), 3);
 
+    /// <summary>
+    /// Identifies the <see cref="IsPauseOnHover" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsPauseOnHoverProperty =
         AvaloniaProperty.Register<WindowMessageManager, bool>(nameof(IsPauseOnHover), true);
 
+    /// <summary>
+    /// Identifies the <see cref="IsMotionEnabled" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<WindowMessageManager>();
 
@@ -53,36 +76,64 @@ public partial class WindowMessageManager : TemplatedControl, IMessageManager, I
     private bool _hostLayerRetryScheduled;
     private int _hostLayerRetryCount;
 
+    /// <summary>
+    /// The window edge at which the messages appear; the cards are laid out from that edge. The item presenter and
+    /// every card shown receive the value, and the card uses it for its entry and close motion. The default is
+    /// <see cref="NotificationPosition.TopCenter" />.
+    /// </summary>
     public NotificationPosition Position
     {
         get => GetValue(PositionProperty);
         set => SetValue(PositionProperty, value);
     }
 
+    /// <summary>
+    /// The greatest number of cards that may be open at the same time. When a message is shown and more cards are
+    /// open, the oldest ones that are not closing are closed until the number fits. A value of <c>0</c> or less
+    /// removes the limit; the default is <c>0</c>.
+    /// </summary>
     public int MaxItems
     {
         get => GetValue(MaxItemsProperty);
         set => SetValue(MaxItemsProperty, value);
     }
 
+    /// <summary>
+    /// Lets the cards pile up into a stack while more than <see cref="StackThreshold" /> of them are open, instead
+    /// of listing every card. The value is passed to the item presenter. The default is <see langword="false" />.
+    /// </summary>
     public bool IsStackEnabled
     {
         get => GetValue(IsStackEnabledProperty);
         set => SetValue(IsStackEnabledProperty, value);
     }
 
+    /// <summary>
+    /// The number of open cards that may be listed before they pile up into a stack, which is used while more cards
+    /// than this are open and <see cref="IsStackEnabled" /> is <see langword="true" />. Values below <c>1</c> count
+    /// as <c>1</c>. The default is <c>3</c>.
+    /// </summary>
     public int StackThreshold
     {
         get => GetValue(StackThresholdProperty);
         set => SetValue(StackThresholdProperty, value);
     }
 
+    /// <summary>
+    /// Pauses the expiry of a card while the pointer is over it, and of all cards while the pointer is over the
+    /// folded stack. Turning it off resumes every paused card at once. The default is <see langword="true" />.
+    /// </summary>
     public bool IsPauseOnHover
     {
         get => GetValue(IsPauseOnHoverProperty);
         set => SetValue(IsPauseOnHoverProperty, value);
     }
 
+    /// <summary>
+    /// Controls whether the cards animate. The value is relayed to the item presenter and to every card shown,
+    /// which use it for their motion. The theme takes the value from the <c>EnableMotion</c> design Token; without a
+    /// value from a style or the control it is <see langword="false" />.
+    /// </summary>
     public bool IsMotionEnabled
     {
         get => GetValue(IsMotionEnabledProperty);
@@ -111,8 +162,10 @@ public partial class WindowMessageManager : TemplatedControl, IMessageManager, I
     /// <summary>
     /// Initializes a new instance of the <see cref="WindowMessageManager" /> class.
     /// </summary>
-    /// <param name="host">The TopLevel that will host the control. Pass <c>null</c> to skip installing
-    /// the manager into a TopLevel layer; the manager then renders inline wherever the caller places it.</param>
+    /// <param name="host">
+    /// The TopLevel that will host the control. Pass <c>null</c> to skip installing
+    /// the manager into a TopLevel layer; the manager then renders inline wherever the caller places it.
+    /// </param>
     public WindowMessageManager(TopLevel? host) : this()
     {
         if (host is not null)
@@ -128,6 +181,12 @@ public partial class WindowMessageManager : TemplatedControl, IMessageManager, I
         VerticalAlignmentProperty.OverrideDefaultValue<WindowMessageManager>(VerticalAlignment.Stretch);
     }
 
+    /// <summary>
+    /// Binds the template's <c>PART_Items</c> presenter: it receives the cards and the values of
+    /// <see cref="Position" />, <see cref="IsStackEnabled" />, <see cref="StackThreshold" /> and
+    /// <see cref="IsMotionEnabled" />, and it reports the hover state of the stack here. The base method is called
+    /// before the new presenter is looked up.
+    /// </summary>
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         if (_presenter is not null)
@@ -151,6 +210,10 @@ public partial class WindowMessageManager : TemplatedControl, IMessageManager, I
         UpdatePseudoClasses(Position);
     }
 
+    /// <summary>
+    /// Resumes the expiry of the cards, which is paused while the manager is not in the tree, and records that the
+    /// manager was attached, so that a later detach releases its cards. Calls the base method first.
+    /// </summary>
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
@@ -159,6 +222,10 @@ public partial class WindowMessageManager : TemplatedControl, IMessageManager, I
         UpdateSchedulerPauseState();
     }
 
+    /// <summary>
+    /// Pauses the expiry of the cards and schedules the release of every card once the detach has finished, unless
+    /// the manager is attached again before that. The base method is called after the expiry is paused.
+    /// </summary>
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         _isLifecyclePaused = true;
@@ -167,9 +234,11 @@ public partial class WindowMessageManager : TemplatedControl, IMessageManager, I
         ScheduleReleaseCardsOnHostDetach();
     }
 
-    // 宿主层释放契约：manager 运行途中离开视觉树即释放其上的全部卡片（对齐上游 message-list 卸载行为）。
-    // 必须推迟到 detach 级联完成之后：在 detach 过程中同步关闭卡片会让 presenter 重建容器树，
-    // 触发 Avalonia 视觉树内部集合越界。从未 attach 过的 manager 不适用——release/6.0 允许 attach 前 Show。
+    // Host layer release contract: a manager that leaves the visual tree while it is running releases every card
+    // it holds, which matches the upstream message list when it unmounts.
+    // The release must wait until the detach cascade has finished: closing cards synchronously while they are being
+    // detached makes the presenter rebuild its container tree and run past the end of a collection inside the
+    // Avalonia visual tree. A manager that was never attached is not affected: Show is allowed before attach.
     private void ScheduleReleaseCardsOnHostDetach()
     {
         if (!_hasBeenAttached || _isDisposed)
@@ -179,13 +248,13 @@ public partial class WindowMessageManager : TemplatedControl, IMessageManager, I
 
         Dispatcher.UIThread.Post(() =>
         {
-            // 执行时已重新入树（反馈层迁移等瞬时 detach）则不释放。
+            // Back in the tree by now, for example after a transient detach such as a feedback layer migration.
             if (_isDisposed || !_isLifecyclePaused)
             {
                 return;
             }
 
-            // 关闭回调可能同步修改 _cards，先拷贝快照。
+            // Close callbacks may change _cards synchronously, so work on a snapshot.
             var cards = _cards.ToArray();
             for (var i = 0; i < cards.Length; i++)
             {
@@ -197,10 +266,16 @@ public partial class WindowMessageManager : TemplatedControl, IMessageManager, I
     }
 
     /// <summary>
-    /// Shows a Message
+    /// Shows a message as a new <see cref="MessageCard" /> and closes the oldest cards beyond
+    /// <see cref="MaxItems" />. A message with a positive expiration closes by itself after that time. Does nothing
+    /// after <see cref="Dispose" />.
     /// </summary>
-    /// <param name="message">the content of the message</param>
-    /// <param name="classes">style classes to apply</param>
+    /// <param name="message">
+    /// The message to show: its type, icon and text, how long it stays open and the callback to run once it closed.
+    /// </param>
+    /// <param name="classes">
+    /// Style classes to add to the card, or <see langword="null" /> to add none.
+    /// </param>
     public void Show(IMessage message, string[]? classes = null)
     {
         Dispatcher.VerifyAccess();
@@ -239,6 +314,10 @@ public partial class WindowMessageManager : TemplatedControl, IMessageManager, I
         RemoveExcessMessages();
     }
 
+    /// <summary>
+    /// Closes every card, the newest first. A card leaves the manager when its close has completed. Must be called
+    /// on the UI thread; does nothing after <see cref="Dispose" />.
+    /// </summary>
     public void DestroyAll()
     {
         Dispatcher.VerifyAccess();
@@ -252,6 +331,10 @@ public partial class WindowMessageManager : TemplatedControl, IMessageManager, I
         }
     }
 
+    /// <summary>
+    /// Updates the pseudo-classes when <see cref="Position" /> changes, and resumes the expiry of all cards when
+    /// <see cref="IsPauseOnHover" /> or <see cref="IsStackEnabled" /> is turned off. Calls the base method first.
+    /// </summary>
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
@@ -448,6 +531,11 @@ public partial class WindowMessageManager : TemplatedControl, IMessageManager, I
         _hostLayerUsesNativeAdorner = false;
     }
 
+    /// <summary>
+    /// Releases the manager. Every card is dropped without a close motion and without running its close callback,
+    /// the expiry timers stop, and the manager is removed from the host layer. Later calls of <see cref="Show" />
+    /// and <see cref="DestroyAll" /> do nothing.
+    /// </summary>
     public void Dispose()
     {
         if (_isDisposed)

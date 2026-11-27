@@ -3,9 +3,11 @@ using Avalonia.Controls;
 
 namespace AtomUI.Desktop.Controls;
 
-// manager 的隐式 root 是承载全部通知卡片的容器；listContent 对应
-// FeedbackStackPresenter#PART_Items 的排列 / 顺序 / 对齐职责（堆叠架构以 ItemsControl 契约暴露）。
-// 因此不需要 CrossVisualRoot / RuntimeCreated。
+// The area that lays out and stacks all notification cards: the manager's template part PART_Items, a
+// FeedbackStackPresenter exposed through the ItemsControl contract. Present once the manager's template is
+// applied.
+// The node belongs to the manager's own template, so it needs neither CrossVisualRoot nor RuntimeCreated.
+// WindowNotificationManagerListContentStyle applies to it.
 [SemanticPart(
     "listContent",
     SelectorClass = "semantic-list-content",

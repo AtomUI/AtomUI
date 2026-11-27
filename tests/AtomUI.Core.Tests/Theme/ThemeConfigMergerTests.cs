@@ -7,7 +7,9 @@ using Xunit;
 
 namespace AtomUI.Core.Tests.Theme;
 
-/// <summary>Layering of scope configurations (spec 7.6, 7.7): axes and values of a layer win over the layer below.</summary>
+/// <summary>
+/// Layering of scope configurations: axes and values of a layer win over the layer below.
+/// </summary>
 public class ThemeConfigMergerTests
 {
     [Fact]
@@ -42,7 +44,7 @@ public class ThemeConfigMergerTests
 
         var result = ThemeConfigMerger.Merge(defaults, parent, local);
 
-        // Inherit = false keeps the parent's language (spec 7.7) and drops its density and values.
+        // Inherit = false keeps the parent's language and drops its density and values.
         result.EffectiveConfig.Language.ShouldNotBeNull().Id.ShouldBe("Probe");
         result.EffectiveConfig.Axes.Density.ShouldBeNull();
         Value(result.EffectiveConfig, "Alpha").ShouldBe(1d);

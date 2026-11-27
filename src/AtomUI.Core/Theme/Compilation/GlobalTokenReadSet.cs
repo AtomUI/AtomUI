@@ -4,7 +4,9 @@ using AtomUI.Theme.Schema;
 
 namespace AtomUI.Theme.Compilation;
 
-/// <summary>A set of global token slots: what a control token rule read, or what a child unit changed (spec 12.3).</summary>
+/// <summary>
+/// A set of global token slots: what a control token rule read, or what a child unit changed.
+/// </summary>
 internal sealed class GlobalTokenReadSet
 {
     private static readonly ConditionalWeakTable<IReadOnlyList<TokenDescriptor>, FrozenDictionary<string, int>> s_slots = new();
@@ -30,7 +32,9 @@ internal sealed class GlobalTokenReadSet
         return new GlobalTokenReadSet(bits);
     }
 
-    /// <summary>The slots whose values differ between two global value tables of the same schema.</summary>
+    /// <summary>
+    /// The slots whose values differ between two global value tables of the same schema.
+    /// </summary>
     internal static GlobalTokenReadSet Changes(TokenValueTable before, TokenValueTable after)
     {
         var bits = new ulong[(Math.Max(before.Count, after.Count) + 63) >> 6];

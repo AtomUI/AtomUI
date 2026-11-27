@@ -5,6 +5,10 @@ using AtomUI.Theme.Languages;
 
 namespace AtomUI.Desktop.Controls.Themes.AntDesign;
 
+/// <summary>
+/// Provides the entry point that adds the Ant Design values of the desktop controls to an Ant Design
+/// language builder.
+/// </summary>
 public static class AntDesignDesktopControlsExtensions
 {
     /// <summary>

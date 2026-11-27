@@ -5,30 +5,37 @@ using Avalonia.Controls.Presenters;
 
 namespace AtomUI.Desktop.Controls;
 
-// header 的承载节点是 PART_HeaderContent。它是模板中的常驻静态节点，且同时是边框缺口的几何来源
-// （GroupBox.CalculateHeaderGapBounds 读取它的 Bounds），因此 cardinality 是 Single 而不是 Optional。
+// The header in the gap of the group's border, carried by PART_HeaderContent. The node is a
+// permanent static node of the template and the geometry source of the border gap
+// (GroupBox.CalculateHeaderGapBounds reads its Bounds), so its cardinality is Single rather than
+// Optional. GroupBoxHeaderStyle applies to the header.
 [SemanticPart(
     "header",
     SelectorClass = "semantic-header",
     ContractType = typeof(Border),
     Since = "6.2.0")]
-// icon 的 ContractType 取公开的 IconPresenter；HeaderIcon 为 null 时节点 IsVisible=false，
-// 但不从模板缺席，因此仍是 Single。
+// The optional icon beside the header label. Its ContractType is the public IconPresenter. When
+// HeaderIcon is null the node is only hidden (IsVisible=false) and never absent from the template,
+// so its cardinality is still Single. GroupBoxIconStyle applies to the icon.
 [SemanticPart(
     "icon",
     SelectorClass = "semantic-icon",
     ContractType = typeof(IconPresenter),
     Since = "6.2.0")]
-// title 的 ContractType 取 Avalonia.Controls.TextBlock 基类而不是节点派生类型
-// （AtomUI.Desktop.Controls.TextBlock）。派生类型同样满足契约，取基类让后续把节点替换为
-// 普通 TextBlock 保持兼容；收窄到派生类型会成为破坏性变更。
-// 必须完全限定：本文件位于 AtomUI.Desktop.Controls 命名空间内，非限定的 TextBlock
-// 会解析到同命名空间的派生类型，而不是 Avalonia 基类。
+// The title text of the header. The ContractType is the Avalonia.Controls.TextBlock base class, not
+// the derived node type (AtomUI.Desktop.Controls.TextBlock). The derived type satisfies the contract
+// as well; taking the base class keeps the contract compatible with a later replacement of the node
+// by a plain TextBlock, whereas narrowing to the derived type would be a breaking change. The name
+// must stay fully qualified: this file lives in the AtomUI.Desktop.Controls namespace, where an
+// unqualified TextBlock resolves to the derived type instead of the Avalonia base class.
+// GroupBoxTitleStyle applies to the title.
 [SemanticPart(
     "title",
     SelectorClass = "semantic-title",
     ContractType = typeof(Avalonia.Controls.TextBlock),
     Since = "6.2.0")]
+// The area under the header that presents the group's Content. GroupBoxContentStyle applies to the
+// content presenter.
 [SemanticPart(
     "content",
     SelectorClass = "semantic-content",

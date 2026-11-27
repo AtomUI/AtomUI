@@ -3,7 +3,9 @@ using AtomUI.Theme.Languages;
 
 namespace AtomUI.Desktop.Controls.Themes.Shadcn;
 
-/// <summary>The shadcn view of <see cref="DashboardProgressToken"/>.</summary>
+/// <summary>
+/// The shadcn view of <see cref="DashboardProgressToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class DashboardProgressTokenRule : IControlTokenRule<ShadcnToken, DashboardProgressToken>
 {

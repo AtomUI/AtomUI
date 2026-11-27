@@ -13,14 +13,18 @@ internal static class PrimeNGAvatarTokens
 {
     internal static void EvaluateGlobal(in TokenEvaluationContext<PrimeNGToken> context, DesignToken controlGlobal)
     {
+        // avatar.border.radius: one radius at every size.
         controlGlobal.BorderRadiusSM = controlGlobal.BorderRadius;
         controlGlobal.BorderRadiusLG = controlGlobal.BorderRadius;
     }
     internal static void EvaluateOwn(in TokenEvaluationContext<PrimeNGToken> context, DesignToken effectiveGlobal, AvatarToken token)
     {
+        // avatar.background surface.200 / 700 with avatar.color text.color.
         token.AvatarBg         = context.Variant.IsDark ? context.Language.Surface700 : context.Language.Surface200;
         token.AvatarColor      = effectiveGlobal.ColorText;
+        // avatar.lg.font.size 20.
         token.TextFontSizeLG   = 20;
+        // The group border is content.background, which ColorBgElevated holds.
         token.GroupBorderColor = effectiveGlobal.ColorBgElevated;
     }
 }

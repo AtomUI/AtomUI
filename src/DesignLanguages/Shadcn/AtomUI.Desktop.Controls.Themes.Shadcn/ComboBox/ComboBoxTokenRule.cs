@@ -4,7 +4,9 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls.Themes.Shadcn;
 
-/// <summary>The shadcn view of <see cref="ComboBoxToken"/>.</summary>
+/// <summary>
+/// The shadcn view of <see cref="ComboBoxToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class ComboBoxTokenRule : IControlTokenRule<ShadcnToken, ComboBoxToken>
 {
@@ -12,6 +14,7 @@ internal sealed class ComboBoxTokenRule : IControlTokenRule<ShadcnToken, ComboBo
     {
         var token  = target.Own;
         var global = target.Global;
+        // Ant Design formula kept as is: the language changes only the dark selected background, replaced below.
         token.PopupContentPadding  = new Thickness(global.UniformlyPaddingXXS, global.BorderRadiusLG.TopLeft / 2);
 
         var colorTextDisabled  = global.ColorTextDisabled;

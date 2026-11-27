@@ -8,8 +8,9 @@ using Avalonia.VisualTree;
 namespace AtomUI.Controls.Primitives;
 
 /// <summary>
-/// 全局视觉层级阶梯的唯一号码真源。所有注入到 VisualLayerManager / 层宿主 Panel 的层都必须使用这里的号码。
-/// Avalonia 内置层号码（Overlay −98 / LightDismiss −97 / TextSelector −96 / PopupOverlay −95）保持不变。
+/// The single source of the numbers of the global visual layer ladder. Every layer injected into a
+/// VisualLayerManager or a layer host Panel must use the numbers defined here. The numbers of the Avalonia
+/// built-in layers (Overlay −98 / LightDismiss −97 / TextSelector −96 / PopupOverlay −95) stay unchanged.
 /// </summary>
 public sealed class LayerLadder
 {
@@ -23,19 +24,24 @@ public sealed class LayerLadder
     internal const int WindowFeedback      = int.MaxValue - 50;
 
     /// <summary>
-    /// 标记一个 <see cref="VisualLayerManager"/> 为“表面宿主”（例如被提升的内容表面）。
-    /// 表面宿主只承载内容角色的层（装饰/覆盖/浮动/呈现）；窗口级角色（Tour、窗口反馈等）解析时会跳过它。
+    /// Marks a <see cref="VisualLayerManager" /> as a surface host (for example a promoted content surface).
+    /// A surface host carries only content-role layers (decoration, overlay, floating, presentation);
+    /// window-level roles (Tour, window feedback, ...) skip it when resolving their host.
     /// </summary>
     public static readonly AttachedProperty<bool> IsSurfaceHostProperty =
         AvaloniaProperty.RegisterAttached<LayerLadder, VisualLayerManager, bool>("IsSurfaceHost");
 
-    /// <summary>获取 <see cref="VisualLayerManager"/> 是否为表面宿主。</summary>
+    /// <summary>
+    /// Gets whether a <see cref="VisualLayerManager" /> is a surface host.
+    /// </summary>
     public static bool GetIsSurfaceHost(VisualLayerManager manager)
     {
         return manager.GetValue(IsSurfaceHostProperty);
     }
 
-    /// <summary>设置 <see cref="VisualLayerManager"/> 是否为表面宿主。</summary>
+    /// <summary>
+    /// Sets whether a <see cref="VisualLayerManager" /> is a surface host.
+    /// </summary>
     public static void SetIsSurfaceHost(VisualLayerManager manager, bool value)
     {
         manager.SetValue(IsSurfaceHostProperty, value);
@@ -46,8 +52,9 @@ public sealed class LayerLadder
     }
 
     /// <summary>
-    /// 创建一个表面宿主：只启用 AdornerLayer 的嵌套 <see cref="VisualLayerManager"/>（Avalonia 默认即不启用
-    /// Overlay / TextSelector 层）。供宿主由代码创建、无法在 ControlTheme 中声明的提升表面使用。
+    /// Creates a surface host: a nested <see cref="VisualLayerManager" /> with only the AdornerLayer enabled
+    /// (Avalonia does not enable the Overlay / TextSelector layers by default). Meant for promoted surfaces
+    /// whose host is created in code and cannot be declared in a ControlTheme.
     /// </summary>
     internal static VisualLayerManager CreateSurfaceHost()
     {
@@ -57,9 +64,11 @@ public sealed class LayerLadder
     }
 
     /// <summary>
-    /// 规则 2（最近作用域优先）：在 ScrollViewer 类宿主（ScrollContentPresenter / ScopeAwareOverlayLayerPanel）
-    /// 与带标记的表面宿主之间按祖先距离取较近者。表面宿主更近时返回它，否则原样返回 scrollHost。
-    /// 只比较带标记的表面宿主；未标记的嵌套 VisualLayerManager 仍低于 ScrollViewer 类宿主（保持原有优先级）。
+    /// Rule 2 (nearest scope wins): picks, by ancestor distance, the nearer of a ScrollViewer-kind host
+    /// (ScrollContentPresenter / ScopeAwareOverlayLayerPanel) and a marked surface host. Returns the surface
+    /// host when it is nearer, otherwise returns scrollHost unchanged. Only marked surface hosts are compared;
+    /// an unmarked nested VisualLayerManager still ranks below a ScrollViewer-kind host (the original priority
+    /// is kept).
     /// </summary>
     internal static Layoutable? PreferNearerSurfaceHost(Visual visual, Layoutable? scrollHost)
     {
@@ -85,7 +94,8 @@ public sealed class LayerLadder
     }
 
     /// <summary>
-    /// 内容角色解析：最近的 VisualLayerManager 祖先（含表面宿主），找不到时退回 TopLevel 下第一个非表面宿主。
+    /// Content role resolution: the nearest VisualLayerManager ancestor (surface hosts included), or, when
+    /// there is none, the first non-surface host under the TopLevel.
     /// </summary>
     internal static VisualLayerManager? FindContentLayerManager(Visual visual)
     {
@@ -98,9 +108,10 @@ public sealed class LayerLadder
         {
             foreach (var descendant in topLevel.GetVisualDescendants())
             {
-                // 退回路径跳过表面宿主：表面宿主只是其后代的作用域。不在它内部的视觉若落进某个表面
-                // （例如没有 VisualLayerManager 的 TopLevel 上，已打开 Drawer 的表面宿主是第一个
-                // VisualLayerManager），Drawer container 会被移入自己内部的层，视觉树成环。
+                // The fallback skips surface hosts: a surface host scopes only its descendants. A visual outside one
+                // would otherwise land in a surface (for example on a TopLevel without a VisualLayerManager, where the
+                // surface host of an opened Drawer is the first VisualLayerManager); the Drawer container would be
+                // moved into a layer inside itself and the visual tree would form a cycle.
                 if (descendant is VisualLayerManager manager && !GetIsSurfaceHost(manager))
                 {
                     return manager;
@@ -112,8 +123,9 @@ public sealed class LayerLadder
     }
 
     /// <summary>
-    /// 窗口级角色解析：最近的非表面宿主 VisualLayerManager 祖先，找不到时退回 TopLevel 下第一个非表面宿主
-    /// （先模板子树，再视觉子树）。未标记的嵌套 VisualLayerManager 仍然是合法的作用域。
+    /// Window-level role resolution: the nearest non-surface-host VisualLayerManager ancestor, or, when there
+    /// is none, the first non-surface host under the TopLevel (template descendants first, then visual
+    /// descendants). An unmarked nested VisualLayerManager is still a valid scope.
     /// </summary>
     internal static VisualLayerManager? FindTopLevelLayerManager(Visual visual)
     {
@@ -150,20 +162,21 @@ public sealed class LayerLadder
     }
 
     /// <summary>
-    /// 幂等：把 manager 自己的 AdornerLayer 重排到内容装饰号码。
-    /// Avalonia 只在私有 AddLayer 中赋一次 ZIndex，之后不会改写，所以这里设置的值会保留。
+    /// Moves the manager's own AdornerLayer to the content decoration number. This is idempotent: Avalonia
+    /// assigns ZIndex once in its private AddLayer and never rewrites it, so the value set here is kept.
     /// </summary>
     internal static void EnsureContentDecorationOrder(VisualLayerManager manager)
     {
         var anchor = manager.Child;
         if (anchor == null)
         {
-            // 有意空操作：幂等，Child 就绪后的下一次调用会重新编号。
+            // Intentional no-op. The call is idempotent; the next call after Child is ready renumbers the layer.
             return;
         }
 
         var adornerLayer = AdornerLayer.GetAdornerLayer(anchor);
-        // 若 Child 本身是 VisualLayerManager，GetAdornerLayer 解析到的是 Child 自己的层，父级校验不通过，有意空操作。
+        // When Child is itself a VisualLayerManager, GetAdornerLayer resolves to a layer of that Child. The parent
+        // check below rejects it, so this is an intentional no-op.
         if (adornerLayer != null && ReferenceEquals(adornerLayer.GetVisualParent(), manager))
         {
             adornerLayer.ZIndex = ContentDecoration;

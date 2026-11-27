@@ -1,4 +1,8 @@
 namespace AtomUI;
 
-/// <summary>应用汇报的启动进度。Message 为 null 表示不改消息；Fraction 为 null 表示保持不确定进度，否则取 0–1。</summary>
+/// <summary>
+/// Startup progress reported by the application. A <see langword="null" /> <c>Message</c> leaves the current
+/// message unchanged. A <see langword="null" /> <c>Fraction</c> keeps the progress indeterminate; otherwise it
+/// is a value from 0 to 1.
+/// </summary>
 public readonly record struct StartupProgress(string? Message, double? Fraction = null);

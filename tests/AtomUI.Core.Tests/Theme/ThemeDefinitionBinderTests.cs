@@ -13,7 +13,11 @@ using Xunit;
 
 namespace AtomUI.Core.Tests.Theme;
 
-/// <summary>Binding of a v2 theme document to the registry and the semantic checks of spec 7.10.</summary>
+/// <summary>
+/// Binding of a v2 theme document to the registry: the content of the bound definition, how values are layered over
+/// the matching conditions, and the semantic checks, which reject an invalid definition with a located error or warn
+/// and keep the definition.
+/// </summary>
 public class ThemeDefinitionBinderTests
 {
     private const string Namespace = "https://atomui.net/schemas/theme/v2";

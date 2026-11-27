@@ -18,8 +18,8 @@ public static class ContrastRatio
     public const double TextOnSolid = 3;
 
     /// <summary>
-    /// Returns the contrast ratio, from 1 to 21, of <paramref name="foreground"/> drawn on
-    /// <paramref name="background"/>. A translucent foreground is first composited over the background; the
+    /// Returns the contrast ratio, from 1 to 21, of <paramref name="foreground" /> drawn on
+    /// <paramref name="background" />. A translucent foreground is first composited over the background; the
     /// background is treated as opaque, so callers flatten a translucent background beforehand.
     /// </summary>
     public static double Of(Color foreground, Color background)
@@ -41,7 +41,7 @@ public static class ContrastRatio
     }
 
     /// <summary>
-    /// Composites <paramref name="foreground"/> over <paramref name="background"/>, which is treated as opaque, by
+    /// Composites <paramref name="foreground" /> over <paramref name="background" />, which is treated as opaque, by
     /// per-channel alpha blending in sRGB. The result is opaque.
     /// </summary>
     public static Color Composite(Color foreground, Color background)

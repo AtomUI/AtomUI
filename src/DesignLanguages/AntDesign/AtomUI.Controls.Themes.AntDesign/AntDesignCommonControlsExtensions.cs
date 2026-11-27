@@ -4,6 +4,10 @@ using AtomUI.Theme.Languages;
 
 namespace AtomUI.Controls.Themes.AntDesign;
 
+/// <summary>
+/// Provides the entry point that adds the Ant Design values of the shared controls (<c>AtomUI.Controls</c>) to
+/// an Ant Design language builder.
+/// </summary>
 public static class AntDesignCommonControlsExtensions
 {
     /// <summary>

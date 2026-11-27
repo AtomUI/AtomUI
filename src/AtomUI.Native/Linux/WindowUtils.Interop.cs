@@ -11,7 +11,7 @@ internal static class WindowUtilsInterop
     [StructLayout(LayoutKind.Sequential)]
     internal struct xcb_void_cookie_t { public uint Sequence; }
 
-    // 矩形结构
+    // Rectangle structure.
     [StructLayout(LayoutKind.Sequential)]
     internal struct xcb_rectangle_t
     {
@@ -21,16 +21,16 @@ internal static class WindowUtilsInterop
         public ushort Height;
     }
 
-    // Atom 常量
+    // Atom constants.
     internal const uint XCB_ATOM_CARDINAL = 6;
 
-    // xcb_pixmap_t None：SHAPE mask 传 None 时恢复默认形状（整个窗口）
+    // xcb_pixmap_t None: passing None as the SHAPE mask restores the default shape (the whole window).
     internal const uint XCB_NONE = 0;
 
     // XChangeProperty mode
     internal const int PropModeReplace = 0;
 
-    // 枚举类型（对应C中的typedef enum）
+    // Enum types, each mirroring a C typedef enum.
     internal enum xcb_shape_op_t : byte
     {
         XCB_SHAPE_SO_SET = 0
@@ -46,7 +46,7 @@ internal static class WindowUtilsInterop
         XCB_CLIP_ORDERING_UNSORTED = 0
     }
     
-    // 错误处理
+    // Error handling.
     [StructLayout(LayoutKind.Sequential)]
     internal struct xcb_generic_error_t
     {
@@ -151,7 +151,7 @@ internal static class WindowUtilsInterop
         
     #region 形状扩展函数
         
-    // 查询形状扩展版本
+    // Queries the version of the SHAPE extension.
     [DllImport("libxcb-shape.so.0", EntryPoint = "xcb_shape_query_version")]
     internal static extern uint xcb_shape_query_version(IntPtr connection);
         
@@ -162,14 +162,14 @@ internal static class WindowUtilsInterop
     [DllImport("libxcb-shape.so.0", EntryPoint = "xcb_shape_rectangles_checked")]
     internal static extern xcb_void_cookie_t xcb_shape_rectangles_checked(
         IntPtr c,
-        xcb_shape_op_t operation,          // xcb_shape_op_t (实际是byte)
-        xcb_shape_kind_t destination_kind, // xcb_shape_kind_t (实际是byte)
+        xcb_shape_op_t operation,          // xcb_shape_op_t (actually a byte)
+        xcb_shape_kind_t destination_kind, // xcb_shape_kind_t (actually a byte)
         byte ordering,                     // uint8_t
         uint destination_window,
         short x_offset,                    // int16_t
         short y_offset,                    // int16_t
         uint rectangles_len,               // uint32_t
-        IntPtr rectangles                  // const xcb_rectangle_t* (指针)
+        IntPtr rectangles                  // const xcb_rectangle_t* (pointer)
     );
 
     [DllImport("libxcb-shape.so.0", EntryPoint = "xcb_shape_mask_checked")]

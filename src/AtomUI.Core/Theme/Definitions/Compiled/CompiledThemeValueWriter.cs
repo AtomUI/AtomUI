@@ -3,7 +3,9 @@ using AtomUI.Theme.Schema;
 
 namespace AtomUI.Theme.Definitions.Compiled;
 
-/// <summary>Receives the typed values of a compiled theme program, each to the destination its declaration bound.</summary>
+/// <summary>
+/// Receives the typed values of a compiled theme program, each to the destination its declaration bound.
+/// </summary>
 [EditorBrowsable(EditorBrowsableState.Never)]
 public sealed class CompiledThemeValueWriter
 {
@@ -18,7 +20,9 @@ public sealed class CompiledThemeValueWriter
         _location = location;
     }
 
-    /// <summary>Opens the section the following values belong to, in the order they were declared.</summary>
+    /// <summary>
+    /// Opens the section the following values belong to, in the order they were declared.
+    /// </summary>
     public void BeginSection(int index)
     {
         ObjectDisposedException.ThrowIf(_binding is null, this);
@@ -29,18 +33,94 @@ public sealed class CompiledThemeValueWriter
         _section = index;
     }
 
+    /// <summary>
+    /// Writes the value of the global token declared with <c>CompiledThemeBindingBuilder.RequireGlobal</c> under the
+    /// same <paramref name="tokenId" />.
+    /// </summary>
+    /// <typeparam name="T">
+    /// The token's declared value type.
+    /// </typeparam>
+    /// <param name="tokenId">
+    /// The token id used in the declaration. The token must belong to the open section.
+    /// </param>
+    /// <param name="value">
+    /// The token's value. The writer stores a copy.
+    /// </param>
+    /// <param name="canonicalValue">
+    /// The value as canonical text. It is kept as given, and token values are told apart by it, so equal values must
+    /// be written with the same text.
+    /// </param>
     public void SetGlobal<T>(int tokenId, T value, string canonicalValue) =>
         Set(-1, tokenId, value, canonicalValue, CompiledTokenKind.Global);
 
+    /// <summary>
+    /// Writes the value of the language token declared with <c>CompiledThemeBindingBuilder.RequireLanguage</c> under
+    /// the same <paramref name="tokenId" />.
+    /// </summary>
+    /// <typeparam name="T">
+    /// The token's declared value type.
+    /// </typeparam>
+    /// <param name="tokenId">
+    /// The token id used in the declaration. The token must belong to the open section.
+    /// </param>
+    /// <param name="value">
+    /// The token's value. The writer stores a copy.
+    /// </param>
+    /// <param name="canonicalValue">
+    /// The value as canonical text. It is kept as given, and token values are told apart by it, so equal values must
+    /// be written with the same text.
+    /// </param>
     public void SetLanguage<T>(int tokenId, T value, string canonicalValue) =>
         Set(-1, tokenId, value, canonicalValue, CompiledTokenKind.Language);
 
+    /// <summary>
+    /// Writes the value that control <paramref name="controlId" /> sets for the global token declared with
+    /// <c>CompiledThemeBindingBuilder.RequireControlGlobal</c> under the same <paramref name="tokenId" />.
+    /// Under the global-only registry of startup preparation the value is dropped.
+    /// </summary>
+    /// <typeparam name="T">
+    /// The token's declared value type.
+    /// </typeparam>
+    /// <param name="controlId">
+    /// The control id used in the declaration. It must be nonnegative.
+    /// </param>
+    /// <param name="tokenId">
+    /// The token id used in the declaration. The token must belong to the open section.
+    /// </param>
+    /// <param name="value">
+    /// The token's value. The writer stores a copy.
+    /// </param>
+    /// <param name="canonicalValue">
+    /// The value as canonical text. It is kept as given, and token values are told apart by it, so equal values must
+    /// be written with the same text.
+    /// </param>
     public void SetControlGlobal<T>(int controlId, int tokenId, T value, string canonicalValue)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(controlId);
         Set(controlId, tokenId, value, canonicalValue, CompiledTokenKind.ControlGlobal);
     }
 
+    /// <summary>
+    /// Writes the value that control <paramref name="controlId" /> sets for its own token, declared with
+    /// <c>CompiledThemeBindingBuilder.RequireOwn</c> under the same <paramref name="tokenId" />.
+    /// Under the global-only registry of startup preparation the value is dropped.
+    /// </summary>
+    /// <typeparam name="T">
+    /// The token's declared value type.
+    /// </typeparam>
+    /// <param name="controlId">
+    /// The control id used in the declaration. It must be nonnegative.
+    /// </param>
+    /// <param name="tokenId">
+    /// The token id used in the declaration. The token must belong to the open section.
+    /// </param>
+    /// <param name="value">
+    /// The token's value. The writer stores a copy.
+    /// </param>
+    /// <param name="canonicalValue">
+    /// The value as canonical text. It is kept as given, and token values are told apart by it, so equal values must
+    /// be written with the same text.
+    /// </param>
     public void SetOwn<T>(int controlId, int tokenId, T value, string canonicalValue)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(controlId);

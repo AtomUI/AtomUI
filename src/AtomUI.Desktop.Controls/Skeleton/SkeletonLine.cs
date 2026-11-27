@@ -3,6 +3,9 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls;
 
+/// <summary>
+/// A single placeholder bar of a skeleton, for example one row of a <see cref="SkeletonParagraph" />.
+/// </summary>
 public class SkeletonLine : AbstractSkeletonLine
 {
     #region 内部属性定义

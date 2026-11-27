@@ -5,12 +5,18 @@
 
 namespace AtomUI.Desktop.Controls;
 
+/// <summary>
+/// Carries a row for the <see cref="DataGrid.LoadingRow" />, <see cref="DataGrid.UnloadingRow" /> and
+/// <see cref="DataGrid.RowReordered" /> events.
+/// </summary>
 public class DataGridRowEventArgs : EventArgs
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="T:AtomUI.Desktop.Controls.DataGridRowEventArgs" /> class.
     /// </summary>
-    /// <param name="dataGridRow">The row that the event occurs for.</param>
+    /// <param name="dataGridRow">
+    /// The row that the event occurs for.
+    /// </param>
     public DataGridRowEventArgs(DataGridRow dataGridRow)
     {
         Row = dataGridRow;

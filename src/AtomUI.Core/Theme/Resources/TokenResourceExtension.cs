@@ -18,17 +18,42 @@ namespace AtomUI.Theme.Resources;
 public abstract class TokenResourceExtension<TTokenKind> : MarkupExtension
     where TTokenKind : Enum
 {
+    /// <summary>
+    /// The kind of Token to read. It is <see langword="null" /> until it is assigned, and <see cref="ProvideValue" />
+    /// throws while it is.
+    /// </summary>
     public TTokenKind? Kind { get; set; }
 
     public TokenResourceExtension()
     {
     }
 
+    /// <summary>
+    /// Creates an extension that reads the Token <paramref name="kind" />.
+    /// </summary>
+    /// <param name="kind">
+    /// The Token to read.
+    /// </param>
     public TokenResourceExtension(TTokenKind kind)
     {
         Kind = kind;
     }
 
+    /// <summary>
+    /// Returns the dynamic resource read of <see cref="Kind" />. Inside a control template the read is created
+    /// through <see cref="DynamicResourceExtension" /> with Template priority; outside a control template the
+    /// <see cref="DynamicResourceExtension" /> that holds the resource key is returned unchanged.
+    /// </summary>
+    /// <param name="serviceProvider">
+    /// The service provider of the markup extension. Only <see cref="IAvaloniaXamlIlControlTemplateProvider" />
+    /// is requested from it, to detect a control template.
+    /// </param>
+    /// <returns>
+    /// The value provided to the target property.
+    /// </returns>
+    /// <exception cref="InvalidOperationException">
+    /// <see cref="Kind" /> is <see langword="null" />.
+    /// </exception>
     public override object ProvideValue(IServiceProvider serviceProvider)
     {
         Debug.Assert(Kind != null);
@@ -51,6 +76,17 @@ public abstract class TokenResourceExtension<TTokenKind> : MarkupExtension
         return extension;
     }
 
+    /// <summary>
+    /// Returns the resource key that addresses the Token kind. <see cref="ProvideValue" /> calls it once for
+    /// each read.
+    /// </summary>
+    /// <param name="kind">
+    /// The Token kind to look up; never <see langword="null" />.
+    /// </param>
+    /// <returns>
+    /// The resource key. The base implementation returns <paramref name="kind" /> itself; the generated Token
+    /// resource extensions override it.
+    /// </returns>
     protected virtual object GetResourceKey(TTokenKind kind) => kind;
 
     private sealed class ControlTemplateContext(object templateProvider) : IServiceProvider

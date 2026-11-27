@@ -3,7 +3,9 @@ using AtomUI.Theme.Languages;
 
 namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 
-/// <summary>The PrimeNG view of <see cref="OtpLineEditToken"/>.</summary>
+/// <summary>
+/// The PrimeNG view of <see cref="OtpLineEditToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class OtpLineEditTokenRule : IControlTokenRule<PrimeNGToken, OtpLineEditToken>
 {
@@ -11,7 +13,8 @@ internal sealed class OtpLineEditTokenRule : IControlTokenRule<PrimeNGToken, Otp
     {
         var token  = target.Own;
         var global = target.Global;
-        // PrimeNG: the control-global overrides, read by the formulas below.
+        // PrimeNG: the overrides of PrimeNGInputStage.Apply, none by the formulas below; the OtpLineEdit theme reads
+        // ColorPrimaryHover, ColorErrorBorderHover, InputActiveShadow, InputErrorActiveShadow and ColorTextDisabled.
         PrimeNGOtpLineEditTokens.EvaluateGlobal(in context, global);
 
         token.CellWidth               = global.ControlHeight;

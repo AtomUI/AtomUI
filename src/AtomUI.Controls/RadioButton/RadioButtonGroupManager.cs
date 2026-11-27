@@ -5,7 +5,8 @@ namespace AtomUI.Controls;
 
 /// <summary>
 /// Extracted from Avalonia 12 internal API for radio button group management.
-/// Manages radio button groups to ensure only one button in a group is checked at a time.
+/// What <see cref="RadioButtonGroupManager" /> reads from and writes to a radio button of a group, so that only one
+/// button of the group stays checked.
 /// </summary>
 internal interface IRadioButton : ILogical
 {
@@ -16,7 +17,9 @@ internal interface IRadioButton : ILogical
 
 /// <summary>
 /// Extracted from Avalonia 12 internal API for radio button group management.
-/// Manages radio button groups across visual roots to ensure mutual exclusivity.
+/// Ensures mutual exclusivity of the radio buttons of a group. Each visual root has its own manager, created by
+/// <see cref="GetOrCreateForRoot" />, so a group name is scoped to one root; a <see langword="null" /> root shares
+/// one default manager.
 /// </summary>
 internal class RadioButtonGroupManager
 {

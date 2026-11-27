@@ -5,7 +5,9 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls.Themes.Shadcn;
 
-/// <summary>The shadcn view of <see cref="AlertToken"/>.</summary>
+/// <summary>
+/// The shadcn view of <see cref="AlertToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class AlertTokenRule : IControlTokenRule<ShadcnToken, AlertToken>
 {
@@ -13,6 +15,7 @@ internal sealed class AlertTokenRule : IControlTokenRule<ShadcnToken, AlertToken
     {
         var token  = target.Own;
         var global = target.Global;
+        // Ant Design formula kept as is: no registry value is merged into the alert tokens.
         const double paddingHorizontal = 12; // Fixed value here.
         token.WithDescriptionIconSize = global.FontSizeHeading3;
         token.DefaultPadding          = new Thickness(paddingHorizontal, global.PaddingContentVerticalSM);

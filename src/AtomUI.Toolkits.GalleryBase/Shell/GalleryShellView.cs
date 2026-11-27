@@ -20,6 +20,17 @@ using SvgControl = Avalonia.Svg.Svg;
 
 namespace AtomUI.Toolkits.GalleryBase.Shell;
 
+/// <summary>
+/// The page shell of a Gallery: a sidebar with brand header, navigation view and optional footer, a separator, and
+/// the host that displays the routed views.
+/// </summary>
+/// <remarks>
+/// The shell follows the media breakpoint of the media owner that encloses it: it collapses the sidebar navigation
+/// menu at <see cref="MediaBreakPoint.Medium" /> and below, and expands it above. A manual collapse or expand by
+/// the user suspends this until the breakpoint next switches between compact and not compact.
+/// The layout is wrapped in a code drawer host and a zoom overlay host, so the source code drawer and the zoom
+/// overlay cover the whole page.
+/// </remarks>
 public sealed class GalleryShellView : UserControl, IDisposable
 {
     #region 内部属性定义
@@ -48,10 +59,34 @@ public sealed class GalleryShellView : UserControl, IDisposable
     private bool _isApplyingResponsiveSidebarState;
     private bool _isDisposed;
 
+    /// <summary>
+    /// The border that takes the width left of the sidebar and displays <see cref="RoutedViewHost" />.
+    /// </summary>
+    /// <remarks>
+    /// When the shell was created with content media breakpoints enabled, a <c>GalleryContentMediaBreakHost</c> sits
+    /// between the two and publishes the breakpoint of the content width.
+    /// </remarks>
     public Border ContentHost { get; }
 
+    /// <summary>
+    /// Displays the view of the current routing state of the router, without a page transition.
+    /// </summary>
     public RoutedViewHost RoutedViewHost { get; }
 
+    /// <summary>
+    /// Builds the shell layout around the given navigation view and router.
+    /// </summary>
+    /// <param name="configuration">
+    /// Supplies the branding and the sidebar settings of the shell.
+    /// </param>
+    /// <param name="navigationView">
+    /// The view shown below the brand header of the sidebar. When it implements
+    /// <see cref="IGallerySidebarNavMenuHost" />, the shell sizes the sidebar from its navigation menu and follows
+    /// the collapsed state of that menu.
+    /// </param>
+    /// <param name="router">
+    /// The routing state whose current view <see cref="RoutedViewHost" /> displays.
+    /// </param>
     public GalleryShellView(GalleryBaseConfiguration configuration,
                             Control navigationView,
                             RoutingState router)
@@ -146,6 +181,14 @@ public sealed class GalleryShellView : UserControl, IDisposable
         Content = zoomOverlayHost;
     }
 
+    /// <summary>
+    /// Releases the subscription to the media owner, the content media break host and the token and sidebar bindings.
+    /// Calling it again does nothing.
+    /// </summary>
+    /// <remarks>
+    /// Detaching the view from the visual tree disposes it. The token and sidebar bindings are not rebuilt when the
+    /// view is attached again, so do not reuse a disposed view.
+    /// </remarks>
     public void Dispose()
     {
         if (_isDisposed)
@@ -160,12 +203,19 @@ public sealed class GalleryShellView : UserControl, IDisposable
         _themeBindings.Dispose();
     }
 
+    /// <summary>
+    /// Calls the base member, then starts following the media owner that encloses the shell and applies the sidebar
+    /// state for its breakpoint.
+    /// </summary>
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
         AttachMediaOwner(MediaQueryHost.FindOwner(this));
     }
 
+    /// <summary>
+    /// Disposes the shell, then calls the base member.
+    /// </summary>
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         Dispose();

@@ -25,7 +25,8 @@ internal class DataGridRowReorderHandle : TemplatedControl
     private IconButton? _indicatorButton;
     private IDisposable? _owningGridBindings;
 
-    // 绑定订阅表格的属性变更，由生成它的列在行被丢弃时通过 ReleaseOwningGridBindings 释放
+    // The binding subscribes to the property changes of the grid. The column that created this control releases
+    // it through ReleaseOwningGridBindings when the row is discarded.
     internal void BindOwningGridProperties(DataGrid owningGrid)
     {
         _owningGridBindings?.Dispose();

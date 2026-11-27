@@ -21,6 +21,14 @@ using AtomUI.Theme;
 
 namespace AtomUI.Desktop.Controls;
 
+/// <summary>
+/// A cell of a <see cref="DataGrid" /> body row. The owning <see cref="DataGridColumn" /> generates
+/// the content and supplies the theme and the style classes. The cell mirrors the selection, current,
+/// editing, validity and focus state in its <c>:selected</c>, <c>:current</c>, <c>:edited</c>,
+/// <c>:invalid</c> and <c>:focus</c> pseudo-classes, and forwards pointer presses to the grid, which
+/// handles focus, selection and editing. Cells that have no owning column, row or grid, such as the
+/// corner header cells, are skipped by that logic.
+/// </summary>
 // Visual container follows the DataGrid owner, including TokenTransitions in its template.
 [TokenOwnerTransparent]
 [TemplatePart(DataGridCellThemeConstants.RightGridLinePart, typeof(Rectangle))]
@@ -30,6 +38,9 @@ public class DataGridCell : ContentControl
 {
     #region 公共属性定义
 
+    /// <summary>
+    /// Identifies the <see cref="IsValid" /> property.
+    /// </summary>
     public static readonly DirectProperty<DataGridCell, bool> IsValidProperty =
         AvaloniaProperty.RegisterDirect<DataGridCell, bool>(
             nameof(IsValid),
@@ -37,6 +48,12 @@ public class DataGridCell : ContentControl
 
     bool _isValid = true;
 
+    /// <summary>
+    /// Gets or sets whether the cell passed validation. It is <see langword="false" /> after the edited
+    /// cell failed validation, and the owning grid resets it together with the validity of the editing
+    /// row and its cells. A value of <see langword="false" /> makes <see cref="UpdatePseudoClasses" />
+    /// set the <c>:invalid</c> pseudo-class.
+    /// </summary>
     public bool IsValid
     {
         get => _isValid;
@@ -94,6 +111,11 @@ public class DataGridCell : ContentControl
 
     bool _isSorting = false;
 
+    /// <summary>
+    /// Gets or sets whether the owning column is sorted. The grid keeps it in step with the sort state
+    /// of the column; <see langword="true" /> lets the theme paint the cell with the sorted column
+    /// background.
+    /// </summary>
     public bool IsSorting
     {
         get => _isSorting;
@@ -102,6 +124,11 @@ public class DataGridCell : ContentControl
     
     bool _owningColumnDragging = false;
 
+    /// <summary>
+    /// Gets or sets whether the header of the owning column is being dragged in reorder mode. The cell
+    /// keeps this value bound to the drag mode of that header; <see langword="true" /> lets the theme
+    /// paint the cell with the column reorder background.
+    /// </summary>
     public bool OwningColumnDragging
     {
         get => _owningColumnDragging;
@@ -220,11 +247,15 @@ public class DataGridCell : ContentControl
     }
 
     /// <summary>
-    /// Builds the visual tree for the cell control when a new template is applied.
+    /// Called when the template of the control is applied. Besides building the visual tree, it drops
+    /// the subscription to the previous column header, updates the pseudo-classes, shows or hides the
+    /// right grid line and binds <see cref="OwningColumnDragging" /> to the drag mode of the owning
+    /// column header.
     /// </summary>
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
-        // 模板重新应用时先清理旧订阅，防止重复订阅累积
+        // Dispose the subscription left by the previous template first, so that applying the template again
+        // does not accumulate subscriptions.
         _headerDragModeSubscription?.Dispose();
         _headerDragModeSubscription = null;
 
@@ -267,8 +298,10 @@ public class DataGridCell : ContentControl
         return dragMode == DataGridColumnHeader.DragMode.Reorder;
     }
 
-    // 单元格的尺寸跟随所属行；绑定会订阅行的属性变更，由单元格集合在插入与移除时成对建立与释放，
-    // 否则列被移除后，行仍会经由该绑定持有已移除列的单元格及列本身。
+    // The size type of the cell follows its owning row. The binding subscribes to property changes of the
+    // row, so the cell collection creates and releases it in pairs when a cell is inserted and removed;
+    // otherwise the row would keep the cell, and with it the column, alive through this binding after the
+    // column has been removed.
     internal void BindOwningRowProperties(DataGridRow owningRow)
     {
         _owningRowBinding?.Dispose();
@@ -281,6 +314,11 @@ public class DataGridCell : ContentControl
         _owningRowBinding = null;
     }
 
+    /// <summary>
+    /// Called when the cell is attached to a visual tree. Calls the base implementation and binds
+    /// <see cref="OwningColumnDragging" /> to the drag mode of the owning column header again when the
+    /// template has already been applied and no subscription exists.
+    /// </summary>
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
@@ -290,6 +328,11 @@ public class DataGridCell : ContentControl
         }
     }
 
+    /// <summary>
+    /// Called when the cell is detached from the visual tree. Calls the base implementation and disposes
+    /// the subscription to the drag mode of the owning column header; applying a template or attaching the
+    /// cell to a visual tree again creates a new subscription.
+    /// </summary>
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnDetachedFromVisualTree(e);
@@ -297,6 +340,10 @@ public class DataGridCell : ContentControl
         _headerDragModeSubscription = null;
     }
 
+    /// <summary>
+    /// Called when the pointer enters the cell. Calls the base implementation and, for a cell that belongs
+    /// to a row, marks the cell's column as the row's mouse-over column.
+    /// </summary>
     protected override void OnPointerEntered(PointerEventArgs e)
     {
         base.OnPointerEntered(e);
@@ -307,6 +354,10 @@ public class DataGridCell : ContentControl
         }
     }
 
+    /// <summary>
+    /// Called when the pointer leaves the cell. Calls the base implementation and, for a cell that belongs
+    /// to a row, clears the row's mouse-over column.
+    /// </summary>
     protected override void OnPointerExited(PointerEventArgs e)
     {
         base.OnPointerExited(e);
@@ -317,7 +368,8 @@ public class DataGridCell : ContentControl
         }
     }
 
-    //TODO TabStop
+    // TODO TabStop: verify that this handler takes the tab-stop behavior of the grid fully into account
+    // and complete it where it is missing. Remove this TODO when that is done.
     private void HandlePointerPressed(PointerPressedEventArgs e)
     {
         // OwningGrid is null for TopLeftHeaderCell and TopRightHeaderCell because they have no OwningRow

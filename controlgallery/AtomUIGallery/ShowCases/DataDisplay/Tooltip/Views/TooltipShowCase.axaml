@@ -27,8 +27,10 @@
                                                  SemanticOwner="{Binding #TooltipSemanticOwner}"
                                                  SemanticOwnerType="{x:Type atom:ToolTip}">
                         <gallery:SemanticPartPreview.PreviewContent>
-                            <!--  预览舞台按 Stretch 测量内容，此处居中让 ToolTip 收缩到内容宽度,
-                                  否则胶囊会被撑到 ToolTipMaxWidth(250) 满宽  -->
+                            <!-- The preview stage measures its content with Stretch. Centering here lets the ToolTip
+                            shrink to its content width; otherwise the capsule is stretched to the full
+                            ToolTipMaxWidth (250).
+                            -->
                             <atom:ToolTip x:Name="TooltipSemanticOwner"
                                           HorizontalAlignment="Center"
                                           Content="{gallery:TooltipShowCaseLangResource P2ToolTipTipPromptText}" />

@@ -34,7 +34,7 @@
             <!-- layout: fixed relative ordering for frozen columns and dragging overlays. -->
 
             <Setter Property="ZIndex" Value="1000" />
-            <!-- 左冻结列末列：阴影条带位于表头右外侧 -->
+            <!-- Last column of the left frozen columns: the shadow strip sits outside the right edge of the header -->
             <Style Selector="^[IsShowRightFrozenShadow=True] /template/ atom|DataGridFrozenColumnShadow#FrozenShadow">
                 <Setter Property="IsVisible" Value="True" />
                 <Setter Property="HorizontalAlignment" Value="Right" />
@@ -42,7 +42,7 @@
                 <Setter Property="BoxShadow"
                         Value="{atom:DataGridTokenResource LeftFrozenShadows}" />
             </Style>
-            <!-- 右冻结列首列：阴影条带位于表头左外侧 -->
+            <!-- First column of the right frozen columns: the shadow strip sits outside the left edge of the header -->
             <Style Selector="^[IsShowLeftFrozenShadow=True] /template/ atom|DataGridFrozenColumnShadow#FrozenShadow">
                 <Setter Property="IsVisible" Value="True" />
                 <Setter Property="HorizontalAlignment" Value="Left" />

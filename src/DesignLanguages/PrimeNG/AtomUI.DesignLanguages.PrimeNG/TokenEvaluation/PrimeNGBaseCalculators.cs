@@ -1,8 +1,6 @@
-/*
- * The Ant Design map calculators (default, dark, compact), copied into the PrimeNG language as the base its presets
- * refine: PrimeNG derived its Map tokens by running them first and overwriting the preset's colours and sizes. The copy
- * belongs to PrimeNG and evolves on its own (spec 5.6: first-party languages do not derive from each other).
- */
+// The Ant Design map calculators (default, dark, compact), copied into the PrimeNG language as the base its presets
+// refine: PrimeNG derived its Map tokens by running them first and overwriting the preset's colors and sizes.
+// The copy belongs to PrimeNG and evolves on its own, because first-party languages do not derive from each other.
 using AtomUI.Media;
 using AtomUI.Theme.Derivation;
 using AtomUI.Theme.DesignTokens;
@@ -11,7 +9,9 @@ using Avalonia.Styling;
 
 namespace AtomUI.DesignLanguages.PrimeNG.TokenEvaluation;
 
-/// <summary>The two seeds the Ant Design map algorithms read from the original seed rather than from the token in progress.</summary>
+/// <summary>
+/// The two seeds the Ant Design map algorithms read from the original seed rather than from the token in progress.
+/// </summary>
 internal readonly record struct PrimeNGBaseSeeds(Color? ColorBgBase, Color? ColorTextBase);
 
 internal abstract class PrimeNGBaseVariantCalculator
@@ -210,7 +210,7 @@ internal sealed class PrimeNGBaseDefaultCalculator : PrimeNGBaseVariantCalculato
 
     private void SetupColorPalettes(DesignToken designToken)
     {
-        // 生成所有预置颜色的色系
+        // Generates the palette of every preset color.
         foreach (var presetColor in PresetPrimaryColor.AllColorTypes())
         {
             var colors   = PaletteGenerator.GeneratePalette(designToken.GetPresetPrimaryColor(presetColor.Type).Color());
@@ -319,7 +319,7 @@ internal sealed class PrimeNGBaseDarkCalculator : PrimeNGBaseVariantCalculator
 
     private void SetupColorPalettes(DesignToken designToken)
     {
-        // 生成所有预置颜色的色系
+        // Generates the palette of every preset color.
         foreach (var presetColor in PresetPrimaryColor.AllColorTypes())
         {
             var colors = PaletteGenerator.GeneratePalette(designToken.GetPresetPrimaryColor(presetColor.Type).Color(),

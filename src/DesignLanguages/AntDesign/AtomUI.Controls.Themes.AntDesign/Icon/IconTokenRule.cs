@@ -4,7 +4,9 @@ using Avalonia.Media;
 
 namespace AtomUI.Controls.Themes.AntDesign;
 
-/// <summary>The AntDesign view of <see cref="IconToken"/>.</summary>
+/// <summary>
+/// The AntDesign view of <see cref="IconToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class IconTokenRule : IControlTokenRule<AntDesignToken, IconToken>
 {

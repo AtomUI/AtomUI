@@ -2,8 +2,53 @@ using System.Collections.Immutable;
 
 namespace AtomUI.Desktop.Controls;
 
+/// <summary>
+/// Builds the sort list of a <see cref="DataGridQuery" /> for a sort request or a sort gesture.
+/// A sort gesture advances one field through its allowed directions.
+/// </summary>
 public static class DataGridSortPolicy
 {
+    /// <summary>
+    /// Adds a sort for one field, changes its direction or removes it, and returns the updated query.
+    /// </summary>
+    /// <param name="query">
+    /// The query whose sort list is updated. It is not modified.
+    /// </param>
+    /// <param name="field">
+    /// The field to sort by.
+    /// </param>
+    /// <param name="requestedDirection">
+    /// The direction to sort <paramref name="field" /> in, or <see langword="null" /> to remove its sort.
+    /// </param>
+    /// <param name="mode">
+    /// <see cref="DataGridSortUpdateMode.Replace" /> makes the field the only sort.
+    /// <see cref="DataGridSortUpdateMode.AppendOrReplace" /> keeps the other sorts: the sort of the field is
+    /// replaced in place, or the field is appended as the last sort.
+    /// </param>
+    /// <param name="allowedDirections">
+    /// The directions the field may be sorted in. This argument is not validated when
+    /// <paramref name="requestedDirection" /> is <see langword="null" />.
+    /// </param>
+    /// <returns>
+    /// A query with the updated sort list, or <paramref name="query" /> itself when nothing changes.
+    /// </returns>
+    /// <exception cref="ArgumentNullException">
+    /// <paramref name="query" /> is <see langword="null" />.
+    /// </exception>
+    /// <exception cref="ArgumentException">
+    /// <paramref name="field" /> is not a valid field identity.
+    /// </exception>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// <paramref name="mode" /> is not a known <see cref="DataGridSortUpdateMode" /> value.
+    /// </exception>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// <paramref name="allowedDirections" /> contains flags outside <see cref="DataGridSortDirections.All" />,
+    /// or <paramref name="requestedDirection" /> is not a known <see cref="DataGridSortDirection" /> value.
+    /// </exception>
+    /// <exception cref="ArgumentException">
+    /// <paramref name="allowedDirections" /> is <see cref="DataGridSortDirections.None" />, or does not include
+    /// <paramref name="requestedDirection" />.
+    /// </exception>
     public static DataGridQuery Apply(
         DataGridQuery query,
         DataGridFieldId field,
@@ -45,6 +90,45 @@ public static class DataGridSortPolicy
         return query.WithSorts(query.Sorts.Add(replacement));
     }
 
+    /// <summary>
+    /// Advances the sort of one field by one step of its direction cycle and returns the updated query.
+    /// </summary>
+    /// <param name="query">
+    /// The query whose sort list is updated. It is not modified.
+    /// </param>
+    /// <param name="field">
+    /// The field to sort by.
+    /// </param>
+    /// <param name="append">
+    /// <see langword="true" /> keeps the sorts of the other fields: the field is appended as the last sort, or
+    /// its sort is replaced in place, or it is removed when the cycle ends.
+    /// <see langword="false" /> makes the field the only sort, or removes every sort when the cycle ends.
+    /// </param>
+    /// <param name="allowedDirections">
+    /// The directions the field may be sorted in. They define the cycle.
+    /// </param>
+    /// <returns>
+    /// A query with the updated sort list.
+    /// </returns>
+    /// <exception cref="ArgumentNullException">
+    /// <paramref name="query" /> is <see langword="null" />.
+    /// </exception>
+    /// <exception cref="ArgumentException">
+    /// <paramref name="field" /> is not a valid field identity.
+    /// </exception>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// <paramref name="allowedDirections" /> contains flags outside <see cref="DataGridSortDirections.All" />.
+    /// </exception>
+    /// <exception cref="ArgumentException">
+    /// <paramref name="allowedDirections" /> is <see cref="DataGridSortDirections.None" />.
+    /// </exception>
+    /// <remarks>
+    /// The cycle follows <paramref name="allowedDirections" />. A field that is not sorted turns
+    /// <see cref="DataGridSortDirection.Ascending" /> when that direction is allowed, and otherwise
+    /// <see cref="DataGridSortDirection.Descending" />. A field that is sorted ascending turns
+    /// <see cref="DataGridSortDirection.Descending" /> when that direction is allowed; a field that is sorted
+    /// descending, or ascending while descending is not allowed, ends the cycle unsorted.
+    /// </remarks>
     public static DataGridQuery ApplyGesture(
         DataGridQuery query,
         DataGridFieldId field,

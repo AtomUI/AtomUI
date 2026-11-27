@@ -3,7 +3,9 @@ using AtomUI.Theme.Languages;
 
 namespace AtomUI.Desktop.Controls.Themes.AntDesign;
 
-/// <summary>The AntDesign view of <see cref="MessageBoxToken"/>.</summary>
+/// <summary>
+/// The AntDesign view of <see cref="MessageBoxToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class MessageBoxTokenRule : IControlTokenRule<AntDesignToken, MessageBoxToken>
 {

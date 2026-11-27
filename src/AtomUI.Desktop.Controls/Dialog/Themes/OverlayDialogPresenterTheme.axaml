@@ -8,8 +8,10 @@
         <Setter Property="UseOwnerMotionDurationTokenResources" Value="True" />
         <Setter Property="Template">
             <ControlTemplate TargetType="atom:OverlayDialogPresenter">
-                <!-- layer: 表面宿主（规则 3）。作用域 Dialog 内控件的焦点描边、Badge 落在这里的装饰层，紧贴 Dialog 表面；
-                     窗口级 Dialog 共用本模板，它本身位于 Avalonia OverlayLayer 中，多一层宿主不改变其层级。 -->
+                <!-- layer: surface host. The focus strokes and badges of controls inside the scoped Dialog land in this
+                adorner layer, right next to the Dialog surface. Window-level Dialogs share this template while
+                living in the Avalonia OverlayLayer; one more host does not change their level.
+                -->
                 <VisualLayerManager Name="PART_SurfaceHost"
                                     atom:LayerLadder.IsSurfaceHost="True">
                     <Panel>

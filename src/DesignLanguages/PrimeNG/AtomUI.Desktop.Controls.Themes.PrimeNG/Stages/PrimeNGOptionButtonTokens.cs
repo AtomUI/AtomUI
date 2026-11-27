@@ -22,6 +22,8 @@ internal static class PrimeNGOptionButtonTokens
             return;
         }
 
+        // togglebutton fills the checked option with highlight.background and highlight.color text: with Nora's dark
+        // field border a checked border alone is hard to tell from the unchecked ones.
         token.ButtonOutlineCheckedBackground  = effectiveGlobal.ControlItemBgActive;
         token.ButtonOutlineCheckedColor       = effectiveGlobal.ControlItemColorActive;
         token.ButtonOutlineCheckedHoverColor  = effectiveGlobal.ControlItemColorActive;

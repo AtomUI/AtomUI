@@ -4,14 +4,15 @@ using System.Runtime.Versioning;
 namespace AtomUI.Native.Linux;
 
 /// <summary>
-/// 进程级别的独立 XCB 连接持有者。
-///
-/// 持有一条与 Avalonia 主连接相互独立的 XCB 连接，懒初始化、加锁复用，
-/// 避免每次 SHAPE 调用都反复握手 X 服务器，也避免与 Avalonia 主循环抢锁。
-///
-/// 同时缓存 SHAPE 扩展可用性探测结果。
-///
-/// 调用方在使用 <see cref="Connection"/> 时必须 <c>lock(SyncRoot)</c>。
+/// Holds the process-wide XCB connection.
+/// <para>
+/// The connection is independent of Avalonia's main connection. It is created lazily and reused under a lock,
+/// so that SHAPE calls do not handshake with the X server each time and do not contend for the lock of
+/// Avalonia's main loop. The result of probing whether the SHAPE extension is available is cached as well.
+/// </para>
+/// <para>
+/// Callers must hold <c>lock(SyncRoot)</c> while using <see cref="Connection" />.
+/// </para>
 /// </summary>
 [SupportedOSPlatform("linux")]
 internal static class XcbConnectionHolder
@@ -21,12 +22,14 @@ internal static class XcbConnectionHolder
     private static bool s_init;
     private static bool s_shapeSupported;
 
-    /// <summary>多线程串行化访问 <see cref="Connection"/> 的同步锁。</summary>
+    /// <summary>
+    /// Lock that serializes multithreaded access to <see cref="Connection" />.
+    /// </summary>
     public static object SyncRoot => s_lock;
 
     /// <summary>
-    /// 共享 XCB 连接（已成功建立时非 <see cref="IntPtr.Zero"/>）。
-    /// 使用时必须先 <c>lock(SyncRoot)</c>。
+    /// The shared XCB connection, other than <see cref="IntPtr.Zero" /> once it has been established.
+    /// Hold <c>lock(SyncRoot)</c> while using it.
     /// </summary>
     public static IntPtr Connection
     {
@@ -37,7 +40,9 @@ internal static class XcbConnectionHolder
         }
     }
 
-    /// <summary>X 服务器是否暴露 SHAPE 扩展且本地连接已成功建立。</summary>
+    /// <summary>
+    /// Whether the X server exposes the SHAPE extension and the local connection has been established.
+    /// </summary>
     public static bool IsShapeSupported
     {
         get
@@ -63,8 +68,8 @@ internal static class XcbConnectionHolder
 
             try
             {
-                // 自己开独立连接，不复用 Avalonia 主连接 ——
-                // 避免和主线程的 X11 事件循环抢锁。
+                // Open a dedicated connection instead of reusing Avalonia's main connection.
+                // This avoids contending for the lock with the X11 event loop on the main thread.
                 s_connection = WindowUtilsInterop.xcb_connect(string.Empty, IntPtr.Zero);
                 if (s_connection != IntPtr.Zero
                     && WindowUtilsInterop.xcb_connection_has_error(s_connection) == 0)

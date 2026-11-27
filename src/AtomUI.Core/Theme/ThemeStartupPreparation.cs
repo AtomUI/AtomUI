@@ -48,8 +48,9 @@ internal sealed class PreparedThemeStartup
 }
 
 /// <summary>
-/// 后台 Prepare：只做纯数据工作（加载主题目录、编译全局层），可在任意线程执行。
-/// 使用"仅全局"registry，结果作为提交时初始主题编译的 ReusableParent。
+/// Background preparation of the startup theme. It only does pure data work (loading the theme catalog and
+/// compiling the global layer), so it may run on any thread. It uses a global-only registry, and its result serves
+/// as the <c>ReusableParent</c> of the initial theme compilation at commit.
 /// </summary>
 internal static class ThemeStartupPreparation
 {

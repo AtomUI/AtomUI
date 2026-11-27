@@ -21,43 +21,43 @@ public sealed class FlexPanel : Panel
     private const double FlexLengthTolerance = 1e-4;
 
     /// <summary>
-    /// Defines the <see cref="Direction"/> property.
+    /// Defines the <see cref="Direction" /> property.
     /// </summary>
     public static readonly StyledProperty<FlexDirection> DirectionProperty =
         AvaloniaProperty.Register<FlexPanel, FlexDirection>(nameof(Direction));
 
     /// <summary>
-    /// Defines the <see cref="JustifyContent"/> property.
+    /// Defines the <see cref="JustifyContent" /> property.
     /// </summary>
     public static readonly StyledProperty<JustifyContent> JustifyContentProperty =
         AvaloniaProperty.Register<FlexPanel, JustifyContent>(nameof(JustifyContent));
 
     /// <summary>
-    /// Defines the <see cref="AlignItems"/> property.
+    /// Defines the <see cref="AlignItems" /> property.
     /// </summary>
     public static readonly StyledProperty<AlignItems> AlignItemsProperty =
         AvaloniaProperty.Register<FlexPanel, AlignItems>(nameof(AlignItems), AlignItems.Stretch);
 
     /// <summary>
-    /// Defines the <see cref="AlignContent"/> property.
+    /// Defines the <see cref="AlignContent" /> property.
     /// </summary>
     public static readonly StyledProperty<AlignContent> AlignContentProperty =
         AvaloniaProperty.Register<FlexPanel, AlignContent>(nameof(AlignContent), AlignContent.Stretch);
 
     /// <summary>
-    /// Defines the <see cref="Wrap"/> property.
+    /// Defines the <see cref="Wrap" /> property.
     /// </summary>
     public static readonly StyledProperty<FlexWrap> WrapProperty =
         AvaloniaProperty.Register<FlexPanel, FlexWrap>(nameof(Wrap));
 
     /// <summary>
-    /// Defines the <see cref="ColumnSpacing"/> property.
+    /// Defines the <see cref="ColumnSpacing" /> property.
     /// </summary>
     public static readonly StyledProperty<double> ColumnSpacingProperty =
         AvaloniaProperty.Register<FlexPanel, double>(nameof(ColumnSpacing));
 
     /// <summary>
-    /// Defines the <see cref="RowSpacing"/> property.
+    /// Defines the <see cref="RowSpacing" /> property.
     /// </summary>
     public static readonly StyledProperty<double> RowSpacingProperty =
         AvaloniaProperty.Register<FlexPanel, double>(nameof(RowSpacing));
@@ -99,11 +99,11 @@ public sealed class FlexPanel : Panel
     }
 
     /// <summary>
-    /// Gets or sets the direction of the <see cref="FlexPanel"/>'s main-axis,
+    /// Gets or sets the direction of the <see cref="FlexPanel" />'s main-axis,
     /// determining the orientation in which child controls are laid out.
     /// </summary>
     /// <remarks>
-    /// When omitted, it is set to <see cref="FlexDirection.Row"/>.
+    /// When omitted, it is set to <see cref="FlexDirection.Row" />.
     /// Equivalent to CSS flex-direction property
     /// </remarks>
     public FlexDirection Direction
@@ -113,11 +113,11 @@ public sealed class FlexPanel : Panel
     }
 
     /// <summary>
-    /// Gets or sets the main-axis alignment of child items inside a line of the <see cref="FlexPanel"/>.
+    /// Gets or sets the main-axis alignment of child items inside a line of the <see cref="FlexPanel" />.
     /// Typically used to distribute extra free space leftover after flexible lengths and margins have been resolved.
     /// </summary>
     /// <remarks>
-    /// When omitted, it is set to <see cref="JustifyContent.FlexStart"/>.
+    /// When omitted, it is set to <see cref="JustifyContent.FlexStart" />.
     /// Equivalent to CSS justify-content property.
     /// </remarks>
     public JustifyContent JustifyContent
@@ -127,11 +127,11 @@ public sealed class FlexPanel : Panel
     }
 
     /// <summary>
-    /// Gets or sets the cross-axis alignment of all child items inside a line of the <see cref="FlexPanel"/>.
-    /// Similar to <see cref="JustifyContent"/>, but in the perpendicular direction.
+    /// Gets or sets the cross-axis alignment of all child items inside a line of the <see cref="FlexPanel" />.
+    /// Similar to <see cref="JustifyContent" />, but in the perpendicular direction.
     /// </summary>
     /// <remarks>
-    /// When omitted, it is set to <see cref="AlignItems.Stretch"/>.
+    /// When omitted, it is set to <see cref="AlignItems.Stretch" />.
     /// Equivalent to CSS align-items property.
     /// </remarks>
     public AlignItems AlignItems
@@ -141,13 +141,20 @@ public sealed class FlexPanel : Panel
     }
 
     /// <summary>
-    /// Gets or sets the cross-axis alignment of lines in the <see cref="FlexPanel"/> when there is extra space.
-    /// Similar to <see cref="AlignItems"/>, but for entire lines.
-    /// <see cref="FlexPanel.Wrap"/> property set to <see cref="FlexWrap.Wrap"/> mode
+    /// Gets or sets the cross-axis alignment of lines in the <see cref="FlexPanel" /> when there is extra space.
+    /// Similar to <see cref="AlignItems" />, but for entire lines.
+    /// <see cref="FlexPanel.Wrap" /> property set to <see cref="FlexWrap.Wrap" /> mode
     /// allows controls to be arranged on multiple lines.
     /// </summary>
     /// <remarks>
-    /// When omitted, it is set to <see cref="AlignContent.Stretch"/>.
+    /// When omitted, it is set to <see cref="AlignContent.Stretch" />.
+    /// It has no effect while <see cref="Wrap" /> is <see cref="FlexWrap.NoWrap" />: the single line then fills
+    /// the cross-axis size of the panel.
+    /// When the lines leave no free space on the cross-axis, <see cref="AlignContent.Stretch" /> and
+    /// <see cref="AlignContent.SpaceBetween" /> act as <see cref="AlignContent.FlexStart" />, and
+    /// <see cref="AlignContent.SpaceAround" /> and <see cref="AlignContent.SpaceEvenly" /> act as
+    /// <see cref="AlignContent.Center" />; <see cref="AlignContent.SpaceBetween" /> also acts as
+    /// <see cref="AlignContent.FlexStart" /> when there is only one line.
     /// Equivalent to CSS align-content property.
     /// </remarks>
     public AlignContent AlignContent
@@ -157,11 +164,11 @@ public sealed class FlexPanel : Panel
     }
 
     /// <summary>
-    /// Gets or sets the wrap mode, controlling whether the <see cref="FlexPanel"/> is single-line or multi-line.
+    /// Gets or sets the wrap mode, controlling whether the <see cref="FlexPanel" /> is single-line or multi-line.
     /// Additionally, it determines the cross-axis stacking direction for new lines.
     /// </summary>
     /// <remarks>
-    /// When omitted, it is set to <see cref="FlexWrap.NoWrap"/>.
+    /// When omitted, it is set to <see cref="FlexWrap.NoWrap" />.
     /// Equivalent to CSS flex-wrap property.
     /// </remarks>
     public FlexWrap Wrap
@@ -172,7 +179,7 @@ public sealed class FlexPanel : Panel
 
     /// <summary>
     /// Gets or sets the minimum horizontal spacing between child items or lines,
-    /// depending on main-axis direction of the <see cref="FlexPanel"/>.
+    /// depending on main-axis direction of the <see cref="FlexPanel" />.
     /// </summary>
     /// <remarks>
     /// When omitted, it is set to 0.
@@ -186,7 +193,7 @@ public sealed class FlexPanel : Panel
 
     /// <summary>
     /// Gets or sets the minimum vertical spacing between child items or lines,
-    /// depending on main-axis direction of the <see cref="FlexPanel"/>.
+    /// depending on main-axis direction of the <see cref="FlexPanel" />.
     /// </summary>
     /// <remarks>
     /// When omitted, it is set to 0.
@@ -766,28 +773,44 @@ public sealed class FlexPanel : Panel
             AutoMargins = line.AutoMargins;
         }
 
-        /// <summary>First item index.</summary>
+        /// <summary>
+        /// First item index.
+        /// </summary>
         public int First { get; }
 
-        /// <summary>Last item index.</summary>
+        /// <summary>
+        /// Last item index.
+        /// </summary>
         public int Last { get; }
 
-        /// <summary>Sum of main sizes of items.</summary>
+        /// <summary>
+        /// Sum of main sizes of items.
+        /// </summary>
         public double U { get; }
 
-        /// <summary>Max of cross sizes of items.</summary>
+        /// <summary>
+        /// Max of cross sizes of items.
+        /// </summary>
         public double V { get; set; }
 
-        /// <summary>Sum of shrink factors of flexible items.</summary>
+        /// <summary>
+        /// Sum of shrink factors of flexible items.
+        /// </summary>
         public double Shrink { get; }
 
-        /// <summary>Sum of grow factors of flexible items.</summary>
+        /// <summary>
+        /// Sum of grow factors of flexible items.
+        /// </summary>
         public double Grow { get; }
 
-        /// <summary>Number of "auto margins" along main axis.</summary>
+        /// <summary>
+        /// Number of "auto margins" along main axis.
+        /// </summary>
         public int AutoMargins { get; }
 
-        /// <summary>Number of items.</summary>
+        /// <summary>
+        /// Number of items.
+        /// </summary>
         public int Count => Last - First + 1;
     }
 }

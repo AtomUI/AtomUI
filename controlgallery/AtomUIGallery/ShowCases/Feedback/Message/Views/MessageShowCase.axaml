@@ -6,8 +6,10 @@
              xmlns:vm="using:AtomUIGallery.ShowCases.Message"
              x:DataType="vm:MessageViewModel">
     <UserControl.Resources>
-        <!-- 严格对齐上游 components/message/demo/style-class.tsx：object styles 为浅绿卡片 + 2px 绿边
-             + 圆角 16 + 硬阴影，icon / title 绿字；function styles 按 type 分支，error 时整卡转红。 -->
+        <!-- Strictly mirrors the upstream components/message/demo/style-class.tsx: object styles give a light green
+        card + 2px green border + corner radius 16 + hard shadow, with green icon / title text; function styles
+        branch on type and turn the whole card red for error.
+        -->
         <Styles x:Key="MessageSemanticStyleStyles">
             <Styles.Resources>
                 <ResourceDictionary>
@@ -49,7 +51,9 @@
                     <Setter Property="FontWeight" Value="SemiBold" />
                 </atom:MessageCardTitleStyle>
             </Style>
-            <!-- function styles 的默认分支：非 error 时返回 object styles 同款绿色。 -->
+            <!-- Default branch of the function styles: for a type other than error it returns the same green as the
+            object styles.
+            -->
             <Style Selector="atom|MessageCard.semantic-function-style-demo">
                 <Setter Property="Background" Value="{DynamicResource MessageSuccessBackground}" />
                 <Setter Property="BorderBrush" Value="{DynamicResource MessageSuccessBorder}" />
@@ -64,7 +68,9 @@
                     <Setter Property="FontWeight" Value="SemiBold" />
                 </atom:MessageCardTitleStyle>
             </Style>
-            <!-- function styles 的 error 分支：type 为 error 时整卡转红，保留 2px 红色硬阴影。 -->
+            <!-- Error branch of the function styles: when the type is error the whole card turns red and keeps a 2px
+            red hard shadow.
+            -->
             <Style Selector="atom|MessageCard.semantic-function-style-demo:error">
                 <Setter Property="Background" Value="{DynamicResource MessageErrorBackground}" />
                 <Setter Property="BorderBrush" Value="{DynamicResource MessageErrorBorder}" />
@@ -94,11 +100,13 @@
 
             <gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
                 <DataTemplate x:DataType="vm:MessageViewModel">
-                    <!-- 对齐上游 message#semantic-dom：单个预览舞台同时承载「消息列表宿主」与「消息卡片」
-                         两个公开 owner 的 Part，右侧一个面板按 owner 顺序列出全部 6 个 Part（root /
-                         wrapper / icon / title 属于 MessageCard，list / listContent 对应 manager 的
-                         root / listContent，行内的 owner 标签用于消歧）。
-                         manager 以无宿主实例渲染在共享舞台内，示例数据由 Loaded 时 Show() 播种。 -->
+                    <!-- Mirrors the upstream message#semantic-dom: one preview stage hosts the parts of two public
+                    owners, the "message list host" and the "message card", and the panel on the right lists all 6
+                    parts in owner order. root / wrapper / icon / title belong to MessageCard; list / listContent
+                    map to the manager's root / listContent, and the inline owner labels disambiguate them. The
+                    manager renders hostless in the shared stage, and the sample data is seeded by Show() on
+                    Loaded.
+                    -->
                     <gallery:SemanticPartPreview Name="MessageSemanticPreview"
                                                  Title="Message"
                                                  SemanticOwner="{Binding #MessageSemanticAnchor}">
@@ -111,12 +119,15 @@
                         <gallery:SemanticPartPreview.PreviewContent>
                             <Panel MinHeight="320"
                                    Background="{atom:SharedTokenResource ColorFillAlter}">
-                                <!-- manager 无宿主实例拉伸铺满舞台；root 高亮 = 列表宿主本身。 -->
+                                <!-- The manager stretches over the stage without a host instance; the root highlight is
+                                the list host itself.
+                                -->
                                 <atom:WindowMessageManager x:Name="MessageManagerSemanticOwner"
                                                            MaxItems="3"
                                                            IsMotionEnabled="False"
                                                            Loaded="HandleSemanticPreviewOwnerLoaded" />
-                                <!-- 卡片锚点：同一舞台内两条常驻卡片，离屏居中排布。 -->
+                                <!-- Card anchors: two persistent cards in the same stage, laid out centered off-screen.
+                                -->
                                 <StackPanel x:Name="MessageSemanticAnchor"
                                             Orientation="Vertical"
                                             Spacing="16"
@@ -271,10 +282,13 @@
                             <StackPanel Orientation="Vertical"
                                         HorizontalAlignment="Stretch"
                                         Spacing="16">
-                                <!-- 消息经宿主到窗口反馈层（WindowFeedbackLayer）的 manager 在视口顶部弹出，
-                                     对齐上游默认 getContainer 的浮层行为。反馈层在页面视觉树之外，页面内
-                                     声明的 Style 命中不到它弹出的卡片，因此样式以 Styles 资源声明（仍是
-                                     生成的专用 Style 类），由 code-behind 挂到 manager 自身。 -->
+                                <!-- Messages shown through the host go to the window feedback layer
+                                (WindowFeedbackLayer): the manager pops up at the top of the viewport, as the
+                                upstream default getContainer does. The feedback layer is outside the page visual
+                                tree, so styles declared in the page cannot reach the cards it shows. The styles
+                                are therefore declared as a Styles resource (still the generated dedicated style
+                                classes) and attached to the manager itself by the code-behind.
+                                -->
                                 <StackPanel Orientation="Horizontal" Spacing="12">
                                     <atom:Button ButtonType="Default"
                                                  Click="HandleShowObjectStyleMessage"

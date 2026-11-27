@@ -4,7 +4,9 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 
-/// <summary>The PrimeNG view of <see cref="RangeTimePickerToken"/>.</summary>
+/// <summary>
+/// The PrimeNG view of <see cref="RangeTimePickerToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class RangeTimePickerTokenRule : IControlTokenRule<PrimeNGToken, RangeTimePickerToken>
 {
@@ -12,9 +14,12 @@ internal sealed class RangeTimePickerTokenRule : IControlTokenRule<PrimeNGToken,
     {
         var token  = target.Own;
         var global = target.Global;
-        // PrimeNG: the control-global overrides, read by the formulas below.
+        // PrimeNG: the control-global overrides of PrimeNGInputStage.Apply, written for the hosted input frame;
+        // the formulas below read none of them.
         PrimeNGRangeTimePickerTokens.EvaluateGlobal(in context, global);
         TimePickerTokenCalculator.Calculate(in context, global, token);
+        // Ant Design formula kept as is: the preset's stage for this token sets only PopupArrowVisible, so the item
+        // sizes and paddings are the Ant formula over the PrimeNG global tokens.
         token.ItemWidth = global.ControlHeightLG * 1.4;
         token.ItemHeight = global.ControlHeight - 4;
         token.PeriodHostWidth = token.ItemWidth;

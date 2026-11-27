@@ -4,7 +4,9 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls.Themes.AntDesign;
 
-/// <summary>The AntDesign view of <see cref="TransferListViewToken"/>.</summary>
+/// <summary>
+/// The AntDesign view of <see cref="TransferListViewToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class TransferListViewTokenRule : IControlTokenRule<AntDesignToken, TransferListViewToken>
 {

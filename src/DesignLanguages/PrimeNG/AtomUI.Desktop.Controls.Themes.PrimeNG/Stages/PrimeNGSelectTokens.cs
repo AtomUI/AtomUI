@@ -23,13 +23,15 @@ internal static class PrimeNGSelectTokens
         token.InputFontSizeSM = effectiveGlobal.FontSizeSM;
         var recipes = context.Language.GetVisualRecipes(effectiveGlobal, context.Variant);
         var item     = context.Language.GetListItemRecipe(effectiveGlobal);
+        // PrimeUIX list.option.padding and list.padding; only the option padding follows the size ladder, so the
+        // compact density narrows it.
         token.OptionPadding       = recipes.ListOptionPadding;
         token.PopupContentPadding = context.Language.GetSelectOverlayRecipe(effectiveGlobal, context.Variant).Padding;
         // PrimeUIX .p-select-option has no minimum height: the row is the option padding around the 1.5 line box
         // (Aura and Nora 29, Lara 37); option.selected.font.weight is normal.
         token.OptionHeight             = effectiveGlobal.FontSize * 1.5 + token.OptionPadding.Top + token.OptionPadding.Bottom;
         token.OptionSelectedFontWeight = FontWeight.Normal;
-        // The check mark of a selected item takes the selected text colour (PrimeUIX highlight.color): the primary check
+        // The check mark of a selected item takes the selected text color (PrimeUIX highlight.color): the primary check
         // vanishes on a solid primary highlight (noir, Nora), and on the pale highlight it is the primary 700 text.
         token.OptionSelectedIndicatorColor = token.OptionSelectedColor;
         // chip.background (Aura and Lara surface.100 / 800, Nora surface.200 / 700) = list.option.focus.background.
@@ -47,6 +49,7 @@ internal static class PrimeNGSelectTokens
             token.PopupContentPadding   = new Thickness(token.PopupContentPadding.Left, token.PopupContentPadding.Top - 1,
                 token.PopupContentPadding.Right, token.PopupContentPadding.Bottom - 1);
         }
+        // chip.background is list.option.focus.background, the value the active option takes above.
         token.MultipleItemBg = item.FocusBackground;
     }
 }

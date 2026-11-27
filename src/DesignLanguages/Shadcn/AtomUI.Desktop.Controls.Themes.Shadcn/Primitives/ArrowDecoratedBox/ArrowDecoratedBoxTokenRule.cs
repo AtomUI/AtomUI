@@ -5,7 +5,9 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls.Themes.Shadcn;
 
-/// <summary>The shadcn view of <see cref="ArrowDecoratedBoxToken"/>.</summary>
+/// <summary>
+/// The shadcn view of <see cref="ArrowDecoratedBoxToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class ArrowDecoratedBoxTokenRule : IControlTokenRule<ShadcnToken, ArrowDecoratedBoxToken>
 {
@@ -24,8 +26,8 @@ internal sealed class ArrowDecoratedBoxTokenRule : IControlTokenRule<ShadcnToken
         token.ContentBorderColor     = global.ColorBorderSecondary;
         token.ContentBorderThickness = default;
         token.ContentMinHeight       = global.ControlHeight;
-        // The outline ring colour as an integrated one-line border along the arrow's sides too, the popover padding, and the
-        // tooltip's arrow (shadcn popovers have no arrow of their own).
+        // The outline ring color as an integrated one-line border along the arrow's sides too, the popover padding, and
+        // the tooltip's arrow (shadcn popovers have no arrow of their own).
         var popover = context.Language.GetPopoverOverlayRecipe(global);
         token.ContentBorderColor     = popover.BorderColor;
         token.ContentBorderThickness = new Thickness(1);

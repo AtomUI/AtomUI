@@ -4,12 +4,19 @@ using Avalonia;
 
 namespace AtomUI;
 
-/// <summary>AtomUI 启动挂接入口。生成器为 partial Application 生成调用；手写时在 base.RegisterServices() 之后调用。</summary>
+/// <summary>
+/// Hooks AtomUI into application startup. The source generator emits the call for a partial application
+/// class; when <c>RegisterServices</c> is overridden by hand, call <see cref="Attach" /> after the base call.
+/// </summary>
 public static class ApplicationStartup
 {
     private static readonly ConditionalWeakTable<Application, object> s_attached = new();
     private static readonly object s_marker = new();
 
+    /// <summary>
+    /// Runs the AtomUI startup for the application with the configuration that <c>UseAtomUI</c> registered.
+    /// The call does nothing when no configuration was registered or when the application is already attached.
+    /// </summary>
     public static void Attach(Application application)
     {
         ArgumentNullException.ThrowIfNull(application);
@@ -25,7 +32,14 @@ public static class ApplicationStartup
         new StartupRun(application, configuration).Run();
     }
 
-    /// <summary>按显式配置直接提交（不提前执行、不显示 Splash）。供测试与内部工具使用。</summary>
+    /// <summary>
+    /// Commits the configuration that <paramref name="configure" /> writes to a fresh builder directly: no
+    /// early preparation runs in parallel with the creation of the application and the Splash is not shown.
+    /// Intended for tests and internal tools.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">
+    /// The application is already attached.
+    /// </exception>
     internal static void AttachWith(Application application, Action<IAtomUIBuilder> configure)
     {
         ArgumentNullException.ThrowIfNull(application);

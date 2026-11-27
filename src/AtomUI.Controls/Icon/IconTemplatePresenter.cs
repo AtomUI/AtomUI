@@ -5,15 +5,32 @@ using Avalonia.Metadata;
 
 namespace AtomUI.Controls;
 
+/// <summary>
+/// Hosts the icon built from <see cref="IconTemplatePresenter.IconTemplate" /> as its only child and gives it the
+/// presenter's size and brush. Each presenter builds its own icon, so one template can serve many presenters.
+/// </summary>
 public class IconTemplatePresenter : Control
 {
     #region 公共属性定义
+    /// <summary>
+    /// Identifies the <see cref="IconTemplatePresenter.IconTemplate" /> property.
+    /// </summary>
     public static readonly StyledProperty<IconTemplate?> IconTemplateProperty =
         AvaloniaProperty.Register<IconTemplatePresenter, IconTemplate?>(nameof(IconTemplate));
     
+    /// <summary>
+    /// Identifies the <see cref="IconTemplatePresenter.IconBrush" /> property.
+    /// </summary>
     public static readonly StyledProperty<IBrush?> IconBrushProperty =
         AvaloniaProperty.Register<IconTemplatePresenter, IBrush?>(nameof(IconBrush));
     
+    /// <summary>
+    /// The template of the icon shown as the presenter's only child.
+    /// </summary>
+    /// <value>
+    /// Set on the presenter; in XAML it is the content of the presenter. A change removes the previous icon and
+    /// builds a new one. <see langword="null" /> removes the icon without building a new one.
+    /// </value>
     [Content]
     public IconTemplate? IconTemplate
     {
@@ -21,6 +38,15 @@ public class IconTemplatePresenter : Control
         set => SetValue(IconTemplateProperty, value);
     }
     
+    /// <summary>
+    /// The brush the icon built from the template is painted with.
+    /// </summary>
+    /// <value>
+    /// Set on the presenter, usually by the control whose theme contains it. For an
+    /// <see cref="AtomUI.Controls.Icon" /> it becomes the stroke, fill, secondary-layer and fallback brushes; for
+    /// any other <see cref="PathIcon" /> it becomes the foreground. No default is registered, so an unset or
+    /// <see langword="null" /> value relays <see langword="null" /> to those brushes.
+    /// </value>
     public IBrush? IconBrush
     {
         get => GetValue(IconBrushProperty);

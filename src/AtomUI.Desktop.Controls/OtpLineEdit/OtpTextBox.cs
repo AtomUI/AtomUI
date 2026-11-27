@@ -85,8 +85,8 @@ internal class OtpTextBox : AvaloniaTextBox
         _textPresenter.SelectionStart          = caretIndex;
         _textPresenter.SelectionEnd            = caretIndex;
         _textPresenter.ShowSelectionHighlight  = IsCellActive;
-        // 光标由 OtpLineEditCell 的 PART_Caret 自绘呈现，
-        // 内嵌只读 TextBox 的内部 caret 不参与显示，避免双重光标。
+        // The caret is drawn by the PART_Caret part of the OtpLineEditCell that hosts this text box.
+        // The built-in caret of this read-only text box stays hidden so that no second caret appears.
         _textPresenter.HideCaret();
     }
 }

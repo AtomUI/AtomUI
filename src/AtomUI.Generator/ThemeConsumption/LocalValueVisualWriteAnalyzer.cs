@@ -8,7 +8,7 @@ using Microsoft.CodeAnalysis.Diagnostics;
 namespace AtomUI.Generator.ThemeConsumption;
 
 /// <summary>
-/// ATOMUIGEN047: control code must not write LocalValue into visual properties (control-token-guidelines rule 6);
+/// ATOMUIGEN047: control code must not write LocalValue into visual properties;
 /// use <c>SetCurrentValue</c> or a Template-priority write so user values and theme Setters keep precedence.
 /// <para>
 /// A visual StyledProperty is a static field of type <c>StyledProperty&lt;T&gt;</c> / <c>AvaloniaProperty&lt;T&gt;</c>
@@ -42,11 +42,20 @@ public sealed class LocalValueVisualWriteAnalyzer : DiagnosticAnalyzer
         "System.Double", "Avalonia.Media.FontWeight", "Avalonia.Media.BoxShadows"
     ];
 
+    /// <summary>
+    /// The single descriptor <c>ControlCodeLocalValueVisualWrite</c> that this analyzer reports.
+    /// </summary>
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } =
     [
         AtomUIDiagnosticDescriptors.ControlCodeLocalValueVisualWrite
     ];
 
+    /// <summary>
+    /// Registers the actions that report ATOMUIGEN047 in the control code of the compilation. Generated code is not
+    /// analyzed. Nothing is registered when <c>ControlCodeScope.TryCreate</c> returns <see langword="null" /> or the
+    /// compilation does not reference <c>AvaloniaObject</c>, <c>AvaloniaProperty&lt;T&gt;</c>, <c>Control</c> or
+    /// <c>BindingPriority</c>.
+    /// </summary>
     public override void Initialize(AnalysisContext context)
     {
         context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
@@ -220,7 +229,9 @@ public sealed class LocalValueVisualWriteAnalyzer : DiagnosticAnalyzer
         return false;
     }
 
-    /// <summary>The CLR property is the wrapper of a visual StyledProperty field declared on the same type chain.</summary>
+    /// <summary>
+    /// The CLR property is the wrapper of a visual StyledProperty field declared on the same type chain.
+    /// </summary>
     private static bool IsStyledPropertyWrapper(IPropertySymbol property, string name, Symbols symbols)
     {
         for (var type = property.ContainingType; type is not null; type = type.BaseType)

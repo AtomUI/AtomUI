@@ -3,12 +3,12 @@ using Avalonia.Media;
 namespace AtomUI.DesignLanguages.PrimeNG.Presets;
 
 /// <summary>
-/// The PrimeNG colour scale of eleven stops (50 to 950) around a 500 seed.
+/// The PrimeNG color scale of eleven stops (50 to 950) around a 500 seed.
 /// </summary>
 /// <remarks>
-/// <see cref="Generate"/> reproduces the <c>palette</c>, <c>tint</c>, <c>shade</c> and <c>mix</c> functions of
+/// <see cref="Generate" /> reproduces the <c>palette</c>, <c>tint</c>, <c>shade</c> and <c>mix</c> functions of
 /// <c>@primeuix/styled</c> 1.2.0, including the order of its floating-point operations and the JavaScript
-/// <c>Math.round</c> (half up). <see cref="Resolve"/> prefers the hand-tuned Tailwind tables that PrimeNG ships.
+/// <c>Math.round</c> (half up). <see cref="Resolve" /> prefers the hand-tuned Tailwind tables that PrimeNG ships.
 /// </remarks>
 internal static class PrimeNGPalette
 {
@@ -23,8 +23,8 @@ internal static class PrimeNGPalette
     internal const int SeedIndex = 5;
 
     /// <summary>
-    /// Mixes two colours per sRGB channel; <paramref name="firstWeightPercent"/> is the share of
-    /// <paramref name="first"/>. Each channel is rounded half up. The alpha of <paramref name="second"/> is kept.
+    /// Mixes two colors per sRGB channel; <paramref name="firstWeightPercent" /> is the share of
+    /// <paramref name="first" />. Each channel is rounded half up. The alpha of <paramref name="second" /> is kept.
     /// </summary>
     internal static Color Mix(Color first, Color second, double firstWeightPercent)
     {
@@ -56,8 +56,8 @@ internal static class PrimeNGPalette
     }
 
     /// <summary>
-    /// Returns the Tailwind table whose 500 stop has the RGB of <paramref name="seed500"/> (with the seed's alpha),
-    /// or <see cref="Generate"/> for any other seed. The result is a new array.
+    /// Returns the Tailwind table whose 500 stop has the RGB of <paramref name="seed500" /> (with the seed's alpha),
+    /// or <see cref="Generate" /> for any other seed. The result is a new array.
     /// </summary>
     internal static Color[] Resolve(Color seed500)
     {
@@ -81,8 +81,8 @@ internal static class PrimeNGPalette
     }
 
     /// <summary>
-    /// Returns the palette a theme colour was taken from, given the stop it was written at: the Tailwind table with
-    /// that colour at that stop, otherwise the palette generated with the colour as its 500 stop (a close
+    /// Returns the palette a theme color was taken from, given the stop it was written at: the Tailwind table with
+    /// that color at that stop, otherwise the palette generated with the color as its 500 stop (a close
     /// approximation for custom seeds, whose generated palette is not stored in the token).
     /// </summary>
     internal static Color[] FromStop(Color color, int stop)
@@ -103,6 +103,9 @@ internal static class PrimeNGPalette
     /// <summary>
     /// Returns the index of a stop number (50 to 950).
     /// </summary>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// <paramref name="stop" /> is not one of the stop numbers.
+    /// </exception>
     internal static int IndexOf(int stop)
     {
         var index = Array.IndexOf(Stops, stop);
@@ -117,7 +120,7 @@ internal static class PrimeNGPalette
     internal static byte RoundHalfUp(double value) => (byte)Math.Clamp(Math.Floor(value + 0.5), 0, 255);
 
     /// <summary>
-    /// The colour with <paramref name="opacity"/> applied on top of its own alpha (PrimeUIX
+    /// The color with <paramref name="opacity" /> applied on top of its own alpha (PrimeUIX
     /// <c>color-mix(…, transparent)</c>).
     /// </summary>
     internal static Color WithOpacity(Color color, double opacity) =>

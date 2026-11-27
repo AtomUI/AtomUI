@@ -3,7 +3,9 @@ using AtomUI.Theme.Languages;
 
 namespace AtomUI.Desktop.Controls.Themes.Shadcn;
 
-/// <summary>The shadcn view of <see cref="SpinToken"/>.</summary>
+/// <summary>
+/// The shadcn view of <see cref="SpinToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class SpinTokenRule : IControlTokenRule<ShadcnToken, SpinToken>
 {
@@ -16,6 +18,7 @@ internal sealed class SpinTokenRule : IControlTokenRule<ShadcnToken, SpinToken>
         var indicatorSize     = controlHeightLG / 2;
         var indicatorSizeSM   = controlHeightLG * 0.35;
         var indicatorSizeLG   = controlHeight;
+        // Ant Design formula kept as is: no registry value is merged into the spin tokens.
         token.IndicatorDuration = global.MotionDurationSlow * 4;
         token.DotSize           = ((indicatorSize - global.UniformlyMarginXXS / 2) / 2) * 0.75;
         token.DotSizeLG         = ((indicatorSizeLG - global.UniformlyMarginXXS) / 2) * 0.75;

@@ -6,9 +6,23 @@ using Mono.Linker.Steps;
 
 namespace AtomUI.Registration.ILLink8.Input;
 
-/// <summary>Validates SDK implementation inputs and generated registration ABI before ILLink8 Mark.</summary>
+/// <summary>
+/// Validates SDK implementation inputs and generated registration ABI before ILLink8 Mark.
+/// </summary>
 public sealed class InitializeStep : IStep
 {
+    /// <summary>
+    /// Validates the conditional implementation inputs against the input snapshot and installs the conditional
+    /// registration mechanism on the pipeline, which replaces the linker's Mark step with the conditional one.
+    /// </summary>
+    /// <exception cref="InvalidDataException">
+    /// Thrown when the <c>AtomUIConditionalInputs</c> custom data is missing or blank, an assembly does not match its
+    /// snapshot entry, a package marker has no registration records, or no package carries a generated definition.
+    /// </exception>
+    /// <remarks>
+    /// A report left at the snapshot's analysis path is deleted first. The <c>analyzed-materialized</c> analysis
+    /// report is written by the callback that runs when materialization completes.
+    /// </remarks>
     public void Process(LinkContext context)
     {
         if (!context.TryGetCustomData("AtomUIConditionalInputs", out var path) || string.IsNullOrWhiteSpace(path))

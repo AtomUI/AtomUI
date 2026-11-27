@@ -5,7 +5,9 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls.Themes.AntDesign;
 
-/// <summary>The AntDesign view of <see cref="GroupBoxToken"/>.</summary>
+/// <summary>
+/// The AntDesign view of <see cref="GroupBoxToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class GroupBoxTokenRule : IControlTokenRule<AntDesignToken, GroupBoxToken>
 {

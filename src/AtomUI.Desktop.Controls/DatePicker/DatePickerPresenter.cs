@@ -12,13 +12,29 @@ using Avalonia.Layout;
 
 namespace AtomUI.Desktop.Controls;
 
+/// <summary>
+/// Reports whether the user is choosing a value in the popup of the date pickers and time pickers.
+/// </summary>
 public sealed class ChoosingStatusEventArgs(bool isChoosing) : EventArgs
 {
+    /// <summary>
+    /// <see langword="true" /> while the pointer is over the selection area of the popup, that is its calendar
+    /// panels or time columns. It is <see langword="false" /> once the pointer leaves that area, and for date
+    /// pickers once the value is committed. The picker then drops its hover preview.
+    /// </summary>
     public bool IsChoosing { get; } = isChoosing;
 }
 
+/// <summary>
+/// Reports the value the user is hovering in the popup of a date picker or a range date picker, before it is chosen.
+/// </summary>
 public sealed class DateSelectedEventArgs(DateTime? value) : EventArgs
 {
+    /// <summary>
+    /// The value under the pointer before the user chooses it: a date cell or a time option of the popup, today
+    /// over the Today button, the current time over the Now button, or the candidate itself over the confirm
+    /// button. It is <see langword="null" /> when the preview ends.
+    /// </summary>
     public DateTime? Date { get; } = value;
 }
 
@@ -227,7 +243,9 @@ internal partial class DatePickerPresenter : PickerPresenterBase, IDatePanelHost
 
     private DatePanelSession? ActivePanelSession => RangeViewer?.PanelSession ?? SingleViewer?.PanelSession;
 
-    /// <summary>Moves the panel focus for a navigation key pressed in the picker input; false for other keys.</summary>
+    /// <summary>
+    /// Moves the panel focus for a navigation key pressed in the picker input; false for other keys.
+    /// </summary>
     internal bool NavigateByKey(Key key)
     {
         if (!_sessionOpened || ActivePanelSession is not { } session)
@@ -260,7 +278,9 @@ internal partial class DatePickerPresenter : PickerPresenterBase, IDatePanelHost
         return true;
     }
 
-    /// <summary>Activates the cell reached by keyboard navigation; false when the keyboard has not moved the panel.</summary>
+    /// <summary>
+    /// Activates the cell reached by keyboard navigation; false when the keyboard has not moved the panel.
+    /// </summary>
     internal bool ActivateKeyboardFocus()
     {
         if (!_isKeyboardNavigating || ActivePanelSession is not { } session)
@@ -282,7 +302,9 @@ internal partial class DatePickerPresenter : PickerPresenterBase, IDatePanelHost
         return true;
     }
 
-    /// <summary>Moves the candidate to a value typed into the picker input; false when the value is not selectable.</summary>
+    /// <summary>
+    /// Moves the candidate to a value typed into the picker input; false when the value is not selectable.
+    /// </summary>
     internal bool InputDate(DateTime value)
     {
         if (!_sessionOpened || !EffectiveDateRange.Contains(value))
@@ -298,7 +320,9 @@ internal partial class DatePickerPresenter : PickerPresenterBase, IDatePanelHost
         return true;
     }
 
-    /// <summary>Submits the candidate from the keyboard, which needs no confirm button, as in Ant Design.</summary>
+    /// <summary>
+    /// Submits the candidate from the keyboard, which needs no confirm button, as in Ant Design.
+    /// </summary>
     internal DatePickerCommitKind SubmitCandidate()
     {
         if (!_sessionOpened)
@@ -311,7 +335,9 @@ internal partial class DatePickerPresenter : PickerPresenterBase, IDatePanelHost
         return result.CommitKind;
     }
 
-    /// <summary>Reverts the candidate of this open session to the committed value.</summary>
+    /// <summary>
+    /// Reverts the candidate of this open session to the committed value.
+    /// </summary>
     internal void CancelEdit()
     {
         if (_sessionOpened)

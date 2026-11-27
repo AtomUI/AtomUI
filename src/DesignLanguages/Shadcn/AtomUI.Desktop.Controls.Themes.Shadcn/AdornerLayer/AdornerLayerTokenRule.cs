@@ -3,7 +3,9 @@ using AtomUI.Theme.Languages;
 
 namespace AtomUI.Desktop.Controls.Themes.Shadcn;
 
-/// <summary>The shadcn view of <see cref="AdornerLayerToken"/>.</summary>
+/// <summary>
+/// The shadcn view of <see cref="AdornerLayerToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class AdornerLayerTokenRule : IControlTokenRule<ShadcnToken, AdornerLayerToken>
 {

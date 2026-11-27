@@ -4,13 +4,13 @@ using Avalonia.Media;
 namespace AtomUI.DesignLanguages.PrimeNG.Presets;
 
 /// <summary>
-/// The Tailwind colour scales that PrimeNG ships as primitive tokens, stops 50 to 950 in order.
+/// The Tailwind color scales that PrimeNG ships as primitive tokens, stops 50 to 950 in order.
 /// </summary>
 /// <remarks>
 /// Transcribed verbatim from the <c>primitive</c> export of <c>@primeuix/themes</c> 3.1.1
 /// (<c>dist/aura/base/index.mjs</c>; the Lara and Nora presets carry the identical table). These hand-tuned scales
 /// differ from what the PrimeUIX <c>palette</c> formula derives from their 500 stop, so a seed that equals one of
-/// these 500 stops resolves to its table (see <see cref="PrimeNGPalette.Resolve"/>).
+/// these 500 stops resolves to its table (see <see cref="PrimeNGPalette.Resolve" />).
 /// </remarks>
 internal static class PrimeNGTailwindPalettes
 {

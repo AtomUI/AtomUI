@@ -3,7 +3,9 @@ using AtomUI.Theme.Languages;
 
 namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 
-/// <summary>The PrimeNG view of <see cref="TimerStatisticToken"/>.</summary>
+/// <summary>
+/// The PrimeNG view of <see cref="TimerStatisticToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class TimerStatisticTokenRule : IControlTokenRule<PrimeNGToken, TimerStatisticToken>
 {

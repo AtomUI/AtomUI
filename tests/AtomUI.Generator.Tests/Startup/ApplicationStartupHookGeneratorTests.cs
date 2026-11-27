@@ -30,8 +30,8 @@ public class ApplicationStartupHookGeneratorTests
             .Where(d => d.Severity == DiagnosticSeverity.Error).ShouldBeEmpty();
     }
 
-    // 判定必须按符号而不是文本：同一个 Attach 可能经别名或限定名调用，
-    // 文本匹配会把别名写法误报成「缺少 Attach」。
+    // The decision must go by symbol, not by text: the same Attach may be called through an alias or a
+    // qualified name, and text matching would report the alias form as a missing Attach.
     [Theory]
     [InlineData("AtomUI.ApplicationStartup.Attach(this);")]
     [InlineData("global::AtomUI.ApplicationStartup.Attach(this);")]
@@ -55,7 +55,8 @@ public class ApplicationStartupHookGeneratorTests
         diagnostics.ShouldBeEmpty();
     }
 
-    // 反向：与自己写的同名方法无关，不得因文本相似而跳过挂接（漏挂接是静默失败，比误报严重）。
+    // The other direction: a same-named method written by the app is unrelated and must not skip the hook
+    // because the text looks similar (a missing hook fails silently, which is worse than a false report).
     [Fact]
     public void Does_not_treat_an_unrelated_Attach_call_as_hooked()
     {
@@ -94,8 +95,9 @@ public class ApplicationStartupHookGeneratorTests
         output.SyntaxTrees.Count().ShouldBe(2);
     }
 
-    // spec §4：抽象类不生成（由派生类生成）。抽象基类无法实例化，其重写也不能自行修复，
-    // 因此不得报「缺少 Attach」——诊断只对具体类有意义。
+    // Abstract classes produce nothing (their derived classes do). An abstract base class cannot be
+    // instantiated and its overrides cannot fix themselves, so no missing Attach is reported: the diagnostic
+    // only makes sense for concrete classes.
     [Fact]
     public void Does_not_report_an_abstract_base_that_overrides_without_Attach()
     {
@@ -113,7 +115,8 @@ public class ApplicationStartupHookGeneratorTests
         generated.ShouldNotContain("class AppBase");
     }
 
-    // 同名类型分布在不同命名空间时，hint 名必须唯一，否则 AddSource 会抛重复键异常。
+    // When same-named types live in different namespaces the hint name must be unique, otherwise AddSource
+    // throws a duplicate key exception.
     [Fact]
     public void Generates_distinct_hints_for_same_named_applications_in_different_namespaces()
     {
@@ -133,7 +136,8 @@ public class ApplicationStartupHookGeneratorTests
         generated.ShouldContain("namespace Second");
     }
 
-    // 未声明 partial 的具体应用类不生成挂接（运行时守卫会给出修复说明），也不报缺少 Attach。
+    // A concrete app class that is not declared partial gets no hook (the runtime guard explains the fix) and
+    // no missing Attach report.
     [Fact]
     public void Does_not_generate_for_a_non_partial_application()
     {

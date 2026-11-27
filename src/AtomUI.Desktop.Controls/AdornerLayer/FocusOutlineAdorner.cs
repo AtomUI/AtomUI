@@ -16,7 +16,7 @@ namespace AtomUI.Desktop.Controls;
 
 /// <summary>
 /// Keyboard focus outline matching Ant Design <c>genFocusOutline</c>: a stroke of
-/// <see cref="OutlineThickness"/> drawn <see cref="OutlineOffset"/> outside the adorned element and
+/// <see cref="OutlineThickness" /> drawn <see cref="OutlineOffset" /> outside the adorned element and
 /// following its corner radius.
 /// </summary>
 internal sealed class FocusOutlineAdorner : Control

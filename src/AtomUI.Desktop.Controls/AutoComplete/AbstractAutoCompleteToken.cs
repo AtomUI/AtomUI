@@ -4,16 +4,21 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
 
+/// <summary>
+/// Design tokens that every AutoComplete variant shares: the metrics and text colors of the suggestion options
+/// in the popup, and the width limits and padding of the popup.
+/// </summary>
 [ControlDesignToken]
 public abstract partial class AbstractAutoCompleteToken : AbstractControlDesignToken
 {
 
-    /// <summary>Padding inside the suggestion popup.</summary>
+    /// <summary>
+    /// Padding inside the suggestion popup.
+    /// </summary>
     public partial Thickness PopupContentPadding { get; set; }
 
     /// <summary>
-    /// 选项高度
-    /// Height of option
+    /// Minimum height of one suggestion option row in the popup list.
     /// </summary>
     public partial double OptionHeight { get; set; }
 
@@ -28,21 +33,23 @@ public abstract partial class AbstractAutoCompleteToken : AbstractControlDesignT
     public partial CornerRadius OptionBorderRadius { get; set; }
 
     /// <summary>
-    /// 候选项文字颜色
-    /// Text colour of a candidate
+    /// Text color of a suggestion option that is not selected.
     /// </summary>
     public partial Color OptionColor { get; set; }
 
     /// <summary>
-    /// 选中候选项文字颜色
-    /// Text colour of the selected candidate
+    /// Text color of the selected suggestion option.
     /// </summary>
     public partial Color OptionSelectedColor { get; set; }
 
-    /// <summary>Minimum width of the suggestion popup.</summary>
+    /// <summary>
+    /// Minimum width of the suggestion popup.
+    /// </summary>
     public partial double MinPopupWidth { get; set; }
 
-    /// <summary>Maximum width of the suggestion popup when its width does not follow the anchor.</summary>
+    /// <summary>
+    /// Maximum width of the suggestion popup when its width does not follow the anchor.
+    /// </summary>
     public partial double MaxPopupWidth { get; set; }
 
 }

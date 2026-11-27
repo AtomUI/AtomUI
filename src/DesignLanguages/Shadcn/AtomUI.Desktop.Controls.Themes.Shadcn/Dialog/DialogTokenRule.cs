@@ -3,7 +3,9 @@ using AtomUI.Theme.Languages;
 
 namespace AtomUI.Desktop.Controls.Themes.Shadcn;
 
-/// <summary>The shadcn view of <see cref="DialogToken"/>.</summary>
+/// <summary>
+/// The shadcn view of <see cref="DialogToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class DialogTokenRule : IControlTokenRule<ShadcnToken, DialogToken>
 {

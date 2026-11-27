@@ -13,8 +13,10 @@ internal static class NavMenuEntryContainerCoordinator
     private static readonly object GroupRecycleKey = new();
     private static readonly object DividerRecycleKey = new();
 
-    // 分组容器的语义层级跳点类。一级分组与子菜单内分组互斥，供 itemTitle/list 与
-    // subMenu.itemTitle/subMenu.list 的 route 区分层级。分组不是公开 owner，没有生成的 Part 常量。
+    // Marker classes that give a group container its semantic level for route hops. A top-level group and a group
+    // inside a submenu never carry the same marker, which lets the routes of itemTitle/list and
+    // subMenu.itemTitle/subMenu.list tell the two levels apart. Groups are not public owners, so no Part
+    // constants are generated for them.
     private const string TopLevelGroupSemanticClass = "semantic-scope-group";
     private const string SubMenuGroupSemanticClass  = "semantic-sub-menu-group";
 
@@ -452,8 +454,9 @@ internal static class NavMenuEntryContainerCoordinator
         menuItem.ClearValue(NavMenuItem.IsPopupPinnedOpenProperty);
     }
 
-    // 一级与子菜单层级的 marker 互斥：容器在 owner 之间转移或被回收复用时，先移除另一层级的类，
-    // 再幂等补齐当前层级，保证 marker 不随旧 owner 残留、也不会重复添加。
+    // The top-level and submenu markers are mutually exclusive. A container can move between owners or be recycled,
+    // so the class of the other level is removed first and the class of the current level is then added
+    // idempotently: the marker is not left over from the old owner and is never added twice.
     private static void ApplySemanticLevelClass(
         Control container,
         string topLevelClass,

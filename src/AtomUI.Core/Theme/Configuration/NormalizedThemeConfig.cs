@@ -46,7 +46,7 @@ internal sealed record LanguageTokenValue(string Name, string Value);
 
 /// <summary>
 /// The axes a configuration layer writes: the language and its style, appearance, density and idiom. A
-/// <see langword="null"/> member is not written by the layer and is inherited (spec 7.7).
+/// <see langword="null" /> member is not written by the layer and is inherited from the layers below it.
 /// </summary>
 internal readonly record struct ThemeAxes(
     DesignLanguageDescriptor? Language,
@@ -59,7 +59,9 @@ internal readonly record struct ThemeAxes(
 
     internal bool IsEmpty => Language is null && Style is null && Appearance is null && Density is null && Idiom is null;
 
-    /// <summary>This layer's axes over <paramref name="lower"/>: what this layer writes wins.</summary>
+    /// <summary>
+    /// This layer's axes over <paramref name="lower" />: what this layer writes wins.
+    /// </summary>
     internal ThemeAxes Over(ThemeAxes lower) => new(
         Language ?? lower.Language,
         // A layer that changes the language does not keep a style of the other language.
@@ -70,7 +72,9 @@ internal readonly record struct ThemeAxes(
         Density ?? lower.Density,
         Idiom ?? lower.Idiom);
 
-    /// <summary>The variant these axes select; unwritten axes take the language's defaults.</summary>
+    /// <summary>
+    /// The variant these axes select; unwritten axes take the language's defaults.
+    /// </summary>
     internal DesignVariant ResolveVariant()
     {
         var language = Language ?? throw new InvalidOperationException("A theme compilation requires a design language.");
@@ -143,20 +147,26 @@ internal sealed class NormalizedControlThemeConfig : IEquatable<NormalizedContro
 
     public ControlTokenIdentity Identity { get; }
 
-    /// <summary>The appearance this control is fixed to, or <see langword="null"/> to use its scope's.</summary>
+    /// <summary>
+    /// The appearance this control is fixed to, or <see langword="null" /> to use its scope's.
+    /// </summary>
     public ThemeAppearance? Appearance { get; }
 
-    /// <summary>The density this control is fixed to, or <see langword="null"/> to use its scope's.</summary>
+    /// <summary>
+    /// The density this control is fixed to, or <see langword="null" /> to use its scope's.
+    /// </summary>
     public DesignDensity? Density { get; }
 
-    /// <summary>The global tokens this control sees differently; a seed among them makes it its own evaluation unit.</summary>
+    /// <summary>
+    /// The global tokens this control sees differently; a seed among them makes it its own evaluation unit.
+    /// </summary>
     public IReadOnlyList<NormalizedTokenValue> GlobalTokens { get; }
 
     public IReadOnlyList<NormalizedTokenValue> OwnTokens { get; }
 
     /// <summary>
-    /// Whether this control needs its own global evaluation (spec 6.4): it fixes an axis or overrides a seed. Otherwise
-    /// its global overrides only replace values and it shares its scope's global tokens.
+    /// Whether this control needs its own global evaluation: it fixes an axis or overrides a seed. Otherwise its global
+    /// overrides only replace values and it shares its scope's global tokens.
     /// </summary>
     internal bool IsOwnEvaluationUnit
     {
@@ -224,8 +234,8 @@ internal sealed class NormalizedControlThemeConfig : IEquatable<NormalizedContro
 
 /// <summary>
 /// One configuration layer after binding, or the effective configuration of an evaluation unit after merging. The
-/// selected theme definition is kept as its own lowest layer (<see cref="Definition"/>): its condition sections are
-/// matched against each evaluation unit's variant when the theme is compiled (spec 7.6, 7.7).
+/// selected theme definition is kept as its own lowest layer (<see cref="Definition" />): its condition sections are
+/// matched against each evaluation unit's variant when the theme is compiled.
 /// </summary>
 internal sealed class NormalizedThemeConfig : IEquatable<NormalizedThemeConfig>
 {
@@ -307,22 +317,30 @@ internal sealed class NormalizedThemeConfig : IEquatable<NormalizedThemeConfig>
 
     public bool Inherit { get; }
 
-    /// <summary>The axes this configuration writes; in an effective configuration the language is always set.</summary>
+    /// <summary>
+    /// The axes this configuration writes; in an effective configuration the language is always set.
+    /// </summary>
     public ThemeAxes Axes { get; }
 
-    /// <summary>The language this configuration writes; always set in an effective configuration.</summary>
+    /// <summary>
+    /// The language this configuration writes; always set in an effective configuration.
+    /// </summary>
     public DesignLanguageDescriptor? Language => Axes.Language;
 
     /// <summary>
-    /// The selected theme definition, the lowest value layer; <see langword="null"/> when none applies (a scope with
+    /// The selected theme definition, the lowest value layer; <see langword="null" /> when none applies (a scope with
     /// <c>Inherit = false</c>, or a configuration layer that is not the theme's defaults).
     /// </summary>
     public Definitions.PreparedThemeDefinition? Definition { get; }
 
-    /// <summary>The explicit global token values above the definition.</summary>
+    /// <summary>
+    /// The explicit global token values above the definition.
+    /// </summary>
     public IReadOnlyList<NormalizedTokenValue> GlobalTokens { get; }
 
-    /// <summary>The explicit language tokens; bound to the effective language when compiled.</summary>
+    /// <summary>
+    /// The explicit language tokens; bound to the effective language when compiled.
+    /// </summary>
     public IReadOnlyList<LanguageTokenValue> LanguageTokens { get; }
 
     public IReadOnlyList<NormalizedControlThemeConfig> Controls { get; }

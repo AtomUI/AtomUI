@@ -19,8 +19,14 @@ internal static class StandardLanguageDefinitions
     }
 
     /// <summary>
-    /// Resolves <paramref name="tag"/> in the generated standard-language records.
+    /// Resolves <paramref name="tag" /> in the generated standard-language records.
     /// </summary>
+    /// <returns>
+    /// <see langword="true" /> with <paramref name="definition" /> set to the definition read from the record of
+    /// <paramref name="tag" />, or <see langword="false" /> with <paramref name="definition" /> set to
+    /// <see langword="null" /> when <paramref name="tag" /> is empty, contains a tab or a newline, or no record
+    /// starts with it.
+    /// </returns>
     /// <remarks>
     /// Each record is <c>"\n" + tag + "\t" + canonical tag (empty when equal to tag) + "\t" + culture name +
     /// "\t" + native name + "\t" + ("R" | "L")</c>. The generator rejects fields containing a separator, so a

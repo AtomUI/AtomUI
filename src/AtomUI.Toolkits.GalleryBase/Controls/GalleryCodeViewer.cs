@@ -22,20 +22,40 @@ using AtomUIMenuItem = AtomUI.Desktop.Controls.MenuItem;
 
 namespace AtomUI.Toolkits.GalleryBase.Controls;
 
+/// <summary>
+/// A read-only viewer that shows source code with TextMate syntax highlighting and a context menu command
+/// that copies the selected text. The highlighting theme follows the theme variant. Call
+/// <see cref="Dispose" /> when the viewer is discarded.
+/// </summary>
 public sealed partial class GalleryCodeViewer : UserControl, IDisposable
 {
+    /// <summary>
+    /// Identifies the <see cref="CodeText" /> property.
+    /// </summary>
     public static readonly StyledProperty<string?> CodeTextProperty =
         AvaloniaProperty.Register<GalleryCodeViewer, string?>(nameof(CodeText));
 
+    /// <summary>
+    /// Identifies the <see cref="Language" /> property.
+    /// </summary>
     public static readonly StyledProperty<string> LanguageProperty =
         AvaloniaProperty.Register<GalleryCodeViewer, string>(nameof(Language), "text");
 
+    /// <summary>
+    /// Identifies the <see cref="ShowLineNumbers" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> ShowLineNumbersProperty =
         AvaloniaProperty.Register<GalleryCodeViewer, bool>(nameof(ShowLineNumbers), true);
 
+    /// <summary>
+    /// Identifies the <see cref="LightSyntaxTheme" /> property.
+    /// </summary>
     public static readonly StyledProperty<ThemeName> LightSyntaxThemeProperty =
         AvaloniaProperty.Register<GalleryCodeViewer, ThemeName>(nameof(LightSyntaxTheme), ThemeName.LightPlus);
 
+    /// <summary>
+    /// Identifies the <see cref="DarkSyntaxTheme" /> property.
+    /// </summary>
     public static readonly StyledProperty<ThemeName> DarkSyntaxThemeProperty =
         AvaloniaProperty.Register<GalleryCodeViewer, ThemeName>(nameof(DarkSyntaxTheme), ThemeName.DarkPlus);
 
@@ -63,6 +83,16 @@ public sealed partial class GalleryCodeViewer : UserControl, IDisposable
     {
     }
 
+    /// <summary>
+    /// Creates a viewer for the given code.
+    /// </summary>
+    /// <param name="codeText">
+    /// The code to show. <see langword="null" /> shows an empty editor.
+    /// </param>
+    /// <param name="language">
+    /// The language of the code, in the form that <see cref="Language" /> accepts. <see langword="null" /> or
+    /// blank leaves <see cref="Language" /> at its default.
+    /// </param>
     internal GalleryCodeViewer(string? codeText, string? language)
     {
         InitializeComponent();
@@ -75,36 +105,62 @@ public sealed partial class GalleryCodeViewer : UserControl, IDisposable
         InitializeSource(codeText, language);
     }
 
+    /// <summary>
+    /// The code shown in the editor. Setting it replaces the whole text; <see langword="null" /> shows an empty
+    /// editor. The editor is read-only and never writes back into this property.
+    /// </summary>
     public string? CodeText
     {
         get => GetValue(CodeTextProperty);
         set => SetValue(CodeTextProperty, value);
     }
 
+    /// <summary>
+    /// The grammar used for highlighting, given as a file extension with or without the leading dot, such as
+    /// <c>xml</c> or <c>.json</c>. <c>axaml</c> is highlighted as XML and <c>csharp</c> as C#. The value is
+    /// trimmed and lowercased. A value with no registered grammar leaves the current highlighting unchanged.
+    /// </summary>
     public string Language
     {
         get => GetValue(LanguageProperty);
         set => SetValue(LanguageProperty, value);
     }
 
+    /// <summary>
+    /// Whether the editor shows the line number gutter on the left. While the gutter is shown, the horizontal
+    /// scrollbar starts at its right edge instead of below it.
+    /// </summary>
     public bool ShowLineNumbers
     {
         get => GetValue(ShowLineNumbersProperty);
         set => SetValue(ShowLineNumbersProperty, value);
     }
 
+    /// <summary>
+    /// The TextMate theme used for highlighting while the viewer is in the light theme variant. It is applied
+    /// when the viewer is attached, when this property changes and whenever the theme variant changes.
+    /// </summary>
     public ThemeName LightSyntaxTheme
     {
         get => GetValue(LightSyntaxThemeProperty);
         set => SetValue(LightSyntaxThemeProperty, value);
     }
 
+    /// <summary>
+    /// The TextMate theme used for highlighting while the viewer is in the dark theme variant. When the variant
+    /// is neither dark nor light, the appearance of the current theme decides. It is applied at the same times
+    /// as <see cref="LightSyntaxTheme" />.
+    /// </summary>
     public ThemeName DarkSyntaxTheme
     {
         get => GetValue(DarkSyntaxThemeProperty);
         set => SetValue(DarkSyntaxThemeProperty, value);
     }
 
+    /// <summary>
+    /// Releases the TextMate highlighting resources, unsubscribes from theme variant changes and from the editor
+    /// events, and closes and removes the context menu that the viewer created. Repeated calls do nothing.
+    /// </summary>
     public void Dispose()
     {
         if (_isDisposed)
@@ -135,6 +191,11 @@ public sealed partial class GalleryCodeViewer : UserControl, IDisposable
         _currentSyntaxTheme   = null;
     }
 
+    /// <summary>
+    /// Called when a property of this viewer changes. Applies changes of <see cref="CodeText" />,
+    /// <see cref="Language" />, <see cref="ShowLineNumbers" />, <see cref="LightSyntaxTheme" /> and
+    /// <see cref="DarkSyntaxTheme" /> to the editor; every other change is left to the base call.
+    /// </summary>
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
@@ -158,6 +219,10 @@ public sealed partial class GalleryCodeViewer : UserControl, IDisposable
         }
     }
 
+    /// <summary>
+    /// Called when this viewer is attached. After the base call it starts following theme variant changes,
+    /// applies the syntax theme of the current variant and schedules an update of the scrollbar insets.
+    /// </summary>
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
@@ -166,6 +231,10 @@ public sealed partial class GalleryCodeViewer : UserControl, IDisposable
         RequestScrollBarInsetUpdate();
     }
 
+    /// <summary>
+    /// Called when this viewer is detached. Cancels the pending scrollbar inset update and stops following
+    /// theme variant changes before the base call.
+    /// </summary>
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         CancelScrollBarInsetUpdate();

@@ -10,29 +10,41 @@ internal enum FullScreenTitleBarHolds
 {
     None = 0,
 
-    /// <summary>The pointer is inside the keep zone of the surface.</summary>
+    /// <summary>
+    /// The pointer is inside the keep zone of the surface.
+    /// </summary>
     Pointer = 1 << 0,
 
-    /// <summary>An element inside the surface holds pointer capture.</summary>
+    /// <summary>
+    /// An element inside the surface holds pointer capture.
+    /// </summary>
     Capture = 1 << 1,
 
-    /// <summary>Keyboard focus is inside the surface.</summary>
+    /// <summary>
+    /// Keyboard focus is inside the surface.
+    /// </summary>
     Focus = 1 << 2,
 
-    /// <summary>A popup opened from the surface is open.</summary>
+    /// <summary>
+    /// A popup opened from the surface is open.
+    /// </summary>
     Popup = 1 << 3,
 
-    /// <summary>The platform currently presents its own top chrome above the surface.</summary>
+    /// <summary>
+    /// The platform currently presents its own top chrome above the surface.
+    /// </summary>
     NativeChrome = 1 << 4,
 
-    /// <summary>The application explicitly requested the surface to be open.</summary>
+    /// <summary>
+    /// The application explicitly requested the surface to be open.
+    /// </summary>
     Explicit = 1 << 5
 }
 
 /// <summary>
-/// The reveal state machine of the <see cref="FullScreenTitleBarMode.AutoHide"/> full-screen title bar.
-/// It owns no visuals and calls no platform API: the window feeds it pointer, focus, hold and suppression inputs and
-/// applies the open state it reports. Delays run on an injectable scheduler so the machine can be driven by a test clock.
+/// The reveal state machine of the <see cref="FullScreenTitleBarMode.AutoHide" /> full-screen title bar. It owns no
+/// visuals and calls no platform API: the window feeds it pointer, focus, hold and suppression inputs and applies the
+/// open state it reports. Delays run on an injectable scheduler so the machine can be driven by a test clock.
 /// </summary>
 internal sealed class FullScreenTitleBarRevealController : IDisposable
 {
@@ -142,9 +154,12 @@ internal sealed class FullScreenTitleBarRevealController : IDisposable
     }
 
     /// <summary>
-    /// Opens the surface on an explicit request and keeps it open until <see cref="RequestClose"/>.
+    /// Opens the surface on an explicit request and keeps it open until <see cref="RequestClose" /> or
+    /// <see cref="CloseImmediately" /> is called.
     /// </summary>
-    /// <returns><c>false</c> when the request is rejected because the machine is stopped or suppressed.</returns>
+    /// <returns>
+    /// <c>false</c> when the request is rejected because the machine is stopped or suppressed.
+    /// </returns>
     public bool RequestOpen()
     {
         if (!_isRunning || _isSuppressed)

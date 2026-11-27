@@ -15,8 +15,8 @@ internal readonly record struct CalendarEffectiveRange(DateTime? Start, DateTime
 }
 
 /// <summary>
-/// The Token kinds of the presentation metrics, all resolved on <see cref="OwnerType"/>: an Own kind is its Own Token, a
-/// <see cref="AtomUI.Theme.Resources.SharedTokenKind"/> its effective global value.
+/// The Token kinds of the presentation metrics, all resolved on <see cref="OwnerType" />: an Own kind is its Own Token,
+/// a <see cref="AtomUI.Theme.Resources.SharedTokenKind" /> its effective global value.
 /// </summary>
 internal readonly record struct CalendarPresentationMetrics(
     Type OwnerType,

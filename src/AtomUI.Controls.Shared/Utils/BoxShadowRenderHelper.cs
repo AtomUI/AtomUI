@@ -9,12 +9,13 @@ namespace AtomUI.Controls.Utils;
 /// <remarks>
 /// Avalonia's Skia backend translates a box shadow by its offset after the current transform has been
 /// applied, so offsets are interpreted in device pixels while the rectangle, spread and blur follow the
-/// render scaling and any render transform. At 150% / 200% scaling an offset shadow therefore moves half
-/// as far as intended, and an inset shadow whose offset is cancelled by a negative spread disappears.
+/// render scaling and any render transform. At 200% scaling an offset shadow therefore moves half as far
+/// as intended, and an inset shadow whose offset is canceled by a negative spread disappears.
 /// Shadows whose result is affected are drawn in an equivalent form without an offset:
 /// <list type="bullet">
 /// <item>inset shadows become a zero-offset inset shadow on a larger rectangle, clipped back to the box;</item>
-/// <item>outer shadows without blur become a filled geometry (shifted shadow shape minus the box).</item>
+/// <item>outer shadows without blur become a filled geometry (shifted shadow shape minus the box) when the
+/// corner radii are equal.</item>
 /// </list>
 /// Other shadows, including blurred outer shadows with an offset, are passed to Avalonia unchanged.
 /// </remarks>
@@ -22,7 +23,8 @@ internal static class BoxShadowRenderHelper
 {
     /// <summary>
     /// Equivalent of <see cref="DrawingContext.DrawRectangle(IBrush?, IPen?, RoundedRect, BoxShadows)" />
-    /// with scale-independent shadow offsets.
+    /// with scale-independent shadow offsets. When a shadow has an offset, the stroke is the one other
+    /// difference: Avalonia paints it after the inset shadows, this method with the background.
     /// </summary>
     public static void DrawRectangle(DrawingContext context, IBrush? brush, IPen? pen, RoundedRect rect,
                                      BoxShadows boxShadows)
@@ -33,7 +35,8 @@ internal static class BoxShadowRenderHelper
             return;
         }
 
-        // 与 Avalonia 的绘制顺序一致：外阴影 -> 背景与描边 -> 内阴影
+        // Same order as Avalonia's rectangle drawing: outer shadows, background, inset shadows.
+        // Only the stroke differs: Avalonia paints it after the inset shadows, here it comes with the background.
         foreach (var shadow in boxShadows)
         {
             if (shadow != default && !shadow.IsInset)
@@ -86,7 +89,7 @@ internal static class BoxShadowRenderHelper
             return;
         }
 
-        // 无模糊的外阴影即“平移、外扩后的形状减去盒子本身”
+        // An outer shadow without blur is the translated and spread shape of the box minus the box itself.
         context.DrawGeometry(new SolidColorBrush(shadow.Color), null,
             new CombinedGeometry(GeometryCombineMode.Exclude, shadowGeometry, boxGeometry));
     }
@@ -99,8 +102,10 @@ internal static class BoxShadowRenderHelper
             return;
         }
 
-        // CSS 语义下 inset 阴影的“洞”为：按扩展量内缩、再按偏移平移后的盒子；洞外区域模糊后只绘制在盒子内。
-        // 以覆盖整个盒子的零偏移矩形内缩出同一个洞，再裁剪回盒子，结果与原阴影等价。
+        // In CSS semantics the hole of an inset shadow is the box deflated by the spread and then translated by the
+        // offset; the blurred area outside the hole is painted inside the box only.
+        // A zero-offset inset shadow on a rectangle that covers the whole box cuts out the same hole. Clipped back to
+        // the box, it is equivalent to the original shadow.
         var box      = rect.Rect;
         var holeRect = Translate(rect.Deflate(shadow.Spread, shadow.Spread), shadow.OffsetX, shadow.OffsetY);
         var hole     = holeRect.Rect;
@@ -138,7 +143,7 @@ internal static class BoxShadowRenderHelper
             return true;
         }
 
-        // 非一致圆角没有现成几何，交给 Avalonia 绘制
+        // No ready-made geometry exists for unequal corner radii, so the shadow is left to Avalonia.
         geometry = null!;
         return false;
     }

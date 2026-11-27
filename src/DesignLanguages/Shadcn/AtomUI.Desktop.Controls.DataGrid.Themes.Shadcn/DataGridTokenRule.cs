@@ -6,7 +6,9 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls.Themes.Shadcn;
 
-/// <summary>The shadcn view of <see cref="DataGridToken"/>.</summary>
+/// <summary>
+/// The shadcn view of <see cref="DataGridToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class DataGridTokenRule : IControlTokenRule<ShadcnToken, DataGridToken>
 {
@@ -21,6 +23,8 @@ internal sealed class DataGridTokenRule : IControlTokenRule<ShadcnToken, DataGri
 
         var baseColorAction      = global.ColorIcon;
         var baseColorActionHover = global.ColorIconHover;
+        // Header and rows keep the Ant formula's reads of the shadcn globals (the table recipe returns those reads); the
+        // registry's text-muted-foreground header and hover:bg-muted/50 rows are not matched exactly.
         token.HeaderBg                    = colorFillAlterSolid;
         token.HeaderColor                 = table.HeaderForeground;
         token.HeaderSortActiveBg          = colorFillSecondarySolid;
@@ -70,7 +74,7 @@ internal sealed class DataGridTokenRule : IControlTokenRule<ShadcnToken, DataGri
         token.ExpandIconHalfInner = global.ControlInteractiveSize / 2 - global.LineWidth;
         token.ExpandIconSize = (global.ControlInteractiveSize / 2 - global.LineWidth) * 2 +
                          global.LineWidth * 3;
-        token.RowReorderIndicatorSize   = global.SizeMD; // TODO 需要根据 SizeType 做一定的调整
+        token.RowReorderIndicatorSize   = global.SizeMD; // TODO: adjust for SizeType. Remove this TODO when it does.
         token.ExpandIconScale = global.ControlInteractiveSize /
                           ((global.ControlInteractiveSize / 2 - global.LineWidth) * 2 +
                            global.LineWidth * 3);
@@ -78,7 +82,7 @@ internal sealed class DataGridTokenRule : IControlTokenRule<ShadcnToken, DataGri
         token.SortIndicatorLayoutMargin = new Thickness(global.UniformlyMarginXS, 0, 0, 0);
         token.FilterIndicatorPadding    = new Thickness(global.UniformlyPaddingXXS, global.UniformlyPaddingXS);
 
-        // 别名控件初始化
+        // Initialize the tokens of the alias control (Table).
         token.TableFontSize = token.CellFontSize;
         token.TableBg       = table.RowBackground;
         token.TableRadius   = token.HeaderBorderRadius;
@@ -111,7 +115,8 @@ internal sealed class DataGridTokenRule : IControlTokenRule<ShadcnToken, DataGri
         token.TableExpandedRowBg        = token.RowExpandedBg;
 
         // Dropdown
-        // TODO 暂未使用
+        // TODO Table filter dropdown: these tokens are not used yet. Verify whether the filter dropdown now reads
+        // them, wire it up where it does not, and remove this TODO when the tokens are used.
         token.TableFilterDropdownWidth               = 120;
         token.TableFilterDropdownHeight              = 264;
         token.TableFilterDropdownSearchWidth         = 140;
@@ -119,7 +124,8 @@ internal sealed class DataGridTokenRule : IControlTokenRule<ShadcnToken, DataGri
         token.TableFilterButtonContainerMargin       = new Thickness(0, global.UniformlyMarginXS, 0, 0);
         token.TableFilterButtonLayoutSeparatorMargin = new Thickness(0, global.UniformlyMarginXXS, 0, 0);
         token.TableFilterDropdownPadding             = global.PaddingXS;
-        // 对齐 AntD fixed.ts：冻结列分界阴影为 inset 10px 0 8px -8px（左）与 inset -10px 0 8px -8px（右）。
+        // Aligned with Ant Design (fixed.ts): the shadow at the boundary of a frozen column is
+        // inset 10px 0 8px -8px on the left and inset -10px 0 8px -8px on the right.
         token.LeftFrozenShadows = new BoxShadows(new BoxShadow
         {
             OffsetX = 10,

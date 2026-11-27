@@ -4,7 +4,9 @@ using AtomUI.Theme.Languages;
 
 namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 
-/// <summary>The PrimeNG view of <see cref="RateToken"/>.</summary>
+/// <summary>
+/// The PrimeNG view of <see cref="RateToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class RateTokenRule : IControlTokenRule<PrimeNGToken, RateToken>
 {
@@ -12,8 +14,10 @@ internal sealed class RateTokenRule : IControlTokenRule<PrimeNGToken, RateToken>
     {
         var token  = target.Own;
         var global = target.Global;
-        // PrimeNG: the control-global overrides, read by the formulas below.
+        // PrimeNG: no control-global overrides; EvaluateGlobal writes nothing.
         PrimeNGRateTokens.EvaluateGlobal(in context, global);
+        // Ant Design formula kept as is; the PrimeNG rating stage at the end of the method replaces all six values
+        // (sizes, hover scale and colors).
         token.StarColor      = global.ColorPalettes[PresetPrimaryColor.Yellow].Color6;
         token.StarSize       = global.ControlHeight * 0.625;
         token.StarSizeSM     = global.ControlHeightSM * 0.625;

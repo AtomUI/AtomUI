@@ -6,8 +6,9 @@ using Avalonia.VisualTree;
 namespace AtomUI.Controls.Primitives;
 
 /// <summary>
-/// T7 TopLevel 呈现层：承载 TopLevel Drawer（<c>OpenOn is TopLevel</c>，含 Window Drawer）。
-/// 解析到 TopLevel 的宿主（跳过表面宿主），对 Window、PopupRoot、EmbeddableControlRoot 一视同仁。
+/// T7 TopLevel presentation layer: hosts TopLevel Drawers (<c>OpenOn is TopLevel</c>, Window Drawers included).
+/// It resolves the host of the TopLevel (skipping surface hosts) the same way for Window, PopupRoot and
+/// EmbeddableControlRoot.
 /// </summary>
 internal sealed class TopLevelPresentationLayer : ScopeAwareAdornerLayer
 {
@@ -16,8 +17,9 @@ internal sealed class TopLevelPresentationLayer : ScopeAwareAdornerLayer
         Layoutable? host = LayerLadder.FindTopLevelLayerManager(topLevel);
         if (host == null)
         {
-            // 没有 VisualLayerManager 的 TopLevel（例如 Avalonia 12 的原生 Window，层位于 TopLevelHost）：
-            // 与 T3 共用 TopLevel 内容包裹面板，在其中按同一号码排在 T3/T5 之上。
+            // A TopLevel without a VisualLayerManager, for example the native Avalonia 12 Window whose layers live in
+            // TopLevelHost: share the panel that wraps the TopLevel content with the T3 layer (ScopeAwareAdornerLayer),
+            // and rank above T3 and T5 (ContentPresentationLayer) inside it by the same ladder number.
             host = ScopeAwareAdornerLayer.GetOrInjectLayer(topLevel)?.GetVisualParent() as Panel;
         }
 

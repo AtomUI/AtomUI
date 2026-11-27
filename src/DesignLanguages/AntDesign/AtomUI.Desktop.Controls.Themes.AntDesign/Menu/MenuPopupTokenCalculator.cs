@@ -5,9 +5,15 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls.Themes.AntDesign;
 
-/// <summary>The AntDesign values of the shared <see cref="AbstractMenuPopupToken"/> layer.</summary>
+/// <summary>
+/// The AntDesign values of the shared <see cref="AbstractMenuPopupToken" /> layer.
+/// </summary>
 public static class MenuPopupTokenCalculator
 {
+    /// <summary>
+    /// Assigns the Ant Design values of the shared <see cref="AbstractMenuPopupToken" /> layer to
+    /// <paramref name="token" />. The Token rules of Menu and ContextMenu call it.
+    /// </summary>
     public static void Calculate(in TokenEvaluationContext<AntDesignToken> context, DesignToken global, AbstractMenuPopupToken token)
     {
         token.KeyGestureColor = global.ColorTextQuaternary;

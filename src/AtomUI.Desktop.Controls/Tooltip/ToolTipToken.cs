@@ -4,39 +4,53 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
 
+/// <summary>
+/// Design tokens of the tooltip popup: the bounds, font size, text and fill colors, padding and shadow of its
+/// box, the duration of its open and close motion, its distance to the anchor, and the size and shape of its
+/// arrow.
+/// </summary>
 [ControlDesignToken]
 public sealed partial class ToolTipToken : AbstractControlDesignToken
 {
 
-    /// <summary>Maximum width of the tooltip, which constrains wrapping of its text.</summary>
+    /// <summary>
+    /// Maximum width of the tooltip, which constrains wrapping of its text.
+    /// </summary>
     public partial double ToolTipMaxWidth { get; set; }
 
     /// <summary>
-    /// 提示文本的字号
     /// Font size of the tooltip text.
     /// </summary>
     public partial double ToolTipFontSize { get; set; }
 
     /// <summary>
-    /// 提示框的最小高度
     /// Minimum height of the tooltip box.
     /// </summary>
     public partial double ToolTipMinHeight { get; set; }
 
-    /// <summary>Tooltip content foreground on <see cref="ToolTipBackground"/>.</summary>
+    /// <summary>
+    /// Tooltip content foreground on <see cref="ToolTipBackground" />.
+    /// </summary>
     public partial Color ToolTipColor { get; set; }
 
-    /// <summary>Fill behind the tooltip content. Pair with <see cref="ToolTipColor"/>.</summary>
+    /// <summary>
+    /// Fill behind the tooltip content. Pair with <see cref="ToolTipColor" />.
+    /// </summary>
     public partial Color ToolTipBackground { get; set; }
 
-    /// <summary>Corner radius of the tooltip surface.</summary>
+    /// <summary>
+    /// Corner radius of the tooltip surface.
+    /// </summary>
     public partial CornerRadius ToolTipCornerRadius { get; set; }
 
-    /// <summary>Space inside the tooltip frame around its content.</summary>
+    /// <summary>
+    /// Space inside the tooltip frame around its content.
+    /// </summary>
     public partial Thickness ContentPadding { get; set; }
     
     /// <summary>
-    /// 弹出与收起的缩放动效时长（antd Tooltip 使用 zoom-big-fast，即 motionDurationFast）
+    /// Duration of the zoom motion that shows and hides the tooltip. The AntDesign theme takes it from the global
+    /// fast motion duration, because antd plays its tooltip as the zoom-big-fast motion.
     /// </summary>
     public partial TimeSpan MotionDuration { get; set; }
 

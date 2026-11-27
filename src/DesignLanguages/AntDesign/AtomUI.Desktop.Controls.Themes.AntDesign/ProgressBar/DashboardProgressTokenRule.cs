@@ -3,7 +3,9 @@ using AtomUI.Theme.Languages;
 
 namespace AtomUI.Desktop.Controls.Themes.AntDesign;
 
-/// <summary>The AntDesign view of <see cref="DashboardProgressToken"/>.</summary>
+/// <summary>
+/// The AntDesign view of <see cref="DashboardProgressToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class DashboardProgressTokenRule : IControlTokenRule<AntDesignToken, DashboardProgressToken>
 {

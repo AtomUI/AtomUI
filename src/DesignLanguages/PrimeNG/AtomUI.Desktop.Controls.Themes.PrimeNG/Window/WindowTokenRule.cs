@@ -5,7 +5,9 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 
-/// <summary>The PrimeNG view of <see cref="WindowToken"/>.</summary>
+/// <summary>
+/// The PrimeNG view of <see cref="WindowToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class WindowTokenRule : IControlTokenRule<PrimeNGToken, WindowToken>
 {
@@ -13,15 +15,18 @@ internal sealed class WindowTokenRule : IControlTokenRule<PrimeNGToken, WindowTo
     {
         var token  = target.Own;
         var global = target.Global;
+        // Ant Design formula kept as is: PrimeUIX defines no values for this control, so the rule takes the Ant
+        // Design formula over the PrimeNG global tokens.
         token.DefaultBackground        = global.ColorBgContainer;
         token.DefaultForeground        = global.ColorText;
         token.CornerRadius             = new CornerRadius(12);
         token.SystemBarColor           = new SolidColorBrush(global.ColorBgContainer);
-        // 窗口装饰语义不属于密度算法作用域：紧凑算法会把 ControlHeightLG / SizeLG 拉小，
-        // 连带 TitleBarHeight 一起缩，因此使用跨平台稳定值切开 compact 链路。
+        // Window decoration is not part of the density algorithm. The compact algorithm shrinks ControlHeightLG and
+        // SizeLG, and TitleBarHeight with them, so a value that is stable across platforms cuts the compact chain.
         token.TitleBarHeight               = 40;
-        // 取值对应 Win10 DWM 阴影纹理在窗口顶边的半透明合成：白底上激活态约 #707070、
-        // 非激活态约 #AAAAAA，因此边框本身使用带透明度的深灰而不是固定实色。
+        // The values match the translucent composite of the Win10 DWM shadow texture along the top edge of the window:
+        // about #707070 for the active state and #AAAAAA for the inactive one on a white background. The border is
+        // therefore a dark gray with alpha, not a fixed solid color.
         token.FrameBorderActive        = Color.FromArgb(0xA8, 0x26, 0x26, 0x26);
         token.FrameBorderInactive      = Color.FromArgb(0x64, 0x26, 0x26, 0x26);
         token.FrameShadows             = global.BoxShadowsSecondary;

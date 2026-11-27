@@ -3,7 +3,9 @@ using AtomUI.Theme.Languages;
 
 namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 
-/// <summary>The PrimeNG view of <see cref="NumericUpDownToken"/>.</summary>
+/// <summary>
+/// The PrimeNG view of <see cref="NumericUpDownToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class NumericUpDownTokenRule : IControlTokenRule<PrimeNGToken, NumericUpDownToken>
 {
@@ -11,7 +13,8 @@ internal sealed class NumericUpDownTokenRule : IControlTokenRule<PrimeNGToken, N
     {
         var token  = target.Own;
         var global = target.Global;
-        // PrimeNG: the control-global overrides, read by the formulas below.
+        // PrimeNG: the control-global overrides of PrimeNGInputStage.Apply, written for the hosted input frame;
+        // the formulas below read ColorFillAlter and ColorIcon only (the spinner calculator).
         PrimeNGNumericUpDownTokens.EvaluateGlobal(in context, global);
         ButtonSpinnerTokenCalculator.Calculate(in context, global, token);
         token.InputFontSizeSM = global.FontSize;

@@ -4,7 +4,9 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 
-/// <summary>The PrimeNG view of <see cref="FormToken"/>.</summary>
+/// <summary>
+/// The PrimeNG view of <see cref="FormToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class FormTokenRule : IControlTokenRule<PrimeNGToken, FormToken>
 {

@@ -4,7 +4,9 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls.Themes.AntDesign;
 
-/// <summary>The AntDesign view of <see cref="TabControlToken"/>.</summary>
+/// <summary>
+/// The AntDesign view of <see cref="TabControlToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class TabControlTokenRule : IControlTokenRule<AntDesignToken, TabControlToken>
 {

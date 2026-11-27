@@ -68,18 +68,34 @@ internal class RadioIndicator : TemplatedControl, IFocusOutlineShapeProvider
     internal static readonly StyledProperty<bool> IsWaveSpiritEnabledProperty =
         WaveSpiritAwareControlProperty.IsWaveSpiritEnabledProperty.AddOwner<RadioIndicator>();
 
+    /// <summary>
+    /// The Token resource keys of the three sizes of the indicator: the size of the radio, the size of the dot and
+    /// the padding around the dot. The theme sets it. While the indicator is attached to a visual tree, the values
+    /// are resolved and <see cref="RadioDotEffectSize" /> is recalculated whenever one of them changes.
+    /// <see langword="null" /> leaves the three sizes at zero, so no dot is drawn.
+    /// </summary>
     internal RadioDotGeometryTokenResourceKeys? DotGeometryTokenResourceKeys
     {
         get => GetValue(DotGeometryTokenResourceKeysProperty);
         set => SetValue(DotGeometryTokenResourceKeysProperty, value);
     }
 
+    /// <summary>
+    /// Lets the indicator play the wave when it becomes checked; the wave needs this value and
+    /// <see cref="IsWaveSpiritEnabled" /> to be <see langword="true" />. The theme of the radio button passes its
+    /// own motion switch down to the indicator, and the theme of the indicator passes the value on to its template.
+    /// </summary>
     internal bool IsMotionEnabled
     {
         get => GetValue(IsMotionEnabledProperty);
         set => SetValue(IsMotionEnabledProperty, value);
     }
 
+    /// <summary>
+    /// Lets the indicator play the wave when it becomes checked; the wave needs this value and
+    /// <see cref="IsMotionEnabled" /> to be <see langword="true" />. The theme of the radio button passes its own
+    /// switch down to the indicator, and the theme of the indicator passes the value on to its template.
+    /// </summary>
     internal bool IsWaveSpiritEnabled
     {
         get => GetValue(IsWaveSpiritEnabledProperty);
@@ -309,4 +325,12 @@ internal class RadioIndicator : TemplatedControl, IFocusOutlineShapeProvider
 
 }
 
+/// <summary>
+/// The resource keys of the Tokens that size the radio indicator: the size of the radio, the size of the dot and
+/// the padding around the dot; <c>DotGeometryTokenResourceKeys</c> of the radio button in
+/// AtomUI.Desktop.Controls exposes them.
+/// </summary>
+/// <remarks>
+/// Each component is a Token resource key, not a size.
+/// </remarks>
 internal sealed record RadioDotGeometryTokenResourceKeys(object RadioSize, object DotSize, object DotPadding);

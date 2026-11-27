@@ -10,8 +10,10 @@
         <themes:IconButtonTheme TargetType="{x:Type atom:WindowTitleBarButton}" />
     </ControlTheme.BasedOn>
 
-    <!-- 复用 managed caption 的共享几何外壳：背景层与内容层由 CaptionButtonFrame 拥有，
-         这里只声明 AddOn 自己的 presenter 契约，因此不复制 caption band 的几何结构。 -->
+    <!-- Reuses the shared geometry shell of the managed caption: CaptionButtonFrame owns the background layer and the
+    content layer, and only the presenter contract of the AddOn is declared here, so the geometry structure of the
+    caption band is not duplicated.
+    -->
     <Setter Property="Template">
         <ControlTemplate TargetType="atom:WindowTitleBarButton">
             <atom:CaptionButtonFrame Background="{TemplateBinding Background}"

@@ -26,23 +26,23 @@ internal static class TransitionInterpolation
         var b = DoubleInterpolate(progress, b1, b2);
         var a = DoubleInterpolate(progress, a1, a2);
 
-        // 处理接近完全透明的情况
+        // Un-premultiplying a near-zero alpha would divide by (almost) zero.
         if (a < 1e-5)
         {
-            // 在这种情况下，我们可以选择直接使用目标颜色的RGB分量
+            // Use the target color's RGB components directly instead.
             r = toColor.GetRedF();
             g = toColor.GetGreenF();
             b = toColor.GetBlueF();
         }
         else
         {
-            // 如果alpha不为零，反预乘alpha
+            // Alpha is not zero here: un-premultiply by it.
             r /= a;
             g /= a;
             b /= a;
         }
 
-        // 防止颜色分量超出范围
+        // Keep every component inside its valid range.
         r = Math.Clamp(r, 0.0f, 1.0f);
         g = Math.Clamp(g, 0.0f, 1.0f);
         b = Math.Clamp(b, 0.0f, 1.0f);

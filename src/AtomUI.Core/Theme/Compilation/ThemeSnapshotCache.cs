@@ -29,7 +29,7 @@ internal sealed class ThemeSnapshotCache : IDisposable
             static key => key.EstimatedRetainedBytes,
             options.ProductionEntryLimit,
             options.ProductionRetainedBytesLimit);
-        // cell 可能比所属 cache 活得久；通知闭包不能反向保活整个快照缓存。
+        // A cell may outlive its cache; the notification closure must not keep the whole snapshot cache alive.
         var owner = new WeakReference<ThemeSnapshotCache>(this);
         _controlCompilations = new ControlCompilationCache(options, () =>
         {

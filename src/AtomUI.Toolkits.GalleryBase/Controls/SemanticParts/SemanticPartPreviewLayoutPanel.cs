@@ -18,12 +18,15 @@ internal sealed class SemanticPartPreviewLayoutPanel : Panel
         AvaloniaProperty.Register<SemanticPartPreviewLayoutPanel, double>(nameof(PaneMaxHeight), 400);
 
     /// <summary>
-    /// 预览画布的期望最小高度。测量阶段参与期望高度(向宿主要空间),
-    /// 排布阶段不设下限,宿主钳制高度不足时画布随之收缩。
+    /// Identifies the <see cref="PreviewStageMinHeight" /> property.
     /// </summary>
     public static readonly StyledProperty<double> PreviewStageMinHeightProperty =
         AvaloniaProperty.Register<SemanticPartPreviewLayoutPanel, double>(nameof(PreviewStageMinHeight), 360);
 
+    /// <summary>
+    /// Minimum height the preview stage asks the host for during measure. Arrange sets no lower bound, so
+    /// the stage shrinks when the host clamps the available height below this value.
+    /// </summary>
     public double PreviewStageMinHeight
     {
         get => GetValue(PreviewStageMinHeightProperty);
@@ -76,9 +79,9 @@ internal sealed class SemanticPartPreviewLayoutPanel : Panel
             return default;
         }
 
-        // 画布下限写回 Stage 的 MinHeight:宿主钳制高度时下限随之收缩,
-        // 保证测量期望、排布尺寸与可视区域一致,不产生可视区之外的布局;
-        // 无界宿主使用完整配置值。
+        // Writing the stage minimum into the stage's MinHeight keeps the measured desire, the arranged size
+        // and the visible area in agreement when the host clamps the height: no layout beyond the visible
+        // area. An unbounded host uses the full configured value.
         if (Children.Count > 0)
         {
             Children[0].MinHeight = double.IsFinite(availableSize.Height)

@@ -4,7 +4,9 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls.Themes.Shadcn;
 
-/// <summary>The shadcn view of <see cref="TextBoxToken"/>.</summary>
+/// <summary>
+/// The shadcn view of <see cref="TextBoxToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class TextBoxTokenRule : IControlTokenRule<ShadcnToken, TextBoxToken>
 {

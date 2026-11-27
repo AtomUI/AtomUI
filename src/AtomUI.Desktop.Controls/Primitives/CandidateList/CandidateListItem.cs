@@ -4,15 +4,29 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls.Primitives;
 
+/// <summary>
+/// Item container of a candidate list. Next to the selected state it carries the candidate highlight that marks
+/// the item navigation points at before the choice is committed.
+/// </summary>
 // Token-owner transparent item container (as ListBoxItem): the items read the hosting list's owner globals.
 [TokenOwnerTransparent]
 public class CandidateListItem : ListBoxItem
 {
     #region 公共属性定义
 
+    /// <summary>
+    /// Identifies the <see cref="IsCandidateSelected" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsCandidateSelectedProperty =
         AvaloniaProperty.Register<CandidateListItem, bool>(nameof(IsCandidateSelected));
 
+    /// <summary>
+    /// Gets or sets whether this item is the current candidate of the hosting list: the item that navigation points
+    /// at before the choice is committed.
+    /// The hosting list sets the value together with <see cref="ICandidateList.CandidateSelectedItem" /> without
+    /// replacing a binding assigned by the application. The item themes show the candidate highlight while it is
+    /// <see langword="true" /> and <c>IsSelected</c> is <see langword="false" />.
+    /// </summary>
     public bool IsCandidateSelected
     {
         get => GetValue(IsCandidateSelectedProperty);

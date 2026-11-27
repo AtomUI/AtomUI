@@ -6,8 +6,10 @@
     <ControlTheme x:Key="{x:Type atom:DrawerContainer}" TargetType="atom:DrawerContainer">
         <Setter Property="Template">
             <ControlTemplate>
-                <!-- layer: 表面宿主（规则 3）。Drawer 内控件的焦点描边、Badge 落在这里的装饰层，紧贴 Drawer 表面；
-                     Drawer 内的 Watermark / FloatButton / 作用域 Dialog 也就近落入它（规则 2）。 -->
+                <!-- layer: surface host. The focus strokes and badges of controls inside the Drawer land in this
+                adorner layer, right next to the Drawer surface; the Watermark, FloatButton and scoped Dialog
+                inside the Drawer fall into it as well, close to where they live.
+                -->
                 <VisualLayerManager Name="PART_SurfaceHost"
                                     atom:LayerLadder.IsSurfaceHost="True">
                     <Border Name="PART_RootClip"

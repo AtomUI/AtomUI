@@ -3,17 +3,26 @@ using Avalonia;
 namespace AtomUI.Theme;
 
 /// <summary>
-/// 声明控件把语义部件活体承载在 owner 视觉树之外的宿主中（如独立预览窗口）。
-/// Gallery 语义预览据此发现并跟随跨根宿主：宿主集合变化时触发
-/// <see cref="CrossRootsChanged"/>，会话重新收集根并刷新高亮；描边 adorner 仍按目标
-/// 所在窗口的 AdornerLayer 落点，显现状态（<see cref="SemanticPartPreviewState"/>）直接
-/// 设在目标上，二者天然跨根。Avalonia <c>Popup</c> 宿主由语义预览自动订阅，无需实现本接口。
+/// Declares that a control hosts live semantic parts outside the owner's visual tree, for example in a
+/// standalone preview window. The Gallery semantic preview uses it to discover and follow such cross-root
+/// hosts: when the set of hosts changes, the control raises <see cref="CrossRootsChanged" /> and the preview
+/// session collects the roots again and refreshes the highlight. The outline adorner is still added to the
+/// <c>AdornerLayer</c> of the window that contains the target, and the preview state
+/// (<see cref="SemanticPartPreviewState" />) is set directly on the target, so both already cross roots.
+/// The semantic preview subscribes to Avalonia <c>Popup</c> hosts by itself; such controls do not need to
+/// implement this interface.
 /// </summary>
 public interface ISemanticPartCrossRootProvider
 {
-    /// <summary>跨根宿主集合出现/消失时触发（如预览窗口打开、关闭、表面就绪）。</summary>
+    /// <summary>
+    /// Raised when a cross-root host appears or disappears, for example when a preview window opens, closes or
+    /// its surface becomes ready.
+    /// </summary>
     event EventHandler? CrossRootsChanged;
 
-    /// <summary>当前存活的跨根宿主视觉根；无存活宿主时返回空集合。</summary>
+    /// <summary>
+    /// Returns the visual roots of the cross-root hosts that are currently alive, or an empty collection when
+    /// no host is alive.
+    /// </summary>
     IReadOnlyList<Visual> GetCrossRoots();
 }

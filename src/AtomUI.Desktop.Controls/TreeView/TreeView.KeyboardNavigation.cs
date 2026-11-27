@@ -40,6 +40,10 @@ public partial class TreeView : ICustomKeyboardNavigation
         return (false, null);
     }
 
+    /// <summary>
+    /// Handles the tree navigation keys for a key event raised by the tree view itself. Keys raised by focusable
+    /// content inside a node keep their own meaning. The base member is not called.
+    /// </summary>
     protected override void OnKeyDown(KeyEventArgs e)
     {
         // Keys raised by focusable user content inside a header keep their own semantics.
@@ -49,6 +53,10 @@ public partial class TreeView : ICustomKeyboardNavigation
         }
     }
 
+    /// <summary>
+    /// Makes sure that a keyboard active node exists when the tree view itself receives focus, and shows the
+    /// keyboard active state when focus arrived by Tab or by directional navigation. The base member is not called.
+    /// </summary>
     protected override void OnGotFocus(FocusChangedEventArgs e)
     {
         if (!ReferenceEquals(e.Source, this))
@@ -63,6 +71,9 @@ public partial class TreeView : ICustomKeyboardNavigation
         }
     }
 
+    /// <summary>
+    /// Hides the keyboard active state when the tree view itself loses focus. Calls the base member first.
+    /// </summary>
     protected override void OnLostFocus(FocusChangedEventArgs e)
     {
         base.OnLostFocus(e);

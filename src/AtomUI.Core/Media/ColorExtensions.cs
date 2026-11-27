@@ -4,52 +4,87 @@ using Avalonia.Media;
 
 namespace AtomUI.Media;
 
+/// <summary>
+/// Provides channel accessors and color adjustments for <see cref="Color" /> values.
+/// </summary>
 public static class ColorExtensions
 {
+    /// <summary>
+    /// Returns the red channel as a value from 0 to 1.
+    /// </summary>
     public static double GetRedF(this Color color)
     {
         return color.R / 255d;
     }
 
+    /// <summary>
+    /// Returns a copy of the color with its red channel set to <paramref name="value" />,
+    /// clamped to the range 0 to 1.
+    /// </summary>
     public static Color SetRedF(this Color color, double value)
     {
         value = Math.Clamp(value, 0.0, 1.0);
         return ColorUtils.FromRgbF(color.GetAlphaF(), value, color.GetGreenF(), color.GetBlueF());
     }
 
+    /// <summary>
+    /// Returns the green channel as a value from 0 to 1.
+    /// </summary>
     public static double GetGreenF(this Color color)
     {
         return color.G / 255d;
     }
 
+    /// <summary>
+    /// Returns a copy of the color with its green channel set to <paramref name="value" />,
+    /// clamped to the range 0 to 1.
+    /// </summary>
     public static Color SetGreenF(this Color color, double value)
     {
         value = Math.Clamp(value, 0.0, 1.0);
         return ColorUtils.FromRgbF(color.GetAlphaF(), color.GetRedF(), value, color.GetBlueF());
     }
 
+    /// <summary>
+    /// Returns the blue channel as a value from 0 to 1.
+    /// </summary>
     public static double GetBlueF(this Color color)
     {
         return color.B / 255d;
     }
 
+    /// <summary>
+    /// Returns a copy of the color with its blue channel set to <paramref name="value" />,
+    /// clamped to the range 0 to 1.
+    /// </summary>
     public static Color SetBlueF(this Color color, double value)
     {
         value = Math.Clamp(value, 0.0, 1.0);
         return ColorUtils.FromRgbF(color.GetAlphaF(), color.GetRedF(), color.GetGreenF(), value);
     }
 
+    /// <summary>
+    /// Returns the alpha channel as a value from 0 to 1.
+    /// </summary>
     public static double GetAlphaF(this Color color)
     {
         return color.A / 255d;
     }
 
+    /// <summary>
+    /// Returns a copy of the color with its alpha channel set to <paramref name="value" />,
+    /// clamped to the range 0 to 1.
+    /// </summary>
     public static Color SetAlphaF(this Color color, double value)
     {
         value = Math.Clamp(value, 0.0, 1.0);
         return ColorUtils.FromRgbF(value, color.GetRedF(), color.GetGreenF(), color.GetBlueF());
     }
 
+    /// <summary>
+    /// Returns the color as a lowercase hexadecimal string: <c>#rrggbb</c> by default, or
+    /// <c>#aarrggbb</c> when <paramref name="format" /> is <see cref="ColorNameFormat.HexArgb" />.
+    /// </summary>
     public static string HexName(this Color color, ColorNameFormat format = ColorNameFormat.HexRgb)
     {
         var rgb       = color.ToUInt32();
@@ -63,6 +98,10 @@ public static class ColorExtensions
         return $"#{rgb.ToString(formatStr, CultureInfo.InvariantCulture)}";
     }
 
+    /// <summary>
+    /// Returns a copy of the color with its HSL saturation lowered by <paramref name="amount" />
+    /// percentage points. <paramref name="amount" /> is clamped to 0 to 100, and the result is opaque.
+    /// </summary>
     public static Color Desaturate(this Color color, int amount = 10)
     {
         amount = Math.Clamp(amount, 0, 100);
@@ -73,6 +112,10 @@ public static class ColorExtensions
         return HslColor.FromHsl(hslColor.H, s, hslColor.L).ToRgb();
     }
 
+    /// <summary>
+    /// Returns a copy of the color with its HSL saturation raised by <paramref name="amount" />
+    /// percentage points. <paramref name="amount" /> is clamped to 0 to 100, and the result is opaque.
+    /// </summary>
     public static Color Saturate(this Color color, int amount = 10)
     {
         amount = Math.Clamp(amount, 0, 100);
@@ -83,11 +126,18 @@ public static class ColorExtensions
         return HslColor.FromHsl(hslColor.H, s, hslColor.L).ToRgb();
     }
 
+    /// <summary>
+    /// Returns a gray copy of the color that keeps its HSL lightness. The result is opaque.
+    /// </summary>
     public static Color Greyscale(this Color color)
     {
         return color.Desaturate(100);
     }
 
+    /// <summary>
+    /// Returns a copy of the color with its HSL lightness raised by <paramref name="amount" />
+    /// percentage points. <paramref name="amount" /> is clamped to 0 to 100, and the result is opaque.
+    /// </summary>
     public static Color Lighten(this Color color, int amount = 10)
     {
         amount = Math.Clamp(amount, 0, 100);
@@ -98,6 +148,10 @@ public static class ColorExtensions
         return HslColor.FromHsl(hslColor.H, hslColor.S, l).ToRgb();
     }
 
+    /// <summary>
+    /// Returns a copy of the color with each RGB channel raised by <paramref name="amount" /> percent of the
+    /// 0 to 255 range. <paramref name="amount" /> is clamped to 0 to 100, and the result is opaque.
+    /// </summary>
     public static Color Brighten(this Color color, int amount = 10)
     {
         amount = Math.Clamp(amount, 0, 100);
@@ -111,6 +165,10 @@ public static class ColorExtensions
         return Color.FromRgb((byte)r, (byte)g, (byte)b);
     }
 
+    /// <summary>
+    /// Returns a copy of the color with its HSL lightness lowered by <paramref name="amount" />
+    /// percentage points. <paramref name="amount" /> is clamped to 0 to 100, and the result is opaque.
+    /// </summary>
     public static Color Darken(this Color color, int amount = 10)
     {
         amount = Math.Clamp(amount, 0, 100);
@@ -121,6 +179,10 @@ public static class ColorExtensions
         return HslColor.FromHsl(hslColor.H, hslColor.S, l).ToRgb();
     }
 
+    /// <summary>
+    /// Returns a copy of the color with its HSL hue rotated by <paramref name="amount" /> degrees.
+    /// <paramref name="amount" /> is not clamped, so negative values lower the hue. The result is opaque.
+    /// </summary>
     public static Color Spin(this Color color, int amount = 10)
     {
         var hslColor = color.ToHsl();
@@ -133,8 +195,6 @@ public static class ColorExtensions
     /// <summary>
     /// Returns the perceived brightness of the color, from 0-255.
     /// </summary>
-    /// <param name="color"></param>
-    /// <returns></returns>
     public static int GetBrightness(this Color color)
     {
         return (color.R * 299 + color.G * 587 + color.B * 114) / 1000;
@@ -143,7 +203,6 @@ public static class ColorExtensions
     /// <summary>
     /// Returns the perceived luminance of a color, from 0-1.
     /// </summary>
-    /// <returns></returns>
     public static double GetLuminance(this Color color)
     {
         // http://www.w3.org/TR/2008/REC-WCAG20-20081211/#relativeluminancedef
@@ -159,7 +218,6 @@ public static class ColorExtensions
         }
         else
         {
-            // eslint-disable-next-line prefer-exponentiation-operator
             r = Math.Pow((rsRGB + 0.055) / 1.055, 2.4);
         }
 
@@ -169,7 +227,6 @@ public static class ColorExtensions
         }
         else
         {
-            // eslint-disable-next-line prefer-exponentiation-operator
             g = Math.Pow((gsRGB + 0.055) / 1.055, 2.4);
         }
 
@@ -179,7 +236,6 @@ public static class ColorExtensions
         }
         else
         {
-            // eslint-disable-next-line prefer-exponentiation-operator
             b = Math.Pow((bsRGB + 0.055) / 1.055, 2.4);
         }
 

@@ -9,13 +9,28 @@ namespace AtomUI.Controls.Commons;
 
 using AvaloniaScrollBar = Avalonia.Controls.Primitives.ScrollBar;
 
+/// <summary>
+/// Base class of the AtomUI scroll bars. It coerces <see cref="RangeBase.Maximum" /> down to <see
+/// cref="RangeBase.Minimum" /> while the scroll range spans at most one physical pixel, copies the expanded state that
+/// the theme sets through <c>IsEffectiveExpanded</c> to the <see cref="ScrollBar.IsExpanded" /> property of the base
+/// class, and reports thumb drags to the owning <see cref="AbstractScrollViewer" />.
+/// </summary>
 [PseudoClasses(StdPseudoClass.Vertical, StdPseudoClass.Horizontal)]
 public abstract class AbstractScrollBar : AvaloniaScrollBar, IMotionAwareControl
 {
     #region 公共属性定义
+    /// <summary>
+    /// Identifies the <see cref="IsMotionEnabled" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<AbstractScrollBar>();
 
+    /// <summary>
+    /// Enables the transitions of the thumb that the template places in the track: the background and the thickness
+    /// of the thumb then change over the <c>MotionDurationMid</c> token instead of at once. A scrollbar inside a
+    /// scroll viewer takes the value of the scroll viewer; when the value is not set, the theme supplies it from
+    /// the <c>EnableMotion</c> token.
+    /// </summary>
     public bool IsMotionEnabled
     {
         get => GetValue(IsMotionEnabledProperty);
@@ -29,6 +44,12 @@ public abstract class AbstractScrollBar : AvaloniaScrollBar, IMotionAwareControl
     internal static readonly StyledProperty<bool> IsEffectiveExpandedProperty =
         AvaloniaProperty.Register<AbstractScrollBar, bool>(nameof(IsEffectiveExpanded));
     
+    /// <summary>
+    /// Expanded state that the scrollbar shares with the thumb of its template: the theme binds
+    /// <see cref="AbstractScrollBarThumb.IsExpanded" /> of the thumb to it in both directions, and every change is
+    /// copied to <see cref="ScrollBar.IsExpanded" />. While <see cref="ScrollBar.AllowAutoHide" /> is off, it is
+    /// reported as <see langword="false" />.
+    /// </summary>
     internal bool IsEffectiveExpanded
     {
         get => GetValue(IsEffectiveExpandedProperty);
@@ -56,6 +77,10 @@ public abstract class AbstractScrollBar : AvaloniaScrollBar, IMotionAwareControl
             RoutingStrategies.Bubble);
     }
 
+    /// <summary>
+    /// Calls the base method and then coerces <see cref="RangeBase.Maximum" /> again with the layout scale of the
+    /// visual tree the scrollbar was attached to. An override must call the base method to keep this.
+    /// </summary>
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
@@ -93,6 +118,12 @@ public abstract class AbstractScrollBar : AvaloniaScrollBar, IMotionAwareControl
             : value;
     }
     
+    /// <summary>
+    /// Answers a change of <see cref="ScrollBar.AllowAutoHide" /> with <see cref="UpdateIsExpandedState" /> and does not pass
+    /// that change to the base class, whose own handling sets <see cref="ScrollBar.IsExpanded" /> directly. Every other
+    /// change is passed to the base class first; a change of <c>IsEffectiveExpanded</c> is then copied to
+    /// <see cref="ScrollBar.IsExpanded" />.
+    /// </summary>
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         if (change.Property == AllowAutoHideProperty)
@@ -109,12 +140,23 @@ public abstract class AbstractScrollBar : AvaloniaScrollBar, IMotionAwareControl
         }
     }
 
+    /// <summary>
+    /// Clears the dragging state on the owning <see cref="AbstractScrollViewer" /> before calling the base method,
+    /// so that a scrollbar detached during a thumb drag does not leave the owner in the dragging state.
+    /// </summary>
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         SetOwnerScrollBarDragging(false);
         base.OnDetachedFromVisualTree(e);
     }
     
+    /// <summary>
+    /// Called when <see cref="ScrollBar.AllowAutoHide" /> changes. While auto-hide is off, the default implementation stops
+    /// the timer of the base class that delays expanding and collapsing and reports the scrollbar as not expanded
+    /// through <c>IsEffectiveExpanded</c>; it does nothing while auto-hide is on. The handling of the base class
+    /// for this change is bypassed, so an override that replaces this method must still stop that timer while
+    /// auto-hide is off.
+    /// </summary>
     protected virtual void UpdateIsExpandedState()
     {
         if (!AllowAutoHide)
@@ -125,11 +167,27 @@ public abstract class AbstractScrollBar : AvaloniaScrollBar, IMotionAwareControl
         }
     }
 
+    /// <summary>
+    /// Called when a thumb inside the scrollbar starts to be dragged. The default implementation sets the dragging
+    /// state of the owning <see cref="AbstractScrollViewer" />, which its theme uses to keep the scroll bars
+    /// visible in lite mode. An override that does not call the base method must set that state itself.
+    /// </summary>
+    /// <param name="e">
+    /// The drag event raised by the thumb. The default implementation does not read it.
+    /// </param>
     protected virtual void NotifyThumbDragStarted(VectorEventArgs e)
     {
         SetOwnerScrollBarDragging(true);
     }
 
+    /// <summary>
+    /// Called when the drag of a thumb inside the scrollbar is completed. The default implementation clears the
+    /// dragging state of the owning <see cref="AbstractScrollViewer" />. An override that does not call the base
+    /// method must clear that state itself.
+    /// </summary>
+    /// <param name="e">
+    /// The drag event raised by the thumb. The default implementation does not read it.
+    /// </param>
     protected virtual void NotifyThumbDragCompleted(VectorEventArgs e)
     {
         SetOwnerScrollBarDragging(false);

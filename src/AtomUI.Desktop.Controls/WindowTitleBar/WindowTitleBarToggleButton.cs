@@ -38,6 +38,11 @@ public class WindowTitleBarToggleButton : ToggleIconButton
         set => SetValue(HostOsTypeProperty, value);
     }
 
+    /// <summary>
+    /// Measures the content and returns a square desired size whose side is the shorter side of the measured content.
+    /// When <see cref="HostOsType" /> is <c>OsType.Windows</c>, the side is the larger of that value and the shorter
+    /// side of the available size, with an infinite available width taken as the available height.
+    /// </summary>
     protected override Size MeasureOverride(Size availableSize)
     {
         if (HostOsType == OsType.Windows)
@@ -52,18 +57,30 @@ public class WindowTitleBarToggleButton : ToggleIconButton
         return new Size(side, side);
     }
 
+    /// <summary>
+    /// Processes the press with the base handler and then marks the event as handled, so that the title bar hosting
+    /// the button ignores it.
+    /// </summary>
     protected override void OnPointerPressed(PointerPressedEventArgs e)
     {
         base.OnPointerPressed(e);
         e.Handled = true;
     }
 
+    /// <summary>
+    /// Processes the release with the base handler and then marks the event as handled, so that the title bar
+    /// hosting the button ignores it.
+    /// </summary>
     protected override void OnPointerReleased(PointerReleasedEventArgs e)
     {
         base.OnPointerReleased(e);
         e.Handled = true;
     }
 
+    /// <summary>
+    /// Processes the pointer movement with the base handler and then marks the event as handled, so that the title bar
+    /// hosting the button ignores it.
+    /// </summary>
     protected override void OnPointerMoved(PointerEventArgs e)
     {
         base.OnPointerMoved(e);

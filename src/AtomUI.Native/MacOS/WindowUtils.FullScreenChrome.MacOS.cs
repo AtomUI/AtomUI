@@ -11,7 +11,10 @@ internal static partial class WindowUtilsMacOS
     /// <summary>
     /// Tracks the system menu bar and title strip AppKit slides in over a full-screen window.
     /// </summary>
-    /// <returns><c>null</c> when the window has no native handle or AppKit does not expose the move notification.</returns>
+    /// <returns>
+    /// <c>null</c> when the window has no native handle or AppKit does not expose the move notification or the
+    /// did-enter-full-screen notification.
+    /// </returns>
     public static IFullScreenNativeChrome? AttachFullScreenNativeChrome(Window window, Action metricsChanged)
     {
         var ns = GetNSWindow(window);

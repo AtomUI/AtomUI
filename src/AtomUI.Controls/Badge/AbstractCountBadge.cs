@@ -10,64 +10,130 @@ using Avalonia.VisualTree;
 
 namespace AtomUI.Controls.Commons;
 
+/// <summary>
+/// Size preset of a count badge indicator. It selects the theme values for the indicator height, the corner
+/// radius and the text font size.
+/// </summary>
 public enum CountBadgeSize
 {
+    /// <summary>
+    /// The regular set of those values.
+    /// </summary>
     Default,
+    /// <summary>
+    /// The small set of those values.
+    /// </summary>
     Small
 }
 
+/// <summary>
+/// Base class of badges that show a count or custom content in an indicator. With a
+/// <see cref="DecoratedTarget" /> the indicator is rendered in the adorner layer at the target's top-right
+/// corner; without one the badge consists of the indicator alone. Derived classes create the indicator in
+/// <c>CreateBadgeAdorner</c>.
+/// </summary>
 public abstract class AbstractCountBadge : Control, IMotionAwareControl
 {
     #region 公共属性定义
 
+    /// <summary>
+    /// Identifies the <see cref="BadgeColor" /> property.
+    /// </summary>
     public static readonly StyledProperty<string?> BadgeColorProperty =
         AvaloniaProperty.Register<AbstractCountBadge, string?>(
             nameof(BadgeColor));
 
+    /// <summary>
+    /// Identifies the <see cref="Count" /> property.
+    /// </summary>
     public static readonly StyledProperty<int> CountProperty =
         AvaloniaProperty.Register<AbstractCountBadge, int>(nameof(Count),
             coerce: (o, v) => Math.Max(0, v));
 
+    /// <summary>
+    /// Identifies the <see cref="DecoratedTarget" /> property.
+    /// </summary>
     public static readonly StyledProperty<Control?> DecoratedTargetProperty =
         AvaloniaProperty.Register<AbstractCountBadge, Control?>(nameof(DecoratedTarget));
 
+    /// <summary>
+    /// Identifies the <see cref="Offset" /> property.
+    /// </summary>
     public static readonly StyledProperty<Point> OffsetProperty =
         AvaloniaProperty.Register<AbstractCountBadge, Point>(nameof(Offset));
 
+    /// <summary>
+    /// Identifies the <see cref="OverflowCount" /> property.
+    /// </summary>
     public static readonly StyledProperty<int> OverflowCountProperty =
         AvaloniaProperty.Register<AbstractCountBadge, int>(nameof(OverflowCount), 99,
             coerce: (o, v) => Math.Max(0, v));
 
+    /// <summary>
+    /// Identifies the <see cref="IsZeroVisible" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsZeroVisibleProperty =
         AvaloniaProperty.Register<AbstractCountBadge, bool>(nameof(IsZeroVisible));
 
+    /// <summary>
+    /// Identifies the <see cref="Size" /> property.
+    /// </summary>
     public static readonly StyledProperty<CountBadgeSize> SizeProperty =
         AvaloniaProperty.Register<AbstractCountBadge, CountBadgeSize>(nameof(Size));
 
+    /// <summary>
+    /// Identifies the <see cref="Content" /> property.
+    /// </summary>
     public static readonly StyledProperty<object?> ContentProperty =
         AvaloniaProperty.Register<AbstractCountBadge, object?>(nameof(Content));
 
+    /// <summary>
+    /// Identifies the <see cref="IsBordered" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsBorderedProperty =
         AvaloniaProperty.Register<AbstractCountBadge, bool>(nameof(IsBordered), true);
 
+    /// <summary>
+    /// Identifies the <see cref="BadgeIsVisible" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> BadgeIsVisibleProperty =
         AvaloniaProperty.Register<AbstractCountBadge, bool>(nameof(BadgeIsVisible), true);
 
+    /// <summary>
+    /// Identifies the <see cref="IsMotionEnabled" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<AbstractCountBadge>();
 
+    /// <summary>
+    /// Fill of the indicator. A preset color name such as <c>Red</c>, or a status name such as <c>primary</c>,
+    /// <c>success</c>, <c>warning</c>, <c>error</c> or <c>danger</c>, is resolved from the theme and follows theme
+    /// changes. Any other value is parsed as a color, for example <c>#52c41a</c>. <see langword="null" />, an empty
+    /// string or a value that cannot be resolved leaves the theme's indicator color in effect.
+    /// </summary>
     public string? BadgeColor
     {
         get => GetValue(BadgeColorProperty);
         set => SetValue(BadgeColorProperty, value);
     }
 
+    /// <summary>
+    /// Number shown in the indicator: the count itself, or <c>OverflowCount+</c> once it exceeds
+    /// <see cref="OverflowCount" />. Negative values are clamped to 0, and 0 hides the indicator unless
+    /// <see cref="IsZeroVisible" /> is <see langword="true" />. <see cref="Content" /> replaces the count when it is
+    /// not <see langword="null" />.
+    /// </summary>
     public int Count
     {
         get => GetValue(CountProperty);
         set => SetValue(CountProperty, value);
     }
 
+    /// <summary>
+    /// The control the indicator decorates. When set, the control becomes a child of this badge and the indicator is
+    /// rendered in the adorner layer over the control's top-right corner. When <see langword="null" />, the badge
+    /// consists of the indicator alone. This is the XAML content property.
+    /// </summary>
     [Content]
     public Control? DecoratedTarget
     {
@@ -75,48 +141,84 @@ public abstract class AbstractCountBadge : Control, IMotionAwareControl
         set => SetValue(DecoratedTargetProperty, value);
     }
 
+    /// <summary>
+    /// Moves the indicator away from the top-right corner of <see cref="DecoratedTarget" />, in device-independent
+    /// pixels: X to the right, Y downwards. It is ignored while <see cref="DecoratedTarget" /> is
+    /// <see langword="null" />.
+    /// </summary>
     public Point Offset
     {
         get => GetValue(OffsetProperty);
         set => SetValue(OffsetProperty, value);
     }
 
+    /// <summary>
+    /// Highest count shown as a number; above it the indicator shows <c>OverflowCount+</c>. Negative values are
+    /// clamped to 0. The default is 99. It has no effect while <see cref="Content" /> is not <see langword="null" />.
+    /// </summary>
     public int OverflowCount
     {
         get => GetValue(OverflowCountProperty);
         set => SetValue(OverflowCountProperty, value);
     }
 
+    /// <summary>
+    /// Shows the indicator with <c>0</c> when <see cref="Count" /> is 0. The default, <see langword="false" />, hides
+    /// it instead. It has no effect while <see cref="Content" /> is not <see langword="null" />.
+    /// </summary>
     public bool IsZeroVisible
     {
         get => GetValue(IsZeroVisibleProperty);
         set => SetValue(IsZeroVisibleProperty, value);
     }
 
+    /// <summary>
+    /// Size preset of the indicator. <see cref="CountBadgeSize.Small" /> switches the theme to its small indicator
+    /// height, corner radius and text font size.
+    /// </summary>
     public CountBadgeSize Size
     {
         get => GetValue(SizeProperty);
         set => SetValue(SizeProperty, value);
     }
 
+    /// <summary>
+    /// Content shown in the indicator instead of the count. <see langword="null" /> shows the count. An empty string
+    /// hides the indicator; any other value is always shown, whatever <see cref="Count" /> and
+    /// <see cref="IsZeroVisible" /> say.
+    /// </summary>
     public object? Content
     {
         get => GetValue(ContentProperty);
         set => SetValue(ContentProperty, value);
     }
 
+    /// <summary>
+    /// Draws the outline around the indicator that separates it from its target, using the theme's shadow size and
+    /// shadow color tokens. <see langword="false" /> leaves the indicator without an outline.
+    /// </summary>
     public bool IsBordered
     {
         get => GetValue(IsBorderedProperty);
         set => SetValue(IsBorderedProperty, value);
     }
 
+    /// <summary>
+    /// Whether the indicator is shown. Set it to <see langword="false" /> to hide the indicator whatever the count
+    /// says. The badge assigns this property itself when it attaches and whenever <see cref="Content" />,
+    /// <see cref="Count" /> or <see cref="IsZeroVisible" /> changes, so an explicit value does not survive those
+    /// updates.
+    /// </summary>
     public bool BadgeIsVisible
     {
         get => GetValue(BadgeIsVisibleProperty);
         set => SetValue(BadgeIsVisibleProperty, value);
     }
 
+    /// <summary>
+    /// Plays the show and hide motion of the indicator; with <see langword="false" /> the indicator appears and
+    /// disappears immediately. While the badge is attached, an unset value follows the <c>EnableMotion</c> Token.
+    /// </summary>
     public bool IsMotionEnabled
     {
         get => GetValue(IsMotionEnabledProperty);
@@ -144,8 +246,9 @@ public abstract class AbstractCountBadge : Control, IMotionAwareControl
             OverflowCountProperty,
             SizeProperty);
         AffectsRender<AbstractCountBadge>(BadgeColorProperty, OffsetProperty);
-        // 装饰型控件必须包裹目标而不是拉伸占满父槽（与 AbstractDotBadge 一致）：
-        // 拉伸会把指示器锚点和 root 语义部件标记拖到父槽右缘。
+        // A decorating control must wrap its target instead of stretching to fill the parent slot, as
+        // AbstractDotBadge does. Stretching would drag the indicator anchor and the root semantic part marker to the
+        // right edge of the parent slot.
         HorizontalAlignmentProperty.OverrideDefaultValue<AbstractCountBadge>(Avalonia.Layout.HorizontalAlignment.Left);
         VerticalAlignmentProperty.OverrideDefaultValue<AbstractCountBadge>(Avalonia.Layout.VerticalAlignment.Top);
     }
@@ -156,6 +259,16 @@ public abstract class AbstractCountBadge : Control, IMotionAwareControl
     // A product that delegates its target to another badge owns that transfer.
     internal virtual bool SynchronizesDecoratedTarget => true;
 
+    /// <summary>
+    /// Creates the indicator. It is called every time the indicator is prepared, so an override stores the adorner in
+    /// <c>_badgeAdorner</c> and returns that same instance on later calls.
+    /// </summary>
+    /// <remarks>
+    /// The base class works only through <c>_badgeAdorner</c>: it shows and hides that instance, places it in and
+    /// removes it from the adorner layer, and applies the color to it. An override therefore creates the instance only
+    /// while the field is <see langword="null" />, and calls <see cref="SetupTokenBindings" /> and
+    /// <see cref="ConfigureDotColor" /> for a new instance, so that the values of the badge reach the indicator.
+    /// </remarks>
     private protected abstract AbstractCountBadgeAdorner CreateBadgeAdorner();
 
     private void PrepareAdorner()
@@ -167,7 +280,8 @@ public abstract class AbstractCountBadge : Control, IMotionAwareControl
             AttachChild(DecoratedTarget);
             badgeAdorner.IsAdornerMode = true;
             _adornerLayer = AdornerLayer.GetAdornerLayer(this);
-            // 这里需要抛出异常吗？
+            // A missing layer is not an error: this also runs before the badge is attached, and attaching prepares the
+            // indicator again.
             if (_adornerLayer == null)
             {
                 ScheduleAdornerLayerRetry();
@@ -189,9 +303,10 @@ public abstract class AbstractCountBadge : Control, IMotionAwareControl
         }
     }
 
-    // 指示器渲染在跨根的 AdornerLayer 中，祖先仅以 IsVisible=false 隐藏宿主子树时，
-    // 控件不触发 detach 清理、Avalonia 也不会隐藏装饰层中的残留视觉，
-    // 必须按有效可见性显式同步，否则指示器会以退化布局坐标漂移在页面上。
+    // In adorner mode the indicator renders in the AdornerLayer, which is not part of this control's subtree. When
+    // an ancestor hides the host subtree with IsVisible=false alone, this control is not detached and Avalonia
+    // leaves the visual in the adorner layer visible, so the effective visibility has to be pushed to the indicator
+    // explicitly. Without it the indicator stays on the page at degenerate layout coordinates.
     private void SyncLayerAdornerVisibility()
     {
         if (_badgeAdorner is { IsAdornerMode: true } && _adornerLayer is not null)
@@ -202,7 +317,7 @@ public abstract class AbstractCountBadge : Control, IMotionAwareControl
 
     private void HideAdorner(bool enableMotion)
     {
-        // 这里需要抛出异常吗？
+        // Nothing to hide: the indicator is created only when the badge is first shown.
         if (_badgeAdorner is null)
         {
             return;
@@ -278,13 +393,19 @@ public abstract class AbstractCountBadge : Control, IMotionAwareControl
         }
     }
 
+    /// <summary>
+    /// Attaches <see cref="DecoratedTarget" /> as a child, derives <see cref="BadgeIsVisible" /> from the count and
+    /// content, creates and shows the indicator while that value is <see langword="true" />, and starts the theme and
+    /// ancestor-visibility subscriptions. An override must call the base member first.
+    /// </summary>
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
         _motionBinding?.Dispose();
         _motionBinding = this.ConfigureMotionBindingStyle();
         _adornerLayerRetryCount = 0;
-        // 目标挂载与指示器可见性无关：初始隐藏（零计数、空内容、BadgeIsVisible=false）时也必须挂上目标
+        // The target is attached regardless of the indicator. It must be attached even while the badge starts hidden,
+        // by a zero count, empty content or BadgeIsVisible=false.
         SyncDecoratedTargetChild(null);
         SetupShowZero();
         if (BadgeIsVisible)
@@ -348,6 +469,11 @@ public abstract class AbstractCountBadge : Control, IMotionAwareControl
         }
     }
 
+    /// <summary>
+    /// Disposes the motion binding, the theme subscription and the ancestor-visibility tracking, cancels a pending
+    /// adorner layer retry and detaches the indicator without motion. The indicator is kept for the next attach. An
+    /// override must call the base member first.
+    /// </summary>
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnDetachedFromVisualTree(e);
@@ -422,6 +548,11 @@ public abstract class AbstractCountBadge : Control, IMotionAwareControl
         PrepareAdorner();
     }
 
+    /// <summary>
+    /// Binds the indicator's offset, size, overflow count, count, content, border and motion properties to those of
+    /// this badge. The derived class calls it once the indicator exists; it does nothing before that. An override
+    /// calls this member to create the bindings.
+    /// </summary>
     private protected virtual void SetupTokenBindings()
     {
         if (_badgeAdorner is not null)
@@ -448,9 +579,10 @@ public abstract class AbstractCountBadge : Control, IMotionAwareControl
         LogicalChildren.Add(child);
     }
 
-    // standalone 指示器不能直接挂 Control.VisualChildren：普通控件集合缺少 Panel
-    // 式的逻辑挂载联动，adorner 子树会停留在样式未应用状态（ControlTheme 的
-    // Setter 全部失效、desired=0，宿主布局退化为空白）。经内部 Panel 宿主挂载补齐联动。
+    // A standalone indicator must not be attached directly to Control.VisualChildren: a plain control collection
+    // lacks the logical-attach linkage of a Panel, so the adorner subtree stays unstyled (no ControlTheme setter
+    // takes effect, the desired size stays 0 and the host lays out blank). The internal Panel host supplies that
+    // linkage.
     private void AttachStandaloneAdorner(Control adorner)
     {
         if (_standaloneContentHost is null)
@@ -464,11 +596,11 @@ public abstract class AbstractCountBadge : Control, IMotionAwareControl
             _standaloneContentHost.Children.Add(adorner);
         }
 
-        // 首次挂载可能发生在宿主 attach 级联内部：逻辑根尚未贯通到本 Panel，
-        // 子级收不到 AttachedToLogicalTree，ControlTheme 与模板 Setter 全部
-        // 不应用、desired 停留 0。补设逻辑父（SetParent → FindLogicalRoot →
-        // ApplyStyling）；不能用视觉重挂——detach 会取消待播的 show 动画，
-        // 让指示器停留在 opacity 0。级联内同步设置可能失败，Post 兜底重试。
+        // The first attach can happen inside the host's attach cascade: the logical root has not reached this Panel
+        // yet, the child never gets AttachedToLogicalTree, no ControlTheme or template setter applies and the desired
+        // size stays 0. Setting the logical parent explicitly runs SetParent, FindLogicalRoot and ApplyStyling. A
+        // visual re-attach is not an option: detaching cancels the pending show motion and leaves the indicator at
+        // opacity 0. The synchronous set can fail inside the cascade, so the Post call retries it.
         if (((StyledElement)adorner).Parent is null)
         {
             var hostPanel = _standaloneContentHost;
@@ -539,7 +671,8 @@ public abstract class AbstractCountBadge : Control, IMotionAwareControl
         _adornerLayer = null;
     }
 
-    // 目标的挂载与替换独立于指示器：指示器未创建或处于隐藏时，旧目标仍要移除、新目标仍要挂上。
+    // Attaching and replacing the target does not depend on the indicator: while the indicator is not created or is
+    // hidden, the old target is still removed and the new one attached.
     private void SyncDecoratedTargetChild(Control? oldDecoratedTarget)
     {
         if (!SynchronizesDecoratedTarget)
@@ -560,6 +693,15 @@ public abstract class AbstractCountBadge : Control, IMotionAwareControl
         }
     }
 
+    /// <summary>
+    /// Moves the existing indicator to the mode that matches the current <see cref="DecoratedTarget" />. With a
+    /// target the indicator is switched to adorner mode and the target becomes a child of the badge. Without one it
+    /// leaves the adorner layer and is attached as the badge's own content while <see cref="BadgeIsVisible" /> is
+    /// <see langword="true" />. It does nothing while no indicator exists.
+    /// </summary>
+    /// <param name="oldDecoratedTarget">
+    /// The target that was replaced, which is detached as a child.
+    /// </param>
     private protected virtual void NotifyDecoratedTargetChanged(Control? oldDecoratedTarget = null)
     {
         if (_badgeAdorner is not null)
@@ -583,6 +725,12 @@ public abstract class AbstractCountBadge : Control, IMotionAwareControl
         }
     }
 
+    /// <summary>
+    /// Keeps the indicator in step with the badge: <see cref="BadgeIsVisible" /> shows or hides it,
+    /// <see cref="DecoratedTarget" /> swaps the attached child and the indicator mode, <see cref="BadgeColor" />
+    /// recolours it, and <see cref="Content" />, <see cref="Count" /> and <see cref="IsZeroVisible" /> re-derive
+    /// <see cref="BadgeIsVisible" />. An override must call the base member first.
+    /// </summary>
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
@@ -673,9 +821,14 @@ public abstract class AbstractCountBadge : Control, IMotionAwareControl
     }
     
     /// <summary>
-    /// Writes the resolved colour into the internal indicator, or clears it so the indicator falls back to the
-    /// theme's indicator colour when the colour is unset or invalid.
+    /// Writes the resolved color into the indicator, or clears it so the indicator falls back to the theme's
+    /// indicator color when the color is unset or invalid. Does nothing while no indicator exists. The base class
+    /// calls it on attach, when <see cref="BadgeColor" /> changes and when the theme changes; the derived class calls
+    /// it once the indicator exists. An override calls this member to apply the resolved color.
     /// </summary>
+    /// <param name="colorStr">
+    /// The value of <see cref="BadgeColor" /> to resolve.
+    /// </param>
     private protected virtual void ConfigureDotColor(string? colorStr)
     {
         if (_badgeAdorner is null)

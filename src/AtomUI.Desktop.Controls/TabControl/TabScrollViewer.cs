@@ -43,7 +43,7 @@ internal sealed class TabScrollViewer : ScrollViewer, ITabOverflowPopupActionTar
             nameof(OverflowPopupPlacement),
             control => control.OverflowPopupPlacement);
 
-    // The overflow-menu button's icon size and colour: read from the host's effective Tokens by this scroll viewer's
+    // The overflow-menu button's icon size and color: read from the host's effective Tokens by this scroll viewer's
     // theme (a registered IconButton would resolve owner reads to itself) and bound by the button.
     internal static readonly StyledProperty<double> MenuIndicatorIconSizeProperty =
         AvaloniaProperty.Register<TabScrollViewer, double>(nameof(MenuIndicatorIconSize));

@@ -5,7 +5,7 @@ using Avalonia.Media;
 namespace AtomUI.Controls.Utils;
 
 /// <summary>
-/// Contains internal helpers used to build and draw various geometries.
+/// Contains internal helpers used to build and draw rounded rectangle geometries.
 /// </summary>
 internal class RoundRectGeometryBuilder
 {
@@ -16,12 +16,16 @@ internal class RoundRectGeometryBuilder
     /// Draws a new rounded rectangle within the given geometry context.
     /// Warning: The caller must manage and dispose the <see cref="StreamGeometryContext" /> externally.
     /// </summary>
+    /// <param name="context">
+    /// The geometry context to draw into.
+    /// </param>
+    /// <param name="keypoints">
+    /// The rounded rectangle keypoints defining the rectangle to draw.
+    /// </param>
     /// <remarks>
-    /// WinUI:
+    /// Mirrors the WinUI implementation:
     /// https://github.com/microsoft/microsoft-ui-xaml/blob/93742a178db8f625ba9299f62c21f656e0b195ad/dxaml/xcp/core/core/elements/geometry.cpp#L1072-L1079
     /// </remarks>
-    /// <param name="context">The geometry context to draw into.</param>
-    /// <param name="keypoints">The rounded rectangle keypoints defining the rectangle to draw.</param>
     public static void DrawRoundedCornersRectangle(
         StreamGeometryContext context,
         ref RoundedRectKeypoints keypoints)
@@ -111,10 +115,18 @@ internal class RoundRectGeometryBuilder
     /// Draws a new rounded rectangle within the given geometry context.
     /// Warning: The caller must manage and dispose the <see cref="StreamGeometryContext" /> externally.
     /// </summary>
-    /// <param name="context">The geometry context to draw into.</param>
-    /// <param name="rect">The existing rectangle dimensions without corner radii.</param>
-    /// <param name="radiusX">The radius on the X-axis used to round the corners of the rectangle.</param>
-    /// <param name="radiusY">The radius on the Y-axis used to round the corners of the rectangle.</param>
+    /// <param name="context">
+    /// The geometry context to draw into.
+    /// </param>
+    /// <param name="rect">
+    /// The existing rectangle dimensions without corner radii.
+    /// </param>
+    /// <param name="radiusX">
+    /// The radius on the X-axis used to round the corners of the rectangle.
+    /// </param>
+    /// <param name="radiusY">
+    /// The radius on the Y-axis used to round the corners of the rectangle.
+    /// </param>
     public static void DrawRoundedCornersRectangle(
         StreamGeometryContext context,
         Rect rect,
@@ -190,13 +202,19 @@ internal class RoundRectGeometryBuilder
     /// This should be the overall bounds and size of the shape/control without any
     /// corner radii or border thickness adjustments.
     /// </param>
-    /// <param name="borderThickness">The unadjusted border thickness of the rounded rectangle.</param>
+    /// <param name="borderThickness">
+    /// The unadjusted border thickness of the rounded rectangle.
+    /// </param>
     /// <param name="cornerRadius">
     /// The unadjusted corner radii of the rounded rectangle.
     /// The corner radius is defined to be the middle of the border stroke (center of the border).
     /// </param>
-    /// <param name="sizing">The sizing mode used to calculate the final rounded rectangle size.</param>
-    /// <returns>New rounded rectangle keypoints.</returns>
+    /// <param name="sizing">
+    /// The sizing mode used to calculate the final rounded rectangle size.
+    /// </param>
+    /// <returns>
+    /// New rounded rectangle keypoints.
+    /// </returns>
     public static RoundedRectKeypoints CalculateRoundedCornersRectangleWinUI(
         Rect outerBounds,
         Thickness borderThickness,
@@ -460,7 +478,7 @@ internal class RoundRectGeometryBuilder
         // BottomLeft = LeftBottom             BottomRight = RightBottom
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="RoundedRectKeypoints" /> struct.
+        /// Initializes a new instance with all keypoints at the origin (0, 0).
         /// </summary>
         public RoundedRectKeypoints()
         {
@@ -469,7 +487,9 @@ internal class RoundRectGeometryBuilder
         /// <summary>
         /// Initializes a new instance of the <see cref="RoundedRectKeypoints" /> struct.
         /// </summary>
-        /// <param name="roundedRect">An existing <see cref="RoundedRect" /> to initialize keypoints with.</param>
+        /// <param name="roundedRect">
+        /// An existing <see cref="RoundedRect" /> to initialize keypoints with.
+        /// </param>
         public RoundedRectKeypoints(RoundedRect roundedRect)
         {
             LeftTop = new Point(
@@ -552,12 +572,14 @@ internal class RoundRectGeometryBuilder
         /// Converts the keypoints into a simple rectangle (with no corners).
         /// This is equivalent to the outer rectangle with zero corner radii.
         /// </summary>
+        /// <returns>
+        /// A new rectangle representing the keypoints.
+        /// </returns>
         /// <remarks>
         /// Warning: This will force the keypoints into a simple rectangle without
         /// any rounded corners. Use <see cref="IsRounded" /> to determine if corner
         /// information is otherwise available.
         /// </remarks>
-        /// <returns>A new rectangle representing the keypoints.</returns>
         public Rect ToRect()
         {
             return new Rect(
@@ -572,12 +594,14 @@ internal class RoundRectGeometryBuilder
         /// <summary>
         /// Converts the keypoints into a rounded rectangle with elliptical corner radii.
         /// </summary>
+        /// <returns>
+        /// A new rounded rectangle representing the keypoints.
+        /// </returns>
         /// <remarks>
         /// Elliptical corner radius (represented by <see cref="Vector" />) is more powerful
         /// than circular corner radius (represented by a <see cref="CornerRadius" />).
         /// Elliptical is a superset of circular.
         /// </remarks>
-        /// <returns>A new rounded rectangle representing the keypoints.</returns>
         public RoundedRect ToRoundedRect()
         {
             return new RoundedRect(

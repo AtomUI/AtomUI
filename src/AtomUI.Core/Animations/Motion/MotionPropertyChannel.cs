@@ -6,14 +6,54 @@ using Avalonia.Data;
 
 namespace AtomUI.Animations;
 
+/// <summary>
+/// Declares the keyframes of one styled property of the target. It is created by
+/// <see cref="MotionBuilder.Property{T}" />.
+/// </summary>
+/// <remarks>
+/// The channel accepts writes only while the motion is built. It needs a keyframe at 0 and one at 1, or building
+/// the motion throws an <see cref="InvalidOperationException" />.
+/// </remarks>
 public sealed class MotionPropertyChannel<T> : IMotionPropertyBuilder
 {
+    /// <summary>
+    /// Sets the value of the property at the start of the motion.
+    /// </summary>
     public MotionPropertyChannel<T> From(T value) => KeyFrame(0, value);
 
+    /// <summary>
+    /// Starts the channel from the value the property has when the motion is prepared. In a sequence, that is the value
+    /// the previous child ended with.
+    /// </summary>
     public MotionPropertyChannel<T> FromCurrent() => From(_owner.ReadProperty(_property));
 
+    /// <summary>
+    /// Sets the value of the property at the end of the motion.
+    /// </summary>
     public MotionPropertyChannel<T> To(T value) => KeyFrame(1, value);
 
+    /// <summary>
+    /// Adds a keyframe to the channel.
+    /// </summary>
+    /// <param name="cue">
+    /// The position of the keyframe within the motion, from 0 at the start to 1 at the end.
+    /// </param>
+    /// <param name="value">
+    /// The value of the property at that position. It must pass the validation of the property.
+    /// </param>
+    /// <param name="easing">
+    /// The easing of the segment that leads to this keyframe. It replaces the easing of the motion for that segment.
+    /// <see langword="null" /> keeps the easing of the motion.
+    /// </param>
+    /// <returns>
+    /// This channel, to add further keyframes.
+    /// </returns>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// <paramref name="cue" /> is not between 0 and 1, or the property rejects <paramref name="value" />.
+    /// </exception>
+    /// <exception cref="InvalidOperationException">
+    /// The channel already has a keyframe at <paramref name="cue" />, or the motion has finished building.
+    /// </exception>
     public MotionPropertyChannel<T> KeyFrame(double cue, T value, Easing? easing = null)
     {
         _owner.VerifyOpen();

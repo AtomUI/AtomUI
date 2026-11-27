@@ -133,7 +133,7 @@ internal static class ControlThemeModelBuilder
 
     /// <summary>
     /// Whether a terminal control token class of this compilation matches exactly one control by the same rule as
-    /// <see cref="Build"/> (<c>XToken</c> belongs to control <c>X</c>), so the generator gives it its
+    /// <see cref="Build" /> (<c>XToken</c> belongs to control <c>X</c>), so the generator gives it its
     /// <c>IControlToken</c> half.
     /// </summary>
     internal static bool MatchesOneControl(Compilation compilation, INamedTypeSymbol token)

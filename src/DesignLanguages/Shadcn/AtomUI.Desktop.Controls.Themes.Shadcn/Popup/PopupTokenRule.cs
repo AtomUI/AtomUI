@@ -3,7 +3,9 @@ using AtomUI.Theme.Languages;
 
 namespace AtomUI.Desktop.Controls.Themes.Shadcn;
 
-/// <summary>The shadcn view of <see cref="PopupToken"/>.</summary>
+/// <summary>
+/// The shadcn view of <see cref="PopupToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class PopupTokenRule : IControlTokenRule<ShadcnToken, PopupToken>
 {
@@ -14,7 +16,8 @@ internal sealed class PopupTokenRule : IControlTokenRule<ShadcnToken, PopupToken
         PopupCornerTokenCalculator.Calculate(in context, global, token);
 
         token.OverlayHostShadow = global.BoxShadowsSecondary;
-        // 窗口型与 Overlay Popup 使用同一阴影；定位按残余阴影补偿，内容相对 anchor 的位置与阴影厚度无关
+        // Window-style popups and overlay popups share one shadow. The placement is compensated for the residual
+        // shadow, so the position of the content relative to the anchor does not depend on the shadow thickness.
         token.PopupRootShadow = global.BoxShadowsSecondary;
         token.MarginToAnchor = global.UniformlyMarginXXS;
         // Overlays without an arrow (menus, select and the other input panels): the outline ring ahead of the menu shadow,

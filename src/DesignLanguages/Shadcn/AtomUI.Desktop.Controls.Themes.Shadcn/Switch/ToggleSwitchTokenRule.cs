@@ -6,7 +6,9 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls.Themes.Shadcn;
 
-/// <summary>The shadcn view of <see cref="ToggleSwitchToken"/>.</summary>
+/// <summary>
+/// The shadcn view of <see cref="ToggleSwitchToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class ToggleSwitchTokenRule : IControlTokenRule<ShadcnToken, ToggleSwitchToken>
 {
@@ -44,6 +46,8 @@ internal sealed class ToggleSwitchTokenRule : IControlTokenRule<ShadcnToken, Tog
         token.HandleHoverBg = token.HandleBg;
         token.HandleCheckedHoverBg = token.HandleCheckedBg;
 
+        // Ant Design formula kept as is: no registry value is merged into the track border or the handle sizes;
+        // the registry `switch` values are in the commented groups.
         token.TrackBg                 = global.ColorTextQuaternary;
         token.TrackHoverBg            = global.ColorTextTertiary;
         token.TrackCheckedHoverBg     = global.ColorPrimaryHover;
@@ -76,8 +80,9 @@ internal sealed class ToggleSwitchTokenRule : IControlTokenRule<ShadcnToken, Tog
 
         token.ContentIconSize            = token.TrackHeightSM;
         token.ContentIconSizeSM          = token.TrackHeightSM - global.UniformlyPaddingXXS;
-        token.LoadingAnimationDuration   = TimeSpan.FromMilliseconds(1200); // 毫秒
+        token.LoadingAnimationDuration   = TimeSpan.FromMilliseconds(1200);
         token.OffStateLoadIndicatorColor = ColorUtils.FromRgbF(0.4,0.0, 0.0, 0.0);
+        // registry switch: the thumb does not stretch while the unchecked track is pressed.
         token.EnableHandlePressStretch = false;
         var mutedText = global.ColorTextSecondary;
         if (context.Variant.IsDark)

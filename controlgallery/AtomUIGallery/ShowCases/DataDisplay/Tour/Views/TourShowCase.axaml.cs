@@ -14,6 +14,7 @@ public partial class TourShowCase : GalleryReactiveUserControl<TourViewModel>
         InitializeComponent();
     }
 
+    /// <inheritdoc />
     protected override void OnDataContextChanged(EventArgs e)
     {
         base.OnDataContextChanged(e);
@@ -125,9 +126,9 @@ public partial class TourShowCase : GalleryReactiveUserControl<TourViewModel>
         SetTourStepTarget(root, "SemanticStylesFunctionEllipsisStep", "SemanticStylesEllipsis");
     }
 
-    // 语义预览舞台：对齐 antd _semantic 演示，两步都锚定到居中的 Show 按钮。
-    // Tour 在 Loaded 时即按 IsPopupPinnedOpen 打开，锚点必须在 attach 阶段
-    // 先行设置，确保首步定位到 Show 按钮而不是空目标。
+    // Semantic preview stage: as in the antd _semantic demo, both steps anchor to the centered Show button.
+    // The tour opens on Loaded because IsPopupPinnedOpen is set, so the anchor is assigned during the attach
+    // phase to keep the first step on the Show button instead of an empty target.
     private void HandleSemanticStageAttached(object? sender, Avalonia.VisualTreeAttachmentEventArgs e)
     {
         if (sender is not Control stage)

@@ -1,5 +1,15 @@
 namespace AtomUI.Controls;
 
+/// <summary>
+/// The encoded bytes of an image together with the metadata that the image caches need to store, share and
+/// revalidate them; it is what <c>ImageCodec.DecodeAsync</c> decodes, for example in <c>SvgImageCodec</c> of
+/// AtomUI.Controls.
+/// </summary>
+/// <remarks>
+/// <c>IsFresh</c> is <see langword="true" /> while <c>FreshUntil</c> lies in the future and the content is not
+/// marked <c>NoCache</c>. <c>ForContentStore</c> removes the response and lifetime metadata, which belong to a
+/// single request, so that the content can be stored by its content id.
+/// </remarks>
 internal sealed record ImageEncodedContent(
     byte[] Bytes,
     string? MediaType,

@@ -5,7 +5,9 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 
-/// <summary>The PrimeNG view of <see cref="GroupBoxToken"/>.</summary>
+/// <summary>
+/// The PrimeNG view of <see cref="GroupBoxToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class GroupBoxTokenRule : IControlTokenRule<PrimeNGToken, GroupBoxToken>
 {
@@ -13,7 +15,8 @@ internal sealed class GroupBoxTokenRule : IControlTokenRule<PrimeNGToken, GroupB
     {
         var token  = target.Own;
         var global = target.Global;
-        // PrimeNG: the control-global overrides, read by the formulas below.
+        // PrimeNG: the control-global overrides (ColorBorder, ColorBgContainer), read by the GroupBox theme
+        // (BorderBrush, Background) and not by the formulas below.
         PrimeNGGroupBoxTokens.EvaluateGlobal(in context, global);
         token.ContentPadding           = global.PaddingXS;
         token.HeaderContainerMargin = new Thickness(global.UniformlyMargin, global.UniformlyMarginXS,

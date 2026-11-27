@@ -4,7 +4,9 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 
-/// <summary>The PrimeNG view of <see cref="UploadToken"/>.</summary>
+/// <summary>
+/// The PrimeNG view of <see cref="UploadToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class UploadTokenRule : IControlTokenRule<PrimeNGToken, UploadToken>
 {
@@ -12,8 +14,11 @@ internal sealed class UploadTokenRule : IControlTokenRule<PrimeNGToken, UploadTo
     {
         var token  = target.Own;
         var global = target.Global;
-        // PrimeNG: the control-global overrides, read by the formulas below.
+        // PrimeNG: the control-global overrides (BorderRadiusLG, ColorFillAlter, ColorBorder), read by the Upload theme
+        // (Background, BorderBrush, CornerRadius) and not by the formulas below.
         PrimeNGUploadTokens.EvaluateGlobal(in context, global);
+        // Ant Design formula kept as is: the preset writes no Upload token value (its overrides are the three
+        // control-global values above), so the formulas run over the PrimeNG global tokens.
         token.ActionsColor             = global.ColorIcon;
         token.PictureCardSize          = global.ControlHeightLG * 2.55;
         token.TextListItemMargin       = new Thickness(0, global.UniformlyMarginXS, 0, 0);

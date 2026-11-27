@@ -6,7 +6,9 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 
-/// <summary>The PrimeNG view of <see cref="ScrollViewerToken"/>.</summary>
+/// <summary>
+/// The PrimeNG view of <see cref="ScrollViewerToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class ScrollViewerTokenRule : IControlTokenRule<PrimeNGToken, ScrollViewerToken>
 {

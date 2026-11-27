@@ -3,7 +3,9 @@ using AtomUI.Theme.Languages;
 
 namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 
-/// <summary>The PrimeNG view of <see cref="CheckableTagToken"/>.</summary>
+/// <summary>
+/// The PrimeNG view of <see cref="CheckableTagToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class CheckableTagTokenRule : IControlTokenRule<PrimeNGToken, CheckableTagToken>
 {

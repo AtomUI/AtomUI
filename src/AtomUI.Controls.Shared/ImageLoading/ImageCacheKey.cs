@@ -41,6 +41,16 @@ internal readonly record struct ImageDecodedOperationKey(
     ImageCacheStoragePolicy CacheStorage,
     string ShareScope);
 
+/// <summary>
+/// The fully resolved form of an image load request, which the image pipeline passes to a codec such as
+/// <c>SvgImageCodec</c> in AtomUI.Controls.
+/// </summary>
+/// <remarks>
+/// It carries the source with its request headers, the cache read and storage policies with the optional partition
+/// and variant, the decode size in pixels with <c>DecodeToCover</c>, the timeout, the priority state and the timing
+/// tracker, and the flags that say whether the result may be shared, read from the shared cache, written to memory,
+/// read from the persistent store or persisted.
+/// </remarks>
 internal sealed record NormalizedImageRequest(
     ImageSource Source,
     FrozenDictionary<string, string> Headers,

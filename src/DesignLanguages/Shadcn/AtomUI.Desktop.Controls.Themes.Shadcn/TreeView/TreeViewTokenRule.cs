@@ -3,7 +3,9 @@ using AtomUI.Theme.Languages;
 
 namespace AtomUI.Desktop.Controls.Themes.Shadcn;
 
-/// <summary>The shadcn view of <see cref="TreeViewToken"/>.</summary>
+/// <summary>
+/// The shadcn view of <see cref="TreeViewToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class TreeViewTokenRule : IControlTokenRule<ShadcnToken, TreeViewToken>
 {
@@ -16,6 +18,7 @@ internal sealed class TreeViewTokenRule : IControlTokenRule<ShadcnToken, TreeVie
         token.DirectoryNodeSelectedColor = global.ColorTextLightSolid;
         if (context.Variant.IsDark)
         {
+            // Dark shadcn resolves the two source surfaces to the same shade.
             token.NodeSelectedBg = ShadcnRecipes.CompositeOver(global.ColorText, 0.14, token.NodeSelectedBg);
         }
     }

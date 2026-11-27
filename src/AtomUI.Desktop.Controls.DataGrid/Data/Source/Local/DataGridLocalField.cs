@@ -3,8 +3,44 @@ using System.Globalization;
 
 namespace AtomUI.Desktop.Controls;
 
+/// <summary>
+/// Pairs a filter operator with the predicate that applies it to the value of one field of a local source.
+/// </summary>
+/// <typeparam name="TValue">
+/// Type of the field value that the predicate receives.
+/// </typeparam>
 public readonly struct DataGridLocalFilter<TValue>
 {
+    /// <summary>
+    /// Creates a filter that checks query filters by value count and scalar kind, and evaluates them with a predicate.
+    /// </summary>
+    /// <param name="operator">
+    /// The operator that a query filter names to be evaluated by the predicate.
+    /// </param>
+    /// <param name="minimumValueCount">
+    /// The fewest values a filter with this operator carries.
+    /// </param>
+    /// <param name="maximumValueCount">
+    /// The most values a filter with this operator carries.
+    /// </param>
+    /// <param name="acceptedKinds">
+    /// The scalar kinds that a value of such a filter may have.
+    /// </param>
+    /// <param name="evaluate">
+    /// The predicate that evaluates one field value against the values of the filter.
+    /// </param>
+    /// <exception cref="ArgumentNullException">
+    /// <paramref name="evaluate" /> is <see langword="null" />.
+    /// </exception>
+    /// <exception cref="ArgumentException">
+    /// The operator is not a valid identity, or <paramref name="acceptedKinds" /> is
+    /// <see cref="DataGridScalarKinds.None" />.
+    /// </exception>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// <paramref name="minimumValueCount" /> is negative, <paramref name="maximumValueCount" /> is less than
+    /// <paramref name="minimumValueCount" /> or greater than 1024, or <paramref name="acceptedKinds" /> contains
+    /// a kind outside <see cref="DataGridScalarKinds.All" />.
+    /// </exception>
     public DataGridLocalFilter(
         DataGridOperatorId @operator,
         int minimumValueCount,
@@ -21,14 +57,33 @@ public readonly struct DataGridLocalFilter<TValue>
         Evaluate = evaluate;
     }
 
+    /// <summary>
+    /// Gets the operator of the query filters that <see cref="Evaluate" /> evaluates.
+    /// </summary>
     public DataGridOperatorId Operator => Schema.Id;
 
+    /// <summary>
+    /// Gets the fewest values that a filter with this operator must carry to be valid.
+    /// </summary>
     public int MinimumValueCount => Schema.MinimumValueCount;
 
+    /// <summary>
+    /// Gets the most values that a filter with this operator may carry to be valid.
+    /// </summary>
     public int MaximumValueCount => Schema.MaximumValueCount;
 
+    /// <summary>
+    /// Gets the scalar kinds that every value of a filter with this operator may have.
+    /// </summary>
     public DataGridScalarKinds AcceptedKinds => Schema.AcceptedKinds;
 
+    /// <summary>
+    /// Gets the predicate that tests one field value against the values of a query filter.
+    /// </summary>
+    /// <value>
+    /// Receives the field value and the filter's values, and returns <see langword="true" /> when the row matches.
+    /// A local source leaves a row out of the result when any filter returns <see langword="false" />.
+    /// </value>
     public Func<TValue, ImmutableArray<DataGridScalar>, bool> Evaluate { get; }
 
     internal DataGridFilterOperatorSchema Schema { get; }
@@ -50,10 +105,69 @@ internal interface IDataGridLocalField<T>
     Action<T> PrepareWrite(DataGridScalar value);
 }
 
+/// <summary>
+/// Defines one field of a local source: how its value is read, compared, filtered and edited on an item.
+/// The <c>Field</c> methods of <see cref="DataGridLocalSourceDescriptor{T}" /> create and collect these fields.
+/// </summary>
+/// <typeparam name="T">
+/// Type of the items of the local source.
+/// </typeparam>
+/// <typeparam name="TValue">
+/// Type of the field value.
+/// </typeparam>
 public sealed class DataGridLocalField<T, TValue> : IDataGridLocalField<T>
 {
     private readonly Dictionary<DataGridOperatorId, DataGridLocalFilter<TValue>> _filtersById;
 
+    /// <summary>
+    /// Creates a field for a local source and validates its configuration.
+    /// </summary>
+    /// <param name="fieldId">
+    /// Identity that queries and edits use to address the field.
+    /// </param>
+    /// <param name="getter">
+    /// Reads the field value from an item, for display, sorting and filtering.
+    /// </param>
+    /// <param name="sortComparer">
+    /// Orders two field values of the items that the grid sorts.
+    /// </param>
+    /// <param name="toScalar">
+    /// Converts a field value to the <see cref="DataGridScalar" /> that the grid reads for the item.
+    /// </param>
+    /// <param name="filters">
+    /// Operators that the field supports for filtering, each with its predicate. The default value means none.
+    /// </param>
+    /// <param name="sortDirections">
+    /// Directions in which the field can be sorted.
+    /// </param>
+    /// <param name="canGroup">
+    /// <see langword="true" /> to let rows be grouped by the field; the field must then support a sort direction.
+    /// </param>
+    /// <param name="propertyChangedName">
+    /// Name of the item property whose change notification refreshes the field, or <see langword="null" /> to
+    /// refresh on every change.
+    /// </param>
+    /// <param name="setter">
+    /// Writes a committed value to an item. <see langword="null" /> makes the field read-only.
+    /// </param>
+    /// <param name="fromScalar">
+    /// Converts an edited scalar to the field value. <see langword="null" /> uses the built-in conversion, which
+    /// accepts a value of the field's own type and converts between numeric types. A value requires
+    /// <paramref name="setter" />.
+    /// </param>
+    /// <exception cref="ArgumentNullException">
+    /// <paramref name="getter" />, <paramref name="sortComparer" /> or <paramref name="toScalar" /> is
+    /// <see langword="null" />.
+    /// </exception>
+    /// <exception cref="ArgumentException">
+    /// <paramref name="fromScalar" /> is set while <paramref name="setter" /> is <see langword="null" />,
+    /// <paramref name="filters" /> contains a default value or two filters with the same operator,
+    /// <paramref name="fieldId" /> is not a valid identity, or <paramref name="canGroup" /> is
+    /// <see langword="true" /> while <paramref name="sortDirections" /> is <see cref="DataGridSortDirections.None" />.
+    /// </exception>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// <paramref name="sortDirections" /> contains a value outside <see cref="DataGridSortDirections.All" />.
+    /// </exception>
     public DataGridLocalField(
         DataGridFieldId fieldId,
         Func<T, TValue> getter,
@@ -107,14 +221,30 @@ public sealed class DataGridLocalField<T, TValue> : IDataGridLocalField<T>
             isEditable: setter is not null);
     }
 
+    /// <summary>
+    /// Gets the identity that queries and edits use to address the field.
+    /// </summary>
     public DataGridFieldId FieldId { get; }
 
+    /// <summary>
+    /// Gets the function that reads the field value from an item; sorting, filtering and display use it.
+    /// </summary>
     public Func<T, TValue> Getter { get; }
 
+    /// <summary>
+    /// Gets the comparer that orders the field values of two items when the grid sorts by the field.
+    /// </summary>
     public IComparer<TValue> SortComparer { get; }
 
+    /// <summary>
+    /// Gets the function that converts a field value to the <see cref="DataGridScalar" /> the grid reads for the item.
+    /// </summary>
     public Func<TValue, DataGridScalar> ToScalar { get; }
 
+    /// <summary>
+    /// Gets the operators that the field supports for filtering, each with its predicate.
+    /// The array is empty when the field cannot be filtered.
+    /// </summary>
     public ImmutableArray<DataGridLocalFilter<TValue>> Filters { get; }
 
     /// <summary>
@@ -166,12 +296,37 @@ public sealed class DataGridLocalField<T, TValue> : IDataGridLocalField<T>
     }
 }
 
+/// <summary>
+/// Entry point that creates a <see cref="DataGridLocalSourceDescriptor{T}" /> for a local source.
+/// </summary>
 public static class DataGridLocalSourceDescriptor
 {
+    /// <summary>
+    /// Creates a descriptor for the rows of a local source, without fields.
+    /// </summary>
+    /// <typeparam name="T">
+    /// Type of the items of the local source.
+    /// </typeparam>
+    /// <param name="rowKey">
+    /// Returns the key that identifies a row when a request addresses it, for example to move the row.
+    /// </param>
+    /// <returns>
+    /// A descriptor without fields. Add its fields with <c>Field</c>.
+    /// </returns>
+    /// <exception cref="ArgumentNullException">
+    /// <paramref name="rowKey" /> is <see langword="null" />.
+    /// </exception>
     public static DataGridLocalSourceDescriptor<T> For<T>(Func<T, DataGridRowKey> rowKey) =>
         new(rowKey);
 }
 
+/// <summary>
+/// Describes the fields of a local source and how its rows are identified.
+/// Create it with <c>DataGridLocalSourceDescriptor.For</c> and pass it to a <c>DataGridLocalSource&lt;T&gt;</c>.
+/// </summary>
+/// <typeparam name="T">
+/// Type of the items of the local source.
+/// </typeparam>
 public sealed class DataGridLocalSourceDescriptor<T>
 {
     private readonly List<IDataGridLocalField<T>> _fields = [];
@@ -187,6 +342,58 @@ public sealed class DataGridLocalSourceDescriptor<T>
 
     internal IReadOnlyList<IDataGridLocalField<T>> Fields => _fields;
 
+    /// <summary>
+    /// Adds a field that queries and edits address by a name.
+    /// </summary>
+    /// <typeparam name="TValue">
+    /// Type of the field value.
+    /// </typeparam>
+    /// <param name="fieldId">
+    /// Name of the field. The <see cref="DataGridFieldId" /> created from it validates the name.
+    /// </param>
+    /// <param name="getter">
+    /// Reads the field value from an item, for display, sorting and filtering.
+    /// </param>
+    /// <param name="sortComparer">
+    /// Orders two field values of the items that the grid sorts. <see langword="null" /> uses the default comparer
+    /// of the type.
+    /// </param>
+    /// <param name="toScalar">
+    /// Converts a field value to the <see cref="DataGridScalar" /> that the grid reads for the item.
+    /// <see langword="null" /> uses the built-in conversion, which supports Boolean, numeric and string values,
+    /// <c>Guid</c> and date and time types. Other types need an explicit converter.
+    /// </param>
+    /// <param name="filters">
+    /// Operators that the field supports for filtering, each with its predicate. The default value means none.
+    /// </param>
+    /// <param name="sortDirections">
+    /// Directions in which the field can be sorted.
+    /// </param>
+    /// <param name="canGroup">
+    /// <see langword="true" /> to let rows be grouped by the field; the field must then support a sort direction.
+    /// </param>
+    /// <param name="propertyChangedName">
+    /// Name of the item property whose change notification refreshes the field, or <see langword="null" /> to
+    /// refresh on every change.
+    /// </param>
+    /// <param name="setter">
+    /// Writes a committed value to an item. <see langword="null" /> makes the field read-only.
+    /// </param>
+    /// <param name="fromScalar">
+    /// Converts an edited scalar to the field value. <see langword="null" /> uses the built-in conversion, which
+    /// accepts a value of the field's own type and converts between numeric types. A value requires
+    /// <paramref name="setter" />.
+    /// </param>
+    /// <returns>
+    /// This descriptor, so that calls can be chained.
+    /// </returns>
+    /// <exception cref="ArgumentNullException">
+    /// <paramref name="getter" /> is <see langword="null" />.
+    /// </exception>
+    /// <exception cref="ArgumentException">
+    /// A field with this identity was added before, or an argument is rejected as documented for the
+    /// <see cref="DataGridLocalField{T, TValue}" /> constructor.
+    /// </exception>
     public DataGridLocalSourceDescriptor<T> Field<TValue>(
         string fieldId,
         Func<T, TValue> getter,
@@ -210,6 +417,58 @@ public sealed class DataGridLocalSourceDescriptor<T>
             setter,
             fromScalar);
 
+    /// <summary>
+    /// Adds a field that queries and edits address by an identity.
+    /// </summary>
+    /// <typeparam name="TValue">
+    /// Type of the field value.
+    /// </typeparam>
+    /// <param name="fieldId">
+    /// Identity that queries and edits use to address the field.
+    /// </param>
+    /// <param name="getter">
+    /// Reads the field value from an item, for display, sorting and filtering.
+    /// </param>
+    /// <param name="sortComparer">
+    /// Orders two field values of the items that the grid sorts. <see langword="null" /> uses the default comparer
+    /// of the type.
+    /// </param>
+    /// <param name="toScalar">
+    /// Converts a field value to the <see cref="DataGridScalar" /> that the grid reads for the item.
+    /// <see langword="null" /> uses the built-in conversion, which supports Boolean, numeric and string values,
+    /// <c>Guid</c> and date and time types. Other types need an explicit converter.
+    /// </param>
+    /// <param name="filters">
+    /// Operators that the field supports for filtering, each with its predicate. The default value means none.
+    /// </param>
+    /// <param name="sortDirections">
+    /// Directions in which the field can be sorted.
+    /// </param>
+    /// <param name="canGroup">
+    /// <see langword="true" /> to let rows be grouped by the field; the field must then support a sort direction.
+    /// </param>
+    /// <param name="propertyChangedName">
+    /// Name of the item property whose change notification refreshes the field, or <see langword="null" /> to
+    /// refresh on every change.
+    /// </param>
+    /// <param name="setter">
+    /// Writes a committed value to an item. <see langword="null" /> makes the field read-only.
+    /// </param>
+    /// <param name="fromScalar">
+    /// Converts an edited scalar to the field value. <see langword="null" /> uses the built-in conversion, which
+    /// accepts a value of the field's own type and converts between numeric types. A value requires
+    /// <paramref name="setter" />.
+    /// </param>
+    /// <returns>
+    /// This descriptor, so that calls can be chained.
+    /// </returns>
+    /// <exception cref="ArgumentNullException">
+    /// <paramref name="getter" /> is <see langword="null" />.
+    /// </exception>
+    /// <exception cref="ArgumentException">
+    /// A field with this identity was added before, or an argument is rejected as documented for the
+    /// <see cref="DataGridLocalField{T, TValue}" /> constructor.
+    /// </exception>
     public DataGridLocalSourceDescriptor<T> Field<TValue>(
         DataGridFieldId fieldId,
         Func<T, TValue> getter,

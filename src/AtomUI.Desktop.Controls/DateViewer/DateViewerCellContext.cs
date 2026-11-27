@@ -1,6 +1,8 @@
 namespace AtomUI.Desktop.Controls;
 
-/// <summary>Content-only context; interaction remains with the containing date cell.</summary>
+/// <summary>
+/// Content-only context; interaction remains with the containing date cell.
+/// </summary>
 public record DateViewerCellContext(
     DateTime Value,
     DateTime Today,

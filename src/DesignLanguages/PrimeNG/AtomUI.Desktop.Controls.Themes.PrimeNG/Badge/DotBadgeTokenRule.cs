@@ -4,7 +4,9 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 
-/// <summary>The PrimeNG view of <see cref="DotBadgeToken"/>.</summary>
+/// <summary>
+/// The PrimeNG view of <see cref="DotBadgeToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class DotBadgeTokenRule : IControlTokenRule<PrimeNGToken, DotBadgeToken>
 {
@@ -12,7 +14,7 @@ internal sealed class DotBadgeTokenRule : IControlTokenRule<PrimeNGToken, DotBad
     {
         var token  = target.Own;
         var global = target.Global;
-        // PrimeNG: the control-global overrides, read by the formulas below.
+        // PrimeNG: no control-global overrides; EvaluateGlobal writes nothing.
         PrimeNGDotBadgeTokens.EvaluateGlobal(in context, global);
 
         token.DotSize     = global.FontSizeSM / 2;

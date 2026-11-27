@@ -5,7 +5,9 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 
-/// <summary>The PrimeNG view of <see cref="SeparatorToken"/>.</summary>
+/// <summary>
+/// The PrimeNG view of <see cref="SeparatorToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class SeparatorTokenRule : IControlTokenRule<PrimeNGToken, SeparatorToken>
 {
@@ -13,8 +15,11 @@ internal sealed class SeparatorTokenRule : IControlTokenRule<PrimeNGToken, Separ
     {
         var token  = target.Own;
         var global = target.Global;
-        // PrimeNG: the control-global overrides, read by the formulas below.
+        // PrimeNG: the control-global overrides (ColorSplit), read by the Separator theme (LineColor) and not by
+        // the formulas below.
         PrimeNGSeparatorTokens.EvaluateGlobal(in context, global);
+        // Ant Design formula kept as is; the PrimeNG divider stage at the end of the method replaces the block
+        // margins (HorizontalMarginBlock, VerticalMarginInline) and the title weight.
         token.TextPaddingInline              = 1.0;
         token.OrientationMarginPercent       = 0.05;
         token.VerticalMarginInline           = global.UniformlyMarginXS;

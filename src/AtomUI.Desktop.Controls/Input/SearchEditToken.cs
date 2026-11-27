@@ -2,12 +2,15 @@ using AtomUI.Theme.DesignTokens;
 
 namespace AtomUI.Desktop.Controls;
 
+/// <summary>
+/// Design tokens of the search box: the font size of the text in a small search box.
+/// </summary>
 [ControlDesignToken]
 public sealed partial class SearchEditToken : AbstractControlDesignToken
 {
     /// <summary>
-    /// 小号输入框字体大小，默认等于 <see cref="DesignToken.FontSize"/>（与 antd 一致）
-    /// Font size of the small input, the middle font size by default (as in antd)
+    /// Font size of the text in a small search box.
+    /// By default it equals the regular font size, <see cref="DesignToken.FontSize" />, as in Ant Design.
     /// </summary>
     public partial double InputFontSizeSM { get; set; }
 }

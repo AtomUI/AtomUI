@@ -15,28 +15,76 @@ using ProgressPath = Avalonia.Controls.Shapes.Path;
 
 namespace AtomUI.Controls.Commons;
 
+/// <summary>
+/// Base class of the circular progress controls. It lays out the circle, derives the stroke thickness and the
+/// sizes of the centered info text and icon from the circle size, provides the step mode, and caches the
+/// geometries that derived types build.
+/// </summary>
+/// <remarks>
+/// Derived types implement <see cref="BuildRailGeometry" />, <see cref="BuildTrackGeometry" /> and
+/// <see cref="BuildSuccessGeometry" />. A template that contains the path parts <c>PART_ProgressRail</c>,
+/// <c>PART_ProgressTrack</c> and <c>PART_ProgressSuccess</c> renders the geometries itself; without all three
+/// parts <see cref="AbstractProgressBar.RenderGroove" /> and <see cref="AbstractProgressBar.RenderIndicatorBar" /> draw them.
+/// </remarks>
 public abstract class AbstractCircleProgress : AbstractProgressBar
 {
-    // 默认的大小推荐，针对 SizeType
+    /// <summary>
+    /// Circle diameter, in DIPs, used when <see cref="SizeType" /> is Large and neither <see cref="Layoutable.Width" />
+    /// nor <see cref="Layoutable.Height" /> is set.
+    /// </summary>
     protected const double LARGE_CIRCLE_SIZE = 120;
+    /// <summary>
+    /// Circle diameter, in DIPs, used when <see cref="SizeType" /> is Middle and neither <see cref="Layoutable.Width"
+    /// /> nor <see cref="Layoutable.Height" /> is set. A circle of this size is drawn with <see
+    /// cref="AbstractProgressBar.MIDDLE_STROKE_THICKNESS" />, and other sizes scale that thickness in proportion to
+    /// their diameter.
+    /// </summary>
     protected const double MIDDLE_CIRCLE_SIZE = 90;
+    /// <summary>
+    /// Circle diameter, in DIPs, used when <see cref="SizeType" /> is Small and neither <see cref="Layoutable.Width" />
+    /// nor <see cref="Layoutable.Height" /> is set.
+    /// </summary>
     protected const double SMALL_CIRCLE_SIZE = 60;
+    /// <summary>
+    /// Smallest stroke thickness, in DIPs, the circle is drawn with. An <see
+    /// cref="AbstractProgressBar.IndicatorThickness" /> below this value is raised to it.
+    /// </summary>
     protected const double CIRCLE_MIN_STROKE_THICKNESS = 3;
 
     #region 公共属性定义
 
+    /// <summary>
+    /// Identifies the <see cref="StepCount" /> property.
+    /// </summary>
     public static readonly StyledProperty<int> StepCountProperty =
         AvaloniaProperty.Register<AbstractCircleProgress, int>(nameof(StepCount), coerce: (o, v) => Math.Max(v, 0));
 
+    /// <summary>
+    /// Identifies the <see cref="StepGap" /> property.
+    /// </summary>
     public static readonly StyledProperty<double> StepGapProperty =
         AvaloniaProperty.Register<AbstractCircleProgress, double>(nameof(StepGap), 2, coerce: (o, v) => Math.Max(v, 0));
 
+    /// <summary>
+    /// Number of equal steps the circle is divided into. Steps are drawn only while this value and
+    /// <see cref="StepGap" /> are both greater than zero; the indicator then fills the <see cref="AbstractProgressBar.Percentage" />
+    /// share of the steps, rounded to the nearest step.
+    /// </summary>
+    /// <remarks>
+    /// Step mode draws flat line ends and ignores <see cref="AbstractProgressBar.StrokeLineCap" />. Negative values are
+    /// coerced to zero.
+    /// </remarks>
     public int StepCount
     {
         get => GetValue(StepCountProperty);
         set => SetValue(StepCountProperty, value);
     }
 
+    /// <summary>
+    /// Width of the gap between adjacent steps, in degrees. Steps are drawn only while this value and
+    /// <see cref="StepCount" /> are both greater than zero, so a value of zero or less draws a continuous arc
+    /// even when <see cref="StepCount" /> is set. The default is 2.
+    /// </summary>
     public double StepGap
     {
         get => GetValue(StepGapProperty);
@@ -61,8 +109,9 @@ public abstract class AbstractCircleProgress : AbstractProgressBar
     internal static readonly StyledProperty<bool> UseExtraInfoSizeTokenResourcesProperty =
         AvaloniaProperty.Register<AbstractCircleProgress, bool>(nameof(UseExtraInfoSizeTokenResources));
 
-    // Percentage font size and status icon size computed from the circle size (bounded below by the Tokens). The control
-    // theme projects them to FontSize and to the icon presenters, so a local FontSize or an application Style still wins.
+    // Percentage font size and status icon size computed from the circle size (bounded below by the Tokens).
+    // The control theme projects them to FontSize and to the icon presenters, so a local FontSize or an
+    // application Style still wins.
     internal static readonly StyledProperty<double> ExtraInfoFontSizeProperty =
         AvaloniaProperty.Register<AbstractCircleProgress, double>(nameof(ExtraInfoFontSize),
             FontSizeProperty.GetDefaultValue(typeof(AbstractCircleProgress)));
@@ -94,18 +143,41 @@ public abstract class AbstractCircleProgress : AbstractProgressBar
         set => SetValue(CircleMinimumIconSizeProperty, value);
     }
 
+    /// <summary>
+    /// Lets Tokens bound the sizes of the centered info text and status icon from below. While it is
+    /// <see langword="true" /> and the derived type supplies <see cref="ExtraInfoSizeTokenResourceKeys" />, the
+    /// control subscribes to those Tokens once it is in a logical tree and raises
+    /// <see cref="ExtraInfoFontSize" /> and <see cref="ExtraInfoIconSize" /> to at least the Token values; a set
+    /// <see cref="CircleMinimumTextFontSize" /> or <see cref="CircleMinimumIconSize" /> is used as the minimum
+    /// instead. The base class supplies no keys, so the value has no effect there. With <see langword="false" />,
+    /// the default, the sizes come from the circle size alone.
+    /// </summary>
     internal bool UseExtraInfoSizeTokenResources
     {
         get => GetValue(UseExtraInfoSizeTokenResourcesProperty);
         set => SetValue(UseExtraInfoSizeTokenResourcesProperty, value);
     }
 
+    /// <summary>
+    /// The font size of the centered info text, in DIPs. The control calculates it from the circle size as 15
+    /// percent of the diameter plus 6, raised to the minimum described at
+    /// <see cref="UseExtraInfoSizeTokenResources" />, and recalculates it while the control is attached to a visual
+    /// tree, after the template is applied and whenever the circle size or that minimum changes. The theme projects
+    /// it to the font size of the info text through a Setter, so a local <c>FontSize</c> or an application Style
+    /// still wins. Until the first calculation it holds the default font size of the control.
+    /// </summary>
     internal double ExtraInfoFontSize
     {
         get => GetValue(ExtraInfoFontSizeProperty);
         set => SetValue(ExtraInfoFontSizeProperty, value);
     }
 
+    /// <summary>
+    /// The side length of the centered status icon, in DIPs. The control calculates it from the circle size as the
+    /// diameter divided by 4.5, raised to the minimum described at <see cref="UseExtraInfoSizeTokenResources" />,
+    /// at the same times as <see cref="ExtraInfoFontSize" />. The theme projects it to the size of the icon
+    /// presenters through a Setter. The status icon is shown only while this size fits into the circle.
+    /// </summary>
     internal double ExtraInfoIconSize
     {
         get => GetValue(ExtraInfoIconSizeProperty);
@@ -114,6 +186,12 @@ public abstract class AbstractCircleProgress : AbstractProgressBar
 
     private PenLineCap _shapeStrokeLineCap;
 
+    /// <summary>
+    /// The line cap that the circle arcs are drawn with: <see cref="AbstractProgressBar.StrokeLineCap" />, or
+    /// <see cref="PenLineCap.Flat" /> in step mode. The control writes it when the template is applied and when the
+    /// progress value, the value range, the stroke, the cap or the step settings change. The themes pass it to the
+    /// template paths as their line cap.
+    /// </summary>
     internal PenLineCap ShapeStrokeLineCap
     {
         get => _shapeStrokeLineCap;
@@ -125,6 +203,14 @@ public abstract class AbstractCircleProgress : AbstractProgressBar
     private OwnerTokenSet? _circleMinimumTokens;
     private (double Text, double Icon) _circleMinimums;
 
+    /// <summary>
+    /// Resource keys of the Tokens that give the minimum size of the extra info text and of the extra info icon.
+    /// </summary>
+    /// <remarks>
+    /// The keys are subscribed only while <see cref="UseExtraInfoSizeTokenResources" /> is
+    /// <see langword="true" />. The base class returns <see langword="null" />, which leaves both minimum sizes
+    /// at zero; <c>CircleProgress</c> in AtomUI.Desktop.Controls returns the keys of its Tokens.
+    /// </remarks>
     private protected virtual (object Text, object Icon)? ExtraInfoSizeTokenResourceKeys => null;
 
     private ProgressPath? _progressRail;
@@ -139,7 +225,8 @@ public abstract class AbstractCircleProgress : AbstractProgressBar
     private FullTextSizeKey? _fullTextSizeKey;
     private Size _fullTextSize;
 
-    // 轨道几何只取决于槽矩形、分段与描边；进度变化不重建它
+    // The rail geometry depends only on the groove rect, the step settings, the stroke and the line cap; a
+    // progress change does not rebuild it
     private readonly record struct RailGeometryKey(
         Rect GrooveRect,
         int StepCount,
@@ -147,7 +234,8 @@ public abstract class AbstractCircleProgress : AbstractProgressBar
         double StrokeThickness,
         PenLineCap LineCap);
 
-    // 成功弧只取决于轨道参数、阈值与范围；分段模式下还取决于已填充段数
+    // The success arc depends only on the rail parameters, the threshold and the value range; in step mode it
+    // also depends on the number of filled steps
     private readonly record struct SuccessGeometryKey(
         RailGeometryKey Rail,
         double Threshold,
@@ -160,15 +248,23 @@ public abstract class AbstractCircleProgress : AbstractProgressBar
     private readonly record struct FullTextSizeKey(string Format, double FontSize, FontFamily FontFamily);
 
     /// <summary>
-    /// 轨道几何的累计重建次数（模板路径与自绘路径共用同一缓存），供测试与基准观测缓存是否命中。
+    /// Number of times the rail geometry has been built. The template paths and the self-drawn rendering share
+    /// one cache, so tests and benchmarks read this value to tell whether the cache was hit.
     /// </summary>
     internal int RailGeometryBuildCount { get; private set; }
 
     /// <summary>
-    /// “100%” 文本尺寸的累计测量次数，供测试与基准观测缓存是否命中。
+    /// Number of times the size of the "100%" text has been measured. Tests and benchmarks read this value to
+    /// tell whether the size cache was hit.
     /// </summary>
     internal int FullTextMeasureCount { get; private set; }
 
+    /// <summary>
+    /// Whether the applied template supplied all three path parts <c>PART_ProgressRail</c>,
+    /// <c>PART_ProgressTrack</c> and <c>PART_ProgressSuccess</c>, which then render the geometries in place of
+    /// <see cref="AbstractProgressBar.RenderGroove" /> and
+    /// <see cref="AbstractProgressBar.RenderIndicatorBar" />.
+    /// </summary>
     private protected override bool HasTemplateProgressVisuals =>
         _progressRail is not null && _progressTrack is not null && _progressSuccess is not null;
 
@@ -179,6 +275,14 @@ public abstract class AbstractCircleProgress : AbstractProgressBar
         AffectsRender<AbstractCircleProgress>(IndicatorAngleProperty);
     }
 
+    /// <summary>
+    /// Maps a circle diameter to its size type: Large from <see cref="LARGE_CIRCLE_SIZE" /> up, Middle from
+    /// <see cref="MIDDLE_CIRCLE_SIZE" /> up, and Small below that.
+    /// </summary>
+    /// <remarks>
+    /// Nothing calls this implementation: a circle progress takes its effective size type from the
+    /// <see cref="SizeType" /> property, so it only satisfies the abstract member of the base class.
+    /// </remarks>
     protected override SizeType CalculateEffectiveSizeType(double size)
     {
         var sizeType             = SizeType.Large;
@@ -208,7 +312,15 @@ public abstract class AbstractCircleProgress : AbstractProgressBar
         };
     }
 
-    // 是否考虑一个最小的值
+    /// <summary>
+    /// Requests a square whose side is the circle size: <see cref="Layoutable.Width" /> or <see
+    /// cref="Layoutable.Height" />, the smaller of the two when both are set, and otherwise the default diameter of the
+    /// size type. The side never exceeds the smaller available dimension, and with stretch alignment it takes that
+    /// dimension even when the circle would be smaller.
+    /// </summary>
+    /// <remarks>
+    /// The base implementation is measured first and its result is discarded.
+    /// </remarks>
     protected override Size MeasureOverride(Size availableSize)
     {
         base.MeasureOverride(availableSize);
@@ -268,20 +380,37 @@ public abstract class AbstractCircleProgress : AbstractProgressBar
         return targetSize;
     }
 
+    /// <summary>
+    /// Called after <see cref="AbstractProgressBar.ProgressInfoContent" /> is set or cleared. It calls the base
+    /// implementation and invalidates the arrangement, because the centered info area is sized and positioned in <see
+    /// cref="ArrangeOverride" />.
+    /// </summary>
     protected override void NotifyProgressInfoContentChanged()
     {
         base.NotifyProgressInfoContentChanged();
         InvalidateArrange();
     }
 
+    /// <summary>
+    /// Recalculates the stroke thickness for the current circle size and records whether the info elements fit into the
+    /// circle, each while its template part exists: <see cref="AbstractProgressBar.IsPercentLabelVisible" /> when the
+    /// "100%" text fits into the square inside the stroke, and <see cref="AbstractProgressBar.IsStatusIconVisible" />
+    /// when the status icon does.
+    /// </summary>
+    /// <remarks>
+    /// The base class calls it from <see cref="AbstractProgressBar.NotifyUpdateProgress" /> while the progress info is
+    /// visible, and when <see cref="Layoutable.Width" /> or <see cref="Layoutable.Height" /> change while the control
+    /// is attached to the visual tree.
+    /// </remarks>
     protected override void NotifyHandleExtraInfoVisibility()
     {
         var circleSize = CalculateCircleSize();
         CalculateStrokeThickness(circleSize);
-        var extraInfoSize = circleSize - EffectiveStrokeThickness - 1; // 写死一个像素的 padding 吧
+        var extraInfoSize = circleSize - EffectiveStrokeThickness - 1; // A fixed padding of 1 DIP
         var extraInfo     = GetFullTextSize();
 
-        // 这三个是不可能同时满足的
+        // The percent label and the status icons are treated as alternatives: each one alone is checked against the
+        // whole inner size
         if (LayoutTransformLabel is not null)
         {
             if (extraInfo.Width > extraInfoSize || extraInfo.Height > extraInfoSize)
@@ -300,7 +429,8 @@ public abstract class AbstractCircleProgress : AbstractProgressBar
         }
     }
 
-    // 每次进度更新都要判断满值文本能否放进圆内，按格式与字体缓存它的尺寸
+    // Every progress update checks whether the full text fits into the circle, so its size is cached by format
+    // and font
     private Size GetFullTextSize()
     {
         var key = new FullTextSizeKey(ProgressTextFormat, FontSize, FontFamily);
@@ -314,6 +444,19 @@ public abstract class AbstractCircleProgress : AbstractProgressBar
         return _fullTextSize;
     }
 
+    /// <summary>
+    /// Calls the base implementation, then keeps the circle in step with property changes. While the control is
+    /// attached to the logical tree, a change of <see cref="UseExtraInfoSizeTokenResources" /> renews the Token
+    /// subscription of the info sizes. While it is attached to the visual tree, a change of <see
+    /// cref="Layoutable.Width" />, <see cref="Layoutable.Height" />, <see cref="CircleMinimumTextFontSize" /> or <see
+    /// cref="CircleMinimumIconSize" /> recalculates the stroke thickness and the info sizes.
+    /// </summary>
+    /// <remarks>
+    /// A change of <see cref="IndicatorAngle" /> refreshes only the track data of the template paths. A change of
+    /// the value, the value range, <see cref="AbstractProgressBar.SuccessThreshold" />, the step settings, the stroke
+    /// thickness or <see cref="AbstractProgressBar.StrokeLineCap" /> also updates <see cref="ShapeStrokeLineCap" /> and
+    /// refreshes the rail, track and success data.
+    /// </remarks>
     protected override void NotifyPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.NotifyPropertyChanged(change);
@@ -335,7 +478,7 @@ public abstract class AbstractCircleProgress : AbstractProgressBar
 
         if (change.Property == IndicatorAngleProperty)
         {
-            // 角度单独变化（主题过渡）只重建填充弧
+            // An angle change alone, for example during a theme transition, rebuilds only the filled arc
             RefreshTemplateTrackVisual();
         }
         else if (change.Property == ValueProperty ||
@@ -354,12 +497,21 @@ public abstract class AbstractCircleProgress : AbstractProgressBar
         }
     }
 
+    /// <summary>
+    /// Calls the base implementation, then subscribes to the Tokens that bound the info sizes from below when
+    /// <see cref="UseExtraInfoSizeTokenResources" /> is set and the derived type supplies
+    /// <see cref="ExtraInfoSizeTokenResourceKeys" />.
+    /// </summary>
     protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
     {
         base.OnAttachedToLogicalTree(e);
         UpdateExtraInfoSizeTokenSubscription();
     }
 
+    /// <summary>
+    /// Disposes the Token subscription of the info sizes and resets the minimum sizes to zero, then calls the
+    /// base implementation.
+    /// </summary>
     protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
     {
         _circleMinimumTokens?.Dispose();
@@ -368,6 +520,10 @@ public abstract class AbstractCircleProgress : AbstractProgressBar
         base.OnDetachedFromLogicalTree(e);
     }
 
+    /// <summary>
+    /// Calls the base implementation, then recalculates the info sizes from the subscribed Tokens when the Token
+    /// subscription exists.
+    /// </summary>
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
@@ -462,6 +618,12 @@ public abstract class AbstractCircleProgress : AbstractProgressBar
         ExtraInfoIconSize = Math.Max(circleSize / 4.5, iconMinimum);
     }
 
+    /// <summary>
+    /// Centers the percent label, the status icon presenters and the custom info content, each in a band that
+    /// spans the width of the arranged area and is as high as the visible content. The base implementation
+    /// arranges the template; the template path data is then refreshed for the arranged size and the info
+    /// panel is arranged into the band.
+    /// </summary>
     protected override Size ArrangeOverride(Size finalSize)
     {
         Rect progressIndicatorRect = default;
@@ -557,6 +719,12 @@ public abstract class AbstractCircleProgress : AbstractProgressBar
         return new Size(0, Math.Max(FontSize, 1));
     }
 
+    /// <summary>
+    /// Returns the largest square centered in <paramref name="controlRect" />. It bounds the circle.
+    /// </summary>
+    /// <param name="controlRect">
+    /// The layout rectangle of the control.
+    /// </param>
     protected override Rect GetProgressBarRect(Rect controlRect)
     {
         var size = controlRect.Size;
@@ -564,11 +732,24 @@ public abstract class AbstractCircleProgress : AbstractProgressBar
         return new Rect(size).CenterRect(new Rect(new Size(diameter, diameter)));
     }
 
+    /// <summary>
+    /// Returns the square for the info elements in the center of the circle: the circle rectangle shrunk by the
+    /// effective stroke thickness on each side.
+    /// </summary>
+    /// <param name="controlRect">
+    /// The layout rectangle of the control.
+    /// </param>
     protected override Rect GetExtraInfoRect(Rect controlRect)
     {
         return GetProgressBarRect(controlRect).Deflate(EffectiveStrokeThickness);
     }
 
+    /// <summary>
+    /// Sets <see cref="AbstractProgressBar.EffectiveStrokeThickness" /> for the current circle size. An
+    /// <see cref="AbstractProgressBar.IndicatorThickness" /> that is not <see langword="NaN" /> is used, raised to at least
+    /// <see cref="CIRCLE_MIN_STROKE_THICKNESS" />; otherwise the default thickness is scaled in proportion to the
+    /// circle size, with the same minimum.
+    /// </summary>
     protected override void CalculateStrokeThickness()
     {
         CalculateStrokeThickness(CalculateCircleSize());
@@ -586,6 +767,14 @@ public abstract class AbstractCircleProgress : AbstractProgressBar
         EffectiveStrokeThickness = calculatedValue;
     }
 
+    /// <summary>
+    /// Recalculates the stroke thickness and the sizes of the info text and icon for the current circle size. It
+    /// replaces the base implementation, which only recalculates the stroke thickness.
+    /// </summary>
+    /// <remarks>
+    /// The base class calls it when <see cref="AbstractProgressBar.EffectiveSizeType" /> changes while the control is
+    /// attached to the visual tree, and once after the template is applied.
+    /// </remarks>
     protected override void NotifyEffectSizeTypeChanged()
     {
         UpdateCircleMetrics();
@@ -598,6 +787,12 @@ public abstract class AbstractCircleProgress : AbstractProgressBar
         SetupExtraInfoSize(circleSize);
     }
 
+    /// <summary>
+    /// Clears the template part references and the geometry cache, calls the base implementation, then looks up
+    /// the template paths <c>PART_ProgressRail</c>, <c>PART_ProgressTrack</c> and <c>PART_ProgressSuccess</c>,
+    /// fills their data and installs the default completed icons: a close icon for the exception state and a check
+    /// icon for the success state, each only when no icon is set.
+    /// </summary>
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         _progressRail = null;
@@ -615,8 +810,51 @@ public abstract class AbstractCircleProgress : AbstractProgressBar
         SetupDefaultCompletedIcons(static () => new CloseOutlined(), static () => new CheckOutlined());
     }
 
+    /// <summary>
+    /// Builds the geometry of the rail, the background of the ring, inside <paramref name="grooveRect" />.
+    /// </summary>
+    /// <param name="grooveRect">
+    /// Square the ring is drawn in, deflated by half the stroke thickness so that the stroke is centered on
+    /// its edge.
+    /// </param>
+    /// <remarks>
+    /// It is requested through <see cref="GetRailGeometry" /> when no cached rail matches
+    /// <see cref="RailGeometryKey" />, for the template part <c>PART_ProgressRail</c> and for the rail that a
+    /// derived <see cref="AbstractProgressBar.RenderGroove" /> draws. The result is cached, so it may depend
+    /// only on the groove rectangle, the step settings, the stroke thickness and the line cap. A rail that
+    /// depends on another property requires <see cref="InvalidateGeometryCache" /> on a change of that property.
+    /// </remarks>
     private protected abstract Geometry BuildRailGeometry(Rect grooveRect);
+    /// <summary>
+    /// Builds the geometry of the track, the filled part of the ring, inside <paramref name="grooveRect" />.
+    /// </summary>
+    /// <param name="grooveRect">
+    /// Square the ring is drawn in, deflated by half the stroke thickness so that the stroke is centered on
+    /// its edge.
+    /// </param>
+    /// <remarks>
+    /// It is requested through <see cref="GetTrackGeometry" /> for the template part <c>PART_ProgressTrack</c>
+    /// and for the indicator that a derived <see cref="AbstractProgressBar.RenderIndicatorBar" /> draws. Outside
+    /// step mode it is built on every request and may follow <see cref="IndicatorAngle" />. In step mode it is
+    /// cached by <see cref="FilledStepCount" />, so there it must not depend on the angle.
+    /// </remarks>
     private protected abstract Geometry BuildTrackGeometry(Rect grooveRect);
+    /// <summary>
+    /// Builds the geometry of the success arc, the part of the ring from its start up to the angle of
+    /// <see cref="AbstractProgressBar.SuccessThreshold" />, inside <paramref name="grooveRect" />.
+    /// </summary>
+    /// <param name="grooveRect">
+    /// Square the ring is drawn in, deflated by half the stroke thickness so that the stroke is centered on
+    /// its edge.
+    /// </param>
+    /// <remarks>
+    /// It is requested only while <see cref="AbstractProgressBar.SuccessThreshold" /> is not
+    /// <see langword="NaN" />: through <see cref="GetSuccessGeometry" />, for the template part
+    /// <c>PART_ProgressSuccess</c> and for the success arc that a derived
+    /// <see cref="AbstractProgressBar.RenderIndicatorBar" /> draws. The result is cached, so it may depend only
+    /// on the inputs of the rail geometry, the threshold, <see cref="RangeBase.Minimum" />,
+    /// <see cref="RangeBase.Maximum" /> and, in step mode, the number of filled steps.
+    /// </remarks>
     private protected abstract Geometry BuildSuccessGeometry(Rect grooveRect);
 
     private protected void RefreshTemplateProgressVisuals()
@@ -625,7 +863,9 @@ public abstract class AbstractCircleProgress : AbstractProgressBar
     }
 
     /// <summary>
-    /// 几何依赖的子类参数（如仪表盘缺口）变化时调用，下一次取用时重建轨道、成功弧与分段填充。
+    /// Drops the cached rail, success and step geometries, so they are rebuilt the next time they are requested.
+    /// A derived type calls it when a parameter its geometries depend on changes, such as the gap of the
+    /// dashboard.
     /// </summary>
     private protected void InvalidateGeometryCache()
     {
@@ -647,7 +887,8 @@ public abstract class AbstractCircleProgress : AbstractProgressBar
     }
 
     /// <summary>
-    /// 取轨道几何，键不变时复用上次构建的对象。
+    /// Returns the rail geometry for <paramref name="grooveRect" />, reusing the object built last while
+    /// <see cref="RailGeometryKey" /> is unchanged.
     /// </summary>
     private protected Geometry GetRailGeometry(Rect grooveRect)
     {
@@ -663,7 +904,9 @@ public abstract class AbstractCircleProgress : AbstractProgressBar
     }
 
     /// <summary>
-    /// 取成功弧几何（调用方保证 <see cref="AbstractProgressBar.SuccessThreshold"/> 不是 NaN），键不变时复用。
+    /// Returns the success arc geometry for <paramref name="grooveRect" />, reusing the object built last while
+    /// the key is unchanged. The caller makes sure that <see cref="AbstractProgressBar.SuccessThreshold" /> is not
+    /// <see langword="NaN" />.
     /// </summary>
     private protected Geometry GetSuccessGeometry(Rect grooveRect)
     {
@@ -682,7 +925,9 @@ public abstract class AbstractCircleProgress : AbstractProgressBar
     }
 
     /// <summary>
-    /// 取填充几何：连续模式随角度逐帧构建；分段模式按已填充段数缓存，角度过渡期间不重建。
+    /// Returns the geometry of the filled part for <paramref name="grooveRect" />. Outside step mode it is built
+    /// on every call because it follows <see cref="IndicatorAngle" />; in step mode it is cached by the number of
+    /// filled steps, so an angle transition does not rebuild it.
     /// </summary>
     private protected Geometry GetTrackGeometry(Rect grooveRect)
     {

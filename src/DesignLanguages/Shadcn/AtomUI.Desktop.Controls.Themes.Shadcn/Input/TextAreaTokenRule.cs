@@ -4,7 +4,9 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls.Themes.Shadcn;
 
-/// <summary>The shadcn view of <see cref="TextAreaToken"/>.</summary>
+/// <summary>
+/// The shadcn view of <see cref="TextAreaToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class TextAreaTokenRule : IControlTokenRule<ShadcnToken, TextAreaToken>
 {
@@ -23,6 +25,8 @@ internal sealed class TextAreaTokenRule : IControlTokenRule<ShadcnToken, TextAre
         token.RightAddOnPaddingSM = new Thickness(0, 0, global.ControlPaddingHorizontalSM - lineWidth, 0);
         token.RightAddOnPaddingLG = new Thickness(0, 0, global.ControlPaddingHorizontal - lineWidth, 0);
         token.LeftInnerAddOnMargin = new Thickness(0, 0, global.UniformlyMarginXXS, 0);
+        // The frame of the style replaces the outlined frame of the formula: a translucent fill without a border in
+        // Luma and Rhea, a bottom rule only in Sera.
         (token.TransparentOutlineBorder, token.BottomOutlineBorder) = frame;
     }
 }

@@ -4,7 +4,9 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls.Themes.Shadcn;
 
-/// <summary>The shadcn view of <see cref="DotBadgeToken"/>.</summary>
+/// <summary>
+/// The shadcn view of <see cref="DotBadgeToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class DotBadgeTokenRule : IControlTokenRule<ShadcnToken, DotBadgeToken>
 {

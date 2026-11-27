@@ -56,7 +56,8 @@ internal readonly record struct TokenCacheKey(
 
 internal sealed class NormalizedControlConfigCacheKey : IEquatable<NormalizedControlConfigCacheKey>
 {
-    // 输入在规范化边界冻结；弱键不延长配置或其 registry 的生命周期。
+    // Inputs are frozen at the normalization boundary; the weak key does not extend the lifetime of the
+    // configuration or of its registry.
     private static readonly ConditionalWeakTable<NormalizedControlThemeConfig, NormalizedControlConfigCacheKey> s_keys = new();
     private readonly TokenCacheKey[] _globalTokens;
     private readonly TokenCacheKey[] _ownTokens;
@@ -255,7 +256,9 @@ internal sealed class ControlDefinitionCacheKey : IEquatable<ControlDefinitionCa
     }
 }
 
-/// <summary>One section of a definition as a cache key: its condition (empty for the base section) and its values.</summary>
+/// <summary>
+/// One section of a definition as a cache key: its condition (empty for the base section) and its values.
+/// </summary>
 internal sealed class ThemeSectionCacheKey : IEquatable<ThemeSectionCacheKey>
 {
     private readonly TokenCacheKey[] _tokens;
@@ -325,7 +328,7 @@ internal sealed class ThemeSectionCacheKey : IEquatable<ThemeSectionCacheKey>
 
 internal sealed class ThemeDefinitionCacheKey : IEquatable<ThemeDefinitionCacheKey>
 {
-    // Bound definition 是绑定阶段封存的输入，后续修订必须创建新实例。
+    // A bound definition is an input sealed at bind time; a later revision must create a new instance.
     private static readonly ConditionalWeakTable<PreparedThemeDefinition, ThemeDefinitionCacheKey> s_keys = new();
     private readonly ThemeSectionCacheKey[] _sections;
     private readonly string[] _lockedSeeds;
@@ -561,10 +564,21 @@ internal readonly struct ControlCompilationCacheKey : IEquatable<ControlCompilat
     internal long EstimatedInputRetainedBytes => _controlConfig?.EstimatedInputRetainedBytes ?? 0;
     internal int ControlSlot { get; }
 
-    /// <param name="global">The key of the global compilation the control derives from.</param>
-    /// <param name="descriptor">The control.</param>
-    /// <param name="controlConfig">The control's effective configuration, if any.</param>
-    /// <param name="rule">The control rule the language uses for the control.</param>
+    /// <summary>
+    /// Creates the key that identifies one control compilation in the control compilation cache.
+    /// </summary>
+    /// <param name="global">
+    /// The key of the global compilation the control derives from.
+    /// </param>
+    /// <param name="descriptor">
+    /// The control.
+    /// </param>
+    /// <param name="controlConfig">
+    /// The control's effective configuration, if any.
+    /// </param>
+    /// <param name="rule">
+    /// The control rule the language uses for the control.
+    /// </param>
     internal static ControlCompilationCacheKey Create(
         GlobalCompilationCacheKey global,
         ControlTokenDescriptor descriptor,
@@ -599,7 +613,8 @@ internal static class CacheKeyArray
 {
     internal static TokenCacheKey[] Tokens(IReadOnlyList<NormalizedTokenValue> tokens)
     {
-        // Normalized 配置保证 schema slot 有序且唯一，不重复执行排序。
+        // A normalized configuration guarantees that schema slots are ordered and unique, so it is not sorted
+        // again.
         var result = new TokenCacheKey[tokens.Count];
         for (var index = 0; index < result.Length; index++)
         {

@@ -3,7 +3,9 @@ using AtomUI.Theme.Languages;
 
 namespace AtomUI.Desktop.Controls.Themes.Shadcn;
 
-/// <summary>The shadcn view of <see cref="AutoCompleteToken"/>.</summary>
+/// <summary>
+/// The shadcn view of <see cref="AutoCompleteToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class AutoCompleteTokenRule : IControlTokenRule<ShadcnToken, AutoCompleteToken>
 {

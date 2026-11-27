@@ -42,10 +42,13 @@ internal static class WindowExtensions
     }
 
     /// <summary>
-    /// 获取系统默认的标题栏高度。
-    /// 当 ExtendClientAreaTitleBarHeightHint 为 -1 时，可以使用此方法获取实际的标题栏高度。
+    /// Gets the default title bar height of the system.
+    /// When <c>ExtendClientAreaTitleBarHeightHint</c> is -1, this method can be used to get the actual title bar
+    /// height.
     /// </summary>
-    /// <returns>标题栏高度，如果无法获取则返回 <c>null</c>。</returns>
+    /// <returns>
+    /// The title bar height, or <c>null</c> when it cannot be obtained.
+    /// </returns>
     public static double? GetSystemTitleBarHeight(this Window window)
     {
         if (OperatingSystem.IsWindows())
@@ -92,9 +95,10 @@ internal static class WindowExtensions
     }
     
     /// <summary>
-    /// 窗体输入区域 (X11 SHAPE input region) 控制扩展。
-    /// 将窗体的输入区域设置为指定矩形（device pixel 坐标），矩形外的鼠标事件将穿透到下层窗口。
-    /// 主要用于 <c>WindowDrawnDecorations</c> 阴影区域的点击穿透处理。
+    /// Controls the input region of a window (the X11 SHAPE input region).
+    /// Sets the input region of the window to the given rectangle, in device pixels; mouse events outside the
+    /// rectangle pass through to the windows below.
+    /// Mainly used to make clicks on the shadow area of <c>WindowDrawnDecorations</c> pass through.
     /// </summary>
     [SupportedOSPlatform("linux")]
     public static void SetWindowInputRectangle(this Window window, int x, int y, int width, int height)
@@ -110,7 +114,7 @@ internal static class WindowExtensions
     }
 
     /// <summary>
-    /// 将窗体的输入区域重置为整个客户区（device pixel 坐标）。
+    /// Resets the input region of the window to the whole client area, given in device pixels.
     /// </summary>
     [SupportedOSPlatform("linux")]
     public static void ResetWindowInputRegion(this Window window, int width, int height)

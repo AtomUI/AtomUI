@@ -28,8 +28,10 @@
                                                  PreviewStageMinHeight="600"
                                                  PreviewContentAlignment="Top">
                         <gallery:SemanticPartPreview.PreviewContent>
-                            <!-- 弹层高约 470+边距：舞台保留 trigger 下方空间并从顶部排布，
-                                 避免较矮视口把 trigger 居中到可视区之外。 -->
+                            <!-- The popup is about 470 high plus margins: the stage keeps room below the trigger and
+                            lays out from the top, so that a short viewport does not center the trigger out of the
+                            visible area.
+                            -->
                             <atom:ColorPicker x:Name="ColorPickerSemanticOwner"
                                               DefaultValue="#1677ff"
                                               IsTextVisible="True"
@@ -366,7 +368,7 @@
             </DataTemplate>
         </gallery:ShowCaseItem.DeferredContentTemplate>
     </gallery:ShowCaseItem>
-                <!-- 自定义语义结构的样式（精确复刻 antd style-class.tsx 示例） -->
+                <!-- Styles for the custom semantic structure (an exact replica of the antd style-class.tsx example) -->
                 <gallery:ShowCaseItem Title="{gallery:ColorPickerShowCaseLangResource StyleClassTitle}"
                                       Description="{gallery:ColorPickerShowCaseLangResource StyleClassDescription}"
                                       SourceKey="colorpicker-semantic-part"

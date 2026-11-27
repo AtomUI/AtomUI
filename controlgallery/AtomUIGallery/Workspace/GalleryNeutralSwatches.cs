@@ -5,8 +5,12 @@ namespace AtomUIGallery.Workspace;
 /// <summary>
 /// A named neutral color offered by the Gallery theme menu.
 /// </summary>
-/// <param name="Name">The display name of the swatch.</param>
-/// <param name="Color">The neutral seed: the base color's light <c>--muted-foreground</c>.</param>
+/// <param name="Name">
+/// The display name of the swatch.
+/// </param>
+/// <param name="Color">
+/// The neutral seed: the base color's light <c>--muted-foreground</c>.
+/// </param>
 internal sealed record GalleryNeutralSwatch(string Name, Color Color);
 
 /// <summary>

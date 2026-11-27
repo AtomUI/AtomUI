@@ -9,36 +9,85 @@ namespace AtomUI.Desktop.Controls;
 
 using AvaloniaTextBlock = Avalonia.Controls.TextBlock;
 
+/// <summary>
+/// Color picker that edits a linear gradient. The popup hosts a <see cref="GradientColorPickerView" />, and
+/// the picker itself shows the gradient in its color indicator and, when
+/// <see cref="AbstractColorPicker.IsTextVisible" /> is <see langword="true" />, as one text run per stop.
+/// While <see cref="AbstractColorPicker.IsNeedConfirm" /> is <see langword="true" /> (confirm mode below),
+/// the popup edits a draft, and only <see cref="CommitConfirmationDraft" /> writes that draft to
+/// <see cref="Value" />.
+/// </summary>
 public partial class GradientColorPicker : AbstractColorPicker
 {
     #region 公共属性定义
+    /// <summary>
+    /// Identifies the <see cref="DefaultValue" /> property.
+    /// </summary>
     public static readonly StyledProperty<LinearGradientBrush?> DefaultValueProperty =
         GradientColorPickerView.DefaultValueProperty.AddOwner<GradientColorPicker>();
 
+    /// <summary>
+    /// Identifies the <see cref="Value" /> property.
+    /// </summary>
     public static readonly StyledProperty<LinearGradientBrush?> ValueProperty =
         GradientColorPickerView.ValueProperty.AddOwner<GradientColorPicker>(
             new(defaultBindingMode: BindingMode.TwoWay, enableDataValidation: true));
 
+    /// <summary>
+    /// Identifies the ColorTextFormatter attached property, which holds a formatter that replaces the built-in
+    /// text of the gradient stops. Any control can carry the value, it is not inherited, and the picker reads it
+    /// only from itself. <see langword="null" /> selects the built-in text; a formatter receives the gradient, the
+    /// picker's color format and the text runs of the stop list, and fills the runs itself.
+    /// </summary>
     public static readonly AttachedProperty<Action<LinearGradientBrush?, ColorFormat, Avalonia.Controls.Controls>?> ColorTextFormatterProperty =
         AvaloniaProperty.RegisterAttached<GradientColorPicker, Control, Action<LinearGradientBrush?, ColorFormat, Avalonia.Controls.Controls>?>("ColorTextFormatter");
 
+    /// <summary>
+    /// Gradient that stands in for <see cref="Value" /> while that is <see langword="null" />. It becomes
+    /// <see cref="Value" /> when the template is applied and when this property changes on an attached control;
+    /// a <see cref="Value" /> that is already set is not replaced.
+    /// </summary>
     public LinearGradientBrush? DefaultValue
     {
         get => GetValue(DefaultValueProperty);
         set => SetValue(DefaultValueProperty, value);
     }
 
+    /// <summary>
+    /// The selected gradient, or <see langword="null" /> for no color, which shows the empty-color indicator and
+    /// the empty text. Binds two-way by default. Outside confirm mode, every change made in the open popup,
+    /// including clearing, is written here at once; in confirm mode only the committed draft is written. On an
+    /// attached control outside confirm mode, a gradient assigned here has its start and end points set to a
+    /// horizontal line from left to right.
+    /// </summary>
     public LinearGradientBrush? Value
     {
         get => GetValue(ValueProperty);
         set => SetValue(ValueProperty, value);
     }
 
+    /// <summary>
+    /// Returns the formatter that replaces the built-in text of the gradient stops, or
+    /// <see langword="null" /> when the built-in text is used.
+    /// </summary>
+    /// <param name="colorPicker">
+    /// The picker that carries the value.
+    /// </param>
     public static Action<LinearGradientBrush?, ColorFormat, Avalonia.Controls.Controls>? GetColorTextFormatter(GradientColorPicker colorPicker)
     {
         return colorPicker.GetValue(ColorTextFormatterProperty);
     }
 
+    /// <summary>
+    /// Sets the formatter that replaces the built-in text of the gradient stops. Despite its name, this method
+    /// sets the ColorTextFormatter attached value and no color.
+    /// </summary>
+    /// <param name="colorPicker">
+    /// The picker that carries the value.
+    /// </param>
+    /// <param name="formatter">
+    /// Receives the gradient, the picker's color format and the text runs of the stop list, and fills the runs.
+    /// </param>
     public static void SetPresetColor(GradientColorPicker colorPicker, Func<LinearGradientBrush?, ColorFormat, Avalonia.Controls.Controls> formatter)
     {
         colorPicker.SetValue(ColorTextFormatterProperty, formatter);
@@ -47,12 +96,15 @@ public partial class GradientColorPicker : AbstractColorPicker
 
     #region 公共事件定义
     /// <summary>
-    /// Keep distributing as long as there are changes
+    /// Raised after <see cref="Value" /> changes, whatever the source: the popup, a binding, a form item or the
+    /// clear action. The arguments carry the previous and the new gradient.
     /// </summary>
     public event EventHandler<GradientColorChangedEventArgs>? GradientValueChanged;
 
     /// <summary>
-    /// Dispatched once when Flyout is closed
+    /// Raised with the chosen gradient once it is committed: when the popup closes outside confirm mode and a
+    /// confirmation operation, and when a confirmation draft is committed. It is not raised while
+    /// <see cref="Value" /> is <see langword="null" />.
     /// </summary>
     public event EventHandler<GradientColorSelectedEventArgs>? ValueSelected;
     #endregion
@@ -97,6 +149,13 @@ public partial class GradientColorPicker : AbstractColorPicker
         AffectsMeasure<GradientColorPicker>(ColorTextFormatterProperty);
     }
 
+    /// <summary>
+    /// Reacts to changes of the picker's properties. A changed <see cref="Value" /> resets an open confirmation
+    /// draft, raises <see cref="GradientValueChanged" /> and notifies the owning form. A changed formatter
+    /// regenerates the stop text. On an attached control, a changed <see cref="DefaultValue" /> fills an empty
+    /// <see cref="Value" />, a changed <see cref="Value" /> regenerates the stop text and the color indicator,
+    /// and a changed <see cref="ActivatedStopIndex" /> moves the active-stop class of the stop text.
+    /// </summary>
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
@@ -141,6 +200,12 @@ public partial class GradientColorPicker : AbstractColorPicker
 
     }
 
+    /// <summary>
+    /// Rebuilds the stop text of the template's <c>PART_ColorTextPanel</c>: one text run per gradient stop with
+    /// its formatted color and its offset as a percentage, or a single run with the empty text when
+    /// <see cref="Value" /> is <see langword="null" /> or has no stops. A custom formatter fills the runs itself.
+    /// Does nothing while the text is hidden or the template part is missing.
+    /// </summary>
     protected override void GenerateValueText()
     {
         if (_textPanel == null || !IsTextVisible)
@@ -158,7 +223,7 @@ public partial class GradientColorPicker : AbstractColorPicker
             var stopsCount = stops.Count;
             if (stopsCount < textRunCount)
             {
-                // 删除多于的
+                // Remove the text runs that exceed the number of stops.
                 var delta = textRunCount - stopsCount;
                 for (var i = 0; i < delta; i++)
                 {
@@ -215,6 +280,11 @@ public partial class GradientColorPicker : AbstractColorPicker
         HandleGradientActiveStopChanged(ActivatedStopIndex);
     }
 
+    /// <summary>
+    /// Updates the color indicator for <see cref="Value" />: the gradient becomes its background, or, when
+    /// <see cref="Value" /> is <see langword="null" />, the background is transparent and the indicator switches
+    /// to empty-color mode.
+    /// </summary>
     protected override void GenerateColorBlockBackground()
     {
         if (Value == null)
@@ -235,6 +305,14 @@ public partial class GradientColorPicker : AbstractColorPicker
         }
     }
 
+    /// <summary>
+    /// Creates the <see cref="GradientColorPickerView" /> that edits the gradient in the popup and forwards the
+    /// host's motion switch and its clear, format, alpha and palette settings to it through bindings.
+    /// The base class calls it to obtain the popup's presenter.
+    /// </summary>
+    /// <returns>
+    /// The view shown in the popup.
+    /// </returns>
     protected override Control CreatePresenter()
     {
         // The runtime-created presenter is outside the owner's template selector chain.
@@ -252,6 +330,13 @@ public partial class GradientColorPicker : AbstractColorPicker
         return presenter;
     }
 
+    /// <summary>
+    /// Stores the presenter created by <see cref="CreatePresenter" /> as the view whose value and clear events drive
+    /// the popup. Nothing is stored when the presenter is not a <see cref="GradientColorPickerView" />.
+    /// </summary>
+    /// <param name="pickerPresenter">
+    /// The presenter the base class created for the popup.
+    /// </param>
     protected override void NotifyPickerPresenterCreated(Control pickerPresenter)
     {
         _presenter = pickerPresenter as GradientColorPickerView;
@@ -265,6 +350,13 @@ public partial class GradientColorPicker : AbstractColorPicker
         }
     }
 
+    /// <summary>
+    /// Prepares the popup view when the picker opens, after the base method. In confirm mode the view's draft is
+    /// reset to <see cref="Value" />; outside confirm mode the view shows <see cref="Value" />, or
+    /// <see cref="DefaultValue" /> when that is <see langword="null" />, with the stop that was active at the
+    /// previous close. The picker's active stop follows the view's, and the view's value and clear events are
+    /// subscribed.
+    /// </summary>
     protected override void NotifyPickerOpened()
     {
         base.NotifyPickerOpened();
@@ -286,6 +378,11 @@ public partial class GradientColorPicker : AbstractColorPicker
         }
     }
 
+    /// <summary>
+    /// Ends the view's edit session and unsubscribes the view's value and clear events before the base method runs.
+    /// Outside confirm mode and a confirmation operation it raises <see cref="ValueSelected" /> when
+    /// <see cref="Value" /> is set. The active stop is remembered for the next open and then cleared.
+    /// </summary>
     protected override void NotifyPickerClosed()
     {
         if (_presenter != null)
@@ -349,6 +446,10 @@ public partial class GradientColorPicker : AbstractColorPicker
         GradientValueChanged?.Invoke(this, e);
     }
 
+    /// <summary>
+    /// Looks up the template parts <c>PART_ColorTextPanel</c> and <c>PART_ColorIndicator</c>, fills an empty
+    /// <see cref="Value" /> from <see cref="DefaultValue" />, and builds the stop text and the color indicator.
+    /// </summary>
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
@@ -382,16 +483,33 @@ public partial class GradientColorPicker : AbstractColorPicker
     }
 
     #region 实现 FormItem 接口
+    /// <summary>
+    /// Sets <see cref="Value" /> from the value the owning form item provides. A value that is not a
+    /// <see cref="LinearGradientBrush" />, including <see langword="null" />, empties <see cref="Value" />.
+    /// </summary>
+    /// <param name="value">
+    /// The gradient supplied by the form item.
+    /// </param>
     protected override void NotifySetFormValue(object? value)
     {
         SetCurrentValue(ValueProperty, value as LinearGradientBrush);
     }
 
+    /// <summary>
+    /// Returns <see cref="Value" /> as the value reported to the owning form item.
+    /// </summary>
+    /// <returns>
+    /// The selected gradient, or <see langword="null" /> when none is selected.
+    /// </returns>
     protected override object? NotifyGetFormValue()
     {
         return Value;
     }
 
+    /// <summary>
+    /// Empties the gradient for the owning form item through <see cref="ClearColor" />, which also switches the
+    /// color indicator to empty-color mode and shows the empty text.
+    /// </summary>
     protected override void NotifyClearFormValue()
     {
         ClearColor();

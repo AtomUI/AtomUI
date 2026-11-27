@@ -15,7 +15,7 @@ namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 /// (<c>border.width: 0 0 0 6px</c>) in the severity's 500 stop (Nora its fill; the default card
 /// <c>content.border.color</c>). Shadows: the default notification takes <c>overlay.popover.shadow</c>; Aura gives each
 /// severity a single <c>0px 4px 8px 0px</c> layer in its 500 stop at 4%
-/// (see <see cref="PrimeNGMessageCardTokens.SeverityShadow"/>), Lara and Nora the popover shadow.
+/// (see <see cref="PrimeNGMessageCardTokens.SeverityShadow" />), Lara and Nora the popover shadow.
 /// </summary>
 internal static class PrimeNGNotificationCardTokens
 {
@@ -23,8 +23,8 @@ internal static class PrimeNGNotificationCardTokens
     {
         PrimeNGMotion.Restore(context, controlGlobal, mid: PrimeNGMotion.Toast);
         var statuses = PrimeNGMessageSeverity.ApplyForCard(context, controlGlobal);
-        // PrimeUIX toast: border.radius.md, summary.font.size 0.875rem, close.icon.size 0.875rem; the close button
-        // is a circle (close.button.border.radius 50%).
+        // PrimeUIX toast: the md step of border.radius, summary.font.size 0.875rem, close.icon.size 0.875rem; the close
+        // button is a circle (close.button.border.radius 50%).
         controlGlobal.BorderRadiusLG = controlGlobal.BorderRadius;
         controlGlobal.FontSizeLG     = controlGlobal.FontSize;
         controlGlobal.IconSizeSM     = 14;

@@ -330,7 +330,8 @@ public class ImagePreviewerViewModel : ReactiveObject, IRoutableViewModel
         return new ImagePreviewItem(new StreamImageSource(
             async token =>
             {
-                // 模拟磁盘读取/解码耗时，制造可观察的加载窗口用于对比两种切换模式
+                // Simulates disk read and decode time so that the load window is observable
+                // when the two switching modes are compared.
                 await Task.Delay(RapidSwitchLoadDelayMs, token);
                 var bytes = GetRapidAssetBytes(assetIndex);
                 return new MemoryStream(bytes);
@@ -409,7 +410,8 @@ public class ImagePreviewerViewModel : ReactiveObject, IRoutableViewModel
             return pngBytes;
         }
 
-        // CSS filter: grayscale(amount) —— 在原始颜色与亮度灰度之间按 amount 插值。
+        // CSS filter grayscale(amount): interpolates between the original color and its
+        // luminance gray by amount.
         var inv = 1f - amount;
         var matrix = new[]
         {

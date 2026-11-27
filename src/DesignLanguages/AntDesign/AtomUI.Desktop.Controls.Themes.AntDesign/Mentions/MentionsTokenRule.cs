@@ -4,7 +4,9 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls.Themes.AntDesign;
 
-/// <summary>The AntDesign view of <see cref="MentionsToken"/>.</summary>
+/// <summary>
+/// The AntDesign view of <see cref="MentionsToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class MentionsTokenRule : IControlTokenRule<AntDesignToken, MentionsToken>
 {

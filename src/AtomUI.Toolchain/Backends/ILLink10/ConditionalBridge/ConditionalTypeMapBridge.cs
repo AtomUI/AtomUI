@@ -4,7 +4,9 @@ using Mono.Cecil.Cil;
 
 namespace AtomUI.TypeMap.Linker.ConditionalBridge;
 
-/// <summary>Converts validated net8 declarations to official TypeMap10 input. It never selects fragments.</summary>
+/// <summary>
+/// Converts validated net8 declarations to official TypeMap10 input. It never selects fragments.
+/// </summary>
 internal sealed class ConditionalTypeMapBridge
 {
     private readonly AssemblyDefinition _application;

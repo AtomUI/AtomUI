@@ -7,8 +7,26 @@ using Avalonia.VisualTree;
 
 namespace AtomUI.Controls;
 
+/// <summary>
+/// Extension methods that look up direct children in the visual tree and observe the visibility of ancestors of a
+/// <see cref="Visual" />.
+/// </summary>
 public static class VisualExtensions
 {
+    /// <summary>
+    /// Returns the first direct visual child of <paramref name="visual" /> that is an instance of
+    /// <typeparamref name="T" />. Grandchildren are not searched.
+    /// </summary>
+    /// <typeparam name="T">
+    /// The type of the child to find.
+    /// </typeparam>
+    /// <param name="visual">
+    /// The visual whose direct children are searched.
+    /// </param>
+    /// <returns>
+    /// The first matching child, or <see langword="null" /> when <paramref name="visual" /> is
+    /// <see langword="null" /> or no direct child matches.
+    /// </returns>
     public static T? FindChildOfType<T>(this Visual? visual) where T : class
     {
         if (visual == null)
@@ -27,6 +45,20 @@ public static class VisualExtensions
         return null;
     }
     
+    /// <summary>
+    /// Determines whether <paramref name="searchedChild" /> is a direct visual child of
+    /// <paramref name="visual" />.
+    /// </summary>
+    /// <param name="visual">
+    /// The visual whose direct children are checked.
+    /// </param>
+    /// <param name="searchedChild">
+    /// The child to look for.
+    /// </param>
+    /// <returns>
+    /// <see langword="true" /> when <paramref name="searchedChild" /> is a direct child of
+    /// <paramref name="visual" />; otherwise <see langword="false" />.
+    /// </returns>
     public static bool HasChild(this Visual? visual, Visual searchedChild)
     {
         if (visual == null)
@@ -45,6 +77,23 @@ public static class VisualExtensions
         return false;
     }
 
+    /// <summary>
+    /// Subscribes <paramref name="handler" /> to the <see cref="Visual.IsVisibleProperty" /> of every ancestor of
+    /// <paramref name="visual" />, from its visual parent up to and including the <see cref="TopLevel" />.
+    /// </summary>
+    /// <param name="visual">
+    /// The visual whose ancestors are observed. Its own IsVisible is not.
+    /// </param>
+    /// <param name="handler">
+    /// Receives the IsVisible value of one ancestor when the subscription starts and each time that value changes.
+    /// </param>
+    /// <param name="disposable">
+    /// Receives the subscriptions; disposing it ends them.
+    /// </param>
+    /// <remarks>
+    /// The ancestors are visited once, at the time of the call. An ancestor attached later is not observed, and
+    /// an ancestor that is not a <see cref="Control" /> is passed over.
+    /// </remarks>
     public static void SubscribeAncestorIsVisible(
         this Visual visual,
         Action<bool> handler,

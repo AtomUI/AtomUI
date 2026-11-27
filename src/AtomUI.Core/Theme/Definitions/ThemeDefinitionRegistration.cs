@@ -2,7 +2,9 @@ using AtomUI.Theme.Definitions.Compiled;
 
 namespace AtomUI.Theme.Definitions;
 
-/// <summary>Explicit source union. Compiled packages never impersonate a byte source or resolver.</summary>
+/// <summary>
+/// Explicit source union. Compiled packages never impersonate a byte source or resolver.
+/// </summary>
 internal sealed class ThemeDefinitionRegistration
 {
     internal ThemeDefinitionRegistration(IThemeDefinitionResolver resolver)

@@ -3,7 +3,9 @@ using AtomUI.Theme.Languages;
 
 namespace AtomUI.Desktop.Controls.Themes.AntDesign;
 
-/// <summary>The AntDesign view of <see cref="TabStripToken"/>.</summary>
+/// <summary>
+/// The AntDesign view of <see cref="TabStripToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class TabStripTokenRule : IControlTokenRule<AntDesignToken, TabStripToken>
 {

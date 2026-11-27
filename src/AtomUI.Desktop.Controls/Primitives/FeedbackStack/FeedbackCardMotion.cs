@@ -3,7 +3,9 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls;
 
-/// <summary>Finite card entry/exit; queue positioning and stack scale stay on the outer card.</summary>
+/// <summary>
+/// Finite card entry/exit; queue positioning and stack scale stay on the outer card.
+/// </summary>
 internal sealed class FeedbackCardMotion : AbstractMotion
 {
     internal const double Offset = 64d;

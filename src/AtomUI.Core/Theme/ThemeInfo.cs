@@ -4,9 +4,9 @@ using Avalonia.Media;
 namespace AtomUI.Theme;
 
 /// <summary>
-/// A named theme of the catalog (spec 7.8): its language, the axes it fixes, the seeds it locks, its declared primary
-/// colour. Every enabled language also has an implicit entry for its default appearance
-/// (<see cref="IsLanguageDefault"/>), so a language is selectable without any theme file.
+/// A named theme of the catalog: its language, the axes it fixes, the seeds it locks and its declared primary
+/// color. Every enabled language also has an implicit entry for its default appearance
+/// (<see cref="IsLanguageDefault" />), so a language is selectable without any theme file.
 /// </summary>
 public sealed record ThemeInfo(string Id, string Name, string Language)
 {
@@ -15,16 +15,24 @@ public sealed record ThemeInfo(string Id, string Name, string Language)
     private readonly IReadOnlyList<string> _lockedSeeds = Array.Empty<string>();
     private IReadOnlyDictionary<string, string> _seedValues = s_noSeedValues;
 
-    /// <summary>The style the theme fixes, or <see langword="null"/> when the style is open.</summary>
+    /// <summary>
+    /// The style the theme fixes, or <see langword="null" /> when the style is open.
+    /// </summary>
     public DesignStyle? Style { get; init; }
 
-    /// <summary>The appearance the theme fixes, or <see langword="null"/> when it is open.</summary>
+    /// <summary>
+    /// The appearance the theme fixes, or <see langword="null" /> when it is open.
+    /// </summary>
     public ThemeAppearance? Appearance { get; init; }
 
-    /// <summary>The density the theme fixes, or <see langword="null"/> when it is open.</summary>
+    /// <summary>
+    /// The density the theme fixes, or <see langword="null" /> when it is open.
+    /// </summary>
     public DesignDensity? Density { get; init; }
 
-    /// <summary>The adjustable seeds the theme locks; the end user's selection does not replace them.</summary>
+    /// <summary>
+    /// The adjustable seeds the theme locks; the end user's selection does not replace them.
+    /// </summary>
     public IReadOnlyList<string> LockedSeeds
     {
         get => _lockedSeeds;
@@ -58,12 +66,21 @@ public sealed record ThemeInfo(string Id, string Name, string Language)
         }
     }
 
-    /// <summary>Whether this is the implicit entry of the language's default appearance (no theme file).</summary>
+    /// <summary>
+    /// Whether this is the implicit entry of the language's default appearance (no theme file).
+    /// </summary>
     public bool IsLanguageDefault { get; init; }
 
-    /// <summary>The identity of the implicit entry of <paramref name="language"/>.</summary>
+    /// <summary>
+    /// The identity of the implicit entry of <paramref name="language" />.
+    /// </summary>
     public static string LanguageDefaultId(string language) => "$" + language;
 
+    /// <summary>
+    /// Whether <paramref name="other" /> is not <see langword="null" /> and every property is equal.
+    /// <see cref="SeedValues" /> and <see cref="LockedSeeds" /> are equal when they hold the same items in the same
+    /// order.
+    /// </summary>
     public bool Equals(ThemeInfo? other)
     {
         if (ReferenceEquals(this, other))
@@ -84,6 +101,10 @@ public sealed record ThemeInfo(string Id, string Name, string Language)
                LockedSeeds.SequenceEqual(other.LockedSeeds);
     }
 
+    /// <summary>
+    /// A hash code over every property, including each item of <see cref="SeedValues" /> and
+    /// <see cref="LockedSeeds" /> in order, so that it agrees with <see cref="Equals(ThemeInfo)" />.
+    /// </summary>
     public override int GetHashCode()
     {
         var hash = new HashCode();
@@ -109,7 +130,9 @@ public sealed record ThemeInfo(string Id, string Name, string Language)
     }
 }
 
-/// <summary>An enabled design language and what it offers: its axes and the seeds an application may adjust.</summary>
+/// <summary>
+/// An enabled design language and what it offers: its axes and the seeds an application may adjust.
+/// </summary>
 public sealed record DesignLanguageInfo(
     string Id,
     IReadOnlyList<DesignStyle> Styles,

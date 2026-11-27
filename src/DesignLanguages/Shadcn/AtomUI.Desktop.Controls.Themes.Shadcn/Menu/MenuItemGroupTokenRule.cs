@@ -4,7 +4,9 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls.Themes.Shadcn;
 
-/// <summary>The shadcn view of <see cref="MenuItemGroupToken"/>.</summary>
+/// <summary>
+/// The shadcn view of <see cref="MenuItemGroupToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class MenuItemGroupTokenRule : IControlTokenRule<ShadcnToken, MenuItemGroupToken>
 {
@@ -12,6 +14,7 @@ internal sealed class MenuItemGroupTokenRule : IControlTokenRule<ShadcnToken, Me
     {
         var token  = target.Own;
         var global = target.Global;
+        // Ant Design formula kept as is: no registry value is merged into the menu item group tokens.
         token.TitleFontWeight = FontWeight.Normal;
     }
 }

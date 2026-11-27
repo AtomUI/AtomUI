@@ -5,9 +5,15 @@ using AtomUI.Theme.Languages;
 
 namespace AtomUI.Controls.Themes.AntDesign;
 
-/// <summary>The AntDesign values of the shared <see cref="AbstractSkeletonToken"/> layer.</summary>
+/// <summary>
+/// The AntDesign values of the shared <see cref="AbstractSkeletonToken" /> layer.
+/// </summary>
 public static class SkeletonTokenCalculator
 {
+    /// <summary>
+    /// Assigns the Ant Design values of the shared <see cref="AbstractSkeletonToken" /> layer to
+    /// <paramref name="token" />. The Token rule of Skeleton calls it.
+    /// </summary>
     public static void Calculate(in TokenEvaluationContext<AntDesignToken> context, DesignToken global, AbstractSkeletonToken token)
     {
         // GradientFromColor, GradientToColor and ParagraphLineHeight feed values derived in the terminal, which

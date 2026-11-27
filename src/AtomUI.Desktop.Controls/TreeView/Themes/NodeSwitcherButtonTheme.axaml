@@ -3,12 +3,9 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:atom="https://atomui.net"
     x:ClassModifier="internal">
-    <!--
-        我们需要在这个切换按钮显示几种状态的图标
-        1、展开和收缩两种状态的图标
-        2、只设置一个图标，展开和收缩通过旋转开表示
-        3、当节点是叶子节点的时候，没有展开和收缩的概念，直接显示叶子节点的图标
-        4、加载状态的图标
+    <!-- This switch button shows the icon of several states: 1. separate icons for the expanded and the collapsed
+    state; 2. a single icon, with expand and collapse expressed by rotation; 3. a leaf node has no expand or
+    collapse, so it shows the leaf icon directly; 4. the loading icon.
     -->
     <ControlTheme x:Key="{x:Type atom:NodeSwitcherButton}" TargetType="atom:NodeSwitcherButton">
         <Setter Property="Template">

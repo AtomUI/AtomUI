@@ -1,7 +1,9 @@
 using AtomUI.Controls;
 namespace AtomUI.Desktop.Controls.Internal.DateViewer;
 
-/// <summary>The selection owner supplies inputs and accepts navigation/selection intent.</summary>
+/// <summary>
+/// The selection owner supplies inputs and accepts navigation/selection intent.
+/// </summary>
 internal interface IDatePanelHost
 {
     DatePanelInput ReadInput();

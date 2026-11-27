@@ -37,6 +37,11 @@ public class WindowTitleBarButton : IconButton
         set => SetValue(HostOsTypeProperty, value);
     }
 
+    /// <summary>
+    /// Measures the content and returns a square desired size whose side is the shorter side of the measured content.
+    /// When <see cref="HostOsType" /> is <c>OsType.Windows</c>, the side is the larger of that value and the shorter
+    /// side of the available size, with an infinite available width taken as the available height.
+    /// </summary>
     protected override Size MeasureOverride(Size availableSize)
     {
         if (HostOsType == OsType.Windows)

@@ -3,7 +3,9 @@ using AtomUI.Theme.Languages;
 
 namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 
-/// <summary>The PrimeNG view of <see cref="ImagePreviewerToken"/>.</summary>
+/// <summary>
+/// The PrimeNG view of <see cref="ImagePreviewerToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class ImagePreviewerTokenRule : IControlTokenRule<PrimeNGToken, ImagePreviewerToken>
 {

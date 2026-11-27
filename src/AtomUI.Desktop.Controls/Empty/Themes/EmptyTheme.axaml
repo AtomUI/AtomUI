@@ -18,7 +18,9 @@
                              HorizontalAlignment="Center"
                              VerticalAlignment="Center"
                              IsVisible="{TemplateBinding Image, Converter={x:Static ObjectConverters.IsNull}}"/>
-                        <!-- Image（Ant Design 的 image 节点）放在与内置插画同高的容器中 -->
+                        <!-- Image (the image node of Ant Design) sits in a container as high as the built-in
+                        illustration
+                        -->
                         <ContentPresenter Name="ImageContent"
                                           HorizontalAlignment="Center"
                                           VerticalContentAlignment="Center"

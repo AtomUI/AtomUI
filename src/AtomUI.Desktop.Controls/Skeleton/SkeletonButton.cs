@@ -3,19 +3,50 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls;
 
+/// <summary>
+/// Outline of a <see cref="SkeletonButton" /> placeholder.
+/// </summary>
 public enum SkeletonButtonShape
 {
+    /// <summary>
+    /// Rectangle with the small corner radius the theme applies.
+    /// </summary>
     Square,
+    /// <summary>
+    /// Rectangle with half its height as the corner radius, so both ends are fully rounded.
+    /// </summary>
     Round,
+    /// <summary>
+    /// Block as wide as tall with the height as its corner radius, so it renders as a circle.
+    /// </summary>
     Circle
 }
 
+/// <summary>
+/// Block placeholder that stands in for a button, with the outline and the width chosen by
+/// <see cref="Shape" />.
+/// </summary>
 public partial class SkeletonButton : SkeletonElement
 {
     #region 公共属性定义
+    /// <summary>
+    /// Identifies the <see cref="Shape" /> property.
+    /// </summary>
     public static readonly StyledProperty<SkeletonButtonShape> ShapeProperty =
         AvaloniaProperty.Register<SkeletonButton, SkeletonButtonShape>(nameof(Shape));
 
+    /// <summary>
+    /// Outline of the placeholder: <c>Square</c> has the small corner radius the theme applies,
+    /// <c>Round</c> has half the height as its corner radius, and <c>Circle</c> is as wide as tall with the
+    /// height as its corner radius. The default is <c>Square</c>.
+    /// </summary>
+    /// <remarks>
+    ///     <para>
+    ///     <c>Square</c> and <c>Round</c> are twice as wide as tall while
+    ///     <see cref="SkeletonElement.IsBlock" /> is false. <c>Circle</c> sets its width to the height whenever
+    ///     <see cref="Shape" /> or the height changes, whether or not <see cref="SkeletonElement.IsBlock" /> is true.
+    ///     </para>
+    /// </remarks>
     public SkeletonButtonShape Shape
     {
         get => GetValue(ShapeProperty);
@@ -30,6 +61,10 @@ public partial class SkeletonButton : SkeletonElement
     {
     }
 
+    /// <summary>
+    /// Recalculates the width and the corner radius when <see cref="Shape" /> or the height changes, and the width
+    /// when <see cref="SkeletonElement.IsBlock" /> changes. Overrides must call the base member.
+    /// </summary>
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);

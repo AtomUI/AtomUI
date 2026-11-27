@@ -10,7 +10,9 @@ internal readonly record struct OverlayPlacementResult(
     double CrossAxisTranslation,
     double ArrowAnchorOffset);
 
-/// <summary>Resolves an anchored overlay in root coordinates, without a platform popup host.</summary>
+/// <summary>
+/// Resolves an anchored overlay in root coordinates, without a platform popup host.
+/// </summary>
 internal static class OverlayPlacementSolver
 {
     private const double AnchorGap = 12;

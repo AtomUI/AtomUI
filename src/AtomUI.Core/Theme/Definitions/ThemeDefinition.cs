@@ -15,7 +15,9 @@ internal sealed record BoundTokenValue(
     internal NormalizedTokenValue Normalize() => new(Descriptor, Value, CanonicalValue);
 }
 
-/// <summary>The bound configuration of one control in one section of a theme definition.</summary>
+/// <summary>
+/// The bound configuration of one control in one section of a theme definition.
+/// </summary>
 internal sealed class ControlThemeDefinition
 {
     internal ControlThemeDefinition(
@@ -42,7 +44,9 @@ internal sealed class ControlThemeDefinition
     public ThemeSourceLocation Location { get; }
 }
 
-/// <summary>The bound values of one section: the base section or a condition section.</summary>
+/// <summary>
+/// The bound values of one section: the base section or a condition section.
+/// </summary>
 internal sealed class ThemeSectionDefinition
 {
     internal static ThemeSectionDefinition Empty { get; } = new(
@@ -63,7 +67,9 @@ internal sealed class ThemeSectionDefinition
     public IReadOnlyList<ControlThemeDefinition> Controls { get; }
 }
 
-/// <summary>A bound <c>&lt;When&gt;</c> section: its condition and values.</summary>
+/// <summary>
+/// A bound <c>&lt;When&gt;</c> section: its condition and values.
+/// </summary>
 internal sealed class ThemeConditionDefinition
 {
     internal ThemeConditionDefinition(
@@ -89,7 +95,10 @@ internal sealed class ThemeConditionDefinition
     public ThemeSectionDefinition Values { get; }
     public ThemeSourceLocation Location { get; }
 
-    /// <summary>Whether the section applies to an evaluation unit of <paramref name="variant"/> (unset attributes always match).</summary>
+    /// <summary>
+    /// Whether the section applies to an evaluation unit of <paramref name="variant" /> (unset attributes always
+    /// match).
+    /// </summary>
     public bool Matches(in DesignVariant variant) =>
         (Style is null || Style == variant.Style) &&
         (Appearance is null || Appearance == variant.Appearance) &&
@@ -97,15 +106,17 @@ internal sealed class ThemeConditionDefinition
         (Idiom is null || Idiom == variant.Idiom);
 }
 
-/// <summary>The bound values of a definition: the base section and the condition sections in document order.</summary>
+/// <summary>
+/// The bound values of a definition: the base section and the condition sections in document order.
+/// </summary>
 internal sealed record PreparedThemeValues(
     ThemeSectionDefinition Base,
     IReadOnlyList<ThemeConditionDefinition> Conditions);
 
 /// <summary>
-/// A theme definition bound to the registry (spec 7.1–7.6): the language it belongs to, the axes it fixes, the seeds it
-/// locks, its base section and its condition sections. It is the lowest value layer of every evaluation unit that
-/// uses it; <see cref="ValuesFor"/> gives that layer for one variant.
+/// A theme definition bound to the registry: the language it belongs to, the axes it fixes, the seeds it locks, its
+/// base section and its condition sections. It is the lowest value layer of every evaluation unit that uses it;
+/// <see cref="ValuesFor" /> gives that layer for one variant.
 /// </summary>
 internal sealed class PreparedThemeDefinition
 {
@@ -146,38 +157,54 @@ internal sealed class PreparedThemeDefinition
     public string Id { get; }
     public string Name { get; }
 
-    /// <summary>The language the theme belongs to.</summary>
+    /// <summary>
+    /// The language the theme belongs to.
+    /// </summary>
     public DesignLanguageDescriptor Language { get; }
 
-    /// <summary>The fixed style, or <see langword="null"/> when open.</summary>
+    /// <summary>
+    /// The fixed style, or <see langword="null" /> when open.
+    /// </summary>
     public DesignStyle? Style { get; }
 
-    /// <summary>The fixed appearance, or <see langword="null"/> when open.</summary>
+    /// <summary>
+    /// The fixed appearance, or <see langword="null" /> when open.
+    /// </summary>
     public ThemeAppearance? Appearance { get; }
 
-    /// <summary>The fixed density, or <see langword="null"/> when open.</summary>
+    /// <summary>
+    /// The fixed density, or <see langword="null" /> when open.
+    /// </summary>
     public DesignDensity? Density { get; }
 
-    /// <summary>The adjustable seeds the theme locks: the end user's selection cannot replace them.</summary>
+    /// <summary>
+    /// The adjustable seeds the theme locks: the end user's selection cannot replace them.
+    /// </summary>
     public IReadOnlySet<string> LockedSeeds { get; }
 
     public ThemeSourceLocation Location { get; }
 
-    /// <summary>The axes the theme writes: its language and the axes it fixes.</summary>
+    /// <summary>
+    /// The axes the theme writes: its language and the axes it fixes.
+    /// </summary>
     internal ThemeAxes Axes => new(Language, Style, Appearance, Density, null);
 
     public ThemeSectionDefinition Base => GetValues().Base;
 
     public IReadOnlyList<ThemeConditionDefinition> Conditions => GetValues().Conditions;
 
-    /// <summary>Every control the definition configures, in any section.</summary>
+    /// <summary>
+    /// Every control the definition configures, in any section.
+    /// </summary>
     public IReadOnlyCollection<ControlTokenIdentity> ControlIdentities =>
         field ??= Base.Controls.Select(static control => control.Descriptor.Identity)
                       .Concat(Conditions.SelectMany(static condition => condition.Values.Controls)
                                         .Select(static control => control.Descriptor.Identity))
                       .ToHashSet();
 
-    /// <summary>The value layer this definition gives an evaluation unit of <paramref name="variant"/>.</summary>
+    /// <summary>
+    /// The value layer this definition gives an evaluation unit of <paramref name="variant" />.
+    /// </summary>
     internal DefinitionLayer ValuesFor(in DesignVariant variant)
     {
         var values = GetValues();
@@ -232,7 +259,7 @@ internal sealed class PreparedThemeDefinition
 
 /// <summary>
 /// The values one definition gives one evaluation unit: the base section, then every matching condition section in
-/// document order, later sections replacing earlier ones by token name and control identity (spec 7.6).
+/// document order, later sections replacing earlier ones by token name and control identity.
 /// </summary>
 internal sealed class DefinitionLayer
 {
@@ -249,10 +276,14 @@ internal sealed class DefinitionLayer
         Controls       = controls;
     }
 
-    /// <summary>The global token values, ordered by slot.</summary>
+    /// <summary>
+    /// The global token values, ordered by slot.
+    /// </summary>
     public IReadOnlyList<NormalizedTokenValue> GlobalTokens { get; }
 
-    /// <summary>The language token values of the definition's language, ordered by slot.</summary>
+    /// <summary>
+    /// The language token values of the definition's language, ordered by slot.
+    /// </summary>
     public IReadOnlyList<BoundTokenValue> LanguageTokens { get; }
 
     public IReadOnlyDictionary<ControlTokenIdentity, NormalizedControlThemeConfig> Controls { get; }

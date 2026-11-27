@@ -19,7 +19,7 @@ internal class ColorSlider : AbstractColorSlider
 {
     #region 公共属性定义
 
-#pragma warning disable ATOMUIGEN044 // Colour-model data endpoints/default values, independent of theme chrome.
+#pragma warning disable ATOMUIGEN044 // Color-model data endpoints/default values, independent of theme chrome.
     public static readonly StyledProperty<Color> ColorProperty =
         AvaloniaProperty.Register<ColorSlider, Color>(
             nameof(Color),
@@ -37,7 +37,7 @@ internal class ColorSlider : AbstractColorSlider
             nameof(ColorModel),
             ColorModel.Rgba);
 
-#pragma warning disable ATOMUIGEN044 // Colour-model data endpoints/default values, independent of theme chrome.
+#pragma warning disable ATOMUIGEN044 // Color-model data endpoints/default values, independent of theme chrome.
     public static readonly StyledProperty<HsvColor> HsvColorProperty =
         AvaloniaProperty.Register<ColorSlider, HsvColor>(
             nameof(HsvColor),
@@ -98,12 +98,13 @@ internal class ColorSlider : AbstractColorSlider
     /// When true in the HSVA color model, this ensures that the gradient is always visible and
     /// never washed out regardless of the actual color. When true in the RGBA color model, this ensures
     /// the gradient always appears as red, green or blue.
-    /// <br/><br/>
+    /// <br /><br />
     /// For example, with Hue in the HSVA color model, the Saturation and Value components are always forced
     /// to maximum values during rendering. In the RGBA color model, all components other than
-    /// <see cref="ColorComponent"/> are forced to minimum values during rendering.
-    /// <br/><br/>
-    /// Note this property will only adjust components other than <see cref="ColorComponent"/> during rendering.
+    /// <see cref="ColorComponent" /> are forced to minimum values during rendering.
+    /// <br /><br />
+    /// Note this property will only adjust components other than <see cref="ColorComponent" /> during rendering
+    /// and adjusts nothing when <see cref="ColorComponent" /> is <c>Alpha</c>.
     /// This also doesn't change the values of any components in the actual color – it is only for display.
     /// </remarks>
     public bool IsPerceptive
@@ -116,8 +117,8 @@ internal class ColorSlider : AbstractColorSlider
     /// Gets or sets a value indicating whether rounding of color component values is enabled.
     /// </summary>
     /// <remarks>
-    /// This is applicable for the HSV color model only. The <see cref="Avalonia.Media.HsvColor"/> struct uses double
-    /// values while the <see cref="Media.Color"/> struct uses byte. Only double types need rounding.
+    /// This is applicable for the HSV color model only. The <see cref="Avalonia.Media.HsvColor" /> struct uses double
+    /// values while the <see cref="Avalonia.Media.Color" /> struct uses byte. Only double types need rounding.
     /// </remarks>
     public bool IsRoundingEnabled
     {
@@ -144,10 +145,10 @@ internal class ColorSlider : AbstractColorSlider
 
     /// <summary>
     /// Defines the maximum hue component value
-    /// (other components are always 0..100 or 0.255).
+    /// (other components are always 0..100 or 0..255).
     /// </summary>
     /// <remarks>
-    /// This should match the default <see cref="ColorSpectrum.MaxHue"/> property.
+    /// This should match the default <see cref="ColorSpectrum.MaxHue" /> property.
     /// </remarks>
     internal const double MaxHue = 359;
 
@@ -260,7 +261,7 @@ internal class ColorSlider : AbstractColorSlider
                 _backgroundBitmap?.Dispose();
                 _backgroundBitmap = ColorPickerHelpers.CreateBitmapFromPixelData(bgraPixelData, pixelWidth, pixelHeight);
 
-                // Generated colour-model bitmap is runtime data, not a theme brush.
+                // Generated color-model bitmap is runtime data, not a theme brush.
                 SetCurrentValue(BackgroundProperty, new ImageBrush(_backgroundBitmap));
             }
         }
@@ -271,11 +272,15 @@ internal class ColorSlider : AbstractColorSlider
     }
 
     /// <summary>
-    /// Rounds the component values of the given <see cref="HsvColor"/>.
+    /// Rounds the component values of the given <see cref="HsvColor" />.
     /// This is useful for user-display and to ensure a color matches user selection exactly.
     /// </summary>
-    /// <param name="hsvColor">The <see cref="HsvColor"/> to round component values for.</param>
-    /// <returns>A new <see cref="HsvColor"/> with rounded component values.</returns>
+    /// <param name="hsvColor">
+    /// The <see cref="HsvColor" /> to round component values for.
+    /// </param>
+    /// <returns>
+    /// A new <see cref="HsvColor" /> with rounded component values.
+    /// </returns>
     private static HsvColor RoundComponentValues(HsvColor hsvColor)
     {
         return new HsvColor(
@@ -290,7 +295,7 @@ internal class ColorSlider : AbstractColorSlider
     /// </summary>
     /// <remarks>
     /// Warning: This will trigger property changed updates.
-    /// Consider using <see cref="ignorePropertyChanged"/> externally.
+    /// Consider using <see cref="AbstractColorSlider.IgnorePropertyChanged" /> externally.
     /// </remarks>
     private void SetColorToSliderValues()
     {
@@ -437,8 +442,12 @@ internal class ColorSlider : AbstractColorSlider
     /// Gets the actual background color displayed for the given HSV color.
     /// This can differ due to the effects of certain properties intended to improve perception.
     /// </summary>
-    /// <param name="hsvColor">The actual color to get the equivalent background color for.</param>
-    /// <returns>The equivalent, perceived background color.</returns>
+    /// <param name="hsvColor">
+    /// The actual color to get the equivalent background color for.
+    /// </param>
+    /// <returns>
+    /// The equivalent, perceived background color.
+    /// </returns>
     private HsvColor GetPerceptiveBackgroundColor(HsvColor hsvColor)
     {
         var component = ColorComponent;
@@ -472,8 +481,12 @@ internal class ColorSlider : AbstractColorSlider
     /// Gets the actual background color displayed for the given RGB color.
     /// This can differ due to the effects of certain properties intended to improve perception.
     /// </summary>
-    /// <param name="rgbColor">The actual color to get the equivalent background color for.</param>
-    /// <returns>The equivalent, perceived background color.</returns>
+    /// <param name="rgbColor">
+    /// The actual color to get the equivalent background color for.
+    /// </param>
+    /// <returns>
+    /// The equivalent, perceived background color.
+    /// </returns>
     private Color GetPerceptiveBackgroundColor(Color rgbColor)
     {
         var component = ColorComponent;

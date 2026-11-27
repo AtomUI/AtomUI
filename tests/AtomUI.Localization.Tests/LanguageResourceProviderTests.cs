@@ -55,7 +55,8 @@ public class LanguageResourceProviderTests
     public void Provider_Misses_Non_Language_Keys_Without_Allocating_After_First_Lookup()
     {
         var runtime = LanguageManagerTestRuntime.Create();
-        // 未命中控件树的 ControlTheme（Type 键）、字符串键和 token enum 键都会查到 Application 层的本 provider。
+        // A ControlTheme (Type key), a string key and a token enum key that miss the control tree all resolve to
+        // this provider at the Application level.
         object[] keys = [typeof(Border), "SomeBrushKey", OtherResourceKind.Value];
         foreach (var key in keys)
         {

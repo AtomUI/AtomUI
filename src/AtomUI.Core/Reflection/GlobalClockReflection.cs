@@ -40,20 +40,31 @@ internal static class GlobalClockReflection
 
     #endregion
 
-    /// <summary>Resolves the clock that drives Avalonia animations in the current locator scope.</summary>
+    /// <summary>
+    /// Resolves the clock that drives Avalonia animations in the current locator scope.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">
+    /// No global clock is registered in the current locator scope.
+    /// </exception>
     internal static IObservable<TimeSpan> GetGlobalClock() =>
         AvaloniaLocator.Current.GetService(GlobalClockType.Value) as IObservable<TimeSpan>
         ?? throw new InvalidOperationException("The Avalonia global animation clock is not registered.");
 
-    /// <summary>The global clock, or null when no platform registered one (for example a bare dispatcher).</summary>
+    /// <summary>
+    /// The global clock, or null when no platform registered one (for example a bare dispatcher).
+    /// </summary>
     internal static IObservable<TimeSpan>? TryGetGlobalClock() =>
         AvaloniaLocator.Current.GetService(GlobalClockType.Value) as IObservable<TimeSpan>;
 
-    /// <summary>The live subscriptions of the render-loop clock; read on the UI thread only, never kept.</summary>
+    /// <summary>
+    /// The live subscriptions of the global clock; read on the UI thread only, never kept.
+    /// </summary>
     internal static List<IObserver<TimeSpan>> GetObservers(IObservable<TimeSpan> clock) =>
         (List<IObserver<TimeSpan>>)ObserversFieldInfo.Value.GetValue(clock)!;
 
-    /// <summary>The time of the frame the render-loop clock last pulsed.</summary>
+    /// <summary>
+    /// The time of the frame the global clock last pulsed.
+    /// </summary>
     internal static TimeSpan GetCurrentTimestamp(IObservable<TimeSpan> clock) =>
         (TimeSpan)CurrentTimestampFieldInfo.Value.GetValue(clock)!;
 }

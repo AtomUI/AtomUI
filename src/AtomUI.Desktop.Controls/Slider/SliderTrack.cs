@@ -24,6 +24,16 @@ using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
 
+/// <summary>
+/// The track of a <see cref="Slider" />, created by the template of the slider as <c>PART_Track</c>.
+/// It owns the groove, the filled segments, the marks and one thumb per handle, lays them out along
+/// the rail, and maps positions and drag distances on the rail to values.
+/// </summary>
+/// <remarks>
+/// The theme of the slider forwards the properties of the slider to the track, so applications set
+/// them on the slider. Properties that the track owns from another control, such as
+/// <see cref="Minimum" /> and <see cref="Orientation" />, keep the default of that control.
+/// </remarks>
 [PseudoClasses(StdPseudoClass.Vertical, StdPseudoClass.Horizontal)]
 // A Token-owner transparent part: the track is a template part of the Slider only, so its theme reads the Slider
 // TokenResource and its Token-declared transitions resolve to the Slider through the inherited owner.
@@ -31,6 +41,7 @@ namespace AtomUI.Desktop.Controls;
 public class SliderTrack : TemplatedControl, ICustomHitTest
 {
     /// <summary>
+    /// Reports whether a pointer position lies within the bounds of the track.
     /// SliderTrack no longer self-draws its rail/track visuals, so it has no draw
     /// list for the compositor to hit test against. Report the whole bounds as the
     /// hit target so pointer input still routes through the track exactly as it did
@@ -40,171 +51,386 @@ public class SliderTrack : TemplatedControl, ICustomHitTest
 
     #region 公共属性定义
 
+    /// <summary>
+    /// Identifies the <see cref="Minimum" /> property.
+    /// </summary>
     public static readonly StyledProperty<double> MinimumProperty =
         RangeBase.MinimumProperty.AddOwner<SliderTrack>();
 
+    /// <summary>
+    /// Identifies the <see cref="Maximum" /> property.
+    /// </summary>
     public static readonly StyledProperty<double> MaximumProperty =
         RangeBase.MaximumProperty.AddOwner<SliderTrack>();
 
+    /// <summary>
+    /// Identifies the <see cref="Value" /> property.
+    /// </summary>
     public static readonly StyledProperty<double> ValueProperty =
         RangeBase.ValueProperty.AddOwner<SliderTrack>();
 
+    /// <summary>
+    /// Identifies the <see cref="RangeValues" /> property.
+    /// </summary>
     public static readonly StyledProperty<IReadOnlyList<double>?> RangeValuesProperty =
         AbstractSlider.RangeValuesProperty.AddOwner<SliderTrack>();
 
+    /// <summary>
+    /// Identifies the <see cref="DisabledHandles" /> property.
+    /// </summary>
     public static readonly StyledProperty<IReadOnlyList<bool>?> DisabledHandlesProperty =
         AvaloniaProperty.Register<SliderTrack, IReadOnlyList<bool>?>(nameof(DisabledHandles));
 
+    /// <summary>
+    /// Identifies the <see cref="IsDraggableTrack" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsDraggableTrackProperty =
         AvaloniaProperty.Register<SliderTrack, bool>(nameof(IsDraggableTrack));
 
+    /// <summary>
+    /// Identifies the <see cref="IsRangeMode" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsRangeModeProperty =
         AbstractSlider.IsRangeModeProperty.AddOwner<SliderTrack>();
 
+    /// <summary>
+    /// Identifies the <see cref="Orientation" /> property.
+    /// </summary>
     public static readonly StyledProperty<Orientation> OrientationProperty =
         ScrollBar.OrientationProperty.AddOwner<SliderTrack>();
 
+    /// <summary>
+    /// Identifies the <see cref="IsDirectionReversed" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsDirectionReversedProperty =
         AvaloniaProperty.Register<SliderTrack, bool>(nameof(IsDirectionReversed));
 
+    /// <summary>
+    /// Identifies the <see cref="IgnoreThumbDrag" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IgnoreThumbDragProperty =
         AvaloniaProperty.Register<SliderTrack, bool>(nameof(IgnoreThumbDrag));
 
+    /// <summary>
+    /// Identifies the <see cref="DeferThumbDrag" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> DeferThumbDragProperty =
         AvaloniaProperty.Register<SliderTrack, bool>(nameof(DeferThumbDrag));
 
+    /// <summary>
+    /// Identifies the <see cref="IsIncluded" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsIncludedProperty =
         AbstractSlider.IsIncludedProperty.AddOwner<SliderTrack>();
 
+    /// <summary>
+    /// Identifies the <see cref="TrackBarBrush" /> property.
+    /// </summary>
     public static readonly StyledProperty<IBrush?> TrackBarBrushProperty =
         AvaloniaProperty.Register<SliderTrack, IBrush?>(nameof(TrackBarBrush));
 
+    /// <summary>
+    /// Identifies the <see cref="TracksBrush" /> property.
+    /// </summary>
     public static readonly StyledProperty<IBrush?> TracksBrushProperty =
         AbstractSlider.TracksBrushProperty.AddOwner<SliderTrack>();
 
+    /// <summary>
+    /// Identifies the <see cref="TrackGrooveBrush" /> property.
+    /// </summary>
     public static readonly StyledProperty<IBrush?> TrackGrooveBrushProperty =
         AvaloniaProperty.Register<SliderTrack, IBrush?>(nameof(TrackGrooveBrush));
 
+    /// <summary>
+    /// Identifies the <see cref="Marks" /> property.
+    /// </summary>
     public static readonly StyledProperty<List<SliderMark>?> MarksProperty =
         AbstractSlider.MarksProperty.AddOwner<SliderTrack>();
 
+    /// <summary>
+    /// Identifies the <see cref="MarkLabelFontSize" /> property.
+    /// </summary>
     public static readonly StyledProperty<double> MarkLabelFontSizeProperty =
         TextElement.FontSizeProperty.AddOwner<SliderTrack>();
 
+    /// <summary>
+    /// Identifies the <see cref="MarkLabelFontFamily" /> property.
+    /// </summary>
     public static readonly StyledProperty<FontFamily> MarkLabelFontFamilyProperty =
         TextElement.FontFamilyProperty.AddOwner<SliderTrack>();
 
+    /// <summary>
+    /// Identifies the <see cref="MarkLabelBrush" /> property.
+    /// </summary>
     public static readonly StyledProperty<IBrush?> MarkLabelBrushProperty =
         AvaloniaProperty.Register<SliderTrack, IBrush?>(nameof(MarkLabelBrush));
 
+    /// <summary>
+    /// The smallest value the track places on the rail. Pointer positions and drag distances are scaled
+    /// to the range from here to <see cref="Maximum" />.
+    /// </summary>
+    /// <remarks>
+    /// The <see cref="Slider" /> forwards its own <see cref="RangeBase.Minimum" /> to this property. A
+    /// cleared value falls back to the default of <see cref="RangeBase.Minimum" />.
+    /// </remarks>
     public double Minimum
     {
         get => GetValue(MinimumProperty);
         set => SetValue(MinimumProperty, value);
     }
 
+    /// <summary>
+    /// The largest value the track places on the rail. Pointer positions and drag distances are scaled to
+    /// the range from <see cref="Minimum" /> to here.
+    /// </summary>
+    /// <remarks>
+    /// The <see cref="Slider" /> forwards its own <see cref="RangeBase.Maximum" /> to this property. A
+    /// cleared value falls back to the default of <see cref="RangeBase.Maximum" />.
+    /// </remarks>
     public double Maximum
     {
         get => GetValue(MaximumProperty);
         set => SetValue(MaximumProperty, value);
     }
 
+    /// <summary>
+    /// The value of the only thumb and the end of the filled part while <see cref="IsRangeMode" /> is
+    /// cleared. While <see cref="IsRangeMode" /> is set, <see cref="RangeValues" /> places the thumbs and
+    /// the filled part instead, and this property is only the fallback for a handle that has no entry.
+    /// </summary>
+    /// <remarks>
+    /// The <see cref="Slider" /> forwards its own <see cref="RangeBase.Value" /> to this property in both
+    /// directions, so the track writes it back while it applies a thumb drag itself. A cleared value falls
+    /// back to the default of <see cref="RangeBase.Value" />.
+    /// </remarks>
     public double Value
     {
         get => GetValue(ValueProperty);
         set => SetValue(ValueProperty, value);
     }
 
+    /// <summary>
+    /// The values of the handles, in ascending order, while <see cref="IsRangeMode" /> is set. Every
+    /// entry places one thumb, and a filled segment runs between each pair of adjacent entries. While
+    /// <see cref="IsRangeMode" /> is cleared, <see cref="Value" /> is used instead.
+    /// </summary>
+    /// <remarks>
+    /// The <see cref="Slider" /> forwards its own <see cref="AbstractSlider.RangeValues" /> to this
+    /// property in both directions, so the track writes it back while it applies a thumb drag itself.
+    /// While <see cref="IsRangeMode" /> is set, <see langword="null" /> is read as two handles at
+    /// <see cref="Minimum" />.
+    /// </remarks>
     public IReadOnlyList<double>? RangeValues
     {
         get => GetValue(RangeValuesProperty);
         set => SetValue(RangeValuesProperty, value);
     }
 
+    /// <summary>
+    /// For each handle, whether it is disabled: entry <c>i</c> belongs to handle <c>i</c>. A disabled
+    /// handle gets a disabled thumb that the track does not drag, and the drag of the whole range does not
+    /// start while any handle is disabled. The default, <see langword="null" />, disables no handle.
+    /// </summary>
+    /// <remarks>
+    /// The <see cref="Slider" /> forwards its own <see cref="Slider.DisabledHandles" /> to this property.
+    /// </remarks>
     public IReadOnlyList<bool>? DisabledHandles
     {
         get => GetValue(DisabledHandlesProperty);
         set => SetValue(DisabledHandlesProperty, value);
     }
 
+    /// <summary>
+    /// While set, a pointer drag that starts on the filled range between the outer handles, not on a
+    /// thumb, moves every handle together. It takes effect only while <see cref="IsRangeMode" /> is set
+    /// with at least two handles, none of which is disabled.
+    /// </summary>
+    /// <remarks>
+    /// The <see cref="Slider" /> forwards its own <see cref="Slider.IsDraggableTrack" /> to this property.
+    /// </remarks>
     public bool IsDraggableTrack
     {
         get => GetValue(IsDraggableTrackProperty);
         set => SetValue(IsDraggableTrackProperty, value);
     }
 
+    /// <summary>
+    /// While set, the track shows one thumb per entry of <see cref="RangeValues" /> and a filled segment
+    /// between adjacent thumbs. While cleared, it shows one thumb at <see cref="Value" /> and one segment
+    /// from <see cref="Minimum" /> to it.
+    /// </summary>
+    /// <remarks>
+    /// The <see cref="Slider" /> forwards its own <see cref="AbstractSlider.IsRangeMode" /> to this
+    /// property, which keeps the default of <see cref="AbstractSlider.IsRangeMode" />.
+    /// </remarks>
     public bool IsRangeMode
     {
         get => GetValue(IsRangeModeProperty);
         set => SetValue(IsRangeModeProperty, value);
     }
 
+    /// <summary>
+    /// The direction of the rail. While horizontal, values grow from left to right; while vertical, from
+    /// bottom to top, unless <see cref="IsDirectionReversed" /> is set. It also selects the
+    /// <c>:horizontal</c> or <c>:vertical</c> pseudo-class of the track.
+    /// </summary>
+    /// <remarks>
+    /// The <see cref="Slider" /> forwards its own <see cref="Slider.Orientation" /> to this property, which
+    /// keeps the default of <see cref="Avalonia.Controls.Primitives.ScrollBar.Orientation" />.
+    /// </remarks>
     public Orientation Orientation
     {
         get => GetValue(OrientationProperty);
         set => SetValue(OrientationProperty, value);
     }
 
+    /// <summary>
+    /// While set, the rail runs the other way round: <see cref="Maximum" /> lies at the left end of a
+    /// horizontal rail and at the top end of a vertical one. Pointer positions, drag distances, thumbs,
+    /// filled segments and marks all follow.
+    /// </summary>
+    /// <remarks>
+    /// The <see cref="Slider" /> forwards its own <see cref="Slider.IsDirectionReversed" /> to this
+    /// property.
+    /// </remarks>
     public bool IsDirectionReversed
     {
         get => GetValue(IsDirectionReversedProperty);
         set => SetValue(IsDirectionReversedProperty, value);
     }
 
+    /// <summary>
+    /// While set, the track ignores the drag events of its thumbs and leaves <see cref="Value" /> and
+    /// <see cref="RangeValues" /> untouched. The <see cref="Slider" /> sets it on the track of its
+    /// template and handles the drag of a thumb itself.
+    /// </summary>
     public bool IgnoreThumbDrag
     {
         get => GetValue(IgnoreThumbDragProperty);
         set => SetValue(IgnoreThumbDragProperty, value);
     }
 
+    /// <summary>
+    /// While set, the track does not apply the drag of a thumb while it moves. It keeps the latest drag
+    /// event and applies it once when the drag completes or when this property is cleared. It has no
+    /// effect while <see cref="IgnoreThumbDrag" /> is set.
+    /// </summary>
     public bool DeferThumbDrag
     {
         get => GetValue(DeferThumbDragProperty);
         set => SetValue(DeferThumbDragProperty, value);
     }
 
+    /// <summary>
+    /// Whether the filled part of the track is shown: the container behind the filled segments, the
+    /// segments themselves, and the included state of the marks that lie inside the selected range. The
+    /// groove and the marks stay visible while it is cleared.
+    /// </summary>
+    /// <remarks>
+    /// The <see cref="Slider" /> forwards its own <see cref="AbstractSlider.IsIncluded" /> to this
+    /// property, which keeps the default of <see cref="AbstractSlider.IsIncluded" />, which is
+    /// <see langword="true" />.
+    /// </remarks>
     public bool IsIncluded
     {
         get => GetValue(IsIncludedProperty);
         set => SetValue(IsIncludedProperty, value);
     }
 
+    /// <summary>
+    /// The brush of each filled segment of the track. The theme supplies the <c>TrackBg</c> token, and the
+    /// <c>TrackHoverBg</c> token while the slider is hovered. <see langword="null" /> leaves the segments
+    /// unpainted.
+    /// </summary>
+    /// <remarks>
+    /// The <see cref="Slider" /> forwards its own <see cref="Slider.TrackBarBrush" /> to this property.
+    /// </remarks>
     public IBrush? TrackBarBrush
     {
         get => GetValue(TrackBarBrushProperty);
         set => SetValue(TrackBarBrushProperty, value);
     }
 
+    /// <summary>
+    /// The brush of the container behind the filled segments, which is shown only while
+    /// <see cref="IsIncluded" /> is set. The container spans from the first handle to the last one while
+    /// <see cref="IsRangeMode" /> is set, and from <see cref="Minimum" /> to <see cref="Value" />
+    /// otherwise. <see cref="TrackBarBrush" /> paints the segments themselves.
+    /// <see langword="null" /> leaves the container unpainted.
+    /// </summary>
+    /// <remarks>
+    /// The <see cref="Slider" /> forwards its own <see cref="AbstractSlider.TracksBrush" /> to this
+    /// property, which keeps the default of <see cref="AbstractSlider.TracksBrush" />.
+    /// </remarks>
     public IBrush? TracksBrush
     {
         get => GetValue(TracksBrushProperty);
         set => SetValue(TracksBrushProperty, value);
     }
 
+    /// <summary>
+    /// The brush of the groove, the full-length rail behind the filled segments, which stays visible
+    /// while <see cref="IsIncluded" /> is cleared. The theme supplies the <c>RailBg</c> token, and the
+    /// <c>RailHoverBg</c> token while the slider is hovered. <see langword="null" /> leaves the groove
+    /// unpainted. No property of the <see cref="Slider" /> is forwarded to it, so a style that selects
+    /// the track sets it.
+    /// </summary>
     public IBrush? TrackGrooveBrush
     {
         get => GetValue(TrackGrooveBrushProperty);
         set => SetValue(TrackGrooveBrushProperty, value);
     }
 
+    /// <summary>
+    /// The marks that are drawn on the rail: one dot at the value of each entry, with the label of the
+    /// entry below the rail on a horizontal track and to the right of the rail on a vertical one. The
+    /// largest label enlarges the measured size of the track across the rail. <see langword="null" /> or
+    /// an empty list draws none of them.
+    /// </summary>
+    /// <remarks>
+    /// The <see cref="Slider" /> forwards its own <see cref="AbstractSlider.Marks" /> to this property,
+    /// which keeps the default of <see cref="AbstractSlider.Marks" />.
+    /// </remarks>
     public List<SliderMark>? Marks
     {
         get => GetValue(MarksProperty);
         set => SetValue(MarksProperty, value);
     }
 
+    /// <summary>
+    /// The font size of the mark labels. The theme of the slider forwards the <c>FontSize</c> of the
+    /// slider to it, and a change re-measures the labels and the track.
+    /// </summary>
+    /// <remarks>
+    /// This is the <c>TextElement.FontSize</c> property owned by the track, so a value that is not set is
+    /// inherited from the parent.
+    /// </remarks>
     public double MarkLabelFontSize
     {
         get => GetValue(MarkLabelFontSizeProperty);
         set => SetValue(MarkLabelFontSizeProperty, value);
     }
 
+    /// <summary>
+    /// The font family of the mark labels. The theme of the slider forwards the <c>FontFamily</c> of the
+    /// slider to it, and a change re-measures the labels and the track.
+    /// </summary>
+    /// <remarks>
+    /// This is the <c>TextElement.FontFamily</c> property owned by the track, so a value that is not set
+    /// is inherited from the parent.
+    /// </remarks>
     public FontFamily MarkLabelFontFamily
     {
         get => GetValue(MarkLabelFontFamilyProperty);
         set => SetValue(MarkLabelFontFamilyProperty, value);
     }
 
+    /// <summary>
+    /// The brush that paints the mark labels. The theme of the track supplies the <c>ColorText</c> token,
+    /// and the <c>ColorTextDisabled</c> token while the track is disabled. <see langword="null" /> leaves
+    /// the labels unpainted, except for a mark that sets its own <c>LabelBrush</c> while the track is
+    /// enabled.
+    /// </summary>
     public IBrush? MarkLabelBrush
     {
         get => GetValue(MarkLabelBrushProperty);
@@ -306,6 +532,20 @@ public class SliderTrack : TemplatedControl, ICustomHitTest
         return SliderRangeMath.RatioToValue(ratio, Minimum, Maximum);
     }
 
+    /// <summary>
+    /// Converts a drag distance into the change of value it stands for on the rail.
+    /// </summary>
+    /// <param name="horizontal">
+    /// The distance dragged along the x axis. It is used while <see cref="Orientation" /> is horizontal.
+    /// </param>
+    /// <param name="vertical">
+    /// The distance dragged along the y axis. It is used while <see cref="Orientation" /> is vertical.
+    /// </param>
+    /// <returns>
+    /// The change of value, positive for a drag towards <see cref="Maximum" />. It is neither clamped to
+    /// the range from <see cref="Minimum" /> to <see cref="Maximum" /> nor snapped to a step, and it is 0
+    /// when the rail has no length in the direction of the track.
+    /// </returns>
     public virtual double ValueFromDistance(double horizontal, double vertical)
     {
         var railRect = GetRailRect(Bounds.Size);
@@ -402,6 +642,12 @@ public class SliderTrack : TemplatedControl, ICustomHitTest
         UpdatePseudoClasses(Orientation);
     }
 
+    /// <summary>
+    /// Subscribes to the token resources that feed the track, rail and mark metrics, starts observing
+    /// pointer presses so that a focused thumb loses focus when the pointer is pressed outside the rail,
+    /// and creates the thumbs and measures the mark labels once the track is attached. An override must
+    /// call the base member, or the track gets no thumbs and no subscriptions.
+    /// </summary>
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
@@ -429,6 +675,11 @@ public class SliderTrack : TemplatedControl, ICustomHitTest
         CalculateMaxMarkSize();
     }
 
+    /// <summary>
+    /// Releases the token subscription and the pointer-press observation and removes every thumb once the
+    /// track is detached. An override must call the base member, or the subscriptions stay alive and the
+    /// thumbs stay attached.
+    /// </summary>
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         _trackTokens?.Dispose();
@@ -527,6 +778,11 @@ public class SliderTrack : TemplatedControl, ICustomHitTest
         return default;
     }
 
+    /// <summary>
+    /// Measures the thumbs with the available size and returns the size of the track: the token track
+    /// size along the rail, the largest mark label across the rail, and the padding on both axes. The
+    /// base member is not called, so an override that replaces this method must measure the thumbs itself.
+    /// </summary>
     protected override Size MeasureOverride(Size availableSize)
     {
         EnsureThumbs();
@@ -554,6 +810,11 @@ public class SliderTrack : TemplatedControl, ICustomHitTest
         return new Size(targetWidth, targetHeight);
     }
 
+    /// <summary>
+    /// Places every thumb with its center on the rail at its value, arranges the groove, the filled
+    /// segments and the marks, and returns the whole arrange size. An override that needs the thumbs and
+    /// the parts placed must call this base member.
+    /// </summary>
     protected override Size ArrangeOverride(Size arrangeSize)
     {
         EnsureThumbs();
@@ -577,6 +838,12 @@ public class SliderTrack : TemplatedControl, ICustomHitTest
         return arrangeSize;
     }
 
+    /// <summary>
+    /// Keeps the track in step with its properties: the orientation pseudo-classes, the number and the
+    /// enabled state of the thumbs, the token subscription, the visibility of the filled parts and the
+    /// metrics of the mark labels. It applies a deferred thumb drag when <see cref="DeferThumbDrag" />
+    /// is cleared. The base member is called first, and an override must call it as well.
+    /// </summary>
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);

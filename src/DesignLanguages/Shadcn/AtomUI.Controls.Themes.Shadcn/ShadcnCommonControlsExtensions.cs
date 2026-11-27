@@ -4,6 +4,9 @@ using AtomUI.Theme.Languages;
 
 namespace AtomUI.Controls.Themes.Shadcn;
 
+/// <summary>
+/// Provides <see cref="AddCommonControls" />, the entry point that adds the shadcn values of the shared controls.
+/// </summary>
 public static class ShadcnCommonControlsExtensions
 {
     /// <summary>

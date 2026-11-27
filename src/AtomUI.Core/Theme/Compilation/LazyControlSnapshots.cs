@@ -61,7 +61,8 @@ internal sealed class LazyControlSnapshotSource
         }
         lock (_builderGate)
         {
-            // 只捕获当前 source 的冻结值；不捕获 input、父 snapshot 或历史 source。
+            // The builders are created from this source's frozen values only; they retain neither the compile input,
+            // the parent snapshot nor an earlier source.
             _globalBuilder ??= ThemeCompiler.CreateBuilder(_globalValues, _globalPalettes, _registry.GlobalTokens);
             _languageBuilder ??= ThemeCompiler.CreateLanguageBuilder(_unit.Language, _languageValues);
             return (_globalBuilder, _languageBuilder);
@@ -109,7 +110,8 @@ internal sealed class LazyControlSnapshotSource
 }
 
 /// <summary>
-/// 独立惰性计算单元。跨快照直接共享 cell，不沿完整父快照链递归查找。
+/// One independent lazy evaluation unit. Snapshots share cells directly; a lookup never walks up the chain
+/// of parent snapshots.
 /// </summary>
 internal sealed class ControlSnapshotCell
 {
@@ -154,8 +156,8 @@ internal sealed class ControlSnapshotCell
 
     /// <summary>
     /// Whether the control sees the scope's global values unchanged. A control rule may override a global token
-    /// in its view, which is known only once the control compiles; until then this is <see langword="false"/> and a
-    /// lookup materializes the cell.
+    /// in its view, which is known only once the control compiles; until then this is <see langword="false" />
+    /// and reading it does not materialize the cell.
     /// </summary>
     internal bool UsesRootSharedResources => MaterializedValue is { EffectiveGlobalTokenDelta.Count: 0 };
 
@@ -190,7 +192,7 @@ internal sealed class ControlSnapshotCell
             {
                 throw new InvalidOperationException("A recursive theme Control snapshot query is not supported.");
             }
-            // 失败不写缓存，也不丢弃输入，保留后续查询重新计算的既有语义。
+            // A failure caches nothing and keeps the inputs, so a later query computes the value again.
             source = _source!;
             _isCompiling = true;
             try
@@ -214,14 +216,16 @@ internal sealed class ControlSnapshotCell
             Volatile.Write(ref _valueDonor, null);
             Volatile.Write(ref _source, null);
         }
-        // cache 扫描只读已发布值，不持有 cell 锁执行驱逐，避免锁反转。
+        // The cache scan reads published values only. It is started outside the cell lock so that eviction never
+        // runs with the cell lock held, which would invert the lock order.
         source.NotifyMaterialized();
         return snapshot;
     }
 }
 
 /// <summary>
-/// 槽位数组只共享独立 cell；读取不会物化或保活前代 ThemeSnapshot。
+/// The slot table shares independent cells only. Its reads of published state do not materialize a cell,
+/// and a shared cell does not keep the earlier snapshot it came from alive.
 /// </summary>
 internal sealed class LazyControlSnapshots
 {
@@ -244,7 +248,8 @@ internal sealed class LazyControlSnapshots
             HashSet<LazyControlSnapshotSource>? sources = null;
             foreach (var cell in _cells)
             {
-                // source 先读；并发物化至多重复计费，不会遗漏编译输入与新发布的值。
+                // The source is read first: under concurrent materialization the compile inputs and the newly published
+                // value are at most charged twice, never missed.
                 if (cell.Source is { } source)
                 {
                     sources ??= new HashSet<LazyControlSnapshotSource>();

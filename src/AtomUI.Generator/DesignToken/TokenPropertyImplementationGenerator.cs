@@ -18,6 +18,10 @@ public sealed class TokenPropertyImplementationGenerator : IIncrementalGenerator
     private static readonly SymbolDisplayFormat TypeFormat = SymbolDisplayFormat.FullyQualifiedFormat
         .AddMiscellaneousOptions(SymbolDisplayMiscellaneousOptions.IncludeNullableReferenceTypeModifier);
 
+    /// <summary>
+    /// Registers a source output for every class marked with <c>[ControlDesignToken]</c>, <c>[GlobalDesignToken]</c> or
+    /// <c>[LanguageDesignToken]</c>, which emits the implementation of its partial token properties.
+    /// </summary>
     public void Initialize(IncrementalGeneratorInitializationContext initContext)
     {
         var controlTokens = initContext.SyntaxProvider.ForAttributeWithMetadataName(

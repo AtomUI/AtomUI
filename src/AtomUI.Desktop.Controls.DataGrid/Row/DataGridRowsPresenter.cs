@@ -79,12 +79,12 @@ public sealed class DataGridRowsPresenter : Panel, IChildIndexProvider
     /// <summary>
     /// Arranges the content of the <see cref="T:AtomUI.Desktop.Controls.DataGridRowsPresenter" />.
     /// </summary>
-    /// <returns>
-    /// The actual size used by the <see cref="T:AtomUI.Desktop.Controls.DataGridRowsPresenter" />.
-    /// </returns>
     /// <param name="finalSize">
     /// The final area within the parent that this element should use to arrange itself and its children.
     /// </param>
+    /// <returns>
+    /// The actual size used by the <see cref="T:AtomUI.Desktop.Controls.DataGridRowsPresenter" />.
+    /// </returns>
     protected override Size ArrangeOverride(Size finalSize)
     {
         if (finalSize.Height == 0 || OwningGrid == null)
@@ -174,8 +174,8 @@ public sealed class DataGridRowsPresenter : Panel, IChildIndexProvider
     }
 
     /// <summary>
-    /// Measures the children of a <see cref="T:AtomUI.Desktop.Controls.DataGridRowsPresenter" /> to 
-    /// prepare for arranging them during the <see cref="M:System.Windows.FrameworkElement.ArrangeOverride(System.Windows.Size)" /> pass.
+    /// Measures the children of a <see cref="T:AtomUI.Desktop.Controls.DataGridRowsPresenter" /> to
+    /// prepare for arranging them during the <see cref="ArrangeOverride" /> pass.
     /// </summary>
     /// <param name="availableSize">
     /// The available size that this element can give to child elements. Indicates an upper limit that child elements should not exceed.
@@ -273,8 +273,12 @@ public sealed class DataGridRowsPresenter : Panel, IChildIndexProvider
         e.Handled = e.Handled || (OwningGrid?.UpdateScroll(-e.Delta) ?? false);
     }
 
-    // A row drag captures the pointer on this presenter rather than on the row's handle, so the drag survives
-    // the source row being scrolled out of the viewport and recycled.
+    /// <summary>
+    /// Forwards the move to the owning grid's row reorder handling when this presenter holds the capture of a
+    /// row drag, and ignores any other move. A row drag captures this presenter rather than the row's handle,
+    /// so the drag survives the source row being scrolled out of the viewport and recycled.
+    /// The base implementation is called first.
+    /// </summary>
     protected override void OnPointerMoved(PointerEventArgs e)
     {
         base.OnPointerMoved(e);
@@ -289,6 +293,10 @@ public sealed class DataGridRowsPresenter : Panel, IChildIndexProvider
             e.GetCurrentPoint(this).Properties.IsLeftButtonPressed);
     }
 
+    /// <summary>
+    /// Forwards a release of the left button to the owning grid's row reorder handling when this presenter holds
+    /// the pointer capture. The base implementation is called first; other releases go no further.
+    /// </summary>
     protected override void OnPointerReleased(PointerReleasedEventArgs e)
     {
         base.OnPointerReleased(e);
@@ -299,6 +307,10 @@ public sealed class DataGridRowsPresenter : Panel, IChildIndexProvider
         }
     }
 
+    /// <summary>
+    /// Forwards the lost pointer capture to the owning grid's row reorder handling, then calls the base
+    /// implementation.
+    /// </summary>
     protected override void OnPointerCaptureLost(PointerCaptureLostEventArgs e)
     {
         OwningGrid?.HandleRowReorderPointerCaptureLost(e.Pointer);

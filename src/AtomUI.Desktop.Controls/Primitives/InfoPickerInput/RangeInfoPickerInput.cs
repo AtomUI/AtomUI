@@ -11,13 +11,25 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls.Primitives;
 
+/// <summary>
+/// Base class of the range pickers (<c>RangeDatePicker</c>, <c>RangeTimePicker</c>): an info picker input whose
+/// two text boxes hold the start and the end value. It tracks which of the two inputs is active, opens the
+/// picker popup under that input and underlines it with the range indicator.
+/// </summary>
 public abstract class RangeInfoPickerInput : InfoPickerInput
 {
     #region 公共属性定义
 
+    /// <summary>
+    /// Identifies the <see cref="SecondaryPlaceholderText" /> property.
+    /// </summary>
     public static readonly StyledProperty<string?> SecondaryPlaceholderTextProperty =
         AvaloniaProperty.Register<RangeInfoPickerInput, string?>(nameof(SecondaryPlaceholderText));
     
+    /// <summary>
+    /// Gets or sets the placeholder text of the end input only; the start input has its own placeholder. The
+    /// default is <see langword="null" />, which shows no placeholder.
+    /// </summary>
     public string? SecondaryPlaceholderText
     {
         get => GetValue(SecondaryPlaceholderTextProperty);
@@ -33,13 +45,16 @@ public abstract class RangeInfoPickerInput : InfoPickerInput
             o => o.RangeActivatedPart);
     
     /// <summary>
-    /// Size of the range arrow between the two inputs. The arrow is a registered Icon, so an owner read on it would resolve
-    /// to the Icon identity: the theme reads the picker's values on the picker and template-binds them to the arrow.
+    /// Size of the range arrow between the two inputs. The arrow is a registered Icon, so an owner read on it would
+    /// resolve to the Icon identity: the theme reads the picker's values on the picker and template-binds them to
+    /// the arrow.
     /// </summary>
     internal static readonly StyledProperty<double> RangeArrowSizeProperty =
         AvaloniaProperty.Register<RangeInfoPickerInput, double>(nameof(RangeArrowSize), double.NaN);
 
-    /// <summary>Brush of the range arrow (read on the picker for the same reason as <see cref="RangeArrowSize"/>).</summary>
+    /// <summary>
+    /// Brush of the range arrow (read on the picker for the same reason as <see cref="RangeArrowSizeProperty" />).
+    /// </summary>
     internal static readonly StyledProperty<IBrush?> RangeArrowBrushProperty =
         AvaloniaProperty.Register<RangeInfoPickerInput, IBrush?>(nameof(RangeArrowBrush));
 
@@ -113,6 +128,10 @@ public abstract class RangeInfoPickerInput : InfoPickerInput
     private protected PathIcon? RangePickerArrow;
     private protected TextBox? SecondaryInfoInputBox;
 
+    /// <summary>
+    /// Clears the text of both inputs, the start input and the end input. The base implementation, which clears only
+    /// the start input, is not called.
+    /// </summary>
     public override void Clear()
     {
         InfoInputBox?.Clear();
@@ -125,24 +144,43 @@ public abstract class RangeInfoPickerInput : InfoPickerInput
         _transitionInitialization = new TransitionInitializationSession(this);
     }
 
+    /// <summary>
+    /// Calls the base implementation, then completes the transition initialization session of this control, as
+    /// <see cref="OnApplyTemplate" /> does when the template is applied. Call the base method from an override.
+    /// </summary>
     protected override void OnLoaded(RoutedEventArgs e)
     {
         base.OnLoaded(e);
         _transitionInitialization.CompleteInitialization();
     }
 
+    /// <summary>
+    /// Resets the transition initialization session of this control, then calls the base implementation. The session
+    /// is completed again when the template is applied or the control loads.
+    /// </summary>
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         _transitionInitialization.Reset();
         base.OnDetachedFromVisualTree(e);
     }
 
+    /// <summary>
+    /// Resets the transition initialization session when the template changes, before the base implementation runs.
+    /// The session is completed again when the new template is applied.
+    /// </summary>
     protected override void OnTemplateChanged(AvaloniaPropertyChangedEventArgs e)
     {
         _transitionInitialization?.Reset();
         base.OnTemplateChanged(e);
     }
 
+    /// <summary>
+    /// Calls the base implementation, then resolves the end input (<c>PART_SecondaryInfoInputBox</c>), the range
+    /// indicator (<c>PART_RangePickerIndicator</c>) and the range arrow (<c>PART_RangePickerArrow</c>). The
+    /// subscription to the indicator's height change moves from the previous indicator to the new one, the picker
+    /// popup's <c>OverlayInputPassThroughElement</c> is set to the decorated box, and the transition initialization
+    /// session is completed. Call the base method from an override.
+    /// </summary>
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
@@ -211,6 +249,12 @@ public abstract class RangeInfoPickerInput : InfoPickerInput
         return null;
     }
 
+    /// <summary>
+    /// Calls the base implementation, then reacts to a change of <c>RangeActivatedPart</c>: it places the picker
+    /// popup and the range indicator at the input of the new part, or hides the indicator when no part is active,
+    /// and moves keyboard focus from the other input to the input of the active part. Call the base method from
+    /// an override.
+    /// </summary>
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
@@ -223,6 +267,11 @@ public abstract class RangeInfoPickerInput : InfoPickerInput
     
     // The activated part and the focused input stay in step, as in Ant Design: tabbing into an input activates its
     // part, and a part switch made by the editor (for example after the start date is chosen) moves focus with it.
+    /// <summary>
+    /// Calls the base implementation, then activates the start part when the start input receives focus and the
+    /// end part when the end input does. Focus on any other element leaves the active part unchanged. Call the
+    /// base method from an override.
+    /// </summary>
     protected override void OnGotFocus(FocusChangedEventArgs e)
     {
         base.OnGotFocus(e);
@@ -236,6 +285,11 @@ public abstract class RangeInfoPickerInput : InfoPickerInput
         }
     }
 
+    /// <summary>
+    /// Calls the base implementation, then deactivates the active part, which hides the range indicator, unless the
+    /// picker is open or the element that receives focus is a picker element (<c>IsPickerElement</c>). Call the base
+    /// method from an override.
+    /// </summary>
     protected override void OnLostFocus(FocusChangedEventArgs e)
     {
         base.OnLostFocus(e);
@@ -245,12 +299,26 @@ public abstract class RangeInfoPickerInput : InfoPickerInput
         }
     }
 
+    /// <summary>
+    /// Calls the base implementation, then also accepts the secondary info input box (<c>SecondaryInfoInputBox</c>)
+    /// and its visual descendants, so that keys typed into the end input are handled like keys typed into the start
+    /// input. Call the base method from an override to keep both input boxes recognized.
+    /// </summary>
+    /// <param name="source">
+    /// The source of the event, such as <c>KeyEventArgs.Source</c>.
+    /// </param>
+    /// <returns>
+    /// <see langword="true" /> when <paramref name="source" /> is either input box or lies within one of them;
+    /// otherwise <see langword="false" />.
+    /// </returns>
     private protected override bool IsPickerInputElement(object? source) =>
         base.IsPickerInputElement(source) ||
         source is Visual visual && SecondaryInfoInputBox is not null &&
         (ReferenceEquals(visual, SecondaryInfoInputBox) || SecondaryInfoInputBox.IsVisualAncestorOf(visual));
 
-    /// <summary>The input of the activated part, or null when no part is active.</summary>
+    /// <summary>
+    /// The input of the activated part, or null when no part is active.
+    /// </summary>
     private protected TextBox? ActivatedInputBox => RangeActivatedPart switch
     {
         RangeActivatedPart.Start => InfoInputBox,
@@ -269,6 +337,13 @@ public abstract class RangeInfoPickerInput : InfoPickerInput
         }
     }
 
+    /// <summary>
+    /// Handles a pointer release on this control while it is not read-only: a release on the start input activates
+    /// the start part and opens the picker, a release on the end input or anywhere else except the clear button
+    /// activates the end part and opens the picker, and a release on the clear button in clear mode closes the
+    /// picker. Each of these marks the release handled. A right-button release with this control as the source
+    /// raises the context request and takes over its handled state. The base implementation is not called.
+    /// </summary>
     protected override void OnPointerReleased(PointerReleasedEventArgs args)
     {
         if (args.Source == this
@@ -307,6 +382,11 @@ public abstract class RangeInfoPickerInput : InfoPickerInput
         }
     }
     
+    /// <summary>
+    /// Arranges the content with the base implementation, places the range indicator at
+    /// <see cref="PickerIndicatorOffsetX" /> and <see cref="PickerIndicatorOffsetY" />, and returns the base size
+    /// inflated by the border thickness of the decorated box.
+    /// </summary>
     protected override Size ArrangeOverride(Size finalSize)
     {
         var borderThickness = DecoratedBox?.BorderThickness ?? default;
@@ -326,6 +406,12 @@ public abstract class RangeInfoPickerInput : InfoPickerInput
         return size;
     }
     
+    /// <summary>
+    /// Measures the content with the base implementation and keeps the range indicator in step with the layout. The
+    /// vertical offset is set to the bottom edge of the decorated box, that is its desired height minus the height
+    /// of the indicator. While no part is active and the horizontal offset is still <c>double.NaN</c>, it is set to
+    /// the left edge of the start input.
+    /// </summary>
     protected override Size MeasureOverride(Size availableSize)
     {
         var size = base.MeasureOverride(availableSize);
@@ -350,11 +436,24 @@ public abstract class RangeInfoPickerInput : InfoPickerInput
         return size;
     }
     
+    /// <summary>
+    /// Called when the picker popup is about to close, before <c>NotifyPickerClosed</c>: it deactivates the active
+    /// part, which hides the range indicator. Call the base method from an override to deactivate the part.
+    /// </summary>
+    /// <param name="selectedIsValid">
+    /// Whether the selection is valid. This implementation does not use it.
+    /// </param>
     protected override void NotifyFlyoutAboutToClose(bool selectedIsValid)
     {
         SetRangeActivatedPart(RangeActivatedPart.None);
     }
     
+    /// <summary>
+    /// Called after the active part (<c>RangeActivatedPart</c>) changes. For the start part the picker popup is
+    /// placed under the start input, aligned with its left edge; for the end part under the end input, aligned with
+    /// its right edge. Then <see cref="SetupPickerIndicatorPosition" /> moves the range indicator under that input,
+    /// or hides it when no part is active.
+    /// </summary>
     protected virtual void NotifyRangeActivatedPartChanged()
     {
         if (RangeActivatedPart == RangeActivatedPart.Start)
@@ -371,6 +470,11 @@ public abstract class RangeInfoPickerInput : InfoPickerInput
         SetupPickerIndicatorPosition();
     }
     
+    /// <summary>
+    /// Hides the range indicator while no part is active. Otherwise it shows the indicator, gives it the width of
+    /// the input of the active part and moves it to that input's left edge. Does nothing while the indicator, the
+    /// decorated box or one of the two inputs is missing.
+    /// </summary>
     protected void SetupPickerIndicatorPosition()
     {
         if (RangePickerIndicator is null ||
@@ -449,6 +553,11 @@ public abstract class RangeInfoPickerInput : InfoPickerInput
         }
     }
     
+    /// <summary>
+    /// Shows the clear button only when <c>IsClearButtonRevealed</c> is set, both inputs are editable (not
+    /// read-only) and both have text; otherwise hides it. Nothing changes while the decorated box is missing. The
+    /// base implementation is not called.
+    /// </summary>
     protected override void ConfigureIsClearButtonVisible()
     {
         if (DecoratedBox is not null)

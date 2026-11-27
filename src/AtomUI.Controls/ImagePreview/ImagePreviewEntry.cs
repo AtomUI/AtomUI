@@ -6,6 +6,15 @@ using Avalonia.Threading;
 
 namespace AtomUI.Desktop.Controls;
 
+/// <summary>
+/// One image of an image preview together with the state of its thumbnail load and of its full image load;
+/// <c>AbstractImagePreviewer</c> in AtomUI.Desktop.Controls keeps the entries and subscribes to their changes.
+/// </summary>
+/// <remarks>
+/// The entry owns the cancellation and priority state of both loads. It exposes the decoded images, their sizes
+/// and the load state, error and progress of each load, and raises <c>PropertyChanged</c> when one of them
+/// changes. The thumbnail falls back to the full image while no thumbnail is decoded.
+/// </remarks>
 internal sealed class ImagePreviewEntry : INotifyPropertyChanged, IDisposable
 {
     private ImageCancellationState? _fullCancellation;
@@ -351,9 +360,9 @@ internal sealed class ImagePreviewEntry : INotifyPropertyChanged, IDisposable
         }
     }
 
-    // Dispose 会静默释放位图租约；先通知持有者丢弃图像引用，
-    // 避免 DisplayTracker 等订阅方继续渲染已释放的位图。
-    // 无订阅者时零开销；有订阅者时使用缓存 EventArgs，零分配。
+    // Dispose releases the bitmap leases silently. The holders are notified first so that they drop their image
+    // references, which keeps subscribers such as the display tracker from rendering a released bitmap. There
+    // is no cost without subscribers; with subscribers the cached EventArgs are reused, so nothing is allocated.
     private static readonly PropertyChangedEventArgs[] DisposedResetArgs =
     [
         new(nameof(FullState)),
@@ -422,7 +431,8 @@ internal sealed class ImagePreviewEntry : INotifyPropertyChanged, IDisposable
         }
         catch (OperationCanceledException)
         {
-            // 调用方取消与共享操作内部取消同样按取消处理，不产生失败提交
+            // A cancellation by the caller is handled like one inside the shared operation: as a cancellation that
+            // commits no failure.
             HandleFullCanceled(generation);
         }
         finally
@@ -436,7 +446,7 @@ internal sealed class ImagePreviewEntry : INotifyPropertyChanged, IDisposable
     {
         if (_disposed || generation != _fullGeneration)
         {
-            return; // 已被更新的请求接管
+            return; // A newer request has taken over
         }
         FullProgress = null;
         FullError    = null;
@@ -446,7 +456,7 @@ internal sealed class ImagePreviewEntry : INotifyPropertyChanged, IDisposable
         }
         else
         {
-            // 保留已提交的旧图（与 CancelFullLoad 的状态归位一致）
+            // Keep the previously committed image and return to Loaded, as CancelFullLoad does.
             FullState = ImageLoadState.Loaded;
         }
     }
@@ -486,7 +496,8 @@ internal sealed class ImagePreviewEntry : INotifyPropertyChanged, IDisposable
         }
         catch (OperationCanceledException)
         {
-            // 调用方取消与共享操作内部取消同样按取消处理，不产生失败提交
+            // A cancellation by the caller is handled like one inside the shared operation: as a cancellation that
+            // commits no failure.
             HandleThumbnailCanceled(generation);
         }
         finally
@@ -500,7 +511,7 @@ internal sealed class ImagePreviewEntry : INotifyPropertyChanged, IDisposable
     {
         if (_disposed || generation != _thumbnailGeneration)
         {
-            return; // 已被更新的请求接管
+            return; // A newer request has taken over
         }
         ThumbnailProgress = null;
         ThumbnailError    = null;
@@ -735,8 +746,8 @@ internal sealed class ImagePreviewEntry : INotifyPropertyChanged, IDisposable
         }
         return state switch
         {
-            // 同尺寸桶下的在途请求由 LoadFull/LoadThumbnail 提升优先级后直接采纳；
-            // 不重启接近完成的源读取或解码。
+            // A running request in the same size bucket is adopted by LoadFull/LoadThumbnail after its priority is
+            // raised, so a source read or a decode that is about to complete is not restarted.
             ImageLoadState.Loading => !Covers(activeRequestSize, requestSize),
             ImageLoadState.Loaded => !Covers(resultRequestSize, requestSize),
             _ => true

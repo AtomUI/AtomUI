@@ -53,7 +53,7 @@ internal sealed class NavMenuEntryOwnershipCoordinator
     }
 
     /// <summary>
-    /// Validates appending <paramref name="entries"/> at <paramref name="startIndex"/> before the
+    /// Validates appending <paramref name="entries" /> at <paramref name="startIndex" /> before the
     /// mutation. Returns <c>false</c> when the append is not eligible for incremental validation and
     /// the caller must validate the prospective scope instead.
     /// </summary>
@@ -63,8 +63,8 @@ internal sealed class NavMenuEntryOwnershipCoordinator
     }
 
     /// <summary>
-    /// Applies ownership for entries already appended at <paramref name="startIndex"/>. Returns
-    /// <c>false</c> when the append is not eligible and the caller must run <see cref="Synchronize()"/>.
+    /// Applies ownership for entries already appended at <paramref name="startIndex" />. Returns
+    /// <c>false</c> when the append is not eligible and the caller must run <see cref="Synchronize()" />.
     /// </summary>
     public bool TrySynchronizeAppend(IList entries, int startIndex)
     {

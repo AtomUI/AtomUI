@@ -6,70 +6,66 @@ namespace AtomUI.Theme.DesignTokens;
 public partial class DesignToken
 {
     /// <summary>
-    /// 信息色的浅色背景颜色
-    /// 1 号色
+    /// Light background tint of the info palette, used as the background of info-styled elements.
+    /// The Ant Design language derives it from the palette generated for <see cref="ColorInfo" />.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Map)]
     public partial Color ColorInfoBg { get; set; }
 
     /// <summary>
-    /// 信息色的浅色背景色悬浮态
-    /// 2 号色
+    /// Hover state of the info light background tint, read while an info-styled element is hovered.
+    /// The Ant Design language derives it from the palette generated for <see cref="ColorInfo" />.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Map)]
     public partial Color ColorInfoBgHover { get; set; }
 
     /// <summary>
-    /// 信息色的描边色
-    /// 3 号色
+    /// Border color of the info palette, used for the border of info-styled elements.
+    /// The Ant Design language derives it from the palette generated for <see cref="ColorInfo" />.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Map)]
     public partial Color ColorInfoBorder { get; set; }
 
     /// <summary>
-    /// 信息色的描边色悬浮态
-    /// 4 号色
+    /// Hover state of the info border color, read while a control with an info border is hovered.
+    /// The Ant Design language derives it from the palette generated for <see cref="ColorInfo" />.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Map)]
     public partial Color ColorInfoBorderHover { get; set; }
 
     /// <summary>
-    /// 信息色的深色悬浮态
-    /// 5 号色
+    /// Dark hover shade of the info palette, read while an info-colored element is hovered.
+    /// The Ant Design language derives it from the palette generated for <see cref="ColorInfo" />.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Map)]
     public partial Color ColorInfoHover { get; set; }
 
-    /// <summary>
-    /// 信息色
-    /// 6 号色
-    /// 在 Seed 文件中定义
-    /// </summary>
+    // The base info color ColorInfo itself is not part of this map. It is declared in DesignToken.Seed.cs.
 
     /// <summary>
-    /// 信息色的深色激活态
-    /// 7 号色
+    /// Dark active shade of the info palette, read while an info-colored element is pressed.
+    /// The Ant Design language derives it from the palette generated for <see cref="ColorInfo" />.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Map)]
     public partial Color ColorInfoActive { get; set; }
 
     /// <summary>
-    /// 信息色的文本悬浮态
-    /// 8 号色
+    /// Info text color for the hover state, read while info-colored text is hovered.
+    /// The Ant Design language derives it from the palette generated for <see cref="ColorInfo" />.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Map)]
     public partial Color ColorInfoTextHover { get; set; }
 
     /// <summary>
-    /// 信息色的文本默认态
-    /// 9 号色
+    /// Info text color in the default state, read for info-colored text.
+    /// The Ant Design language derives it from the palette generated for <see cref="ColorInfo" />.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Map)]
     public partial Color ColorInfoText { get; set; }
 
     /// <summary>
-    /// 信息色的文本激活态
-    /// 10 号色
+    /// Info text color for the active state, read while info-colored text is pressed.
+    /// The Ant Design language derives it from the palette generated for <see cref="ColorInfo" />.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Map)]
     public partial Color ColorInfoTextActive { get; set; }

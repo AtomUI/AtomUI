@@ -5,6 +5,15 @@ using System.Text;
 
 namespace AtomUI.Desktop.Controls;
 
+/// <summary>
+/// An in-memory <see cref="IDataGridSource" /> that answers range requests from a list, sorting, filtering
+/// and grouping the items itself. It writes edits through the field setters and moves or deletes rows when
+/// the backing list is writable. When the items notify collection changes, the source advances its snapshot
+/// and raises <see cref="Invalidated" /> on every change.
+/// </summary>
+/// <typeparam name="T">
+/// The type of the items in the backing list.
+/// </typeparam>
 public sealed class DataGridLocalSource<T> :
     IDataGridEditableSource,
     IDataGridMovableSource,
@@ -67,12 +76,21 @@ public sealed class DataGridLocalSource<T> :
         }
     }
 
+    /// <summary>
+    /// Built from the fields of the descriptor, <c>typeof(T)</c> as item type and the range sizes of the options.
+    /// </summary>
     public DataGridSourceSchema Schema { get; }
 
+    /// <summary>
+    /// Raised after the snapshot was advanced: when the backing collection reports a change, after a move or a
+    /// deletion, or after a commit that changed the row key or a field the query sorts, filters or groups by.
+    /// Fetches still running for the previous version are canceled by then. Raised synchronously on the thread
+    /// that caused the change, and never after <see cref="Dispose" />.
+    /// </summary>
     public event EventHandler? Invalidated;
 
     /// <summary>
-    /// Whether rows can be reordered, which requires the backing items to be a writable <see cref="IList{T}"/>.
+    /// Whether rows can be reordered, which requires the backing items to be a writable <see cref="IList{T}" />.
     /// </summary>
     public bool CanMove => _mutableItems is not null;
 
@@ -87,12 +105,40 @@ public sealed class DataGridLocalSource<T> :
         }
     }
 
+    /// <summary>
+    /// Creates a source over <paramref name="items" /> with the row key and fields of
+    /// <paramref name="descriptor" />, whose field ids must be unique, or over the default settings when
+    /// <paramref name="options" /> is <see langword="null" />. Moving and deleting rows needs
+    /// <paramref name="items" /> to be a writable <see cref="IList{T}" />.
+    /// </summary>
+    /// <exception cref="ArgumentException">
+    /// <paramref name="descriptor" /> names a field id twice, or <paramref name="options" /> has an invalid value.
+    /// </exception>
     public static DataGridLocalSource<T> Create(
         IReadOnlyList<T> items,
         DataGridLocalSourceDescriptor<T> descriptor,
         DataGridLocalSourceOptions? options = null) =>
         new(items, descriptor, options ?? new DataGridLocalSourceOptions());
 
+    /// <summary>
+    /// Returns the range in source order directly from the list when the query has no sort, filter or group.
+    /// Otherwise it serves the range from a cached projection of a copy of the items and builds a missing
+    /// projection on the thread pool.
+    /// </summary>
+    /// <exception cref="DataGridSourceContractException">
+    /// The request does not satisfy <see cref="Schema" />.
+    /// </exception>
+    /// <exception cref="DataGridSnapshotExpiredException">
+    /// <see cref="DataGridFetchRequest.ExpectedSnapshot" /> is set and is no longer the current snapshot.
+    /// </exception>
+    /// <exception cref="ObjectDisposedException">
+    /// The source has been disposed.
+    /// </exception>
+    /// <remarks>
+    /// A projection that is still being built is abandoned when the token is canceled, the source is disposed
+    /// or the items change. The task then ends with <see cref="OperationCanceledException" /> instead of
+    /// returning data of an outdated version.
+    /// </remarks>
     public ValueTask<DataGridRangeResult> FetchAsync(
         DataGridFetchRequest request,
         CancellationToken cancellationToken)
@@ -220,6 +266,21 @@ public sealed class DataGridLocalSource<T> :
         return true;
     }
 
+    /// <summary>
+    /// Moves the row named by the request in the backing list so that it comes directly before
+    /// <see cref="DataGridMoveRequest.BeforeKey" /> or directly after <see cref="DataGridMoveRequest.AfterKey" />,
+    /// and returns the new snapshot. Nothing is moved when the row is already in that position. The cancellation
+    /// token is checked before anything is changed.
+    /// </summary>
+    /// <exception cref="NotSupportedException">
+    /// The items are not a writable list, or the query of the request has a sort, filter or group.
+    /// </exception>
+    /// <exception cref="DataGridSnapshotExpiredException">
+    /// The snapshot of <paramref name="request" /> is no longer the current one.
+    /// </exception>
+    /// <exception cref="ArgumentException">
+    /// The row key or the anchor key of <paramref name="request" /> is not in the list.
+    /// </exception>
     public ValueTask<DataGridMutationResult> MoveAsync(
         DataGridMoveRequest request,
         CancellationToken cancellationToken)
@@ -354,6 +415,19 @@ public sealed class DataGridLocalSource<T> :
         throw new NotSupportedException(
             "The local source cannot construct items. Add them to the backing collection instead.");
 
+    /// <summary>
+    /// Removes the item of the row named by the request from the backing list and returns the new snapshot.
+    /// The cancellation token is checked before anything is removed.
+    /// </summary>
+    /// <exception cref="NotSupportedException">
+    /// The items are not a writable list.
+    /// </exception>
+    /// <exception cref="DataGridSnapshotExpiredException">
+    /// The snapshot of <paramref name="request" /> is no longer the current one.
+    /// </exception>
+    /// <exception cref="ArgumentException">
+    /// The row key of <paramref name="request" /> is not in the list.
+    /// </exception>
     public ValueTask<DataGridMutationResult> DeleteAsync(
         DataGridRowMutationRequest request,
         CancellationToken cancellationToken)
@@ -419,6 +493,11 @@ public sealed class DataGridLocalSource<T> :
         throw new ArgumentException($"Row key '{rowKey}' does not exist in the local source.");
     }
 
+    /// <summary>
+    /// Stops observing the backing collection, cancels the fetches still running, drops the projection cache and
+    /// removes the <see cref="Invalidated" /> handlers. Later fetches and mutations are rejected with
+    /// <see cref="ObjectDisposedException" />. Calling it again has no effect.
+    /// </summary>
     public void Dispose()
     {
         CancellationTokenSource? versionCancellation;
@@ -1211,8 +1290,23 @@ public sealed class DataGridLocalSource<T> :
     }
 }
 
+/// <summary>
+/// Non-generic factory for <see cref="DataGridLocalSource{T}" />, so the item type is inferred from the arguments.
+/// </summary>
 public static class DataGridLocalSource
 {
+    /// <summary>
+    /// Creates a <see cref="DataGridLocalSource{T}" /> over <paramref name="items" /> with the row key and fields
+    /// of <paramref name="descriptor" />, whose field ids must be unique, or over the default settings when
+    /// <paramref name="options" /> is <see langword="null" />. Moving and deleting rows needs
+    /// <paramref name="items" /> to be a writable <see cref="IList{T}" />.
+    /// </summary>
+    /// <typeparam name="T">
+    /// The type of the items in the list.
+    /// </typeparam>
+    /// <exception cref="ArgumentException">
+    /// <paramref name="descriptor" /> names a field id twice, or <paramref name="options" /> has an invalid value.
+    /// </exception>
     public static DataGridLocalSource<T> Create<T>(
         IReadOnlyList<T> items,
         DataGridLocalSourceDescriptor<T> descriptor,

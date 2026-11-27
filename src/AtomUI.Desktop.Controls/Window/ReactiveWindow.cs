@@ -5,14 +5,19 @@ using ReactiveUI;
 namespace AtomUI.Desktop.Controls;
 
 /// <summary>
-/// A ReactiveUI <see cref="Window"/> that implements the <see cref="IViewFor"/> interface and will
-/// activate your ViewModel automatically if the view model implements <see cref="IActivatableViewModel"/>. When
+/// A ReactiveUI <see cref="Window" /> that implements the <see cref="IViewFor" /> interface and will
+/// activate your ViewModel automatically if the view model implements <see cref="IActivatableViewModel" />. When
 /// the DataContext property changes, this class will update the ViewModel property with the new DataContext value,
 /// and vice versa.
 /// </summary>
-/// <typeparam name="TViewModel">ViewModel type.</typeparam>
+/// <typeparam name="TViewModel">
+/// ViewModel type.
+/// </typeparam>
 public class ReactiveWindow<TViewModel> : Window, IViewFor<TViewModel> where TViewModel : class
 {
+    /// <summary>
+    /// Identifies the <see cref="ViewModel" /> property.
+    /// </summary>
     [System.Diagnostics.CodeAnalysis.SuppressMessage("AvaloniaProperty", "AVP1002",
         Justification = "Generic avalonia property is expected here.")]
     public static readonly StyledProperty<TViewModel?> ViewModelProperty = 
@@ -39,6 +44,12 @@ public class ReactiveWindow<TViewModel> : Window, IViewFor<TViewModel> where TVi
         set => ViewModel = (TViewModel?)value;
     }
 
+    /// <summary>
+    /// Calls the base method first, then keeps <see cref="ViewModel" /> and <c>DataContext</c> equal in either
+    /// direction while the two were equal before the change, and re-runs the activation when <see cref="ViewModel" />
+    /// is replaced while the view is activated. A <c>DataContext</c> that is neither <see langword="null" /> nor a
+    /// <typeparamref name="TViewModel" /> is not copied. Derived overrides must call the base method.
+    /// </summary>
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
@@ -65,6 +76,11 @@ public class ReactiveWindow<TViewModel> : Window, IViewFor<TViewModel> where TVi
         }
     }
 
+    /// <summary>
+    /// Calls the base method first, then marks the view as activated and activates <see cref="ViewModel" /> when it
+    /// implements <see cref="IActivatableViewModel" />. A call while the view is already activated changes nothing.
+    /// Derived overrides must call the base method, otherwise the view model is never activated.
+    /// </summary>
     protected override void OnLoaded(RoutedEventArgs e)
     {
         base.OnLoaded(e);
@@ -78,6 +94,11 @@ public class ReactiveWindow<TViewModel> : Window, IViewFor<TViewModel> where TVi
         UpdateViewModelActivation();
     }
 
+    /// <summary>
+    /// Deactivates the activated <see cref="ViewModel" /> and then calls the base method; when the view is not
+    /// activated it only calls the base method. Derived overrides must call the base method, otherwise the view model
+    /// stays activated.
+    /// </summary>
     protected override void OnUnloaded(RoutedEventArgs e)
     {
         if (!_isViewActivated)

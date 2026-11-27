@@ -5,7 +5,9 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 
-/// <summary>The PrimeNG view of <see cref="TagToken"/>.</summary>
+/// <summary>
+/// The PrimeNG view of <see cref="TagToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class TagTokenRule : IControlTokenRule<PrimeNGToken, TagToken>
 {
@@ -13,13 +15,17 @@ internal sealed class TagTokenRule : IControlTokenRule<PrimeNGToken, TagToken>
     {
         var token  = target.Own;
         var global = target.Global;
-        // PrimeNG: the control-global overrides and the status colours, read by the formulas below.
+        // PrimeNG: the control-global overrides and the status colors, read by the formulas below.
         var statuses = PrimeNGTagTokens.EvaluateGlobal(in context, global);
         TagTokenCalculator.Calculate(in context, global, token);
+        // Ant Design formula kept as is: the PrimeNG tag stage at the end of the method replaces TagPadding,
+        // TagLineHeight, TagFontWeight, TagIconSize, FilledStatusSolid, DefaultBg and DefaultColor.
         token.TagCloseIconSize = global.IconSizeXS;
         token.DefaultBg        = ColorUtils.OnBackground(global.ColorFillTertiary, global.ColorBgContainer);
         token.DefaultColor     = global.ColorText;
         token.FilledStatusSolid = false;
+        // The status colors are the preset's severity colors: the text on the tint in Aura, the solid fill in Lara
+        // and Nora.
         token.SuccessColor      = statuses.Success;
         token.InfoColor         = statuses.Info;
         token.WarningColor      = statuses.Warning;

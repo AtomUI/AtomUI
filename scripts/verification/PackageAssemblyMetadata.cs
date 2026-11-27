@@ -5,8 +5,21 @@ using System.Reflection.PortableExecutable;
 namespace AtomUI.PackageVerification
 {
     // Read packaged bytes without loading a product assembly into the PowerShell process.
+    /// <summary>
+    /// Reads the identity of a packaged assembly from its bytes, without loading the assembly.
+    /// </summary>
     public static class AssemblyMetadata
     {
+        /// <summary>
+        /// Copies the stream into memory and reads the assembly identity from the metadata of the resulting image.
+        /// </summary>
+        /// <returns>
+        /// The simple assembly name, its version and the framework name of its
+        /// <c>System.Runtime.Versioning.TargetFrameworkAttribute</c>, in that order.
+        /// </returns>
+        /// <exception cref="InvalidDataException">
+        /// The <c>TargetFrameworkAttribute</c> is missing, appears more than once or has a malformed value.
+        /// </exception>
         public static string[] Read(Stream input)
         {
             using (var bytes = new MemoryStream())

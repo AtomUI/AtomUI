@@ -4,7 +4,9 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls.Themes.AntDesign;
 
-/// <summary>The AntDesign view of <see cref="CheckBoxToken"/>.</summary>
+/// <summary>
+/// The AntDesign view of <see cref="CheckBoxToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class CheckBoxTokenRule : IControlTokenRule<AntDesignToken, CheckBoxToken>
 {

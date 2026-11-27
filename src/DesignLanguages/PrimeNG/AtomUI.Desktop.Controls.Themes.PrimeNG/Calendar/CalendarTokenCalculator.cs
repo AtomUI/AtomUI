@@ -5,13 +5,21 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 
-/// <summary>The PrimeNG values of the shared <see cref="AbstractCalendarToken"/> layer.</summary>
+/// <summary>
+/// The PrimeNG values of the shared <see cref="AbstractCalendarToken" /> layer.
+/// </summary>
 public static class CalendarTokenCalculator
 {
+    /// <summary>
+    /// Writes the PrimeNG values into the shared calendar layer: the panel background, the active cell colors, the
+    /// widths of the year and month controls, the week header and the geometry of the full cell and the range bar.
+    /// </summary>
     public static void Calculate(in TokenEvaluationContext<PrimeNGToken> context, DesignToken global, AbstractCalendarToken token)
     {
 
 
+        // Ant Design formula kept as is; the PrimeNG calendar stage (PrimeNGCalendarTokens.EvaluateOwn)
+        // replaces only ItemActiveColor, under a solid highlight (Nora, or the noir primary).
         token.FullBg = global.ColorBgContainer;
         token.FullPanelBg = global.ColorBgContainer;
         token.ItemActiveBg = global.ControlItemBgActive;

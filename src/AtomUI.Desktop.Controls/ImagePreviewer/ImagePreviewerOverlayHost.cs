@@ -604,9 +604,11 @@ internal class ImagePreviewerOverlayHost : ContentControl,
 
     private void HandleItemsSourceCollectionChanged(object? sender, NotifyCollectionChangedEventArgs args)
     {
-        // 有效集合增量变更时 CurrentIndex 属性值可能不变（如封顶裁剪后索引稳定），
-        // 但索引处的 entry 已更换：宿主必须与 previewer 的 ConfigureCurrentEntry 同步重配
-        // 当前项，否则显示跟踪会持有过期（可能已 Dispose）的 entry，表现为预览窗口白屏。
+        // An incremental change of the effective collection can leave CurrentIndex unchanged, for example
+        // when the index is still valid after being clamped to the new upper bound, while the entry at that
+        // index has been replaced. The host must reconfigure the current item in step with the previewer's
+        // ConfigureCurrentEntry; otherwise display tracking keeps a stale entry (possibly already disposed)
+        // and the preview window turns blank.
         SetCurrentValue(IsMultiImagesProperty, ItemsSource?.Count > 1);
         Count = ItemsSource?.Count ?? 0;
         HandleCurrentIndexChanged();

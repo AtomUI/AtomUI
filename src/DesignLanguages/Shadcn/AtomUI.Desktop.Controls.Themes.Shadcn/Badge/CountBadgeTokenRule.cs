@@ -5,7 +5,9 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls.Themes.Shadcn;
 
-/// <summary>The shadcn view of <see cref="CountBadgeToken"/>.</summary>
+/// <summary>
+/// The shadcn view of <see cref="CountBadgeToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class CountBadgeTokenRule : IControlTokenRule<ShadcnToken, CountBadgeToken>
 {
@@ -19,6 +21,7 @@ internal sealed class CountBadgeTokenRule : IControlTokenRule<ShadcnToken, Count
                               2 * lineWidth;
         token.IndicatorHeightSM = global.FontSize;
 
+        // Ant Design formula kept as is: no registry value is merged into the count badge tokens.
         token.TextFontSize       = global.FontSizeSM;
         token.TextFontSizeSM     = global.FontSizeSM - 2;
         token.TextFontWeight     = FontWeight.Normal;

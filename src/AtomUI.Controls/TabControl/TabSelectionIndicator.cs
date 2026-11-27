@@ -14,10 +14,25 @@ using Avalonia.VisualTree;
 
 namespace AtomUI.Controls;
 
+/// <summary>
+/// Extent of the selection indicator of a tab strip along the strip, relative to the selected tab.
+/// </summary>
 public enum TabIndicatorMode
 {
+    /// <summary>
+    /// The indicator spans the whole selected tab item.
+    /// </summary>
     Full,
+    /// <summary>
+    /// The indicator spans the header of the selected tab item; when the header cannot be found or has no size,
+    /// it spans the whole item.
+    /// </summary>
     Content,
+    /// <summary>
+    /// The indicator has the length of <see cref="AbstractTabControl.IndicatorFixedLength" /> and is centered
+    /// on the header of the selected tab item; when the header cannot be found or has no size, it is centered
+    /// on the whole item.
+    /// </summary>
     Fixed
 }
 

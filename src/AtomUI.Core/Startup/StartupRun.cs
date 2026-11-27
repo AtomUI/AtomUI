@@ -222,7 +222,8 @@ internal sealed class StartupRun
             _process.CompleteReady();
             return;
         }
-        // 主循环开始后执行：此时 OnFrameworkInitializationCompleted 已返回、生命周期已启动。
+        // Runs after the main loop has started: OnFrameworkInitializationCompleted has returned and the lifetime is
+        // running.
         Dispatcher.UIThread.Post(() => _ = PresentAsync(builder), DispatcherPriority.Normal);
     }
 
@@ -257,7 +258,8 @@ internal sealed class StartupRun
             }
 
             _process.MoveTo(StartupState.Presenting);
-            // 主窗体在首帧前被关闭视为用户取消：不再等待首帧，也不再走正常交接。
+            // Closing the main window before its first frame counts as a user cancellation: the first frame is no
+            // longer awaited and the regular handoff is skipped.
             void HandleMainWindowClosed(object? sender, EventArgs args)
             {
                 if (_process.State == StartupState.Presenting)
@@ -282,7 +284,8 @@ internal sealed class StartupRun
                 mainWindow.Closed -= HandleMainWindowClosed;
             }
             StartupEventSource.Log.MainWindowFirstFrame();
-            // 主窗体已经完成首个合成批次后才隐藏 Splash，避免 Splash 提前消失后主窗体长时间尚未上屏。
+            // The splash is hidden only after the main window has rendered its first composition batch, so that it does
+            // not disappear long before the main window is on screen.
             await CloseSplashAsync();
             _process.CompleteReady();
         }

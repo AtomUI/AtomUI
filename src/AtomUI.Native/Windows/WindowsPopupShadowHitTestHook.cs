@@ -6,19 +6,27 @@ using Avalonia.Threading;
 namespace AtomUI.Native.Windows;
 
 /// <summary>
-/// 窗口型 Popup 的阴影穿透，分两层：
+/// Shadow pass-through for a windowed Popup, in two layers:
 /// <list type="number">
-/// <item>同进程：<c>WM_NCHITTEST</c> 在阴影上返回 <c>HTTRANSPARENT</c>，系统把鼠标事件交给同线程下方的窗口（主窗口、其他 Popup）。</item>
-/// <item>跨进程：光标位于所属主窗口外的阴影上时临时加 <c>WS_EX_TRANSPARENT</c>，事件交给下方其他程序；
-/// 之后按帧轮询光标，回到内容形状、移出 Popup 或回到主窗口内时移除。</item>
+/// <item>
+/// Same process: <c>WM_NCHITTEST</c> returns <c>HTTRANSPARENT</c> over the shadow, and the system hands the
+/// mouse events to the window below on the same thread (the main window or another Popup).
+/// </item>
+/// <item>
+/// Other processes: while the cursor is over the shadow outside the owner main window,
+/// <c>WS_EX_TRANSPARENT</c> is added temporarily so that the events go to the programs below. The cursor is
+/// then polled every frame, and the style is removed when the cursor returns to the content shape, leaves the
+/// Popup or returns inside the main window.
+/// </item>
 /// </list>
-/// <c>WS_EX_TRANSPARENT</c> 只在 <c>WS_EX_LAYERED</c> 窗口上跨进程生效，因此挂接时即设置
-/// <c>WS_EX_LAYERED</c> + 整窗 alpha 255；运行时只切换 <c>WS_EX_TRANSPARENT</c>，不触发重绘。
+/// <c>WS_EX_TRANSPARENT</c> passes events to other processes only on a <c>WS_EX_LAYERED</c> window, so the hook
+/// sets <c>WS_EX_LAYERED</c> plus a whole-window alpha of 255 when it is attached. At run time only
+/// <c>WS_EX_TRANSPARENT</c> is toggled, which triggers no redraw.
 /// </summary>
 [SupportedOSPlatform("windows")]
 internal sealed class WindowsPopupShadowHitTestHook : IPopupShadowHitTest
 {
-    // 按帧轮询光标，约 60Hz
+    // Polls the cursor every frame, about 60 Hz.
     private static readonly TimeSpan PassThroughPollInterval = TimeSpan.FromMilliseconds(16);
 
     private readonly TopLevel _popupRoot;
@@ -47,7 +55,8 @@ internal sealed class WindowsPopupShadowHitTestHook : IPopupShadowHitTest
             WindowUtilsInterop.SetWindowLongPtr(hwnd, WindowUtilsInterop.GWL_EXSTYLE,
                 _originalExStyle | WindowUtilsInterop.WS_EX_LAYERED);
         }
-        // 整窗 alpha 255 不改变逐像素透明：内容仍由 Avalonia 透明合成，DWM 只额外乘以 1.0
+        // A whole-window alpha of 255 leaves per-pixel transparency unchanged: Avalonia still composites the
+        // content transparently, and the DWM only multiplies it by an extra 1.0.
         WindowUtilsInterop.SetLayeredWindowAttributes(hwnd, 0, 255, WindowUtilsInterop.LWA_ALPHA);
         Win32Properties.AddWndProcHookCallback(popupRoot, HandleWndProc);
     }
@@ -70,7 +79,7 @@ internal sealed class WindowsPopupShadowHitTestHook : IPopupShadowHitTest
 
     internal bool IsPassThroughActive => _passThroughTimer is not null;
 
-    // WM_NCHITTEST 每次实时查询动效状态与内容形状，没有需要刷新的缓存
+    // WM_NCHITTEST queries the motion state and the content shape live each time; there is no cache to refresh.
     public void Invalidate()
     {
     }
@@ -106,13 +115,14 @@ internal sealed class WindowsPopupShadowHitTestHook : IPopupShadowHitTest
                     unchecked((short)((long)lParam >> 16)));
                 if (!IsShadowHit(screenPoint))
                 {
-                    // 内容形状内交还 Avalonia 处理
+                    // Inside the content shape: hand the event back to Avalonia.
                     return IntPtr.Zero;
                 }
 
                 if (!IsInsideOwnerWindow(screenPoint))
                 {
-                    // HTTRANSPARENT 只在同线程窗口之间转发，主窗口外由 WS_EX_TRANSPARENT 交给其他程序
+                    // HTTRANSPARENT forwards only between windows of the same thread. Outside the main window,
+                    // WS_EX_TRANSPARENT hands the events over to other programs.
                     BeginPassThrough();
                 }
 
@@ -158,7 +168,8 @@ internal sealed class WindowsPopupShadowHitTestHook : IPopupShadowHitTest
         }
 
         var screenPoint = new PixelPoint(cursor.X, cursor.Y);
-        // 光标移出 Popup 或回到主窗口内时交还第一层：下一次进入 Popup 会重新收到 WM_NCHITTEST
+        // When the cursor leaves the Popup or returns inside the main window, input goes back to the first layer:
+        // the next entry into the Popup receives WM_NCHITTEST again.
         if (!WindowUtilsInterop.GetWindowRect(_hwnd, out var popupRect) ||
             !popupRect.Contains(cursor.X, cursor.Y) ||
             IsInsideOwnerWindow(screenPoint) ||
@@ -192,7 +203,7 @@ internal sealed class WindowsPopupShadowHitTestHook : IPopupShadowHitTest
             : style & ~WindowUtilsInterop.WS_EX_TRANSPARENT;
         if (newStyle != style)
         {
-            // 只改扩展样式，不调用 SetWindowPos(SWP_FRAMECHANGED)，不会触发重绘
+            // Only the extended style changes. SetWindowPos(SWP_FRAMECHANGED) is not called, so nothing is redrawn.
             WindowUtilsInterop.SetWindowLongPtr(_hwnd, WindowUtilsInterop.GWL_EXSTYLE, newStyle);
         }
     }
@@ -205,7 +216,8 @@ internal sealed class WindowsPopupShadowHitTestHook : IPopupShadowHitTest
             return false;
         }
 
-        // 扩展帧边界不含不可见的 resize 边框，与用户看到的主窗口范围一致
+        // The extended frame bounds exclude the invisible resize border and match the extent of the main window
+        // that the user sees.
         if (WindowUtilsInterop.DwmGetWindowRectAttribute(
                 owner,
                 WindowUtilsInterop.DWMWA_EXTENDED_FRAME_BOUNDS,

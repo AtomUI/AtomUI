@@ -1,31 +1,32 @@
 #!/usr/bin/env bash
 #
-# AtomUI 全量回归测试运行器
+# AtomUI full regression test runner
 #
-# 流程：预检残留进程 → 逐项目统计测试数 → 带进度/ETA/卡死预警的运行 → 汇总
+# Flow: preflight leftover processes -> count tests per project -> run with progress/ETA/stall warnings -> summary
 #
-# 用法:
-#   scripts/run-full-regression.sh [--projects p1,p2] [--with-integration] [--filter FX] [--stall 秒] [--prune]
+# Usage:
+#   scripts/run-full-regression.sh [--projects p1,p2] [--with-integration] [--filter FX] [--stall seconds] [--prune]
 #
-# 默认不跑端到端集成测试（真实 pack + 临时 NuGet feed + consumer 构建，单项目 6~8 分钟）；
-# 普通全量与发版均保持默认排除；仅用户明确要求时加 --with-integration。
+# End-to-end integration tests are skipped by default (a real pack + a temporary NuGet feed + a consumer
+# build, 6-8 minutes per project);
+# ordinary full runs and releases keep them excluded; pass --with-integration only when the user asks for it.
 #
-# 输出行前缀（供 agent 解析）:
-#   [COUNT]  统计阶段   [RUN] 项目开始   [PROG] 进度（每 30s）
-#   [STALL]  卡死预警   [SUMMARY] 汇总   [ERROR] 错误
+# Output line prefixes (for agents to parse):
+#   [COUNT]  counting phase   [RUN] project started   [PROG] progress (every 30s)
+#   [STALL]  stall warning   [SUMMARY] summary   [ERROR] error
 set -o pipefail
 
 REPO_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 FRAMEWORK="net10.0"
-POLL=5          # 秒，轮询间隔
-CADENCE=30      # 秒，进度行打印间隔
-STALL=120       # 秒，无进度告警阈值
+POLL=5          # seconds between polls
+CADENCE=30      # seconds between progress lines
+STALL=120       # seconds without progress before a stall warning
 FILTER=""
 PRUNE=0
 WITH_INTEGRATION=0
 EXPLICIT_PROJECTS=0
 
-# 默认项目集：按预期耗时降序，大套件先跑尽早暴露问题
+# Default project set: ordered by expected duration, longest suites first so that problems show early
 PROJECTS=(
     AtomUIGallery.Tests
     AtomUI.Generator.Tests
@@ -44,7 +45,8 @@ PROJECTS=(
     AtomUI.Icons.Shared.Tests
 )
 
-# 端到端集成测试：仅用户明确要求 --with-integration 时加入，发版不自动追加
+# End-to-end integration tests: added only when the user asks for --with-integration; releases never add
+# them automatically
 INTEGRATION_PROJECTS=(
     AtomUI.Localization.IntegrationTests
 )
@@ -72,11 +74,11 @@ FAILURES="$WORKDIR/failures.txt"
 filter_args=""
 [ -n "$FILTER" ] && filter_args="--filter $FILTER"
 
-# 显式 --projects 时按用户给定集合执行，不再增删
+# With an explicit --projects the given set runs as is, nothing is added or removed
 SKIPPED_INTEGRATION=""
 if [ "$EXPLICIT_PROJECTS" -eq 0 ]; then
     if [ "$WITH_INTEGRATION" -eq 1 ]; then
-        # 集成测试耗时最长，放在大套件之后尽早跑完
+        # The integration tests take the longest, so they run right after the big suites
         PROJECTS=("${PROJECTS[@]:0:2}" "${INTEGRATION_PROJECTS[@]}" "${PROJECTS[@]:2}")
     else
         SKIPPED_INTEGRATION="$(IFS=','; echo "${INTEGRATION_PROJECTS[*]}")"
@@ -88,11 +90,11 @@ if [ -n "$SKIPPED_INTEGRATION" ]; then
     echo "[MODE] 未包含集成测试: ${SKIPPED_INTEGRATION}（默认排除；仅按用户明确要求加 --with-integration）"
 fi
 
-fmt_clock() { # 秒 -> mm:ss
+fmt_clock() { # seconds -> mm:ss
     awk -v s="$1" 'BEGIN { printf "%02d:%02d", int(s/60), s%60 }'
 }
 
-# ---------- ① 预检残留进程 ----------
+# ---------- 1. Preflight leftover processes ----------
 stray="$(ps ax -o pid=,command= | grep -E 'testhost|vstest' | grep -F "$REPO_ROOT/.artifacts" | grep -v grep || true)"
 if [ -n "$stray" ]; then
     echo "[PREFLIGHT] ⚠ 发现本仓库残留测试进程:"
@@ -107,7 +109,7 @@ if [ -n "$stray" ]; then
     fi
 fi
 
-# ---------- ② 统计测试数（含构建） ----------
+# ---------- 2. Count tests (includes the build) ----------
 echo "[COUNT] 统计测试数（含构建, framework=${FRAMEWORK}）..."
 counts=()
 total=0
@@ -130,8 +132,8 @@ for p in "${PROJECTS[@]}"; do
 done
 echo "[COUNT] 共 ${#PROJECTS[@]} 个项目, $total 个测试"
 
-# ---------- ③ 运行 ----------
-run_one() { # $1=项目名 $2=预期数 $3=全局已完成基数
+# ---------- 3. Run ----------
+run_one() { # $1=project name $2=expected count $3=tests completed so far
     local p="$1" expected="$2" gbase="$3"
     local cs="$REPO_ROOT/tests/$p/$p.csproj"
     local log="$WORKDIR/$p.log"
@@ -206,7 +208,7 @@ for p in "${PROJECTS[@]}"; do
     i=$((i + 1))
 done
 
-# ---------- ④ 汇总 ----------
+# ---------- 4. Summary ----------
 total_dur=$(( $(date +%s) - overall_start ))
 echo ""
 echo "[SUMMARY] ===== 全量回归汇总 ====="

@@ -4,7 +4,9 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 
-/// <summary>The PrimeNG view of <see cref="MessageCardToken"/>.</summary>
+/// <summary>
+/// The PrimeNG view of <see cref="MessageCardToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class MessageCardTokenRule : IControlTokenRule<PrimeNGToken, MessageCardToken>
 {
@@ -12,7 +14,7 @@ internal sealed class MessageCardTokenRule : IControlTokenRule<PrimeNGToken, Mes
     {
         var token  = target.Own;
         var global = target.Global;
-        // PrimeNG: the control-global overrides and the severity colours, read by the formulas below.
+        // PrimeNG: the control-global overrides and the severity colors, read by the formulas below.
         var statuses = PrimeNGMessageCardTokens.EvaluateGlobal(in context, global);
         // Every MessageType has a severity shadow slot, so there is no resting shadow: the theme sets the card shadow
         // from the slot matching the current MessageType.
@@ -36,6 +38,9 @@ internal sealed class MessageCardTokenRule : IControlTokenRule<PrimeNGToken, Mes
         token.ErrorIconColor = statuses.Error;
         token.ErrorColor = global.ColorText;
         token.LoadingIconColor = statuses.Primary;
+        // Ant Design formula kept as is; the PrimeNG message stage (PrimeNGMessageCardTokens.EvaluateOwn)
+        // replaces MessageIconSize below, so the content padding and the top and icon margins stay the Ant
+        // Design formula over the PrimeNG global tokens.
         token.ContentPadding = new Thickness(
             (global.ControlHeightLG -
              global.FontSize * global.RelativeLineHeight) / 2,

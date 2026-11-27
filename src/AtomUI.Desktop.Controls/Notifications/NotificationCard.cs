@@ -16,6 +16,11 @@ using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
 
+/// <summary>
+/// The card that <see cref="WindowNotificationManager" /> shows for one notification: a status icon, a title, the
+/// description and an optional actions area, with a close button at the top right corner and an optional progress
+/// bar at the bottom. A card created without a manager is standalone and gets no hover pause.
+/// </summary>
 [PseudoClasses(StdPseudoClass.Error, StdPseudoClass.Information, StdPseudoClass.Success, StdPseudoClass.Warning)]
 public partial class NotificationCard : ContentControl,
                                 IMotionAwareControl,
@@ -24,83 +29,136 @@ public partial class NotificationCard : ContentControl,
 {
     #region 公共属性定义
     
+    /// <summary>
+    /// Identifies the <see cref="IsClosing" /> property.
+    /// </summary>
     public static readonly DirectProperty<NotificationCard, bool> IsClosingProperty =
         AvaloniaProperty.RegisterDirect<NotificationCard, bool>(nameof(IsClosing), o => o.IsClosing);
     
+    /// <summary>
+    /// Identifies the <see cref="IsClosed" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsClosedProperty =
         AvaloniaProperty.Register<NotificationCard, bool>(nameof(IsClosed));
 
+    /// <summary>
+    /// Identifies the <see cref="IsShowProgress" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsShowProgressProperty =
         AvaloniaProperty.Register<NotificationCard, bool>(nameof(IsShowProgress));
     
+    /// <summary>
+    /// Identifies the <see cref="NotificationType" /> property.
+    /// </summary>
     public static readonly StyledProperty<NotificationType> NotificationTypeProperty =
         AvaloniaProperty.Register<NotificationCard, NotificationType>(
             nameof(NotificationType),
             NotificationType.Default);
 
+    /// <summary>
+    /// Identifies the <see cref="IsMotionEnabled" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<NotificationCard>();
     
+    /// <summary>
+    /// Identifies the <see cref="NotificationClosed" /> routed event.
+    /// </summary>
     public static readonly RoutedEvent<RoutedEventArgs> NotificationClosedEvent =
         RoutedEvent.Register<NotificationCard, RoutedEventArgs>(nameof(NotificationClosed), RoutingStrategies.Bubble);
 
+    /// <summary>
+    /// Identifies the <see cref="Title" /> property.
+    /// </summary>
     public static readonly StyledProperty<string> TitleProperty =
         AvaloniaProperty.Register<NotificationCard, string>(nameof(Title));
 
+    /// <summary>
+    /// Identifies the <see cref="Icon" /> property.
+    /// </summary>
     public static readonly StyledProperty<PathIcon?> IconProperty =
         AvaloniaProperty.Register<NotificationCard, PathIcon?>(nameof(Icon));
 
     /// <summary>
-    /// 操作组内容，显示在通知卡片描述下方的操作区。
+    /// Identifies the <see cref="Actions" /> property.
     /// </summary>
     public static readonly StyledProperty<object?> ActionsProperty =
         AvaloniaProperty.Register<NotificationCard, object?>(nameof(Actions));
 
     /// <summary>
-    /// 操作组内容的数据模板，用于自定义操作区呈现。
+    /// Identifies the <see cref="ActionsTemplate" /> property.
     /// </summary>
     public static readonly StyledProperty<IDataTemplate?> ActionsTemplateProperty =
         AvaloniaProperty.Register<NotificationCard, IDataTemplate?>(nameof(ActionsTemplate));
 
     /// <summary>
-    /// 卡片表面阴影。root 外观由 owner 属性投影到模板表面 Border，便于 owner-scoped Semantic Style 定制。
+    /// Identifies the <see cref="BoxShadow" /> property.
     /// </summary>
     public static readonly StyledProperty<BoxShadows> BoxShadowProperty =
         Border.BoxShadowProperty.AddOwner<NotificationCard>();
     
+    /// <summary>
+    /// Identifies the <see cref="Expiration" /> property.
+    /// </summary>
     public static readonly StyledProperty<TimeSpan?> ExpirationProperty =
         AvaloniaProperty.Register<NotificationCard, TimeSpan?>(nameof(Expiration));
     
+    /// <summary>
+    /// Reports that the card has started closing. It becomes <see langword="true" /> when <see cref="Close" /> is
+    /// called and stays so; the close motion starts at that moment, and <see cref="IsClosed" /> is set when it has
+    /// finished.
+    /// </summary>
     public bool IsClosing
     {
         get => _isClosing;
         private set => SetAndRaise(IsClosingProperty, ref _isClosing, value);
     }
     
+    /// <summary>
+    /// Reports that the card has closed. The card sets it when the close motion has finished, then raises
+    /// <see cref="NotificationClosed" />. The theme uses it to drop the card's margin.
+    /// </summary>
     public bool IsClosed
     {
         get => GetValue(IsClosedProperty);
         set => SetValue(IsClosedProperty, value);
     }
 
+    /// <summary>
+    /// Shows a progress bar along the bottom edge of the card that runs down while the card is shown. The bar exists
+    /// only while <see cref="Expiration" /> is not <see langword="null" />: its total is the <see cref="Expiration" />
+    /// value present when the bar is created, and later values are taken as the remaining time.
+    /// </summary>
     public bool IsShowProgress
     {
         get => GetValue(IsShowProgressProperty);
         set => SetValue(IsShowProgressProperty, value);
     }
 
+    /// <summary>
+    /// Severity of the notification; <c>Default</c> when not set. It selects the shadow and status icon color of the
+    /// theme, and the card supplies a matching filled status icon unless the application sets <see cref="Icon" />.
+    /// </summary>
     public NotificationType NotificationType
     {
         get => GetValue(NotificationTypeProperty);
         set => SetValue(NotificationTypeProperty, value);
     }
 
+    /// <summary>
+    /// The title shown above the description in the content area of the card.
+    /// </summary>
     public string Title
     {
         get => GetValue(TitleProperty);
         set => SetValue(TitleProperty, value);
     }
 
+    /// <summary>
+    /// Icon shown in front of the title and description. While the application sets none, the card supplies the
+    /// filled status icon of <see cref="NotificationType" /> (none for <c>Default</c>) and replaces it when the type
+    /// changes. Setting an icon here shows that one; setting <see langword="null" /> restores the status icon.
+    /// </summary>
     public PathIcon? Icon
     {
         get => GetValue(IconProperty);
@@ -108,7 +166,8 @@ public partial class NotificationCard : ContentControl,
     }
 
     /// <summary>
-    /// 操作组内容。非空时模板中的 actions 区域可见。
+    /// Content of the actions area at the bottom of the card, aligned to the right. The area is visible only while
+    /// the value is not <see langword="null" />.
     /// </summary>
     public object? Actions
     {
@@ -117,7 +176,7 @@ public partial class NotificationCard : ContentControl,
     }
 
     /// <summary>
-    /// 操作组内容模板。
+    /// The data template used to present <see cref="Actions" />.
     /// </summary>
     public IDataTemplate? ActionsTemplate
     {
@@ -126,7 +185,9 @@ public partial class NotificationCard : ContentControl,
     }
 
     /// <summary>
-    /// 卡片表面阴影，投影到模板表面 Border。
+    /// Shadow of the card surface, painted by the frame of the template. The frame reads the value from the card,
+    /// so a value set on the card, including one from an owner-scoped semantic style, reaches the frame. The theme
+    /// supplies the shadow of <see cref="NotificationType" />.
     /// </summary>
     public BoxShadows BoxShadow
     {
@@ -144,12 +205,21 @@ public partial class NotificationCard : ContentControl,
         set => SetValue(ExpirationProperty, value);
     }
 
+    /// <summary>
+    /// Raised after <see cref="IsClosed" /> changes while the card is closing or closed, which is normally the end
+    /// of the close motion. The event bubbles and cannot be canceled; <see cref="WindowNotificationManager" />
+    /// handles it and invokes <see cref="OnClose" />.
+    /// </summary>
     public event EventHandler<RoutedEventArgs>? NotificationClosed
     {
         add => AddHandler(NotificationClosedEvent, value);
         remove => RemoveHandler(NotificationClosedEvent, value);
     }
 
+    /// <summary>
+    /// Controls the motion of the card: the transitions of the theme, the close motion and the stack collapse
+    /// snapshot. The theme sets it from the <c>EnableMotion</c> token when no value is set on the card.
+    /// </summary>
     public bool IsMotionEnabled
     {
         get => GetValue(IsMotionEnabledProperty);
@@ -160,10 +230,16 @@ public partial class NotificationCard : ContentControl,
 
     #region 内部属性定义
 
-    /// <summary>回调：用户点击通知卡片时触发，由 WindowNotificationManager 设置以避免 lambda 闭包。</summary>
+    /// <summary>
+    /// Callback invoked when the user clicks the card. <see cref="WindowNotificationManager" /> assigns it from the
+    /// notification, so the manager needs no lambda closure per card.
+    /// </summary>
     internal Action? OnClick { get; set; }
 
-    /// <summary>回调：通知卡片关闭时触发，由 WindowNotificationManager 设置以避免 lambda 闭包。</summary>
+    /// <summary>
+    /// Callback invoked when the card closes. <see cref="WindowNotificationManager" /> assigns it from the
+    /// notification, so the manager needs no lambda closure per card.
+    /// </summary>
     internal Action? OnClose { get; set; }
 
     internal static readonly DirectProperty<NotificationCard, NotificationPosition> PositionProperty =
@@ -211,8 +287,11 @@ public partial class NotificationCard : ContentControl,
     private bool _isStackCollapseSnapshotArmed;
 
     /// <summary>
-    /// Initializes a new instance of the <see cref="NotificationCard" /> class.
+    /// Initializes a card that is hosted by a manager, so that it pauses while the pointer is over it.
     /// </summary>
+    /// <param name="manager">
+    /// The manager that shows the card and pauses it while the pointer is over it.
+    /// </param>
     public NotificationCard(WindowNotificationManager manager)
     {
         _notificationManager = manager;
@@ -229,6 +308,11 @@ public partial class NotificationCard : ContentControl,
         _motionCoordinator = new FeedbackCardMotionCoordinator(CompleteCloseMotion);
     }
     
+    /// <summary>
+    /// Starts closing the card by setting <see cref="IsClosing" />, which starts the close motion. When that motion
+    /// has finished, the card sets <see cref="IsClosed" /> and raises <see cref="NotificationClosed" />. A call
+    /// while the card is already closing returns at once.
+    /// </summary>
     public void Close()
     {
         if (IsClosing)
@@ -294,6 +378,11 @@ public partial class NotificationCard : ContentControl,
         OnClose = null;
     }
 
+    /// <summary>
+    /// When the card enters the visual tree, updates the pseudo-classes of <see cref="Position" /> and
+    /// <see cref="NotificationType" />, supplies the default status icon, sets the frame of the template as the target
+    /// of the close motion and subscribes to the close button. An override must call this member.
+    /// </summary>
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
@@ -307,6 +396,11 @@ public partial class NotificationCard : ContentControl,
         }
     }
 
+    /// <summary>
+    /// When the card leaves the visual tree, releases the resources that depend on the template: the stack transition
+    /// snapshot, the motion target of the close motion, the close button subscription and the progress bar.
+    /// An override must call this member.
+    /// </summary>
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         ReleaseStackTransitionSnapshot();
@@ -320,6 +414,11 @@ public partial class NotificationCard : ContentControl,
         _layout = null;
     }
 
+    /// <summary>
+    /// Binds the template parts (layout grid, close button, frame as motion target and snapshot host), subscribes to
+    /// the close button and rebuilds the progress bar for the current <see cref="IsShowProgress" /> and
+    /// <see cref="Expiration" />. An override must call this member.
+    /// </summary>
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         ReleaseStackTransitionSnapshot();
@@ -366,6 +465,16 @@ public partial class NotificationCard : ContentControl,
         Close();
     }
 
+    /// <summary>
+    /// Keeps the card in step with its properties after each change. It updates the pseudo-classes after
+    /// <see cref="Position" /> and <see cref="NotificationType" /> changes, the default status icon after
+    /// <see cref="NotificationType" /> and <see cref="Icon" /> changes, and the progress bar after
+    /// <see cref="IsShowProgress" /> and <see cref="Expiration" /> changes. It starts the close motion when
+    /// <see cref="IsClosing" /> becomes <see langword="true" />, raises <see cref="NotificationClosed" /> when
+    /// <see cref="IsClosed" /> changes while the card is closing or closed, and updates the motion configuration
+    /// and the stack transition snapshot after changes of <see cref="IsClosed" />, <see cref="Position" />,
+    /// <see cref="IsMotionEnabled" /> and <see cref="OpenCloseMotionDuration" />. An override must call this member.
+    /// </summary>
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
@@ -520,10 +629,12 @@ public partial class NotificationCard : ContentControl,
             {
                 Name = "ProgressBar"
             };
-            // progress 是覆盖在卡片底部的运行时 Part：显式注入 semantic class，随进度条一同创建与释放。
+            // progress is a runtime part over the card's bottom edge. Its semantic class is injected explicitly; it is
+            // created and released together with the bar.
             _progressBar.Classes.Add(NotificationCardSemanticParts.ProgressClass);
             _progressBar.SetTemplatedParent(this);
-            // 列 0 是 Auto，未跨列时会以无限宽测量并令 Measure 返回非法尺寸；跨双列对齐卡片内容行。
+            // Column 0 is Auto: without a span the bar is measured with infinite width and Measure returns an invalid
+            // size. Spanning both columns aligns the bar with the card's content row.
             Grid.SetRow(_progressBar, 1);
             Grid.SetColumn(_progressBar, 0);
             Grid.SetColumnSpan(_progressBar, 2);
@@ -612,12 +723,20 @@ public partial class NotificationCard : ContentControl,
         return null;
     }
 
+    /// <summary>
+    /// Asks the manager that shows the card to pause it while the pointer is over it, after the base member has run.
+    /// A standalone card has no manager and is not paused. An override must call this member.
+    /// </summary>
     protected override void OnPointerEntered(PointerEventArgs e)
     {
         base.OnPointerEntered(e);
         _notificationManager?.SetItemPaused(this, true);
     }
 
+    /// <summary>
+    /// Asks the manager that shows the card to resume it, after the base member has run. A standalone card has no
+    /// manager. An override must call this member.
+    /// </summary>
     protected override void OnPointerExited(PointerEventArgs e)
     {
         base.OnPointerExited(e);

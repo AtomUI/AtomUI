@@ -13,8 +13,9 @@ internal static class ThemeScope
             inherits: true);
 
     /// <summary>
-    /// 当前元素所属的公开控件的 Token 身份。注册控件的默认 ControlTheme 在解析时注入该值（Style 优先级），
-    /// 模板内的共享基元据此沿继承链取得宿主控件身份。
+    /// The token identity of the public control the element belongs to. The default ControlTheme of a registered
+    /// control injects the value when it is resolved, at style priority; shared primitives inside the template
+    /// read it through the inheritance chain to find their host control.
     /// </summary>
     internal static readonly AttachedProperty<ControlTokenIdentity?> TokenOwnerProperty =
         AvaloniaProperty.RegisterAttached<ThemeConfigProvider, StyledElement, ControlTokenIdentity?>(

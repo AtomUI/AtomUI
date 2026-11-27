@@ -8,7 +8,8 @@ namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 /// <summary>
 /// ComboBox under the PrimeNG presets: PrimeUIX 3.1.1 <c>list.option</c> — a row of the 0.875rem line (1.5 line height
 /// = 21) plus 0.25rem padding top and bottom, so 29 instead of the Ant Design <c>ControlHeight</c>, and 0.625rem
-/// horizontal padding. The row height also drives the popup's page size.
+/// horizontal padding. The row height also sets the maximum drop-down height: <c>DropDownDisplayPageSize</c> rows
+/// plus the popup content padding.
 /// </summary>
 internal static class PrimeNGComboBoxTokens
 {

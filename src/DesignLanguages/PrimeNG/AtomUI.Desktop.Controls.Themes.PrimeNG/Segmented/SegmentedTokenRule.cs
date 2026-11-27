@@ -4,7 +4,9 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 
-/// <summary>The PrimeNG view of <see cref="SegmentedToken"/>.</summary>
+/// <summary>
+/// The PrimeNG view of <see cref="SegmentedToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class SegmentedTokenRule : IControlTokenRule<PrimeNGToken, SegmentedToken>
 {

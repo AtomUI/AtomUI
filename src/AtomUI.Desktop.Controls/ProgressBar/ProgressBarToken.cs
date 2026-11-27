@@ -4,41 +4,42 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
 
+/// <summary>
+/// Own Tokens of the <see cref="ProgressBar" /> control: the stroke thickness of each size preset, the corner
+/// radius of the bar, the padding around an inner label, the color and opacity of that label, and the reserved
+/// duration of the Active status animation.
+/// </summary>
 [ControlDesignToken]
 public sealed partial class ProgressBarToken : AbstractLineProgressToken
 {
     /// <summary>
-    /// 大号线状进度条厚度（antd 8）
-    /// Line stroke thickness of the large preset
+    /// Line stroke thickness of the large preset.
     /// </summary>
     public partial double LineStrokeThicknessLG { get; set; }
 
     /// <summary>
-    /// 默认（中号）线状进度条厚度（antd 6）
-    /// Line stroke thickness of the middle preset
+    /// Line stroke thickness of the middle preset.
     /// </summary>
     public partial double LineStrokeThickness { get; set; }
 
     /// <summary>
-    /// 小号线状进度条厚度（antd 4）
-    /// Line stroke thickness of the small preset
+    /// Line stroke thickness of the small preset.
     /// </summary>
     public partial double LineStrokeThicknessSM { get; set; }
 
     /// <summary>
-    /// 条状进度条圆角
-    /// Corner radius of the rounded (capsule) line progress bar
+    /// Corner radius of the rounded (capsule) line progress bar. Applied to the rail, the track and the success bar
+    /// only while <c>StrokeLineCap</c> is <c>Round</c>.
     /// </summary>
     public partial CornerRadius LineBorderRadius { get; set; }
 
     /// <summary>
-    /// 内部百分比模式下进度条的内间距
-    /// Padding of the bar around an inner percentage label
+    /// Padding of the bar around an inner percentage label.
     /// </summary>
     public partial double LineProgressPadding { get; set; }
 
     /// <summary>
-    /// Text colour of an inner percentage label where it reads better than <c>ColorTextLightSolid</c> on the bar
+    /// Text color of an inner percentage label where it reads better than <c>ColorTextLightSolid</c> on the bar
     /// (the label takes the more readable of the two); defaults to <c>ColorTextLabel</c>.
     /// </summary>
     public partial Color InnerLabelColor { get; set; }
@@ -50,8 +51,8 @@ public sealed partial class ProgressBarToken : AbstractLineProgressToken
     public partial double InnerLabelEmptyOpacity { get; set; }
 
     /// <summary>
-    /// Active 状态轨道闪光动画的时长（antd progressActiveMotionDuration，2.4s）
-    /// Duration of the Active status shimmer over the track (antd progressActiveMotionDuration, 2.4s)
+    /// Duration of the shimmer that the Active status moves over the track. Reserved: the animation is not
+    /// implemented, so the value has no effect and Active renders like Normal.
     /// </summary>
     [ReservedToken("antd Progress progressActiveMotionDuration. The Active status shimmer animation over the track " +
                    "is not implemented yet; Active renders like Normal.")]

@@ -30,7 +30,8 @@ internal sealed class LanguageContext
         Commit(new LanguageReadView(Registry, revision));
     }
 
-    // registry 和 snapshot 必须作为一个读取视图发布，后台查询不能组合两代 slot。
+    // The registry and the snapshot must be published as one read view, so that a background query never
+    // combines slots of two generations.
     internal void Commit(LanguageReadView view) => Volatile.Write(ref _view, view);
 
     // Synchronous UI hooks can resolve candidate translations, while background localizers keep
@@ -53,6 +54,18 @@ internal sealed class LanguageContext
 internal sealed record LanguageReadView(LanguageCatalogRegistry Registry, LanguageRevision Revision);
 
 // Core and Localization publish one application package transaction through this shared fence.
+/// <summary>
+/// Commit flag that AtomUI.Core creates for one package append and shares between the theme update and the
+/// language update.
+/// </summary>
+/// <remarks>
+/// While a language view is staged, <see cref="LanguageContext.Capture" /> returns the candidate view only to
+/// the thread that staged it and the previously committed view to every other thread. Once
+/// <see cref="IsCommitted" /> is <see langword="true" />, all threads get the candidate view. The theme update
+/// reads the same flag, so background readers switch to the new theme and to the new language together.
+/// AtomUI.Core calls <see cref="Complete" /> after every fallible hook of the append has run and before it
+/// commits the two updates.
+/// </remarks>
 internal sealed class PackagePublication
 {
     private int _committed;

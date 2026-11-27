@@ -5,7 +5,9 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls.Themes.AntDesign;
 
-/// <summary>The AntDesign view of <see cref="HyperLinkButtonToken"/>.</summary>
+/// <summary>
+/// The AntDesign view of <see cref="HyperLinkButtonToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class HyperLinkButtonTokenRule : IControlTokenRule<AntDesignToken, HyperLinkButtonToken>
 {

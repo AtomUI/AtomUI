@@ -8,7 +8,9 @@ internal static class ThemeDocumentReader
     internal const string XmlNamespace = "https://atomui.net/schemas/theme/v2";
     internal const string V1XmlNamespace = "https://atomui.net/schemas/theme/v1";
 
-    /// <summary>The toolchain command that rewrites v1 theme files as v2 (spec 7.11).</summary>
+    /// <summary>
+    /// The toolchain command that rewrites v1 theme files as v2.
+    /// </summary>
     internal const string ConversionCommand =
         "dotnet msbuild -t:ConvertAtomUIThemeDefinitions -p:AtomUIThemeDefinitionInput=<directory> " +
         "[-p:AtomUIThemeDefinitionOutput=<directory>]";
@@ -174,7 +176,7 @@ internal static class ThemeDocumentReader
         }
     }
 
-    // Spec 7.11 and Review Focus 1: a v1 file is not read; the diagnostic names the format and the conversion command.
+    // A v1 file is not read; the diagnostic names the format and the conversion command.
     private static ThemeDocumentReadResult UnsupportedRoot(string source, XmlReader reader)
     {
         var lineInfo = (IXmlLineInfo)reader;

@@ -10,13 +10,15 @@ using Avalonia.Media;
 namespace Sample.DesignLanguage;
 
 /// <summary>
-/// The language tokens of <see cref="SampleLanguage"/>. Deriving from <see cref="AntDesignToken"/> makes the sample a
+/// The language tokens of <see cref="SampleLanguage" />. Deriving from <see cref="AntDesignToken" /> makes the sample a
 /// derived language: every control token rule written for Ant Design applies to it unless a sample one overrides it.
 /// </summary>
 [LanguageDesignToken]
 public partial class SampleToken : AntDesignToken
 {
-    /// <summary>The brand accent: a stronger primary used for highlighted surfaces.</summary>
+    /// <summary>
+    /// The brand accent: a stronger primary used for highlighted surfaces.
+    /// </summary>
     public partial Color Accent { get; set; }
 }
 
@@ -27,7 +29,9 @@ public partial class SampleToken : AntDesignToken
 [DesignLanguage]
 public sealed class SampleLanguage : DesignLanguage<SampleToken>
 {
-    /// <summary>The sample brand primary.</summary>
+    /// <summary>
+    /// The sample brand primary.
+    /// </summary>
     public static Color BrandPrimary { get; } = Color.Parse("#7C3AED");
 
     private static readonly AntDesignLanguage s_base = new();
@@ -70,8 +74,8 @@ public sealed class SampleLanguage : DesignLanguage<SampleToken>
 public static class SampleLanguageBuilderExtensions
 {
     /// <summary>
-    /// Enables the sample language. <paramref name="configure"/> adds the sample value packages; a value package the
-    /// sample does not provide falls back to the Ant Design one, added through <see cref="WithAntDesignValues"/>.
+    /// Enables the sample language. <paramref name="configure" /> adds the sample value packages; a value package the
+    /// sample does not provide falls back to the Ant Design one, added through <see cref="WithAntDesignValues" />.
     /// </summary>
     public static IAtomUIBuilder UseSample(this IAtomUIBuilder builder,
         Action<DesignLanguageBuilder<SampleLanguage>>? configure = null)

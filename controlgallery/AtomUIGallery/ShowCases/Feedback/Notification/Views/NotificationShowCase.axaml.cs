@@ -301,7 +301,8 @@ public partial class NotificationShowCase : GalleryReactiveUserControl<Notificat
         return _stackManager;
     }
 
-    // 操作组示例：卡片内右下角放两个按钮，分别关闭本条与全部通知。
+    // Actions example: two buttons at the bottom right of the card close this notification and all
+    // notifications.
     private void ShowActionsNotification(object? sender, RoutedEventArgs e)
     {
         var manager = GetBasicManager();
@@ -362,12 +363,14 @@ public partial class NotificationShowCase : GalleryReactiveUserControl<Notificat
         }
     }
 
-    // 样式定制示例：默认分支为浅绿卡片，error 分支整卡转红。
-    // 反馈层弹在页面视觉树之外，页面内声明的 Style 命中不到卡片，因此样式资源挂到 manager 自身
-    //（卡片是 manager 的视觉后代，按 owner 作用域命中），class 随通知内容传入。
+    // Style customization example: the default branch is a light green card and the error branch turns the
+    // whole card red. The feedback layer is outside the page visual tree, so styles declared in the page
+    // cannot reach the cards. The style resource is therefore attached to the manager itself (the cards are
+    // visual descendants of the manager and are matched in owner scope) and the class travels with the
+    // notification content.
     private void HandleShowDefaultStyleNotification(object? sender, RoutedEventArgs e)
     {
-        // 默认分支按 Information 类型展示。
+        // The default branch is shown with the Information type.
         ShowStyledNotification(NotificationType.Information, "semantic-default-style-demo");
     }
 
@@ -395,12 +398,15 @@ public partial class NotificationShowCase : GalleryReactiveUserControl<Notificat
             [styleClass]);
     }
 
-    // 语义样式以页面 AXAML 的 Styles 资源声明（仍是生成的专用 Style 类），这里挂到 manager 自身。
-    // 样式声明在本页 UserControl.Resources 中，必须从本页的资源宿主查找；从 Application.Current 查找
-    // 会命中不到页面级资源，样式将静默失效。挂载是唯一的代码步骤，不做任何部件属性改写。
+    // The semantic styles are declared in the page AXAML as a Styles resource (still the generated dedicated
+    // style classes) and attached to the manager itself here. They live in this page's UserControl.Resources,
+    // so they must be looked up from this page's resource host: a lookup from Application.Current misses
+    // page-level resources and the styles silently do nothing. Attaching is the only code step; no part
+    // property is rewritten.
     private void ApplySemanticStyleStyles(WindowNotificationManager manager)
     {
-        // 以 manager 实例去重：同一 manager 只挂一次，页面 detach 后重建的新 manager 会重新挂载。
+        // Deduplicates by manager instance: a manager is attached only once, and a new manager created after
+        // the page detaches is attached again.
         if (ReferenceEquals(_semanticStylesOwner, manager))
         {
             return;

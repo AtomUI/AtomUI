@@ -28,6 +28,10 @@ public enum DataGridClipboardCopyMode
     IncludeHeader
 }
 
+/// <summary>
+/// One cell of a DataGrid row as it is handed to a clipboard copy: its content, its column and the item
+/// of its row.
+/// </summary>
 public struct DataGridClipboardCellContent
 {
     private DataGridColumn _column;
@@ -35,11 +39,17 @@ public struct DataGridClipboardCellContent
     private object? _item;
 
     /// <summary>
-    /// Creates a new DataGridClipboardCellValue structure containing information about a DataGrid cell.
+    /// Creates a DataGridClipboardCellContent with the content of a DataGrid cell, its column and its row item.
     /// </summary>
-    /// <param name="item">DataGrid row item containing the cell.</param>
-    /// <param name="column">DataGridColumn containing the cell.</param>
-    /// <param name="content">DataGrid cell value.</param>
+    /// <param name="item">
+    /// DataGrid row item containing the cell.
+    /// </param>
+    /// <param name="column">
+    /// DataGridColumn containing the cell.
+    /// </param>
+    /// <param name="content">
+    /// DataGrid cell value.
+    /// </param>
     public DataGridClipboardCellContent(object? item, DataGridColumn column, object? content)
     {
         _item    = item;
@@ -65,8 +75,12 @@ public struct DataGridClipboardCellContent
     /// <summary>
     /// Field-by-field comparison to avoid reflection-based ValueType.Equals.
     /// </summary>
-    /// <param name="obj">DataGridClipboardCellContent to compare.</param>
-    /// <returns>True iff this and data are equal</returns>
+    /// <param name="obj">
+    /// DataGridClipboardCellContent to compare.
+    /// </param>
+    /// <returns>
+    /// True iff this and obj are equal.
+    /// </returns>
     public override bool Equals(object? obj)
     {
         if(obj is DataGridClipboardCellContent content)
@@ -79,7 +93,9 @@ public struct DataGridClipboardCellContent
     /// <summary>
     /// Returns a deterministic hash code.
     /// </summary>
-    /// <returns>Hash value.</returns>
+    /// <returns>
+    /// Hash value.
+    /// </returns>
     public override int GetHashCode()
     {
         var hash = new HashCode();
@@ -92,9 +108,15 @@ public struct DataGridClipboardCellContent
     /// <summary>
     /// Field-by-field comparison to avoid reflection-based ValueType.Equals.
     /// </summary>
-    /// <param name="clipboardCellContent1">The first DataGridClipboardCellContent.</param>
-    /// <param name="clipboardCellContent2">The second DataGridClipboardCellContent.</param>
-    /// <returns>True iff clipboardCellContent1 and clipboardCellContent2 are equal.</returns>
+    /// <param name="clipboardCellContent1">
+    /// The first DataGridClipboardCellContent.
+    /// </param>
+    /// <param name="clipboardCellContent2">
+    /// The second DataGridClipboardCellContent.
+    /// </param>
+    /// <returns>
+    /// True iff clipboardCellContent1 and clipboardCellContent2 are equal.
+    /// </returns>
     public static bool operator ==(DataGridClipboardCellContent clipboardCellContent1, DataGridClipboardCellContent clipboardCellContent2)
     {
         return (((clipboardCellContent1._column == clipboardCellContent2._column) && (clipboardCellContent1._content == clipboardCellContent2._content)) && (clipboardCellContent1._item == clipboardCellContent2._item));
@@ -103,9 +125,15 @@ public struct DataGridClipboardCellContent
     /// <summary>
     /// Field-by-field comparison to avoid reflection-based ValueType.Equals.
     /// </summary>
-    /// <param name="clipboardCellContent1">The first DataGridClipboardCellContent.</param>
-    /// <param name="clipboardCellContent2">The second DataGridClipboardCellContent.</param>
-    /// <returns>True iff clipboardCellContent1 and clipboardCellContent2 are NOT equal.</returns>
+    /// <param name="clipboardCellContent1">
+    /// The first DataGridClipboardCellContent.
+    /// </param>
+    /// <param name="clipboardCellContent2">
+    /// The second DataGridClipboardCellContent.
+    /// </param>
+    /// <returns>
+    /// True iff clipboardCellContent1 and clipboardCellContent2 are NOT equal.
+    /// </returns>
     public static bool operator !=(DataGridClipboardCellContent clipboardCellContent1, DataGridClipboardCellContent clipboardCellContent2)
     {
         if ((clipboardCellContent1._column == clipboardCellContent2._column) && (clipboardCellContent1._content == clipboardCellContent2._content))
@@ -131,8 +159,15 @@ public class DataGridRowClipboardEventArgs : EventArgs
     /// <summary>
     /// Creates a DataGridRowClipboardEventArgs object and initializes the properties.
     /// </summary>
-    /// <param name="item">The row's associated data item.</param>
-    /// <param name="isColumnHeadersRow">Whether or not this EventArgs is for the column headers.</param>
+    /// <param name="item">
+    /// The row's associated data item.
+    /// </param>
+    /// <param name="isColumnHeadersRow">
+    /// Whether or not this EventArgs is for the column headers.
+    /// </param>
+    /// <param name="clipboardRowContentCapacity">
+    /// Initial capacity reserved for the clipboard content of the row; a value below 1 is taken as 0.
+    /// </param>
     internal DataGridRowClipboardEventArgs(object? item, bool isColumnHeadersRow, int clipboardRowContentCapacity = 0)
     {
         _isColumnHeadersRow          = isColumnHeadersRow;
@@ -143,7 +178,7 @@ public class DataGridRowClipboardEventArgs : EventArgs
     }
 
     /// <summary>
-    /// This list should be used to modify, add ot remove a cell content before it gets stored into the clipboard.
+    /// This list should be used to modify, add or remove a cell content before it gets stored into the clipboard.
     /// </summary>
     public List<DataGridClipboardCellContent> ClipboardRowContent
     {

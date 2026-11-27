@@ -115,7 +115,8 @@ internal class DataGridDisplayData
         }
         else
         {
-            // 回收池中的行不再被复用，丢弃前解除其对表格的绑定
+            // The rows in the recycling pools are no longer reused; release their bindings to the grid before
+            // dropping them.
             foreach (var row in _recyclableRows.Concat(_fullyRecycledRows))
             {
                 row.ReleaseOwningGridBindings();
@@ -187,8 +188,9 @@ internal class DataGridDisplayData
         {
             DataGridRow row = _recyclableRows.Pop();
             row.IsVisible = false;
-            // TODO 拖动的时候滚动翻页了会触发这个，暂时改成动态判断
-            // Debug.Assert(!_fullyRecycledRows.Contains(row));
+            // Scrolling to another page during a drag can offer a row that is already fully recycled, so the
+            // Debug.Assert was replaced with this runtime check.
+            // TODO recycling: find the cause and restore the Debug.Assert. Remove this TODO when that is done.
             if (!_fullyRecycledRows.Contains(row))
             {
                 _fullyRecycledRows.Push(row);
@@ -199,8 +201,9 @@ internal class DataGridDisplayData
         {
             DataGridRowGroupHeader groupHeader = _recyclableGroupHeaders.Pop();
             groupHeader.IsVisible = false;
-            // TODO 拖动的时候滚动翻页了会触发这个，暂时改成动态判断
-            // Debug.Assert(!_fullyRecycledGroupHeaders.Contains(groupHeader));
+            // Scrolling to another page during a drag can offer a group header that is already fully recycled, so the
+            // Debug.Assert was replaced with this runtime check.
+            // TODO recycling: find the cause and restore the Debug.Assert. Remove this TODO when that is done.
             if (!_fullyRecycledGroupHeaders.Contains(groupHeader))
             {
                 _fullyRecycledGroupHeaders.Push(groupHeader);

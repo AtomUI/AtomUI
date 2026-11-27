@@ -4,7 +4,9 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 
-/// <summary>The PrimeNG view of <see cref="BreadcrumbToken"/>.</summary>
+/// <summary>
+/// The PrimeNG view of <see cref="BreadcrumbToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class BreadcrumbTokenRule : IControlTokenRule<PrimeNGToken, BreadcrumbToken>
 {
@@ -12,7 +14,7 @@ internal sealed class BreadcrumbTokenRule : IControlTokenRule<PrimeNGToken, Brea
     {
         var token  = target.Own;
         var global = target.Global;
-        // PrimeNG: the control-global overrides, read by the formulas below.
+        // PrimeNG: no control-global overrides; EvaluateGlobal writes nothing.
         PrimeNGBreadcrumbTokens.EvaluateGlobal(in context, global);
         token.ItemColor                   = global.ColorTextDescription;
         token.LastItemColor               = global.ColorText;

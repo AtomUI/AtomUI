@@ -6,9 +6,18 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls.Themes.AntDesign;
 
-/// <summary>The AntDesign values of the shared <see cref="AbstractColorPickerViewToken"/> layer.</summary>
+/// <summary>
+/// The AntDesign values of the shared <see cref="AbstractColorPickerViewToken" /> layer.
+/// </summary>
 public static class ColorPickerViewTokenCalculator
 {
+    /// <summary>
+    /// Assigns the Ant Design values of the color picker view layer to <paramref name="token" />. The width of
+    /// the view and of the preset panel, the editor font size, the handler sizes and the width of the input
+    /// number handle are fixed numbers that do not depend on the global tokens. The remaining values, among them
+    /// the alpha input width, the shadows, the spectrum height and the margins, are read from the global tokens;
+    /// the dark handler color is the literal <c>#22075e</c>.
+    /// </summary>
     public static void Calculate(in TokenEvaluationContext<AntDesignToken> context, DesignToken global, AbstractColorPickerViewToken token)
     {
         token.EditorFontSize = 11;
@@ -32,6 +41,10 @@ public static class ColorPickerViewTokenCalculator
     }
 
 
+    /// <summary>
+    /// Sets <c>ColorPickerSliderSize</c> to the handler size and then derives the dependent sizes with
+    /// <see cref="CalculateDependentSizes" />, which documents the parameters.
+    /// </summary>
     public static void CalculateSliderSizes(AbstractColorPickerViewToken token, DesignToken global, double handlerSize, double presetSize, double trackSize)
     {
         token.ColorPickerSliderSize = handlerSize;
@@ -39,6 +52,26 @@ public static class ColorPickerViewTokenCalculator
     }
 
 
+    /// <summary>
+    /// Writes the three sizes that follow from the slider geometry: <c>CheckedMarkSize</c> is 60 percent of the
+    /// preset size, <c>ColorPickerSliderThumbSize</c> is the handler size plus one line width on each side, and
+    /// <c>ColorPickerPreviewSize</c> is twice the track size plus the small margin.
+    /// </summary>
+    /// <param name="token">
+    /// The token layer that receives the three sizes.
+    /// </param>
+    /// <param name="global">
+    /// The global tokens the line width and the small margin come from.
+    /// </param>
+    /// <param name="handlerSize">
+    /// The size of the slider handler.
+    /// </param>
+    /// <param name="presetSize">
+    /// The size of one preset color.
+    /// </param>
+    /// <param name="trackSize">
+    /// The size of the slider track.
+    /// </param>
     public static void CalculateDependentSizes(AbstractColorPickerViewToken token, DesignToken global, double handlerSize, double presetSize, double trackSize)
     {
         token.CheckedMarkSize = presetSize * 0.6;

@@ -12,11 +12,14 @@ using Avalonia.VisualTree;
 namespace AtomUI.Controls.Commons;
 
 /// <summary>
-/// BackTop 悬浮按钮边缘的滚动进度环，视觉对齐 antd FloatButton.BackTop showProgress：
-/// 轨道色/进度色/线宽由 ControlTheme 注入（ColorBorderSecondary/ColorPrimary/LineWidthBold），
-/// 从 12 点方向顺时针。进度指示为扇形填充并裁剪到环带（等价 antd conic-gradient 的角度语义）。
-/// 扇形角度是运行时连续值，ControlTheme 选择器无法表达，
-/// 故按主题绑定约束的兜底条款采用自定义 Render（与 AbstractGeneralCircleProgress 同惯用法）。
+/// Draws the scroll progress ring along the edge of the BackTop float button, matching the progress ring of
+/// antd FloatButton.BackTop. <see cref="Progress" /> is a fraction from 0 to 1 that fills the ring clockwise
+/// from 12 o'clock. The track color, the progress color and the stroke thickness come from the theme
+/// (ColorBorderSecondary, ColorPrimary and LineWidthBold). The indicator is a sector fill clipped to the
+/// ring band, which follows the angle semantics of the antd conic gradient.
+/// The sweep angle is a continuous runtime value that no ControlTheme selector can express, so the ring is
+/// drawn in <see cref="Render" /> instead of through theme bindings, in the same way as
+/// <c>AbstractGeneralCircleProgress</c>.
 /// </summary>
 internal class BackTopProgressRing : Control
 {
@@ -35,6 +38,12 @@ internal class BackTopProgressRing : Control
         set => SetValue(ProgressProperty, value);
     }
 
+    /// <summary>
+    /// Resource keys of the stroke thickness, the track brush and the indicator brush of the ring. While the ring is
+    /// attached, it observes the keys and repaints when a value changes. <see langword="null" />, the default,
+    /// observes nothing: the thickness falls back to 2 and the brushes stay unset. The theme of the back-top button
+    /// sets the keys.
+    /// </summary>
     internal BackTopProgressRingTokenResourceKeys? ProgressRingTokenResourceKeys
     {
         get => GetValue(ProgressRingTokenResourceKeysProperty);
@@ -137,9 +146,10 @@ internal class BackTopProgressRing : Control
     }
 
     /// <summary>
-    /// 计算环的几何：外/中心线/内边界矩形与对应圆角半径。
-    /// 外边界半径必须等于按钮自身的圆角半径，使环的外缘与按钮轮廓完全重合；
-    /// 中心线半径为外边界半径减去半线宽，内边界半径为外边界半径减去线宽。
+    /// Computes the geometry of the ring: the outer, centerline and inner boundary rectangles with their corner
+    /// radii. The outer radius must equal the corner radius of the button itself so that the outer edge of the
+    /// ring coincides exactly with the outline of the button; the centerline radius is the outer radius minus half
+    /// the stroke thickness, and the inner radius is the outer radius minus the stroke thickness.
     /// </summary>
     internal static BackTopProgressRingMetrics CalculateRingMetrics(
         Size size, double cornerRadius, double thickness)
@@ -172,7 +182,8 @@ internal class BackTopProgressRing : Control
         PenUtils.TryModifyOrCreate(ref _trackPen, track, thickness);
         if (_trackPen is not null)
         {
-            // 轨道描边以中心线为基准；外缘与按钮轮廓重合，两种形状共用同一路径
+            // The track stroke is centered on the centerline rectangle, so its outer edge coincides with the button
+            // outline. The Circle and Square shapes share this path.
             context.DrawRectangle(null, _trackPen, metrics.CenterlineRect,
                 metrics.CenterlineRadius, metrics.CenterlineRadius);
         }
@@ -183,23 +194,27 @@ internal class BackTopProgressRing : Control
             return;
         }
 
-        // 进度扇形填充裁剪到「外圆角矩形−内圆角矩形」环带，Circle/Square 统一路径。
-        // 指示器必须是扇形填充而非环矩形的内切圆弧描边：Square 形状下圆角方向的
-        // 内切圆弧半径小于外边界，会落入内孔几何被裁掉，进度环退化为四段侧边短线
+        // The progress sector is clipped to the band left when the inner rounded rectangle is subtracted from the
+        // outer one. The Circle and Square shapes share this path.
+        // The indicator must be a filled sector, not an arc stroke inscribed in the ring rectangle. For the Square
+        // shape, the inscribed arc has a smaller radius than the outer boundary in the corner direction, so it falls
+        // into the inner hole and is clipped away, and the progress ring degenerates into four short segments on
+        // the sides.
         var bandGeometry = new CombinedGeometry(GeometryCombineMode.Exclude,
             BuildRoundedRectGeometry(metrics.OuterRect, metrics.OuterRadius),
             BuildRoundedRectGeometry(metrics.InnerRect, metrics.InnerRadius));
 
         if (sweepAngle >= 360d)
         {
-            // 扇形起终点重合退化，直接用进度色填充整个环带
+            // The start and end points of the sector coincide here, so fill the whole band with the progress color.
             context.DrawGeometry(indicator, null, bandGeometry);
             return;
         }
 
-        // 以环中心为顶点的扇形，半径取半对角线以覆盖环带最外点，
-        // 从 -90°（12 点方向）顺时针扫 sweepAngle。
-        // 角度→点换算与 CommonShapeBuilder.GetRingPoint 同约定：x = cx + r·cos(deg)，y = cy + r·sin(deg)
+        // A sector with its vertex at the center of the ring. Its radius is half the diagonal, which covers the
+        // outermost point of the band, and it sweeps clockwise by sweepAngle from -90 degrees (12 o'clock).
+        // The angle-to-point conversion follows the convention of CommonShapeBuilder.GetRingPoint:
+        // x = cx + r * cos(angle), y = cy + r * sin(angle).
         var center = metrics.CenterlineRect.Center;
         var sectorRadius = Math.Sqrt(metrics.CenterlineRect.Width * metrics.CenterlineRect.Width / 4
                                      + metrics.CenterlineRect.Height * metrics.CenterlineRect.Height / 4);
@@ -266,11 +281,16 @@ internal class BackTopProgressRing : Control
 }
 
 /// <summary>
-/// 进度环的几何参数。外边界为按钮轮廓（半径等于按钮圆角半径），
-/// 中心线与内边界由线宽向内偏移得到。
+/// Resource keys of the paint of the ring. The theme sets them through
+/// <see cref="BackTopProgressRing.ProgressRingTokenResourceKeys" />, and the ring resolves them while attached.
 /// </summary>
 internal sealed record BackTopProgressRingTokenResourceKeys(object Thickness, object Track, object Indicator);
 
+/// <summary>
+/// The geometry of the progress ring. The outer boundary is the outline of the button, with a radius equal to
+/// the corner radius of the button; the centerline and the inner boundary are inset from it by the stroke
+/// thickness.
+/// </summary>
 internal readonly record struct BackTopProgressRingMetrics(
     Rect OuterRect,
     Rect CenterlineRect,

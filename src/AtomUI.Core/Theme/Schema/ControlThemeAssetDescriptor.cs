@@ -2,8 +2,43 @@ using System.ComponentModel;
 
 namespace AtomUI.Theme.Schema;
 
+/// <summary>
+/// Describes one control theme asset for the theme schema registry: where the asset is loaded from, which
+/// ControlThemes it exports, which Token owners it requires and which semantic theme bindings it declares.
+/// </summary>
 public sealed class ControlThemeAssetDescriptor
 {
+    /// <summary>
+    /// Creates a descriptor from evidence that is passed in directly. The lists are validated and stored in
+    /// canonical order.
+    /// The resource key fingerprint is stored as it is passed, so a descriptor built this way is registered
+    /// only when that value is the fingerprint the registry computes for it from the current schema.
+    /// </summary>
+    /// <param name="assetId">
+    /// Identifies the asset. It must be unique among the assets of one registration.
+    /// </param>
+    /// <param name="assetUri">
+    /// The absolute URI of the asset.
+    /// </param>
+    /// <param name="exportedThemes">
+    /// The ControlThemes the asset exports. Their resource keys must be distinct.
+    /// </param>
+    /// <param name="requiredTokenOwners">
+    /// The owners of the Tokens the asset reads. Every owner must carry its Control type.
+    /// </param>
+    /// <param name="semanticThemeBindings">
+    /// The semantic theme bindings the asset declares.
+    /// </param>
+    /// <param name="resourceKeySchemaFingerprint">
+    /// The fingerprint of the resource key schema the asset was compiled against.
+    /// </param>
+    /// <exception cref="ArgumentNullException">
+    /// An argument is <see langword="null" />.
+    /// </exception>
+    /// <exception cref="ArgumentException">
+    /// The asset id is blank, a theme or binding list contains <see langword="null" />, an export key occurs
+    /// twice, or a Token owner does not carry its Control type.
+    /// </exception>
     public ControlThemeAssetDescriptor(
         string assetId,
         Uri assetUri,
@@ -104,7 +139,9 @@ public sealed class ControlThemeAssetDescriptor
         ResourceKeySchemaFingerprint = resourceKeySchemaFingerprint;
     }
 
-    /// <summary>Materializes a generated asset using compile-time schema evidence and actual runtime Types.</summary>
+    /// <summary>
+    /// Materializes a generated asset using compile-time schema evidence and actual runtime Types.
+    /// </summary>
     [EditorBrowsable(EditorBrowsableState.Never)]
     public static ControlThemeAssetDescriptor CreateGenerated(
         string assetId,
@@ -343,11 +380,33 @@ public sealed class ControlThemeAssetDescriptor
         SemanticThemeBindings.Select(static binding => binding.OwnerIdentity.OwnerType)
             .SequenceEqual(other.SemanticThemeBindings.Select(static binding => binding.OwnerIdentity.OwnerType)));
 
+    /// <summary>
+    /// Identifies the asset within a registration; the registration rejects two assets with the same id.
+    /// </summary>
     public string AssetId { get; }
+    /// <summary>
+    /// The ControlThemes the asset exports, ordered by target type and then by resource key.
+    /// </summary>
     public IReadOnlyList<ControlThemeExportDescriptor> ExportedThemes { get; }
+    /// <summary>
+    /// The owners of the Tokens the asset reads, in canonical order. Every owner carries its Control type.
+    /// </summary>
     public IReadOnlyList<ControlTokenIdentity> RequiredTokenOwners { get; }
+    /// <summary>
+    /// The semantic theme bindings the asset declares, distinct and ordered by owner identity, property name
+    /// and target type.
+    /// </summary>
     public IReadOnlyList<ControlThemeBindingDescriptor> SemanticThemeBindings { get; }
 
+    /// <summary>
+    /// The absolute URI of the asset. The registration rejects a relative URI and a URI that is registered
+    /// twice.
+    /// </summary>
     public Uri AssetUri { get; }
+    /// <summary>
+    /// Fingerprint of the resource key schema the asset was compiled against. The registration computes the
+    /// fingerprint of the current schema and rejects the asset when the two differ or when this value is
+    /// <c>0</c>.
+    /// </summary>
     public ulong ResourceKeySchemaFingerprint { get; }
 }

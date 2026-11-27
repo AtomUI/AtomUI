@@ -1,5 +1,10 @@
 namespace AtomUI.Controls.Primitives;
 
+/// <summary>
+/// A <see cref="DashedBorder" /> whose border drawing trims an overflow of less than one physical pixel past the
+/// right or bottom edge of a clipping ancestor when layout rounding is on at a fractional layout scale.
+/// The child layout is not affected.
+/// </summary>
 public class PixelAlignedBorder : DashedBorder
 {
     // Avalonia's fractional-scale layout can round a child one physical pixel

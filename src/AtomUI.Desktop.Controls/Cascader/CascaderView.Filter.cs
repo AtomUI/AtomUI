@@ -39,6 +39,17 @@ public partial class CascaderView
     private List<CascaderViewFilterListItemData>? _allPathInfos;
     private CascaderViewFilterList? _filterList;
     
+    /// <summary>
+    /// Runs the candidate option paths through <see cref="Filter" /> with the current <see cref="FilterValue" /> and
+    /// sets the matching paths as the filter result, with <see cref="FilterResultCount" /> as their number.
+    /// Calls <see cref="ClearFilter" /> instead when <see cref="Filter" /> is <see langword="null" />, when the value
+    /// is <see langword="null" /> or blank, or when the view is not loaded.
+    /// </summary>
+    /// <remarks>
+    /// A path is the chain of headers from a root option down to an option, joined with "/". Only leaves are
+    /// candidates; when <see cref="IsAllowSelectParent" /> or <see cref="IsCheckable" /> is set, every option is.
+    /// The candidate paths are collected on the first call after <see cref="ClearFilter" /> and reused afterwards.
+    /// </remarks>
     public void FilterItems()
     {
         var hasFilterValue = FilterValue switch
@@ -140,6 +151,13 @@ public partial class CascaderView
         }
     }
     
+    /// <summary>
+    /// Ends filtering and clears the filter: sets <see cref="FilterValue" /> to <see langword="null" />,
+    /// <see cref="FilterResultCount" /> to 0, and drops the result list and the collected option paths.
+    /// </summary>
+    /// <remarks>
+    /// <see cref="FilterValue" /> is set with <c>SetCurrentValue</c>, so a binding on the property is kept.
+    /// </remarks>
     public void ClearFilter()
     {
         _filterList?.ClearCandidate();

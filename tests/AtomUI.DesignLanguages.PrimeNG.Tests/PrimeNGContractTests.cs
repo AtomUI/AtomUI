@@ -7,8 +7,8 @@ using Shouldly;
 namespace AtomUI.DesignLanguages.PrimeNG.Tests;
 
 /// <summary>
-/// PrimeNG with the values of every desktop control satisfies the design language contract (spec 14, 15): each
-/// derivation writes every token, is pure and deterministic, and the paired roles are readable, under all 12 variants.
+/// PrimeNG with the values of every desktop control satisfies the design language contract: each derivation writes
+/// every token, is pure and deterministic, and the paired roles are readable, under all 12 variants.
 /// </summary>
 public class PrimeNGContractTests
 {

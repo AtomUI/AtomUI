@@ -1,9 +1,12 @@
 namespace AtomUI.Theme.Schema;
 
 /// <summary>
-/// FNV-1a 指纹构造器。与 AtomUI.Generator 的 RegistrationFingerprint 逐字节等价
-/// （每个 UTF-16 单元/整数按 8 个 little-endian 字节进入哈希；ushort/int 的零后缀折叠
-/// 在数学上与逐字节形态相等）。供运行时契约校验、Revision 计算与生成资产指纹续算使用。
+/// Builds an FNV-1a fingerprint over strings and integers. It is byte-for-byte equivalent to the
+/// <c>RegistrationFingerprint</c> of <c>AtomUI.Generator</c>: every UTF-16 unit and every integer enters the
+/// hash as 8 little-endian bytes, and folding the zero suffix of a <c>ushort</c> or <c>int</c> into one
+/// multiplication is mathematically equal to the per-byte form. The runtime uses it for contract validation,
+/// <c>Revision</c> calculation and for continuing the fingerprint of generated assets.
+/// A state of 0 means that nothing was hashed yet and reads as the FNV offset basis.
 /// </summary>
 internal struct SchemaFingerprintBuilder
 {
@@ -70,13 +73,18 @@ internal struct SchemaFingerprintBuilder
         }
     }
 
-    /// <summary>捕获当前中间状态（原始值，保留 0=未初始化约定）。</summary>
+    /// <summary>
+    /// Captures the current intermediate state as the raw value, so 0 still means that nothing was hashed.
+    /// </summary>
     internal SchemaPrefixState Save()
     {
         return new SchemaPrefixState(_value);
     }
 
-    /// <summary>从先前捕获的中间状态恢复构造器，继续追加后续字段。</summary>
+    /// <summary>
+    /// Creates a builder that continues from a state captured by <see cref="Save" />; fields added afterwards
+    /// are hashed after that prefix.
+    /// </summary>
     internal static SchemaFingerprintBuilder Restore(SchemaPrefixState state)
     {
         var builder = new SchemaFingerprintBuilder { _value = state.Value };

@@ -4,7 +4,9 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls.Themes.AntDesign;
 
-/// <summary>The AntDesign view of <see cref="RangeTimePickerToken"/>.</summary>
+/// <summary>
+/// The AntDesign view of <see cref="RangeTimePickerToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class RangeTimePickerTokenRule : IControlTokenRule<AntDesignToken, RangeTimePickerToken>
 {

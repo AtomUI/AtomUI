@@ -5,7 +5,9 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 
-/// <summary>The PrimeNG view of <see cref="HyperLinkButtonToken"/>.</summary>
+/// <summary>
+/// The PrimeNG view of <see cref="HyperLinkButtonToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class HyperLinkButtonTokenRule : IControlTokenRule<PrimeNGToken, HyperLinkButtonToken>
 {
@@ -27,6 +29,8 @@ internal sealed class HyperLinkButtonTokenRule : IControlTokenRule<PrimeNGToken,
         var controlHeightSM = global.ControlHeightSM;
         var controlHeight = global.ControlHeight;
         var controlHeightLG = global.ControlHeightLG;
+        // Ant Design formula kept as is: no PrimeNG stage writes this token, so the rule takes the Ant
+        // Design formula over the PrimeNG global tokens.
         token.ContentPaddingSM = new Thickness(
             8 - lineWidth,
             Math.Max((controlHeightSM - token.ContentLineHeightSM) / 2 - lineWidth, 0));

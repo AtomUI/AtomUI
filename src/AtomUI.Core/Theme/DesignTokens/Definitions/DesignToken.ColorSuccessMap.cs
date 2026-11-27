@@ -6,74 +6,66 @@ namespace AtomUI.Theme.DesignTokens;
 public partial class DesignToken
 {
     /// <summary>
-    /// 成功色的浅色背景颜色
-    /// 成功色的浅色背景颜色，用于 Tag 和 Alert 的成功态背景色
-    /// 1 号色
+    /// Light background tint of the success palette, used for the success state of Tag and Alert.
+    /// The Ant Design language derives it from the palette generated for <see cref="ColorSuccess" />.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Map)]
     public partial Color ColorSuccessBg { get; set; }
 
     /// <summary>
-    /// 成功色的浅色背景色悬浮态
-    /// 成功色浅色背景颜色，一般用于视觉层级较弱的选中状态，不过 antd 目前没有使用到该 token
-    /// 2 号色
+    /// Hover state of the success light background tint. The Button variant token calculations read it.
+    /// The Ant Design language derives it from the palette generated for <see cref="ColorSuccess" />.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Map)]
     public partial Color ColorSuccessBgHover { get; set; }
 
     /// <summary>
-    /// 成功色的描边色
-    /// 成功色的描边色，用于 Tag 和 Alert 的成功态描边色
-    /// 3 号色
+    /// Border color of the success palette, used for the success state of Tag and Alert.
+    /// The Ant Design language derives it from the palette generated for <see cref="ColorSuccess" />.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Map)]
     public partial Color ColorSuccessBorder { get; set; }
 
     /// <summary>
-    /// 成功色的描边色悬浮态
-    /// 4 号色
+    /// Hover state of the success border color, read while a control with a success border is hovered.
+    /// The Ant Design language derives it from the palette generated for <see cref="ColorSuccess" />.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Map)]
     public partial Color ColorSuccessBorderHover { get; set; }
 
     /// <summary>
-    /// 成功色的深色悬浮态
-    /// 5 号色
+    /// Dark hover shade of the success palette, read while a success-colored element is hovered.
+    /// The Ant Design language derives it from the palette generated for <see cref="ColorSuccess" />.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Map)]
     public partial Color ColorSuccessHover { get; set; }
 
-    /// <summary>
-    /// 成功色
-    /// 默认的成功色，如 Result、Progress 等组件中都有使用该颜色
-    /// 6 号色
-    /// 在 Seed 文件中定义
-    /// </summary>
+    // The base success color ColorSuccess itself is not part of this map. It is declared in DesignToken.Seed.cs.
 
     /// <summary>
-    /// 成功色的深色激活态
-    /// 7 号色
+    /// Dark active shade of the success palette, read while a success-colored element is pressed.
+    /// The Ant Design language derives it from the palette generated for <see cref="ColorSuccess" />.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Map)]
     public partial Color ColorSuccessActive { get; set; }
 
     /// <summary>
-    /// 成功色的文本悬浮态
-    /// 8 号色
+    /// Success text color for the hover state, read while success-colored text is hovered.
+    /// The Ant Design language derives it from the palette generated for <see cref="ColorSuccess" />.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Map)]
     public partial Color ColorSuccessTextHover { get; set; }
 
     /// <summary>
-    /// 成功色的文本默认态
-    /// 9 号色
+    /// Success text color in the default state, read for success-colored text.
+    /// The Ant Design language derives it from the palette generated for <see cref="ColorSuccess" />.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Map)]
     public partial Color ColorSuccessText { get; set; }
 
     /// <summary>
-    /// 成功色的文本激活态
-    /// 10 号色
+    /// Success text color for the active state, read while success-colored text is pressed.
+    /// The Ant Design language derives it from the palette generated for <see cref="ColorSuccess" />.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Map)]
     public partial Color ColorSuccessTextActive { get; set; }

@@ -2,13 +2,29 @@ using Avalonia.Controls;
 
 namespace AtomUI;
 
+/// <summary>
+/// Provides <see cref="UseMainWindow" />, which lets the application create its main window during the startup.
+/// </summary>
 public static class StartupBuilderExtensions
 {
     /// <summary>
-    /// 主循环开始后在 UI 线程调用工厂创建主窗体（可 await 加载数据并汇报进度），返回的窗口设为
-    /// <c>IClassicDesktopStyleApplicationLifetime.MainWindow</c> 并显示。只适用于经典桌面生命周期；
-    /// 不能同时在应用代码中自行设置 MainWindow。
+    /// Calls <paramref name="factory" /> on the UI thread once the main loop has started. The factory may await
+    /// its data loading and report progress meanwhile. The returned window is assigned to
+    /// <c>IClassicDesktopStyleApplicationLifetime.MainWindow</c> and shown. This requires the classic desktop
+    /// application lifetime, and application code must not assign MainWindow itself at the same time.
     /// </summary>
+    /// <param name="builder">
+    /// The builder of the AtomUI setup.
+    /// </param>
+    /// <param name="factory">
+    /// Creates the main window. It receives a <see cref="MainWindowContext" /> for reporting progress.
+    /// </param>
+    /// <returns>
+    /// The same <paramref name="builder" />.
+    /// </returns>
+    /// <exception cref="ArgumentNullException">
+    /// <paramref name="builder" /> is <see langword="null" />.
+    /// </exception>
     public static IAtomUIBuilder UseMainWindow(this IAtomUIBuilder builder,
                                               Func<MainWindowContext, Task<Window>> factory)
     {

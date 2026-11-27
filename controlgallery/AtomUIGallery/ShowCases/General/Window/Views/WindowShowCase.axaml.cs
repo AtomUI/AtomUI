@@ -17,7 +17,8 @@ public partial class WindowShowCase : GalleryReactiveUserControl<WindowViewModel
         InitializeComponent();
     }
 
-    // 已打开的同类演示窗口只 Activate，不重复创建；关闭后从登记表移除，允许再次打开。
+    // An open demo window of the same kind is only activated, not created again; closing removes it from
+    // the registry so that it can be opened again.
     private void ShowDemoWindow<TDemoWindow>(Func<TDemoWindow> factory)
         where TDemoWindow : AtomUIWindow
     {

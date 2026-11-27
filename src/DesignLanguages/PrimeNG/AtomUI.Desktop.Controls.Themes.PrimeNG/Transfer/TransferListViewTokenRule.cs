@@ -4,7 +4,9 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 
-/// <summary>The PrimeNG view of <see cref="TransferListViewToken"/>.</summary>
+/// <summary>
+/// The PrimeNG view of <see cref="TransferListViewToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class TransferListViewTokenRule : IControlTokenRule<PrimeNGToken, TransferListViewToken>
 {
@@ -12,7 +14,7 @@ internal sealed class TransferListViewTokenRule : IControlTokenRule<PrimeNGToken
     {
         var token  = target.Own;
         var global = target.Global;
-        // PrimeNG: the control-global overrides, read by the formulas below.
+        // PrimeNG: no control-global overrides; EvaluateGlobal writes nothing.
         PrimeNGTransferListViewTokens.EvaluateGlobal(in context, global);
         ListViewTokenCalculator.Calculate(in context, global, token);
 

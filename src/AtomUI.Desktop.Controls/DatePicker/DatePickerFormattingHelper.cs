@@ -116,6 +116,11 @@ internal static class DatePickerFormattingHelper
     /// a week may omit its localized suffix. The result is normalized to the picker unit, keeping the clock only
     /// when the format shows it.
     /// </summary>
+    /// <returns>
+    /// <see langword="true" /> with <paramref name="value" /> set to the parsed date and time; or
+    /// <see langword="false" /> with <paramref name="value" /> set to <see langword="default" /> when
+    /// <paramref name="text" /> is null or white space, or does not match the format in full.
+    /// </returns>
     internal static bool TryParseDateTime(
         string? text,
         string? format,

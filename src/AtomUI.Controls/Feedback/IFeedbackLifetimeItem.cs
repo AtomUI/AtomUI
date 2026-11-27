@@ -1,6 +1,8 @@
 namespace AtomUI.Controls;
 
-/// <summary>Item that can expire independently of its presentation.</summary>
+/// <summary>
+/// Item that can expire independently of its presentation.
+/// </summary>
 internal interface IFeedbackLifetimeItem
 {
     bool IsClosing { get; }
@@ -10,7 +12,9 @@ internal interface IFeedbackLifetimeItem
     void UpdateRemaining(TimeSpan remaining);
 }
 
-/// <summary>Optional progress reporting that wakes the scheduler before the deadline.</summary>
+/// <summary>
+/// Optional progress reporting that wakes the scheduler before the deadline.
+/// </summary>
 internal interface IFeedbackProgressItem
 {
     bool IsProgressUpdateNeeded { get; }

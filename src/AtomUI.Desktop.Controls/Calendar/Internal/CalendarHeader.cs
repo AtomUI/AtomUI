@@ -8,8 +8,10 @@ using Avalonia.Controls.Primitives;
 namespace AtomUI.Desktop.Controls.Internal.Calendar;
 
 /// <summary>
-/// Calendar 专用默认 Header。展示 Year Select、条件 Month Select 与 Month/Year 模式切换，
-/// 只报告用户操作，不拥有 Value/Mode/选择状态。
+/// The default header of a <see cref="AtomUI.Desktop.Controls.Calendar" />. It shows the year Select, the month
+/// Select and the switch between <see cref="CalendarMode.Month" /> and <see cref="CalendarMode.Year" /> mode;
+/// the month Select exists only in Month mode.
+/// It only reports user input through its events and owns no value, mode or selection state.
 /// </summary>
 [TemplatePart(YearSelectPart, typeof(ComboBox))]
 [TemplatePart(MonthSelectPart, typeof(ComboBox))]
@@ -85,13 +87,23 @@ internal sealed partial class CalendarHeader : TemplatedControl
         set => SetValue(MonthControlWidthProperty, value);
     }
 
-    /// <summary>用户在 Header 选择了年份。参数是完整目标日期（保留月/日，收敛到合法月）。</summary>
+    /// <summary>
+    /// Raised when the user picks a year in the year Select. The argument is the complete target date: the current
+    /// month and day are kept, the month is clamped to the months the valid range allows in the new year, and the
+    /// day is reduced to the last day of the resulting month.
+    /// </summary>
     public event EventHandler<DateTime>? YearSelected;
 
-    /// <summary>用户在 Header 选择了月份。参数是完整目标日期。</summary>
+    /// <summary>
+    /// Raised when the user picks a month in the month Select. The argument is the complete target date: the
+    /// current year and day are kept, and the day is reduced to the last day of the target month.
+    /// </summary>
     public event EventHandler<DateTime>? MonthSelected;
 
-    /// <summary>用户切换了 Month/Year 模式。</summary>
+    /// <summary>
+    /// Raised when the user switches the mode switch to the mode other than the current <see cref="Mode" />.
+    /// The argument is the requested mode. The header does not change its own <see cref="Mode" />.
+    /// </summary>
     public event EventHandler<CalendarMode>? ModeSwitched;
 
     private AtomUI.Desktop.Controls.ComboBox? _yearSelect;
@@ -217,7 +229,7 @@ internal sealed partial class CalendarHeader : TemplatedControl
             .Select(y => new CalendarHeaderItem(y, PresentationAdapter.FormatYearOption(y, culture)))
             .ToList();
 
-        // Month Select 仅 Month 模式显示
+        // The month Select is shown in Month mode only.
         var showMonth = Mode == CalendarMode.Month;
         var monthItems = showMonth
             ? (effectiveRange.IsEmpty
@@ -409,7 +421,10 @@ internal sealed partial class CalendarHeader : TemplatedControl
     }
 }
 
-/// <summary>Header 下拉项：业务键 + 显示文本。</summary>
+/// <summary>
+/// An item of a header Select: the key is the year or month that the header reports when the item is selected,
+/// and the display text is what the Select shows.
+/// </summary>
 internal sealed record CalendarHeaderItem(int Key, string Display)
 {
     public override string ToString() => Display;

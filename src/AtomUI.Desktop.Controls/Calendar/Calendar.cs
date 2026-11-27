@@ -19,8 +19,8 @@ using CalendarRangeBarPanelControl = AtomUI.Desktop.Controls.Internal.Calendar.C
 namespace AtomUI.Desktop.Controls;
 
 /// <summary>
-/// 桌面日历控件。Calendar 是唯一业务状态 owner，
-/// 管理 <see cref="Value"/>、<see cref="Mode"/> 与三个公开事件。
+/// A desktop calendar, and the single owner of its business state: <see cref="Value" />, <see cref="Mode" /> and
+/// the three public events are managed here. The date panel and the headers only submit changes.
 /// </summary>
 [PseudoClasses(
     CalendarRootPseudoClass.Fullscreen,
@@ -34,97 +34,155 @@ public partial class Calendar : TemplatedControl
 {
     #region Avalonia Properties
 
+    /// <summary>
+    /// Identifies the <see cref="Value" /> property.
+    /// </summary>
     public static readonly StyledProperty<DateTime> ValueProperty =
         AvaloniaProperty.Register<Calendar, DateTime>(nameof(Value), defaultBindingMode: BindingMode.TwoWay);
 
+    /// <summary>
+    /// Identifies the <see cref="Mode" /> property.
+    /// </summary>
     public static readonly StyledProperty<CalendarMode> ModeProperty =
         AvaloniaProperty.Register<Calendar, CalendarMode>(
             nameof(Mode), CalendarMode.Month, defaultBindingMode: BindingMode.TwoWay);
 
+    /// <summary>
+    /// Identifies the <see cref="Fullscreen" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> FullscreenProperty =
         AvaloniaProperty.Register<Calendar, bool>(nameof(Fullscreen), true);
 
+    /// <summary>
+    /// Identifies the <see cref="ShowWeek" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> ShowWeekProperty =
         AvaloniaProperty.Register<Calendar, bool>(nameof(ShowWeek));
 
+    /// <summary>
+    /// Identifies the <see cref="ValidRange" /> property.
+    /// </summary>
     public static readonly StyledProperty<CalendarDateRange?> ValidRangeProperty =
         AvaloniaProperty.Register<Calendar, CalendarDateRange?>(nameof(ValidRange));
 
+    /// <summary>
+    /// Identifies the <see cref="DisabledDate" /> property.
+    /// </summary>
     public static readonly StyledProperty<Func<DateTime, bool>?> DisabledDateProperty =
         AvaloniaProperty.Register<Calendar, Func<DateTime, bool>?>(nameof(DisabledDate));
 
+    /// <summary>
+    /// Identifies the <see cref="CellTemplate" /> property.
+    /// </summary>
     public static readonly StyledProperty<IDataTemplate?> CellTemplateProperty =
         AvaloniaProperty.Register<Calendar, IDataTemplate?>(nameof(CellTemplate));
 
+    /// <summary>
+    /// Identifies the <see cref="FullCellTemplate" /> property.
+    /// </summary>
     public static readonly StyledProperty<IDataTemplate?> FullCellTemplateProperty =
         AvaloniaProperty.Register<Calendar, IDataTemplate?>(nameof(FullCellTemplate));
 
+    /// <summary>
+    /// Identifies the <see cref="HeaderTemplate" /> property.
+    /// </summary>
     public static readonly StyledProperty<IDataTemplate?> HeaderTemplateProperty =
         AvaloniaProperty.Register<Calendar, IDataTemplate?>(nameof(HeaderTemplate));
 
+    /// <summary>
+    /// Identifies the <see cref="RangeBars" /> property.
+    /// </summary>
     public static readonly DirectProperty<Calendar, CalendarRangeBarCollection> RangeBarsProperty =
         AvaloniaProperty.RegisterDirect<Calendar, CalendarRangeBarCollection>(
             nameof(RangeBars),
             o => o.RangeBars,
             (o, v) => o.RangeBars = v);
 
-    /// <summary>当前选中日期，同时作为默认面板锚点。默认为实例创建时的 <see cref="DateTime.Today"/>。</summary>
+    /// <summary>
+    /// The selected date, and the anchor of the panel that is shown. Any time of day is dropped.
+    /// Defaults to <see cref="DateTime.Today" /> taken when the instance is created.
+    /// </summary>
     public DateTime Value
     {
         get => GetValue(ValueProperty);
         set => SetValue(ValueProperty, value);
     }
 
-    /// <summary>公开显示模式。默认 <see cref="CalendarMode.Month"/>。</summary>
+    /// <summary>
+    /// Whether the panel shows the days of a month or the months of a year.
+    /// Defaults to <see cref="CalendarMode.Month" />.
+    /// </summary>
     public CalendarMode Mode
     {
         get => GetValue(ModeProperty);
         set => SetValue(ModeProperty, value);
     }
 
-    /// <summary>是否使用完整数据展示布局。默认 <c>true</c>。</summary>
+    /// <summary>
+    /// <c>true</c> shows the full-size layout with the complete cell content, <c>false</c> the compact layout.
+    /// Range bars are drawn only when it is <c>true</c>. The default is <c>true</c>.
+    /// </summary>
     public bool Fullscreen
     {
         get => GetValue(FullscreenProperty);
         set => SetValue(FullscreenProperty, value);
     }
 
-    /// <summary>是否显示周序号列。默认 <c>false</c>。</summary>
+    /// <summary>
+    /// <c>true</c> shows a column with the week numbers beside the date grid. The default is <c>false</c>.
+    /// </summary>
     public bool ShowWeek
     {
         get => GetValue(ShowWeekProperty);
         set => SetValue(ShowWeekProperty, value);
     }
 
-    /// <summary>有效日期范围（首尾包含）。默认 <c>null</c>。</summary>
+    /// <summary>
+    /// The range of dates the user may select, both ends included; dates outside it cannot be selected.
+    /// <c>null</c>, the default, sets no limit.
+    /// </summary>
     public CalendarDateRange? ValidRange
     {
         get => GetValue(ValidRangeProperty);
         set => SetValue(ValidRangeProperty, value);
     }
 
-    /// <summary>业务禁用规则。默认 <c>null</c>。</summary>
+    /// <summary>
+    /// A rule that returns <c>true</c> for each date the user may not select.
+    /// <c>null</c>, the default, disables no date.
+    /// </summary>
     public Func<DateTime, bool>? DisabledDate
     {
         get => GetValue(DisabledDateProperty);
         set => SetValue(DisabledDateProperty, value);
     }
 
-    /// <summary>替换默认 Cell 的业务内容区域，但保留默认日期/月值和 Cell 状态。</summary>
+    /// <summary>
+    /// Replaces the content area of the default cell, while the default date or month value and the cell state are
+    /// kept. The data context is a <see cref="CalendarCellContext" />.
+    /// <c>null</c>, the default, shows the default content.
+    /// </summary>
     public IDataTemplate? CellTemplate
     {
         get => GetValue(CellTemplateProperty);
         set => SetValue(CellTemplateProperty, value);
     }
 
-    /// <summary>替换 Cell 的完整内部内容。优先于 <see cref="CellTemplate"/>。</summary>
+    /// <summary>
+    /// Replaces the complete content of a cell and takes precedence over <see cref="CellTemplate" />. Its data
+    /// context is a <see cref="CalendarCellContext" />. <c>null</c>, the default, shows the default content.
+    /// </summary>
     public IDataTemplate? FullCellTemplate
     {
         get => GetValue(FullCellTemplateProperty);
         set => SetValue(FullCellTemplateProperty, value);
     }
 
-    /// <summary>自定义 Header 模板。为 <c>null</c> 时使用默认 Header。</summary>
+    /// <summary>
+    /// Replaces the default header. Its data context is a <see cref="CalendarHeaderContext" />, which provides the
+    /// commands that submit <see cref="Value" /> and <see cref="Mode" />.
+    /// <c>null</c>, the default, shows the default header.
+    /// </summary>
     public IDataTemplate? HeaderTemplate
     {
         get => GetValue(HeaderTemplateProperty);
@@ -133,7 +191,12 @@ public partial class Calendar : TemplatedControl
 
     private CalendarRangeBarCollection _rangeBars = new();
 
-    /// <summary>连续日期范围条集合。仅 Fullscreen Month 日期网格 overlay 使用。</summary>
+    /// <summary>
+    /// The range bars drawn above the date grid, one per continuous range of dates.
+    /// They are shown only while <see cref="Fullscreen" /> is <c>true</c>, <see cref="Mode" /> is
+    /// <see cref="CalendarMode.Month" /> and the collection is not empty.
+    /// Setting <c>null</c> replaces the collection with an empty one.
+    /// </summary>
     public CalendarRangeBarCollection RangeBars
     {
         get => _rangeBars;
@@ -164,13 +227,24 @@ public partial class Calendar : TemplatedControl
 
     #region Public Events
 
-    /// <summary>选中日期实际变化时触发。程序直接设置 <see cref="Value"/> 不触发。</summary>
+    /// <summary>
+    /// Raised after a user selection changed the selected date; the new value is committed before the event.
+    /// Setting <see cref="Value" /> in code does not raise it.
+    /// </summary>
     public event EventHandler<CalendarValueChangedEventArgs>? ValueChanged;
 
-    /// <summary>每次有效用户选择触发。</summary>
+    /// <summary>
+    /// Raised after every user selection, also when the selected date did not change.
+    /// The value is committed before the event, and the event reports where the selection came from.
+    /// </summary>
     public event EventHandler<CalendarSelectedEventArgs>? Selected;
 
-    /// <summary>面板（自然月/自然年）变化或用户切换 Mode 时触发。</summary>
+    /// <summary>
+    /// Raised after a user selection moved the shown panel to another month or year, or after a user switched
+    /// <see cref="Mode" />. The new value or mode is committed first. It is raised before
+    /// <see cref="ValueChanged" /> and <see cref="Selected" />.
+    /// Setting <see cref="Value" /> or <see cref="Mode" /> in code does not raise it.
+    /// </summary>
     public event EventHandler<CalendarPanelChangedEventArgs>? PanelChanged;
 
     #endregion
@@ -269,6 +343,11 @@ public partial class Calendar : TemplatedControl
 
     internal CultureInfo CurrentCulture { get; private set; } = CultureInfo.CurrentCulture;
 
+    /// <summary>
+    /// Connects the template parts: the date viewer, the range bar panel, the default header and the custom header.
+    /// The parts of an earlier call are disconnected first.
+    /// Derived overrides must call the base member, otherwise no part is connected.
+    /// </summary>
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
@@ -314,8 +393,9 @@ public partial class Calendar : TemplatedControl
     }
 
     /// <summary>
-    /// 为自定义 HeaderTemplate 提供强类型 <see cref="CalendarHeaderContext"/> 作为 DataContext，
-    /// 使模板能通过命令提交 Value/Mode。Value/Mode 变化时重建 context。
+    /// Sets the content of the custom header to a new <see cref="CalendarHeaderContext" />, or to <c>null</c> when
+    /// <see cref="HeaderTemplate" /> is <c>null</c>. The context lets the template submit <see cref="Value" /> and
+    /// <see cref="Mode" /> through its commands, and it is rebuilt whenever one of them changes.
     /// </summary>
     private void RefreshCustomHeaderContent()
     {
@@ -327,6 +407,10 @@ public partial class Calendar : TemplatedControl
 
     private ILanguageManager? _subscribedLanguageManager;
 
+    /// <summary>
+    /// Makes this calendar the host of the date viewer and starts observing the language and <see cref="RangeBars" />.
+    /// Derived overrides must call the base member for both.
+    /// </summary>
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
@@ -338,6 +422,10 @@ public partial class Calendar : TemplatedControl
         ApplyCulture();
     }
 
+    /// <summary>
+    /// Releases the date viewer, the range bars and the language listener.
+    /// Derived overrides must call the base member, otherwise the range bars and the listener stay attached.
+    /// </summary>
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         _dateViewer?.SetContentFactory(null);
@@ -520,7 +608,10 @@ public partial class Calendar : TemplatedControl
 
     private void OnLanguageChanged(object? sender, LanguageChangedEventArgs e) => ApplyCulture();
 
-    /// <summary>解析当前语言的 Culture 并投影给共享日期面板 / 默认 Header，触发它们按需同步。</summary>
+    /// <summary>
+    /// Resolves the culture of the current language and hands it to the date panel and the default header.
+    /// Both refresh themselves. The custom header context is rebuilt as well.
+    /// </summary>
     private void ApplyCulture()
     {
         var culture = Application.Current is { } application
@@ -603,6 +694,13 @@ public partial class Calendar : TemplatedControl
     private void OnHeaderModeSwitched(object? sender, CalendarMode mode) =>
         CommitModeChange(mode);
 
+    /// <summary>
+    /// Refreshes the date panel, the headers, the range bar panel and the root pseudo classes after
+    /// <see cref="Mode" />, <see cref="Value" />, <see cref="Fullscreen" />, <see cref="ShowWeek" />,
+    /// <see cref="ValidRange" />, <see cref="DisabledDate" /> or <see cref="HeaderTemplate" /> changed.
+    /// A <see cref="Value" /> with a time of day is replaced by its date part.
+    /// Derived overrides must call the base member for these updates.
+    /// </summary>
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
@@ -653,8 +751,16 @@ public partial class Calendar : TemplatedControl
     }
 
     /// <summary>
-    /// 处理一次有效用户选择：写入 Value，并按 PanelChanged -> ValueChanged -> Selected 的顺序触发事件。
+    /// Commits a user selection: writes <see cref="Value" /> and raises <see cref="PanelChanged" />,
+    /// <see cref="ValueChanged" /> and <see cref="Selected" /> in that order.
+    /// <see cref="ValidRange" /> and <see cref="DisabledDate" /> are not checked here.
     /// </summary>
+    /// <param name="target">
+    /// The selected date. A time of day is dropped.
+    /// </param>
+    /// <param name="source">
+    /// Where the selection came from; <see cref="Selected" /> reports it.
+    /// </param>
     internal void CommitUserSelection(DateTime target, CalendarSelectSource source)
     {
         target = target.Date;
@@ -679,8 +785,9 @@ public partial class Calendar : TemplatedControl
     }
 
     /// <summary>
-    /// 处理一次用户 Mode 切换：写入 Mode 并触发一次 <see cref="PanelChanged"/>。
-    /// 不触发 ValueChanged / Selected。
+    /// Commits a user Mode switch: writes <see cref="Mode" /> and raises <see cref="PanelChanged" /> once.
+    /// <see cref="ValueChanged" /> and <see cref="Selected" /> are not raised.
+    /// A switch to the current Mode does nothing.
     /// </summary>
     internal void CommitModeChange(CalendarMode mode)
     {
@@ -695,9 +802,11 @@ public partial class Calendar : TemplatedControl
     }
 
     /// <summary>
-    /// 为自定义 Header 模板构建强类型上下文。命令的 CanExecute 校验参数类型；
-    /// ChangeValueCommand 以 <see cref="CalendarSelectSource.Customize"/> 提交，且不自动应用
-    /// ValidRange 或 DisabledDate（约束由自定义 Header 负责）。
+    /// Builds a strongly typed <see cref="CalendarHeaderContext" /> for a custom header template.
+    /// The CanExecute of both commands checks the type of the parameter. <c>ChangeValueCommand</c> commits with
+    /// <see cref="CalendarSelectSource.Customize" /> and applies neither <see cref="ValidRange" /> nor
+    /// <see cref="DisabledDate" />: a custom header enforces them itself.
+    /// The mode command accepts only <see cref="CalendarMode.Month" /> and <see cref="CalendarMode.Year" />.
     /// </summary>
     internal CalendarHeaderContext BuildHeaderContext()
     {

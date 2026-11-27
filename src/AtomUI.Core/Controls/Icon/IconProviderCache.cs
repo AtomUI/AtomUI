@@ -59,8 +59,8 @@ internal static class IconProviderCache
         lock (_lockObject)
         {
             CreatorCache.TryRemove(enumType, out _);
-            // Note: We don't remove from CacheInsertionOrder to avoid lock contention
-            // The queue will naturally be cleaned up during EnsureCacheSize operations
+            // The type stays in CacheInsertionOrder because a queue cannot drop one entry. EnsureCacheSize
+            // dequeues it later, and removing a type that is no longer cached does nothing.
         }
     }
     

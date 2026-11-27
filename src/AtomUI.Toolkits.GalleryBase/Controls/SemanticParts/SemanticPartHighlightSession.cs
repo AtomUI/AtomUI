@@ -109,8 +109,9 @@ internal sealed class SemanticPartHighlightSession : IDisposable
         {
             if (owner is ISemanticPartCrossRootProvider provider)
             {
-                // 独立窗口宿主（native 预览对话框等）：控件经契约上报存活宿主，
-                // 集合变化时刷新；与 Popup 宿主的 Opened/Closed 订阅同构。
+                // Standalone window hosts (such as the native preview dialog): the owner reports its live hosts
+                // through the contract and the session refreshes when that collection changes. This mirrors the
+                // Opened and Closed subscriptions used for Popup hosts.
                 provider.CrossRootsChanged += HandleCrossRootsChanged;
                 _crossRootProviders.Add(provider);
             }
@@ -223,9 +224,11 @@ internal sealed class SemanticPartHighlightSession : IDisposable
 
         TotalMatchCount = totalMatchCount;
 
-        // RestHidden 部件的静止态透明是设计语义（如 ImagePreviewer cover 悬停遮罩）：
-        // 预览该部件时给目标打预览状态，由各控件 ControlTheme 的属性条件选择器决定
-        // 如何显现目标本体（PseudoClasses 是 protected，外部契约只能用附加属性表达）。
+        // A RestHidden part is transparent at rest by design (for example the hover mask over the cover of
+        // ImagePreviewer). The preview therefore marks its targets with the preview state, and each control's
+        // ControlTheme decides through its property condition selectors how to reveal the part. The state is an
+        // attached property because PseudoClasses is protected and an external contract can only be expressed
+        // that way.
         if (part.RestHidden)
         {
             foreach (var target in targets.OfType<Visual>())

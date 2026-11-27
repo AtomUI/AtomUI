@@ -15,7 +15,7 @@ namespace AtomUI.Desktop.Controls;
 /// <summary>
 /// Owns the Breadcrumb sibling separator lifecycle: maintains N - 1 separator presenters as
 /// logical children of the breadcrumb, binds each to its preceding item container and keeps
-/// the interleaved visual order in <see cref="BreadcrumbItemsPanel"/>.
+/// the interleaved visual order in <see cref="BreadcrumbItemsPanel" />.
 /// </summary>
 internal sealed class BreadcrumbSeparatorManager : IDisposable
 {

@@ -4,7 +4,9 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 
-/// <summary>The PrimeNG view of <see cref="TextAreaToken"/>.</summary>
+/// <summary>
+/// The PrimeNG view of <see cref="TextAreaToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class TextAreaTokenRule : IControlTokenRule<PrimeNGToken, TextAreaToken>
 {
@@ -12,7 +14,8 @@ internal sealed class TextAreaTokenRule : IControlTokenRule<PrimeNGToken, TextAr
     {
         var token  = target.Own;
         var global = target.Global;
-        // PrimeNG: the control-global overrides, read by the formulas below.
+        // PrimeNG: the control-global overrides of PrimeNGInputStage.Apply (form-field values), read by the TextArea
+        // theme and its input frame (CornerRadius, Foreground, Background, IconBrush), not the formulas below.
         PrimeNGTextAreaTokens.EvaluateGlobal(in context, global);
         token.TransparentOutlineBorder = false;
         token.BottomOutlineBorder      = false;
@@ -20,6 +23,8 @@ internal sealed class TextAreaTokenRule : IControlTokenRule<PrimeNGToken, TextAr
         token.ResizeHandleSize         = global.SizeXS;
 
         var lineWidth    = global.LineWidth;
+        // Ant Design formula kept as is: the PrimeNG text area stage (PrimeNGTextAreaTokens.EvaluateOwn) writes
+        // no own token, so these add-on paddings stay the Ant Design formula over the PrimeNG global tokens.
         token.RightAddOnPadding   = new Thickness(0, 0, global.UniformlyPaddingSM - lineWidth, 0);
         token.RightAddOnPaddingSM = new Thickness(0, 0, global.ControlPaddingHorizontalSM - lineWidth, 0);
         token.RightAddOnPaddingLG = new Thickness(0, 0, global.ControlPaddingHorizontal - lineWidth, 0);

@@ -4,7 +4,9 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls.Themes.AntDesign;
 
-/// <summary>The AntDesign view of <see cref="BreadcrumbToken"/>.</summary>
+/// <summary>
+/// The AntDesign view of <see cref="BreadcrumbToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class BreadcrumbTokenRule : IControlTokenRule<AntDesignToken, BreadcrumbToken>
 {

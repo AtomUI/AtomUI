@@ -73,12 +73,23 @@ internal class CheckBoxIndicator : TemplatedControl
     internal static readonly StyledProperty<bool> IsWaveSpiritEnabledProperty =
         WaveSpiritAwareControlProperty.IsWaveSpiritEnabledProperty.AddOwner<CheckBoxIndicator>();
 
+    /// <summary>
+    /// Motion switch of the click wave: the wave is played when <see cref="State" /> changes to checked only while
+    /// this is <see langword="true" />, <see cref="IsWaveSpiritEnabled" /> is <see langword="true" /> and the
+    /// indicator is enabled and loaded. The theme of the check box binds it to its own motion switch, and the theme
+    /// of the indicator passes it to the wave decorator of the template.
+    /// </summary>
     internal bool IsMotionEnabled
     {
         get => GetValue(IsMotionEnabledProperty);
         set => SetValue(IsMotionEnabledProperty, value);
     }
 
+    /// <summary>
+    /// Switch of the click wave of the indicator; <see cref="IsMotionEnabled" /> states when it plays. The theme of
+    /// the check box binds it to its own <c>IsWaveSpiritEnabled</c>, and the theme of the indicator passes it to the
+    /// wave decorator of the template.
+    /// </summary>
     internal bool IsWaveSpiritEnabled
     {
         get => GetValue(IsWaveSpiritEnabledProperty);

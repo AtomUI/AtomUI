@@ -15,10 +15,14 @@ internal static class ButtonTokenCalculator
 {
     private static bool UsesThemeLinkColour(DesignToken global) => global.ColorLink == global.ColorInfo;
 
-    /// <summary>The global tokens the button family sees.</summary>
+    /// <summary>
+    /// The global tokens the button family sees.
+    /// </summary>
     public static void CalculateGlobal(in TokenEvaluationContext<ShadcnToken> context, DesignToken global)
     {
         var language = context.Language;
+        // The style's button radius ladder. shadcn draws the focus ring outside the border; the focus border stands in
+        // for it in the ring color and width.
         global.BorderRadiusMD   = new CornerRadius(language.ButtonRadius);
         global.BorderRadiusLG   = new CornerRadius(language.ButtonRadiusLG);
         global.BorderRadiusSM   = new CornerRadius(language.ButtonRadiusSM);
@@ -26,7 +30,7 @@ internal static class ButtonTokenCalculator
         global.LineWidthFocus   = global.ControlOutlineWidth;
 
         var dark = context.Variant.IsDark;
-        // Official colour themes use zinc for the secondary surface; the neutral theme follows the base colour.
+        // Official color themes use zinc for the secondary surface; the neutral theme follows the base color.
         var secondary = language.HasColorTheme ? ShadcnRecipes.TailwindStop("zinc", dark ? 800 : 100) : language.Secondary;
         global.ControlItemColorActive = language.HasColorTheme
             ? ShadcnRecipes.TailwindStop("zinc", dark ? 50 : 900)
@@ -34,12 +38,13 @@ internal static class ButtonTokenCalculator
         global.ColorFillTertiary  = secondary;
         global.ColorFillSecondary = ShadcnRecipes.MixOklch(secondary, global.ColorText, 0.05);
 
+        // registry button: the destructive surfaces are destructive at 10% / 20%, and at 20% / 30% in dark.
         global.ColorErrorBg      = ShadcnRecipes.MultiplyAlpha(global.ColorError, dark ? 0.2 : 0.1);
         global.ColorErrorBgHover = ShadcnRecipes.MultiplyAlpha(global.ColorError, dark ? 0.3 : 0.2);
 
-        // Links take the theme primary in every state unless the application chose a link colour. Without a ColorLink
+        // Links take the theme primary in every state unless the application chose a link color. Without a ColorLink
         // seed the copied antd map derives the link family from ColorInfo, so the two computed tokens are equal; an
-        // explicit ColorLink makes them differ and keeps its own link family. The resting colour is the button's
+        // explicit ColorLink makes them differ and keeps its own link family. The resting color is the button's
         // LinkColor (CalculateOwn).
         if (UsesThemeLinkColour(global))
         {
@@ -49,13 +54,13 @@ internal static class ButtonTokenCalculator
     }
 
     /// <summary>
-    /// The button behaviour switches and surfaces of the style; written after the copied formulas, which keep reading
+    /// The button behavior switches and surfaces of the style; written after the copied formulas, which keep reading
     /// their own defaults.
     /// </summary>
     public static void CalculateOwn(in TokenEvaluationContext<ShadcnToken> context, DesignToken global, AbstractButtonGeometryToken token)
     {
         var style = context.Variant.Style;
-        // Recipe colours, disabled at half opacity with their own colours, a 1px press, links underlined on hover;
+        // Recipe colors, disabled at half opacity with their own colors, a 1px press, links underlined on hover;
         // Vega keeps its shadow on the outlined variant only, Sera also underlines links at rest.
         token.RecipeVariants           = true;
         token.OutlineOnlyDefaultShadow = style == ShadcnStyles.Vega;
@@ -85,6 +90,7 @@ internal static class ButtonTokenCalculator
         var dark = context.Variant.IsDark;
         token.TextHoverBg        = dark ? ShadcnRecipes.MultiplyAlpha(global.ColorFillContent, 0.5) : global.ColorFillContent;
         token.TextTextHoverColor = global.ColorText;
+        // The link variant signals hover with its underline only, so it gets no hover surface.
         token.LinkHoverBg        = Colors.Transparent;
         // Keep destructive text readable on a tinted hover surface in either appearance.
         token.DangerColor = dark
@@ -97,7 +103,7 @@ internal static class ButtonTokenCalculator
     }
 
     /// <summary>
-    /// The outline variant's resting background (<see langword="null"/>: the formula's), hover background and border
+    /// The outline variant's resting background (<see langword="null" />: the formula's), hover background and border
     /// of the style: <c>bg-background</c> / <c>dark:bg-input/30</c> and their hover shares.
     /// </summary>
     public static (Color? Background, Color HoverBackground, Color Border) ResolveOutline(

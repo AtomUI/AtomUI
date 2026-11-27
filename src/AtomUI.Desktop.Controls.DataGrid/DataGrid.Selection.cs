@@ -8,6 +8,29 @@ public partial class DataGrid
     private RangeNavigationIntent? _pendingRangeNavigation;
     private long _rangeBringIntoViewIntent;
 
+    /// <summary>
+    /// Scrolls the row with the given key, and with it the cell of the given column, into view under range
+    /// presentation. A row inside the committed range is brought into view before the method returns; any other
+    /// row is looked up in the source first, and the returned task completes when that lookup has finished.
+    /// </summary>
+    /// <param name="rowKey">
+    /// The key of the row to bring into view.
+    /// </param>
+    /// <param name="column">
+    /// The column of the cell to bring into view, or <see langword="null" /> to scroll for the row only.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// Passed to the key lookup of a row that is not loaded yet.
+    /// </param>
+    /// <returns>
+    /// <see langword="true" /> when a viewport containing the row was requested.
+    /// <see langword="false" /> when range presentation is inactive, the source cannot look up a key or no data
+    /// generation is active, the row was not found, a newer request replaced this one, the query or the snapshot
+    /// changed in the meantime, or the column could not be scrolled into view.
+    /// </returns>
+    /// <exception cref="ArgumentException">
+    /// <paramref name="rowKey" /> is not valid, or <paramref name="column" /> belongs to another DataGrid.
+    /// </exception>
     public ValueTask<bool> ScrollIntoViewAsync(
         DataGridRowKey rowKey,
         DataGridColumn? column = null,
@@ -159,7 +182,8 @@ public partial class DataGrid
             return;
         }
 
-        // 与其他当前格变更路径一致，在批次结束时统一比较并触发 CurrentCellChanged
+        // As in the other current cell change paths, the comparison and the CurrentCellChanged event are
+        // deferred to the end of the batch.
         NoCurrentCellChangeCount++;
         try
         {
@@ -331,9 +355,10 @@ public partial class DataGrid
         Selection = Selection.TransitionTo(nextScope, transition);
     }
 
-    // 当前行由 CurrentRowKey 拥有，CurrentSlot 只是它在已提交快照中的投影。
-    // 排序、过滤、失效刷新后同一槽位可能对应另一行或已越界，因此提交新快照后按 key 重新投影；
-    // 纯视口滚动时槽位编号不变，key 不在已提交块内也保留原槽位。
+    // The current row is owned by CurrentRowKey; CurrentSlot is only its projection in the committed snapshot.
+    // After a sort, a filter or an invalidation refresh the same slot may hold another row or be out of range,
+    // so the slot is reprojected from the key once the new snapshot is committed. A viewport-only scroll keeps
+    // the slot numbers, so the original slot is kept even when the key is not in the committed block.
     private void ReprojectCurrentCellForCommittedSnapshot(
         DataGridPresentationSnapshot? previousSnapshot,
         DataGridPresentationSnapshot nextSnapshot,
@@ -357,8 +382,9 @@ public partial class DataGrid
         {
             if (!isSameRowSpace)
             {
-                // 旧行空间的坐标已无意义（元素已在提交时卸载），直接作废后再按 key 投影；
-                // CurrentCellChanged 由批次结束时的状态比较统一触发。
+                // Coordinates in the old row space are meaningless (the element was unloaded at commit), so they
+                // are invalidated and then reprojected from the key. CurrentCellChanged is raised by the state
+                // comparison at the end of the batch.
                 CurrentColumnIndex = -1;
                 CurrentSlot = -1;
             }
@@ -422,8 +448,9 @@ public partial class DataGrid
         {
             return;
         }
-        // 直接作用于已加载行的选择/当前格变更是更新的用户意图，挂起的导航随之作废，
-        // 否则其目标块加载完成后会覆盖这次操作
+        // A selection or current cell change that acts directly on the loaded rows is the newer user intent, so
+        // the pending navigation is dropped; otherwise it would override this operation once its target block
+        // has loaded.
         _pendingRangeNavigation = null;
 
         switch (action)
@@ -438,7 +465,8 @@ public partial class DataGrid
                 if (SelectionMode == DataGridSelectionMode.Extended &&
                     _rangeSelectionAnchorDataIndex >= 0)
                 {
-                    // Shift 选择以锚点到当前行的区间替换整个选区，回退时区间随之收缩。
+                    // A Shift selection replaces the whole selection with the interval from the anchor to the
+                    // current row; the interval shrinks when stepping back.
                     Selection = DataGridSelectionState.Empty.WithInterval(
                         Math.Min(_rangeSelectionAnchorDataIndex, entry.DataIndex),
                         checked(Math.Max(_rangeSelectionAnchorDataIndex, entry.DataIndex) + 1),

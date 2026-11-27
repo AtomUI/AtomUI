@@ -35,7 +35,9 @@ internal sealed class OwnerTokenPropertyBindings : IDisposable
         output.Binding = _target.Bind(property, output, _priority);
     }
 
-    /// <summary>Shares a fixed key with several output properties whose bindings are owned by the caller.</summary>
+    /// <summary>
+    /// Shares a fixed key with several output properties whose bindings are owned by the caller.
+    /// </summary>
     internal IObservable<object?> Observe(int index, object key) => GetOutput(index, key);
 
     internal void ClearKey(int index) => _tokens.SetResourceKey(index, null);

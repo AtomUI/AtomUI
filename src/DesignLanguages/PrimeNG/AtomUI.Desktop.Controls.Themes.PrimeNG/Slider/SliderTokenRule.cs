@@ -5,7 +5,9 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 
-/// <summary>The PrimeNG view of <see cref="SliderToken"/>.</summary>
+/// <summary>
+/// The PrimeNG view of <see cref="SliderToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class SliderTokenRule : IControlTokenRule<PrimeNGToken, SliderToken>
 {
@@ -13,15 +15,17 @@ internal sealed class SliderTokenRule : IControlTokenRule<PrimeNGToken, SliderTo
     {
         var token  = target.Own;
         var global = target.Global;
-        // PrimeNG: the control-global overrides, read by the formulas below.
+        // PrimeNG: no control-global overrides; EvaluateGlobal writes nothing.
         PrimeNGSliderTokens.EvaluateGlobal(in context, global);
-        // Thumb line width is always width-er 1px
+        // The thumb border is always wider than the line width: by 1 at rest and by 1.5 on hover.
         var increaseThumbWidth   = 1d;
         var controlSize          = global.ControlHeightLG / 4;
         var controlSizeHover     = global.ControlHeightSM / 2;
         var handleLineWidth      = global.LineWidth + increaseThumbWidth;
         var handleLineWidthHover = global.LineWidth + increaseThumbWidth * 1.5;
 
+        // Ant Design formula kept as is: the PrimeNG slider stage at the end of the method replaces the rail, track
+        // and handle values (all but SliderTrackSize and MarkSize of this group).
         token.SliderTrackSize                 = controlSizeHover;
 
         token.RailSize                        = 4;

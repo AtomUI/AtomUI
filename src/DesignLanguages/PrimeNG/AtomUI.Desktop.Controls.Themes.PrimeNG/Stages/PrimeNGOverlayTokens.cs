@@ -10,7 +10,7 @@ namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 /// 3.1.1 <c>overlay.popover</c>. The box has a one-line border in <c>overlay.popover.border.color</c> (Aura and Lara
 /// surface 200 in light, Nora transparent; surface 700 in dark) that also runs along the arrow's sides, the
 /// <c>overlay.popover.padding</c> (Aura and Nora 10, Lara 14) and no minimum height. The arrow spans
-/// <c>popover.gutter</c> like PrimeNG's border triangle (see <see cref="PrimeNGPopoverArrow"/>). Its radius is the global
+/// <c>popover.gutter</c> like PrimeNG's border triangle (see <see cref="PrimeNGPopoverArrow" />). Its radius is the global
 /// <c>BorderRadius</c> (<c>overlay.popover.border.radius</c>, md / xs). The ToolTip, which shares the box, keeps no
 /// border (PrimeUIX tooltip has none).
 /// </summary>
@@ -28,6 +28,7 @@ internal static class PrimeNGArrowDecoratedBoxTokens
         token.ArrowStrokeColor       = token.ContentBorderColor;
         token.ContentBorderThickness = new Thickness(effectiveGlobal.LineWidth);
         token.ContentPadding         = popover.Padding;
+        // PrimeUIX popover has no minimum height; the Ant baseline takes ControlHeight here.
         token.ContentMinHeight       = 0;
         token.ArrowSize              = 2 * recipes.PopoverGutter;
         // A plain border triangle: no rounded tip and no flare into the box.
@@ -59,13 +60,16 @@ internal static class PrimeNGFlyoutHostTokens
 }
 
 /// <summary>
-/// Overlays without an arrow under the PrimeNG presets (select, cascader, combo box, auto-complete and mention panels,
-/// context and sub menus): PrimeUIX 3.1.1 <c>overlay.select</c>. The <c>border.color</c> becomes a one-line
-/// <c>0 0 0 1</c> ring ahead of the shadow, since those panels have no border of their own (Nora light: PrimeUIX's is
-/// transparent; AtomUI draws surface 200 for legibility, see the Nora rules); the shadow is the global <c>BoxShadowsSecondary</c> (<c>overlay.select.shadow</c>, which equals
-/// <c>overlay.navigation.shadow</c>), the radius the global <c>BorderRadius</c> (<c>overlay.select.border.radius</c>)
-/// and the gap to the anchor <c>anchor.gutter</c> (Aura and Lara 2, Nora 0). An arrow box hosted in such a popup
-/// draws its own border and does not paint the ring.
+/// Overlays without an arrow under the PrimeNG presets (select, cascader, combo box, auto-complete and mention
+/// panels, context and sub menus): PrimeUIX 3.1.1 <c>overlay.select</c>. The <c>border.color</c> becomes a one-line
+/// <c>0 0 0 1</c> ring ahead of the shadow, since those panels have no border of their own (Nora light:
+/// PrimeUIX's is transparent; AtomUI draws surface 200 for legibility, see the Nora rules); the shadow is the
+/// global <c>BoxShadowsSecondary</c> (<c>overlay.select.shadow</c>, which equals
+/// <c>overlay.navigation.shadow</c>), the radius the global <c>BorderRadius</c>
+/// (<c>overlay.select.border.radius</c>). The gap to the anchor departs from PrimeUIX's <c>anchor.gutter</c>
+/// (Aura and Lara 2, Nora 0): every preset takes the global <c>UniformlyMarginXXS</c> plus one line, so that every
+/// drop-down in an app opens at one gap. An arrow box hosted in such a popup draws its own border and does not paint
+/// the ring.
 /// </summary>
 internal static class PrimeNGPopupTokens
 {
@@ -96,9 +100,13 @@ internal static class PrimeNGPopupTokens
 /// </summary>
 internal static class PrimeNGPopoverArrow
 {
-    /// <summary>The arrow box overlaps the arrow's base with the box edge by this much (ArrangeArrow).</summary>
+    /// <summary>
+    /// The arrow box overlaps the arrow's base with the box edge by this much (ArrangeArrow).
+    /// </summary>
     private const double BaseOverlap = 0.5;
 
-    /// <summary>The gap between the anchor and the tip of a <c>2 × gutter</c> arrow that leaves <c>gutter</c> to the box.</summary>
+    /// <summary>
+    /// The gap between the anchor and the tip of a <c>2 × gutter</c> arrow that leaves <c>gutter</c> to the box.
+    /// </summary>
     internal static double MarginToAnchor(double gutter) => Math.Max(0, gutter - (gutter - BaseOverlap));
 }

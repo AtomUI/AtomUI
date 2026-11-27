@@ -4,13 +4,13 @@ using Avalonia.VisualTree;
 namespace AtomUI.Controls.Commons;
 
 /// <summary>
-/// 追踪 root 自身及其视觉祖先链的 <c>IsVisible</c> 变化并触发回调。
-/// Avalonia 的 <see cref="Visual.IsEffectivelyVisible" /> 是只读计算属性，
-/// 没有公共变更通知；渲染在 AdornerLayer 等跨根宿主中的视觉无法随
-/// 祖先 <c>IsVisible=false</c> 子树自动隐藏，需要靠本追踪器显式同步。
-/// Observation stops below the adorner layer's host: ancestors from the root up to, but not including,
-/// <c>boundary</c> are tracked. The host (and everything above it) hides the layer together with its
-/// adorners, so those ancestors need no subscription. Without a boundary the whole chain is tracked.
+/// Raises the callback whenever <c>IsVisible</c> changes on the root itself or on one of its visual ancestors.
+/// <see cref="Visual.IsEffectivelyVisible" /> is a read-only computed property with no public change notification,
+/// so a visual rendered in a cross-root host such as an adorner layer is not hidden together with the subtree of an
+/// ancestor whose <c>IsVisible</c> is <c>false</c>; this tracker synchronizes such a visual explicitly.
+/// The ancestors are captured when the tracker is created and tracked from the root up to, but not including,
+/// <c>boundary</c>, the adorner layer's host. The host and everything above it hide the layer together with its
+/// adorners, so they need no subscription. Without a boundary the whole chain is tracked.
 /// </summary>
 internal sealed class AncestorVisibilityTracker : IDisposable
 {

@@ -56,6 +56,21 @@ public partial class Dialog
         return await BeforeCloseAsync(context);
     }
 
+    /// <summary>
+    /// Opens the dialog and completes when the dialog has closed, after the <see cref="Closed" /> event. The
+    /// result of the close is then in <see cref="Result" /> and the dialog can be opened again. The method can be
+    /// called from any thread. An exception thrown by an <see cref="Opened" />, <see cref="Accepted" />,
+    /// <see cref="Rejected" />, <see cref="Finished" /> or <see cref="Closed" /> handler is thrown by the returned
+    /// task, after the dialog has closed.
+    /// </summary>
+    /// <param name="cancellationToken">
+    /// Cancels the session: the dialog is closed as a forced close with a <see langword="null" /> result, and the
+    /// returned task ends canceled.
+    /// </param>
+    /// <exception cref="InvalidOperationException">
+    /// The dialog already has an active session, or no session could start because neither the placement target nor
+    /// the dialog control is attached. In the latter case <see cref="IsOpen" /> is reset to <see langword="false" />.
+    /// </exception>
     public async Task OpenAsync(CancellationToken cancellationToken = default)
     {
         if (!Dispatcher.CheckAccess())
@@ -125,21 +140,44 @@ public partial class Dialog
             "Dialog.OpenAsync cannot be called while the dialog already has an active session.");
     }
 
+    /// <summary>
+    /// Requests the dialog to close with <see cref="DialogCode.Accepted" /> as the result. The request raises
+    /// <see cref="Closing" /> and then consults <see cref="BeforeCloseAsync" />; either can keep the dialog open.
+    /// The request has no effect unless the dialog is open.
+    /// </summary>
     public void Accept()
     {
         RequestClose(new DialogCloseRequest(DialogCode.Accepted, DialogCloseReason.Accepted, null));
     }
 
+    /// <summary>
+    /// Requests the dialog to close with <see cref="DialogCode.Rejected" /> as the result. The request raises
+    /// <see cref="Closing" /> and then consults <see cref="BeforeCloseAsync" />; either can keep the dialog open.
+    /// The request has no effect unless the dialog is open.
+    /// </summary>
     public void Reject()
     {
         RequestClose(new DialogCloseRequest(DialogCode.Rejected, DialogCloseReason.Rejected, null));
     }
 
+    /// <summary>
+    /// Requests the dialog to close with <paramref name="dialogResult" /> as the result. The request raises
+    /// <see cref="Closing" /> and then consults <see cref="BeforeCloseAsync" />; either can keep the dialog open.
+    /// The request has no effect unless the dialog is open.
+    /// </summary>
+    /// <param name="dialogResult">
+    /// The value the dialog closes with.
+    /// </param>
     public void Done(object? dialogResult)
     {
         RequestClose(new DialogCloseRequest(dialogResult, DialogCloseReason.Programmatic, null));
     }
 
+    /// <summary>
+    /// Requests the dialog to close with the current value of <see cref="Result" /> as the result. The request
+    /// raises <see cref="Closing" /> and then consults <see cref="BeforeCloseAsync" />; either can keep the dialog
+    /// open. The request has no effect unless the dialog is open.
+    /// </summary>
     public void Done()
     {
         Done(Result);
@@ -430,6 +468,12 @@ public partial class Dialog
         }
     }
 
+    /// <summary>
+    /// Called when a property of the dialog changes. Recomputes <see cref="EffectiveMinimizable" /> when
+    /// <see cref="IsModal" /> or <see cref="IsMinimizable" /> changes, and notifies the previous and the new data
+    /// context, when they implement <see cref="IDialogAwareDataContext" />, when <c>DataContext</c> changes.
+    /// Call the base member first.
+    /// </summary>
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
@@ -451,6 +495,11 @@ public partial class Dialog
         }
     }
 
+    /// <summary>
+    /// Called when the dialog is attached to a visual tree. When <see cref="IsOpen" /> is set and no session
+    /// exists, it posts the reconciliation that starts the session, so that an open request made before the dialog
+    /// was attached is carried out once the dialog is attached. Call the base member first.
+    /// </summary>
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
@@ -460,6 +509,12 @@ public partial class Dialog
         }
     }
 
+    /// <summary>
+    /// Called when the dialog is detached from a visual tree. When a session exists, it requests a forced close
+    /// with a <see langword="null" /> result and the reason
+    /// <see cref="DialogCloseReason.PlacementTargetDetached" />, which <see cref="Closing" /> handlers cannot veto.
+    /// Call the base member first.
+    /// </summary>
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnDetachedFromVisualTree(e);

@@ -5,9 +5,10 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls;
 
-// popup.root 语义部件宿主：直接作为 Popup 的 Child 承载弹层外沿，并向内容层的
-// ArrowDecoratedBox 转发箭头/阴影遮罩契约。Popup 自定义定位与 ShadowsAwareContainer
-// 都只从直接 Child 读取 IArrowAwareShadowMaskInfoProvider。
+// Host of the popup.root semantic part. It is the direct Child of the Popup and carries the outer edge of the
+// popup, and it forwards the arrow and shadow mask contract to the ArrowDecoratedBox in the content layer.
+// The custom placement of the Popup and ShadowsAwareContainer read IArrowAwareShadowMaskInfoProvider from
+// the direct Child only.
 internal sealed class ColorPickerPopupRootFrame : Border, IArrowAwareShadowMaskInfoProvider
 {
     private ArrowDecoratedBox? _arrowBox;

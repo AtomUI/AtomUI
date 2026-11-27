@@ -106,7 +106,9 @@ internal sealed class DataGridRangeCoordinator : IDisposable
 
     public int StaleCommitCount => 0;
 
-    // 快照过期重启会在协调器内部换上新的代际；表格据此接管，否则后续视口请求都会因代际不是当前而被丢弃
+    // A restart after a snapshot expiry replaces the coordinator's generation with a new one. The grid adopts
+    // the new generation through this property; otherwise every later viewport request would be dropped
+    // because the generation it names is no longer the current one.
     internal DataGridGeneration? ActiveGeneration
     {
         get

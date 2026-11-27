@@ -3,6 +3,10 @@ using Avalonia.Layout;
 
 namespace AtomUI.Controls;
 
+/// <summary>
+/// Attached properties that configure one child of a <see cref="FlexPanel" />: its cross-axis alignment, its
+/// position in the layout order, its main-axis basis and its grow and shrink factors.
+/// </summary>
 public static class Flex
 {
     /// <summary>
@@ -39,21 +43,33 @@ public static class Flex
         AvaloniaProperty.RegisterAttached<Layoutable, double>("Grow", typeof(Flex), 0.0,
             validate: v => v >= 0.0);
 
+    /// <summary>
+    /// Attached value on each child that holds the main-axis length resolved from its basis and its minimum
+    /// length, before free space is distributed. <see cref="FlexPanel" /> writes it during measure.
+    /// </summary>
     internal static readonly AttachedProperty<double> BaseLengthProperty =
         AvaloniaProperty.RegisterAttached<Layoutable, double>("BaseLength", typeof(Flex), 0.0);
 
+    /// <summary>
+    /// Attached value on each child that holds the smallest main-axis length it may shrink to: its explicit
+    /// minimum size, or a length measured from its content. <see cref="FlexPanel" /> writes it during measure.
+    /// </summary>
     internal static readonly AttachedProperty<double> MinLengthProperty =
         AvaloniaProperty.RegisterAttached<Layoutable, double>("MinLength", typeof(Flex), 0.0);
 
+    /// <summary>
+    /// Attached value on each child that holds its final main-axis length. <see cref="FlexPanel" /> writes it
+    /// during measure and arrange, and arranges the child with it.
+    /// </summary>
     internal static readonly AttachedProperty<double> CurrentLengthProperty =
         AvaloniaProperty.RegisterAttached<Layoutable, double>("CurrentLength", typeof(Flex), 0.0);
 
     /// <summary>
-    /// Gets the cross-axis alignment override for a child item in a <see cref="FlexPanel"/>
+    /// Gets the cross-axis alignment override for a child item in a <see cref="FlexPanel" />
     /// </summary>
     /// <remarks>
-    /// This property is used to override the <see cref="FlexPanel.AlignItems"/> property for a specific child.
-    /// When omitted, <see cref="FlexPanel.AlignItems"/> in not overridden.
+    /// This property is used to override the <see cref="FlexPanel.AlignItems" /> property for a specific child.
+    /// When omitted, <see cref="FlexPanel.AlignItems" /> is not overridden.
     /// Equivalent to CSS align-self property.
     /// </remarks>
     public static AlignItems? GetAlignSelf(Layoutable layoutable)
@@ -67,11 +83,11 @@ public static class Flex
     }
 
     /// <summary>
-    /// Sets the cross-axis alignment override for a child item in a <see cref="FlexPanel"/>
+    /// Sets the cross-axis alignment override for a child item in a <see cref="FlexPanel" />
     /// </summary>
     /// <remarks>
-    /// This property is used to override the <see cref="FlexPanel.AlignItems"/> property for a specific child.
-    /// When omitted, <see cref="FlexPanel.AlignItems"/> in not overridden.
+    /// This property is used to override the <see cref="FlexPanel.AlignItems" /> property for a specific child.
+    /// When omitted, <see cref="FlexPanel.AlignItems" /> is not overridden.
     /// Equivalent to CSS align-self property.
     /// </remarks>
     public static void SetAlignSelf(Layoutable layoutable, AlignItems? value)
@@ -85,7 +101,7 @@ public static class Flex
     }
 
     /// <summary>
-    /// Retrieves the order in which a child item appears within the <see cref="FlexPanel"/>.
+    /// Retrieves the order in which a child item appears within the <see cref="FlexPanel" />.
     /// </summary>
     /// <remarks>
     /// A lower order value means the item will be positioned earlier within the container.
@@ -104,7 +120,7 @@ public static class Flex
     }
 
     /// <summary>
-    /// Sets the order in which a child item appears within the <see cref="FlexPanel"/>.
+    /// Sets the order in which a child item appears within the <see cref="FlexPanel" />.
     /// </summary>
     /// <remarks>
     /// A lower order value means the item will be positioned earlier within the container.
@@ -123,12 +139,12 @@ public static class Flex
     }
 
     /// <summary>
-    /// Gets the initial size along the main-axis of an item in a <see cref="FlexPanel"/>,
+    /// Gets the initial size along the main-axis of an item in a <see cref="FlexPanel" />,
     /// before free space is distributed according to the flex factors.
     /// </summary>
     /// <remarks>
     /// Either automatic size, a fixed length, or a percentage of the container's size.
-    /// When omitted, it is set to <see cref="FlexBasis.Auto"/>.
+    /// When omitted, it is set to <see cref="FlexBasis.Auto" />.
     /// Equivalent to CSS flex-basis property.
     /// </remarks>
     public static FlexBasis GetBasis(Layoutable layoutable)
@@ -142,12 +158,12 @@ public static class Flex
     }
 
     /// <summary>
-    /// Sets the initial size along the main-axis of an item in a <see cref="FlexPanel"/>,
+    /// Sets the initial size along the main-axis of an item in a <see cref="FlexPanel" />,
     /// before free space is distributed according to the flex factors.
     /// </summary>
     /// <remarks>
     /// Either automatic size, a fixed length, or a percentage of the container's size.
-    /// When omitted, it is set to <see cref="FlexBasis.Auto"/>.
+    /// When omitted, it is set to <see cref="FlexBasis.Auto" />.
     /// Equivalent to CSS flex-basis property.
     /// </remarks>
     public static void SetBasis(Layoutable layoutable, FlexBasis value)
@@ -162,7 +178,7 @@ public static class Flex
 
     /// <summary>
     /// Gets the factor by which an item can shrink along the main-axis,
-    /// relative to other items in a <see cref="FlexPanel"/>.
+    /// relative to other items in a <see cref="FlexPanel" />.
     /// </summary>
     /// <remarks>
     /// When omitted, it is set to 1.
@@ -180,10 +196,11 @@ public static class Flex
 
     /// <summary>
     /// Sets the factor by which an item can shrink along the main-axis,
-    /// relative to other items in a <see cref="FlexPanel"/>.
+    /// relative to other items in a <see cref="FlexPanel" />.
     /// </summary>
     /// <remarks>
     /// When omitted, it is set to 1.
+    /// The property does not accept a value below 0.
     /// Equivalent to CSS flex-shrink property.
     /// </remarks>
     public static void SetShrink(Layoutable layoutable, double value)
@@ -198,7 +215,7 @@ public static class Flex
 
     /// <summary>
     /// Gets the factor by which an item can grow along the main-axis,
-    /// relative to other items in a <see cref="FlexPanel"/>.
+    /// relative to other items in a <see cref="FlexPanel" />.
     /// </summary>
     /// <remarks>
     /// When omitted, it is set to 0.
@@ -216,10 +233,11 @@ public static class Flex
 
     /// <summary>
     /// Sets the factor by which an item can grow along the main-axis,
-    /// relative to other items in a <see cref="FlexPanel"/>.
+    /// relative to other items in a <see cref="FlexPanel" />.
     /// </summary>
     /// <remarks>
     /// When omitted, it is set to 0.
+    /// The property does not accept a value below 0.
     /// Equivalent to CSS flex-grow property.
     /// </remarks>
     public static void SetGrow(Layoutable layoutable, double value)

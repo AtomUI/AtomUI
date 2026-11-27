@@ -3,7 +3,9 @@ using AtomUI.Theme.Languages;
 
 namespace AtomUI.Desktop.Controls.Themes.Shadcn;
 
-/// <summary>The shadcn view of <see cref="StepsProgressBarToken"/>.</summary>
+/// <summary>
+/// The shadcn view of <see cref="StepsProgressBarToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class StepsProgressBarTokenRule : IControlTokenRule<ShadcnToken, StepsProgressBarToken>
 {

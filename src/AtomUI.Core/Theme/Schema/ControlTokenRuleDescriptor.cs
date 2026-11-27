@@ -4,9 +4,9 @@ using AtomUI.Theme.Languages;
 namespace AtomUI.Theme.Schema;
 
 /// <summary>
-/// Registers how one language token type derives one control's view: the pair (<see cref="LanguageTokenType"/>,
-/// <see cref="Control"/>) and an instance of the rule class. The generated registration of a value package
-/// creates one per <see cref="ControlTokenRuleAttribute"/> class.
+/// Registers how one language token type derives one control's view: the pair (<see cref="LanguageTokenType" />,
+/// <see cref="Control" />) and an instance of the rule class. The generated registration of a value package
+/// creates one per <see cref="ControlTokenRuleAttribute" /> class.
 /// </summary>
 public sealed class ControlTokenRuleDescriptor
 {
@@ -23,7 +23,12 @@ public sealed class ControlTokenRuleDescriptor
         Revision          = valuePackage.ManifestModule.ModuleVersionId;
     }
 
-    /// <summary>Creates the descriptor of <typeparamref name="TRule"/> for the control of <typeparamref name="TToken"/>.</summary>
+    /// <summary>
+    /// Creates the descriptor of <typeparamref name="TRule" /> for the control of <typeparamref name="TToken" />.
+    /// </summary>
+    /// <exception cref="InvalidOperationException">
+    /// <typeparamref name="TToken" /> reports a control identity without a catalog.
+    /// </exception>
     public static ControlTokenRuleDescriptor Create<TLanguageToken, TToken, TRule>()
         where TLanguageToken : LanguageDesignToken
         where TToken : AbstractControlDesignToken, IControlToken
@@ -41,22 +46,34 @@ public sealed class ControlTokenRuleDescriptor
             typeof(TRule).Assembly);
     }
 
-    /// <summary>The language token type the rule is bound to; derived languages find it along their base types.</summary>
+    /// <summary>
+    /// The language token type the rule is bound to; derived languages find it along their base types.
+    /// </summary>
     public Type LanguageTokenType { get; }
 
-    /// <summary>The control token type the rule writes.</summary>
+    /// <summary>
+    /// The control token type the rule writes.
+    /// </summary>
     public Type TokenType { get; }
 
-    /// <summary>The control whose view the rule computes.</summary>
+    /// <summary>
+    /// The control whose view the rule computes.
+    /// </summary>
     public ControlTokenIdentity Control { get; }
 
-    /// <summary>The identity of the value package's code; part of the registry revision.</summary>
+    /// <summary>
+    /// The identity of the value package's code; part of the registry revision.
+    /// </summary>
     public Guid Revision { get; }
 
-    /// <summary>The value package (assembly) that holds the rule.</summary>
+    /// <summary>
+    /// The value package (assembly) that holds the rule.
+    /// </summary>
     internal System.Reflection.Assembly ValuePackage { get; }
 
-    /// <summary>Identifies this registration in compilation caches.</summary>
+    /// <summary>
+    /// Identifies this registration in compilation caches.
+    /// </summary>
     internal object CompilationIdentity { get; } = new();
 
     internal void Apply(in DesignVariant variant, LanguageDesignToken language, AbstractControlDesignToken token,
@@ -88,5 +105,8 @@ public sealed class ControlTokenRuleDescriptor
         }
     }
 
+    /// <summary>
+    /// Returns the name of <see cref="LanguageTokenType" />, an arrow and <see cref="Control" />, for diagnostics.
+    /// </summary>
     public override string ToString() => $"{LanguageTokenType.Name} -> {Control}";
 }

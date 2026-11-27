@@ -4,7 +4,9 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls.Themes.Shadcn;
 
-/// <summary>The shadcn view of <see cref="ResetButtonToken"/>.</summary>
+/// <summary>
+/// The shadcn view of <see cref="ResetButtonToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class ResetButtonTokenRule : IControlTokenRule<ShadcnToken, ResetButtonToken>
 {
@@ -14,6 +16,8 @@ internal sealed class ResetButtonTokenRule : IControlTokenRule<ShadcnToken, Rese
         var global = target.Global;
         ButtonTokenCalculator.CalculateGlobal(in context, global);
         StandardButtonTokenCalculator.Calculate(in context, global, token);
+        // Ant Design formula kept as is: the registry `button` values are merged by ButtonTokenCalculator, before
+        // and after this geometry.
         token.ContentFontSize = global.FontSize;
         token.ContentLineHeight = ButtonGeometryTokenCalculator.CalculateContentLineHeight(token.ContentFontSize);
         token.ContentPadding = ButtonGeometryTokenCalculator.CalculateContentPadding(token, global, token.ContentLineHeight, CustomizableSizeType.Middle);

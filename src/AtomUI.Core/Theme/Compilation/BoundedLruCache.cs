@@ -166,7 +166,8 @@ internal sealed class BoundedLruCache<TKey, TValue> : IDisposable
                 {
                     throw new OperationCanceledException(new CancellationToken(true));
                 }
-                // 与物化后的重新计费使用同一锁，避免插入旧尺寸覆盖先到达的物化通知。
+                // Estimate and insert take the same lock as the recharge after materialization, so an insert cannot
+                // store a stale size over a materialization notification that arrived first.
                 var retainedBytes = EstimateEntry(key, value);
                 ArgumentOutOfRangeException.ThrowIfNegative(retainedBytes);
                 if (retainedBytes <= _retainedBytesLimit)

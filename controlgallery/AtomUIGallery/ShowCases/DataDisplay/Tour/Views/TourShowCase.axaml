@@ -22,8 +22,10 @@
                     MetadataValueWidth="220" />
             </gallery:GalleryShowCaseHost.Header>
 
-            <!-- 语义预览对齐 antd Tour _semantic 演示：Tour 默认打开、舞台居中
-                 锚点按钮、第一步带封面与遮罩，切换部件时高亮相应节点。 -->
+            <!-- The semantic preview mirrors the antd Tour _semantic demo: the tour is open by default, the stage
+            centers the anchor button, the first step has a cover and a mask, and switching parts highlights the
+            matching node.
+            -->
             <gallery:GalleryShowCaseHost.SemanticPartsContentTemplate>
                 <DataTemplate x:DataType="vm:TourViewModel">
                     <gallery:SemanticPartPreview Name="TourSemanticPreview"
@@ -32,9 +34,11 @@
                                                  SemanticOwnerType="{x:Type atom:Tour}"
                                                  PreviewStageMinHeight="600">
                         <gallery:SemanticPartPreview.PreviewContent>
-                            <!-- 对齐上游 SemanticPreview 舞台（position:relative + overflow:hidden +
-                                 getPopupContainer=false）：遮罩的共享 TourLayer 宿主在舞台内嵌的
-                                 VisualLayerManager，只覆盖舞台区域，不覆盖整个窗口。 -->
+                            <!-- Mirrors the upstream SemanticPreview stage (position: relative + overflow: hidden +
+                            getPopupContainer=false): the shared TourLayer host of the mask is the
+                            VisualLayerManager nested in the stage, so it covers only the stage area and not the
+                            whole window.
+                            -->
                             <Border Name="TourSemanticStage"
                                     HorizontalAlignment="Stretch"
                                     VerticalAlignment="Stretch"
@@ -47,8 +51,10 @@
                                                 Name="TourSemanticStagePanel"
                                                 AttachedToVisualTree="HandleSemanticStageAttached">
                                     <StackPanel.Styles>
-                                        <!-- 对齐 antd mask 语义的"指针事件"定制维度：
-                                             预览舞台上让遮罩不参与命中测试，部件卡可 hover。 -->
+                                        <!-- Mirrors the "pointer events" customization dimension of the antd mask
+                                        semantic: on the preview stage the mask does not take part in hit testing,
+                                        so the part cards stay hoverable.
+                                        -->
                                         <Style Selector="atom|Tour.semantic-preview-stage">
                                             <atom:TourPopupMaskStyle x:SetterTargetType="Control">
                                                 <Setter Property="IsHitTestVisible" Value="False" />
@@ -410,7 +416,8 @@
                                                  Icon="{antdicons:AntDesignIconProvider EllipsisOutlined}" />
                                 </StackPanel>
 
-                                <!-- 对象样式：语义部件专用 Style 定制 root/section/cover/mask -->
+                                <!-- Object styles: the dedicated semantic part styles customize root/section/cover/mask
+                                -->
                                 <atom:Tour Name="SemanticStylesObjectTour"
                                            Classes="semantic-object-style-demo"
                                            IsOpen="{Binding SemanticStylesObjectTourOpened, Mode=TwoWay}"
@@ -448,7 +455,7 @@
                                                    Description="{gallery:TourShowCaseLangResource P2DescriptionClickToSeeOtherActions}" />
                                 </atom:Tour>
 
-                                <!-- 函数样式：primary 变体的 section/mask 定制 -->
+                                <!-- Function styles: section/mask customization of the primary variant -->
                                 <atom:Tour Name="SemanticStylesFunctionTour"
                                            Classes="semantic-function-style-demo"
                                            StyleType="Primary"

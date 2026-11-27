@@ -2,10 +2,35 @@ using Avalonia.Platform;
 
 namespace AtomUI.Theme.Definitions;
 
+/// <summary>
+/// A theme definition resolver whose documents are Avalonia assets, addressed by absolute <c>avares</c> URIs.
+/// </summary>
+/// <remarks>
+/// Add it to the <c>IAtomUIBuilder</c> with <c>AddThemeDefinitionResolver</c>.
+/// </remarks>
 public sealed class AvaloniaAssetThemeDefinitionResolver : IThemeDefinitionResolver
 {
     private readonly IReadOnlyList<IThemeDefinitionSource> _sources;
 
+    /// <summary>
+    /// Creates a resolver that offers one theme definition source per resource URI.
+    /// </summary>
+    /// <param name="id">
+    /// The resolver identity, which must not be blank and must be unique among the registered resolvers.
+    /// </param>
+    /// <param name="resourceUris">
+    /// The absolute <c>avares</c> URIs of the theme definition documents.
+    /// </param>
+    /// <param name="sourceRevision">
+    /// The revision reported for every source.
+    /// </param>
+    /// <exception cref="ArgumentNullException">
+    /// <paramref name="resourceUris" /> is <see langword="null" />.
+    /// </exception>
+    /// <exception cref="ArgumentException">
+    /// <paramref name="id" /> or <paramref name="sourceRevision" /> is blank, or a URI is <see langword="null" />,
+    /// relative, or not an <c>avares</c> URI.
+    /// </exception>
     public AvaloniaAssetThemeDefinitionResolver(
         string id,
         IReadOnlyList<Uri> resourceUris,
@@ -33,9 +58,27 @@ public sealed class AvaloniaAssetThemeDefinitionResolver : IThemeDefinitionResol
         _sources = Array.AsReadOnly(sources);
     }
 
+    /// <inheritdoc />
     public string Id { get; }
+    /// <summary>
+    /// Always <see langword="false" />: assets compiled into an assembly do not change, so a catalog reload keeps the
+    /// catalog entries that were loaded from them at startup.
+    /// </summary>
     public bool SupportsReload => false;
 
+    /// <summary>
+    /// Returns one source for every resource URI given to the constructor, without diagnostics.
+    /// </summary>
+    /// <param name="context">
+    /// Not read except to reject <see langword="null" />: the resolver offers the same sources for a startup load
+    /// and for a reload.
+    /// </param>
+    /// <returns>
+    /// The sources of this resolver and an empty diagnostic list.
+    /// </returns>
+    /// <exception cref="ArgumentNullException">
+    /// <paramref name="context" /> is <see langword="null" />.
+    /// </exception>
     public ThemeDefinitionResolveResult Resolve(ThemeDefinitionResolveContext context)
     {
         ArgumentNullException.ThrowIfNull(context);

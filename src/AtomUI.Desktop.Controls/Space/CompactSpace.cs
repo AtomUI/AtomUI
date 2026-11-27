@@ -13,6 +13,14 @@ using Avalonia.Metadata;
 
 namespace AtomUI.Desktop.Controls;
 
+/// <summary>
+/// Position of an item in a <see cref="CompactSpace" />. The control passes it to
+/// <see cref="ICompactSpaceAware.NotifyPositionChange" /> so that the item can drop the corners that touch a
+/// neighbour. An item of a group with several items receives <see cref="First" />, <see cref="Middle" /> or
+/// <see cref="Last" />, and a <see cref="CompactSpaceFiller" /> is not counted. The only item of a group
+/// receives <see cref="First" /> and <see cref="Last" /> together and keeps all of its corners.
+/// AtomUI.Desktop.Controls.ColorPicker keeps the value in a styled property of the color picker.
+/// </summary>
 [Flags]
 internal enum SpaceItemPosition
 {
@@ -21,6 +29,12 @@ internal enum SpaceItemPosition
     Last   = 0x04,
 }
 
+/// <summary>
+/// Lays its <see cref="Children" /> out as one joined row or column without gaps between the items. Each item
+/// is told whether it is the first, a middle or the last item and what the orientation is, so that it can
+/// drop the corners that touch a neighbour. The length an item takes comes from the
+/// <c>CompactSpace.ItemSize</c> attached property.
+/// </summary>
 public class CompactSpace : TemplatedControl,
                             ICustomizableSizeTypeAware,
                             IChildIndexProvider,
@@ -28,29 +42,62 @@ public class CompactSpace : TemplatedControl,
 {
     #region 公共属性定义
 
+    /// <summary>
+    /// Identifies the <see cref="Orientation" /> property.
+    /// </summary>
     public static readonly StyledProperty<Orientation> OrientationProperty =
         AvaloniaProperty.Register<CompactSpace, Orientation>(nameof(Orientation), defaultValue: Orientation.Horizontal);
     
+    /// <summary>
+    /// Identifies the <see cref="SizeType" /> property.
+    /// </summary>
     public static readonly StyledProperty<CustomizableSizeType> SizeTypeProperty =
         CustomizableSizeTypeControlProperty.SizeTypeProperty.AddOwner<CompactSpace>();
     
+    /// <summary>
+    /// The attached property for the width of an item in a horizontal <see cref="CompactSpace" /> and for its
+    /// height in a vertical one. Set it on an item of <see cref="Children" />. A pixel size fixes the length, a
+    /// star size such as <c>2*</c> gives a weighted share of the remaining length, and
+    /// <see cref="CompactSpaceSize.Auto" /> sizes the item to its content, which is also the default. The value
+    /// is read from the items of <see cref="Children" /> only and is not inherited.
+    /// </summary>
     public static readonly AttachedProperty<CompactSpaceSize> ItemSizeProperty =
         AvaloniaProperty.RegisterAttached<CompactSpace, Control, CompactSpaceSize>(
             "ItemSize",
             defaultValue: CompactSpaceSize.Auto);
     
+    /// <summary>
+    /// Direction in which the items are lined up: <c>Horizontal</c> puts them in one row, <c>Vertical</c> in one
+    /// column. The default is <c>Horizontal</c>.
+    /// </summary>
     public Orientation Orientation
     {
         get => GetValue(OrientationProperty);
         set => SetValue(OrientationProperty, value);
     }
 
+    /// <summary>
+    /// Size preset of the group. The control only forwards it: an item that is size-type aware receives this value
+    /// while it belongs to the control and loses it when it is removed, so that all items follow one preset.
+    /// </summary>
     public CustomizableSizeType SizeType
     {
         get => GetValue(SizeTypeProperty);
         set => SetValue(SizeTypeProperty, value);
     }
     
+    /// <summary>
+    /// The items this control lays out, in layout order. It is the XAML content property. Each item has to
+    /// implement <c>ICompactSpaceAware</c>; an item that does not is rejected with <see cref="ArgumentException" />.
+    /// Use at most one <see cref="CompactSpaceFiller" /> and put it last.
+    /// </summary>
+    /// <exception cref="ArgumentException">
+    /// Thrown when an item that does not implement <c>ICompactSpaceAware</c> is added to a control whose template
+    /// is applied, or when the template is applied while such an item is in the list.
+    /// </exception>
+    /// <exception cref="NotSupportedException">
+    /// Thrown when the list is cleared or an item is replaced, because Replace and Reset changes are not supported.
+    /// </exception>
     [Content]
     public AvaloniaList<Control> Children { get; } = new();
     
@@ -139,16 +186,53 @@ public class CompactSpace : TemplatedControl,
         Children.CollectionChanged += HandleChildrenChanged;
     }
     
+    /// <summary>
+    /// Sets the <see cref="ItemSizeProperty" /> attached value of an element.
+    /// </summary>
+    /// <param name="element">
+    /// The element to set the size on.
+    /// </param>
+    /// <param name="size">
+    /// The size: sized to the content, a fixed number of pixels, or a weighted share of the remaining length.
+    /// </param>
     public static void SetItemSize(Control element, CompactSpaceSize size)
     {
         element.SetValue(ItemSizeProperty, size);
     }
 
+    /// <summary>
+    /// Reads the <see cref="ItemSizeProperty" /> attached value of an element.
+    /// </summary>
+    /// <param name="element">
+    /// The element to read from.
+    /// </param>
+    /// <returns>
+    /// The size set on the element, or <see cref="CompactSpaceSize.Auto" /> when none is set.
+    /// </returns>
     public static CompactSpaceSize GetItemSize(Control element)
     {
         return element.GetValue(ItemSizeProperty);
     }
     
+    /// <summary>
+    /// Mirrors a change of <see cref="Children" /> into the layout grid: Add wraps each new item in a wrapper
+    /// item at the same index, Move moves the wrappers, and Remove discards the wrappers of the removed items. It
+    /// then rebuilds the size definitions, reports <c>ChildIndexesReset</c> to
+    /// <see cref="IChildIndexProvider.ChildIndexChanged" /> subscribers and invalidates the measure. It does
+    /// nothing while the template has not been applied; <see cref="OnApplyTemplate" /> then builds all wrappers.
+    /// </summary>
+    /// <param name="sender">
+    /// The <see cref="Children" /> list that changed.
+    /// </param>
+    /// <param name="e">
+    /// The collection change. Replace and Reset changes are not supported.
+    /// </param>
+    /// <exception cref="NotSupportedException">
+    /// Thrown when <paramref name="e" /> describes a Replace or a Reset change.
+    /// </exception>
+    /// <remarks>
+    /// An override must call the base implementation unless it maintains the wrappers itself.
+    /// </remarks>
     protected virtual void HandleChildrenChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
         if (_contentLayout == null)
@@ -216,11 +300,23 @@ public class CompactSpace : TemplatedControl,
         InvalidateMeasureOnChildrenChanged();
     }
 
+    /// <summary>
+    /// Invalidates the measure after the <see cref="Children" /> collection changed or the control template was
+    /// applied, so that the layout is rebuilt for the current items. Override it to run further updates at these
+    /// points; call the base implementation from an override to keep the measure invalidated.
+    /// </summary>
     private protected virtual void InvalidateMeasureOnChildrenChanged()
     {
         InvalidateMeasure();
     }
 
+    /// <summary>
+    /// Rebuilds the layout after the base implementation has run. It discards the wrappers of a previous template,
+    /// takes the <c>PART_ContentLayout</c> grid from the new template and wraps every item of
+    /// <see cref="Children" /> in a wrapper item inside that grid. It then rebuilds the size definitions, reports
+    /// <c>ChildIndexesReset</c> to <see cref="IChildIndexProvider.ChildIndexChanged" /> subscribers and invalidates
+    /// the measure.
+    /// </summary>
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
@@ -244,11 +340,30 @@ public class CompactSpace : TemplatedControl,
         InvalidateMeasureOnChildrenChanged();
     }
 
+    /// <summary>
+    /// Measures the control. Before the base measure it looks for <see cref="CompactSpaceFiller" /> instances among
+    /// the direct children of the layout grid. It throws when one is found at an index other than 0 or when more
+    /// than one is found.
+    /// </summary>
+    /// <param name="availableSize">
+    /// The available size. It is passed to the base implementation unchanged.
+    /// </param>
+    /// <returns>
+    /// The size returned by the base implementation.
+    /// </returns>
+    /// <exception cref="InvalidSpaceFillerUsageException">
+    /// Thrown when a filler is found at an index other than 0, or when more than one filler is found.
+    /// </exception>
+    /// <remarks>
+    /// The direct children of the layout grid are the wrapper items that hold the items of
+    /// <see cref="Children" />, not the items themselves. The check therefore does not see a filler that was added
+    /// to <see cref="Children" />.
+    /// </remarks>
     protected override Size MeasureCore(Size availableSize)
     {
         if (_contentLayout != null)
         {
-            // 检查 filler 位置和数量
+            // Check the position and the count of the fillers.
             var fillerCount   = 0;
             var childrenCount = _contentLayout.Children.Count;
             for (var i = 0; i < childrenCount; i++)
@@ -272,12 +387,20 @@ public class CompactSpace : TemplatedControl,
         return base.MeasureCore(availableSize);
     }
 
+    /// <summary>
+    /// Detaches the handlers that watch the class lists of the items, after the base implementation has run, so
+    /// that a detached control stops reacting to class changes of its items.
+    /// </summary>
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnDetachedFromVisualTree(e);
         ClearChildClassesChangedHandlers();
     }
 
+    /// <summary>
+    /// Registers a handler on the class list of each item, after the base implementation has run. The handler
+    /// keeps an item whose content has focus above its neighbours.
+    /// </summary>
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
@@ -667,7 +790,7 @@ public class CompactSpace : TemplatedControl,
             _contentLayout.RowDefinitions = rowDefinitions;
         }
         
-        // 计算位置
+        // Compute the position of each item, then notify it of the position and the orientation.
         var realChildrenCount = CountRealChildren(children);
         if (realChildrenCount == 1)
         {

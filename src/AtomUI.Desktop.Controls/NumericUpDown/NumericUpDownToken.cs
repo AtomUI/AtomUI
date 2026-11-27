@@ -2,12 +2,16 @@ using AtomUI.Theme.DesignTokens;
 
 namespace AtomUI.Desktop.Controls;
 
+/// <summary>
+/// Design tokens for <see cref="NumericUpDown" />, extending <see cref="AbstractButtonSpinnerToken" /> with the
+/// font size of the small size.
+/// </summary>
 [ControlDesignToken]
 public sealed partial class NumericUpDownToken : AbstractButtonSpinnerToken
 {
     /// <summary>
-    /// 小号输入框字体大小，默认等于 <see cref="DesignToken.FontSize"/>（与 antd 一致）
-    /// Font size of the small input, the middle font size by default (as in antd)
+    /// Font size of the input text in the small size. Defaults to <see cref="DesignToken.FontSize" />, the same
+    /// as the middle size, as in antd.
     /// </summary>
     public partial double InputFontSizeSM { get; set; }
 }

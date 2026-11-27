@@ -49,7 +49,10 @@ internal sealed class LanguageCatalogRegistry
 
     internal IReadOnlyList<LanguageCatalogDescriptor> Catalogs => _catalogs;
 
-    /// <summary>构建注册表。跨包引用必须闭合：bundle 指向未注册的 catalog 时抛出。</summary>
+    /// <summary>
+    /// Builds the registry from catalogs and translation bundles. A bundle must target a registered catalog,
+    /// also when the bundle comes from another package; otherwise this throws.
+    /// </summary>
     internal static LanguageCatalogRegistry Create(
         IReadOnlyList<LanguageCatalogDescriptor> catalogInputs,
         IReadOnlyList<TranslationBundleDescriptor> bundleInputs,
@@ -115,7 +118,8 @@ internal sealed class LanguageCatalogRegistry
                                  .ThenByDescending(static bundle => bundle.SourceKind)
                                  .ThenBy(static bundle => bundle.SourceIdentity, StringComparer.Ordinal)
                                  .ToArray();
-            // Descriptor 和 Bundle 在构造时已冻结。相同输入无需再次逐 unit 验证冲突/en-US 覆盖。
+            // Descriptors and bundles are frozen when they are constructed. The same input needs no second per-unit
+            // validation of conflicts and en-US coverage.
             if ((!generatedDataVerified || catalog is not LanguageDataCatalogDescriptor || orderedBundles.Any(static bundle => !bundle.IsModuleData)) &&
                 (previous is null || !previous.HasSameCatalog(catalog, orderedBundles, out _)))
             {
@@ -134,13 +138,15 @@ internal sealed class LanguageCatalogRegistry
         {
             return true;
         }
-        // 手工与模块数据 Catalog 的键都是 enum；Type、string 等键类型不可能命中，无需解析程序集名。
+        // Both manual and module data catalogs use enum keys. A key type such as Type or string cannot match, so
+        // there is no need to resolve an assembly name.
         if (!resourceKindType.IsEnum)
         {
             catalogSlot = NoCatalogSlot;
             return false;
         }
-        // 注册表冻结后不变，命中与未命中都按类型缓存；token enum 等非语言键只解析一次。
+        // The registry does not change after it is frozen, so hits and misses are both cached by type.
+        // Non-language keys such as token enums are resolved only once.
         if (!_resolvedDataTypes.TryGetValue(resourceKindType, out catalogSlot))
         {
             catalogSlot = ResolveDataCatalogSlot(resourceKindType);
@@ -151,7 +157,7 @@ internal sealed class LanguageCatalogRegistry
 
     private int ResolveDataCatalogSlot(Type resourceKindType)
     {
-        // 先按元数据名筛选，只有候选类型才需要分配 AssemblyName。
+        // Filter by metadata name first, so only candidate types need to allocate an AssemblyName.
         if (resourceKindType.FullName is { } name && _dataMetadataNames.Contains(name) &&
             resourceKindType.Assembly.GetName().Name is { } assembly &&
             _dataSlots.TryGetValue((assembly, name), out var slot))

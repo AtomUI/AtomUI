@@ -140,7 +140,8 @@ internal class OtpLineEditCell : InputControlFrame
 
         _caret.IsVisible = IsActive && IsEffectivelyEnabled;
 
-        // 有字符时插入点在字符右侧：右移半个字符 advance（数字等宽近似）
+        // With a character present the caret sits to the right of it: shifted by half a character advance,
+        // which approximates the width of a digit.
         var offsetX = string.IsNullOrEmpty(DisplayText) ? 0 : FontSize * 0.30;
         if (_caret.RenderTransform is TranslateTransform translate)
         {

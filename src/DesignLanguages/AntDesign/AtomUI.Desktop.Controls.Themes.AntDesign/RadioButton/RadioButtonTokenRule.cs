@@ -4,7 +4,9 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls.Themes.AntDesign;
 
-/// <summary>The AntDesign view of <see cref="RadioButtonToken"/>.</summary>
+/// <summary>
+/// The AntDesign view of <see cref="RadioButtonToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class RadioButtonTokenRule : IControlTokenRule<AntDesignToken, RadioButtonToken>
 {
@@ -17,7 +19,7 @@ internal sealed class RadioButtonTokenRule : IControlTokenRule<AntDesignToken, R
         var colorPrimary     = global.ColorPrimary;
         var colorWhite       = global.ColorWhite;
 
-        var dotPadding = 4; // 魔术值，需要看有没有好办法消除
+        var dotPadding = 4; // Magic value; see whether there is a good way to remove it.
         var radioSize  = fontSizeLG;
 
         var radioDotSize = radioSize - (dotPadding + lineWidth) * 2;

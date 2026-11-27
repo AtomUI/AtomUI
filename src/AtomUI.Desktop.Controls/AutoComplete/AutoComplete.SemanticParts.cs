@@ -7,6 +7,9 @@ using AtomUICandidateListItem = AtomUI.Desktop.Controls.Primitives.CandidateList
 
 namespace AtomUI.Desktop.Controls;
 
+// The prefix area before the text, inside the input. AutoCompletePrefixStyle applies to the area.
+// The node is in the template of the input frame of the nested input, so the route crosses the input scope
+// and that frame template.
 [SemanticPart(
     "prefix",
     SelectorClass = "semantic-prefix",
@@ -14,6 +17,9 @@ namespace AtomUI.Desktop.Controls;
     SelectorRoute = "/template/ .semantic-scope-input >> .semantic-scope-input-frame /template/ .semantic-scope-prefix > .semantic-prefix",
     ContractType = typeof(ContentPresenter),
     Since = "6.2.0")]
+// The area of the input that holds the text presenter and the placeholder.
+// AutoCompleteContentStyle applies to the area.
+// The node is in the template of the nested input, so the route crosses the input scope.
 [SemanticPart(
     "content",
     SelectorClass = "semantic-content",
@@ -21,6 +27,8 @@ namespace AtomUI.Desktop.Controls;
     SelectorRoute = "/template/ .semantic-scope-input /template/ .semantic-content",
     ContractType = typeof(Panel),
     Since = "6.2.0")]
+// The placeholder text inside the content area. AutoCompletePlaceholderStyle applies to the text.
+// The node is in the template of the nested input, so the route crosses the input scope.
 [SemanticPart(
     "placeholder",
     SelectorClass = "semantic-placeholder",
@@ -28,6 +36,8 @@ namespace AtomUI.Desktop.Controls;
     SelectorRoute = "/template/ .semantic-scope-input /template/ .semantic-content > .semantic-placeholder",
     ContractType = typeof(TextBlock),
     Since = "6.2.0")]
+// The text presenter that draws the entered text. AutoCompleteInputStyle applies to the presenter.
+// The node is in the template of the nested input, so the route crosses the input scope.
 [SemanticPart(
     "input",
     SelectorClass = "semantic-input",
@@ -35,6 +45,9 @@ namespace AtomUI.Desktop.Controls;
     SelectorRoute = "/template/ .semantic-scope-input /template/ .semantic-input",
     ContractType = typeof(TextPresenter),
     Since = "6.2.0")]
+// The button that clears the entered text. AutoCompleteClearStyle applies to the button.
+// The node is in the template of the input frame of the nested input, so the route crosses the input scope
+// and that frame template.
 [SemanticPart(
     "clear",
     SelectorClass = "semantic-clear",
@@ -42,12 +55,16 @@ namespace AtomUI.Desktop.Controls;
     SelectorRoute = "/template/ .semantic-scope-input >> .semantic-scope-input-frame /template/ .semantic-scope-suffix > .semantic-suffix > .semantic-clear",
     ContractType = typeof(AvaloniaButton),
     Since = "6.2.0")]
+// The root of the suggestion popup. It lives in a separate popup visual root, so the route crosses visual roots.
+// AutoCompletePopupRootStyle applies to the root.
 [SemanticPart(
     "popup.root",
     SelectorClass = "semantic-popup-root",
     CrossVisualRoot = true,
     ContractType = typeof(Border),
     Since = "6.2.0")]
+// The list of suggestions inside the popup. It lives in the popup visual root.
+// AutoCompletePopupListStyle applies to the list.
 [SemanticPart(
     "popup.list",
     SelectorClass = "semantic-popup-list",
@@ -55,6 +72,8 @@ namespace AtomUI.Desktop.Controls;
     SelectorRoute = "/template/ .semantic-popup-root > .semantic-popup-list",
     ContractType = typeof(AtomUICandidateList),
     Since = "6.2.0")]
+// One suggestion row of the popup list. The rows are created at runtime, one per suggestion, and live in the
+// popup visual root. AutoCompletePopupListItemStyle applies to every row.
 [SemanticPart(
     "popup.listItem",
     SelectorClass = "semantic-popup-list-item",

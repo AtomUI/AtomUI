@@ -3,7 +3,9 @@ using AtomUI.Theme.Languages;
 
 namespace AtomUI.Desktop.Controls.Themes.AntDesign;
 
-/// <summary>The AntDesign view of <see cref="ButtonSpinnerToken"/>.</summary>
+/// <summary>
+/// The AntDesign view of <see cref="ButtonSpinnerToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class ButtonSpinnerTokenRule : IControlTokenRule<AntDesignToken, ButtonSpinnerToken>
 {

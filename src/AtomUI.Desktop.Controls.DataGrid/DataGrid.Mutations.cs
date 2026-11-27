@@ -6,6 +6,36 @@ namespace AtomUI.Desktop.Controls;
 
 public partial class DataGrid
 {
+    /// <summary>
+    /// Commits new values for one row through the source, then repopulates the cells of that row.
+    /// </summary>
+    /// <param name="rowKey">
+    /// The key of the row to edit.
+    /// </param>
+    /// <param name="values">
+    /// The values to commit, keyed by field id.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// Cancels the commit while the source is still working on it. A change the source has already finished
+    /// is not reverted.
+    /// </param>
+    /// <returns>
+    /// <see langword="true" /> when the edit counts as applied: the grid already shows the result or a reload
+    /// that shows it is running or has been started. <see langword="false" /> when the grid shows no loaded,
+    /// up-to-date snapshot of an <see cref="IDataGridEditableSource" />, or when the source, its query or the
+    /// presented snapshot was replaced while the commit was running.
+    /// </returns>
+    /// <exception cref="ArgumentNullException">
+    /// <paramref name="values" /> is <see langword="null" />.
+    /// </exception>
+    /// <exception cref="ArgumentException">
+    /// <paramref name="rowKey" /> or a field id in <paramref name="values" /> is invalid.
+    /// </exception>
+    /// <remarks>
+    /// The grid calls this itself when a row edit is committed. When the source changes the values in place
+    /// without changing its snapshot, the cells of the row are rebuilt so that items without change
+    /// notification show the committed values.
+    /// </remarks>
     public ValueTask<bool> EditRowAsync(
         DataGridRowKey rowKey,
         ImmutableDictionary<DataGridFieldId, DataGridScalar> values,
@@ -42,6 +72,25 @@ public partial class DataGrid
                 static (capability, mutation, token) => capability.CommitAsync(mutation, token)));
     }
 
+    /// <summary>
+    /// Deletes a row through the source and refreshes the grid.
+    /// </summary>
+    /// <param name="rowKey">
+    /// The key of the row to delete.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// Cancels the deletion while the source is still working on it. A change the source has already
+    /// finished is not reverted.
+    /// </param>
+    /// <returns>
+    /// <see langword="true" /> when the deletion counts as applied: the grid already shows the result or a
+    /// reload that shows it is running or has been started. <see langword="false" /> when the grid shows no
+    /// loaded, up-to-date snapshot of an <see cref="IDataGridEditableSource" />, or when the source, its
+    /// query or the presented snapshot was replaced while the deletion was running.
+    /// </returns>
+    /// <exception cref="ArgumentException">
+    /// <paramref name="rowKey" /> is invalid.
+    /// </exception>
     public ValueTask<bool> DeleteRowAsync(
         DataGridRowKey rowKey,
         CancellationToken cancellationToken = default)
@@ -71,6 +120,28 @@ public partial class DataGrid
             static (capability, mutation, token) => capability.DeleteAsync(mutation, token));
     }
 
+    /// <summary>
+    /// Adds a row with the given values through the source and refreshes the grid.
+    /// </summary>
+    /// <param name="values">
+    /// The values of the new row, keyed by field id.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// Cancels the insertion while the source is still working on it. A change the source has already
+    /// finished is not reverted.
+    /// </param>
+    /// <returns>
+    /// <see langword="true" /> when the insertion counts as applied: the grid already shows the result or a
+    /// reload that shows it is running or has been started. <see langword="false" /> when the grid shows no
+    /// loaded, up-to-date snapshot of an <see cref="IDataGridEditableSource" />, or when the source, its
+    /// query or the presented snapshot was replaced while the insertion was running.
+    /// </returns>
+    /// <exception cref="ArgumentNullException">
+    /// <paramref name="values" /> is <see langword="null" />.
+    /// </exception>
+    /// <exception cref="ArgumentException">
+    /// A field id in <paramref name="values" /> is invalid.
+    /// </exception>
     public ValueTask<bool> AddRowAsync(
         ImmutableDictionary<DataGridFieldId, DataGridScalar> values,
         CancellationToken cancellationToken = default)
@@ -101,6 +172,26 @@ public partial class DataGrid
             static (capability, mutation, token) => capability.AddAsync(mutation, token));
     }
 
+    /// <summary>
+    /// Runs a bulk operation on the rows that are currently selected.
+    /// </summary>
+    /// <param name="operation">
+    /// The identity of the operation. Its meaning is defined by the source.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// Cancels the operation while the source is still working on it. A change the source has already
+    /// finished is not reverted.
+    /// </param>
+    /// <returns>
+    /// <see langword="true" /> when the operation counts as applied: the grid already shows the result or a
+    /// reload that shows it is running or has been started. <see langword="false" /> when the selection is
+    /// empty, when the grid shows no loaded, up-to-date snapshot of an
+    /// <see cref="IDataGridBulkSelectionSource" />, or when the source, its query or the presented snapshot
+    /// was replaced while the operation was running.
+    /// </returns>
+    /// <exception cref="ArgumentException">
+    /// <paramref name="operation" /> is <see langword="null" />, empty or white space.
+    /// </exception>
     public ValueTask<bool> ExecuteBulkSelectionAsync(
         string operation,
         CancellationToken cancellationToken = default)
@@ -132,6 +223,34 @@ public partial class DataGrid
             static (capability, mutation, token) => capability.ExecuteAsync(mutation, token));
     }
 
+    /// <summary>
+    /// Moves a row to a new position in the source and refreshes the grid with the viewport position kept.
+    /// </summary>
+    /// <param name="rowKey">
+    /// The key of the row to move.
+    /// </param>
+    /// <param name="beforeKey">
+    /// The key of the row the moved row is placed in front of. Give exactly one of
+    /// <paramref name="beforeKey" /> and <paramref name="afterKey" />.
+    /// </param>
+    /// <param name="afterKey">
+    /// The key of the row the moved row is placed behind.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// Cancels the move while the source is still working on it. A change the source has already finished
+    /// is not reverted.
+    /// </param>
+    /// <returns>
+    /// <see langword="true" /> when the move counts as applied: the grid already shows the result or a
+    /// reload that shows it is running or has been started. <see langword="false" /> when the grid shows no
+    /// loaded, up-to-date snapshot of an <see cref="IDataGridMovableSource" />, when the source reports that
+    /// moves are unavailable, when the query sorts, filters or groups, or when the source, its query or the
+    /// presented snapshot was replaced while the move was running.
+    /// </returns>
+    /// <exception cref="ArgumentException">
+    /// <paramref name="rowKey" /> or a neighbor key is invalid, both or neither neighbor key is given, or a
+    /// neighbor key is <paramref name="rowKey" /> itself.
+    /// </exception>
     public ValueTask<bool> MoveRowAsync(
         DataGridRowKey rowKey,
         DataGridRowKey? beforeKey,
@@ -357,13 +476,15 @@ public partial class DataGrid
             return false;
         }
 
-        // 数据源返回请求时的 snapshot：当前呈现的顺序与成员仍然有效，重载没有意义
+        // The source returned the snapshot the request was made against: the presented order and members are
+        // still valid, so a reload would change nothing.
         if (resultSnapshot == snapshot && presentation.Snapshot.Snapshot == snapshot)
         {
             return true;
         }
 
-        // 数据源在变更过程中自行发出失效并已开始重载：该重载会反映本次变更，变更视为成功，不再重复加载
+        // The source invalidated itself during the mutation and a reload is already running. That reload
+        // reflects the mutation, so it counts as applied and is not loaded again.
         if (IsDataStale || LoadState == DataGridLoadState.Refreshing)
         {
             return true;
@@ -374,7 +495,8 @@ public partial class DataGrid
             return false;
         }
 
-        // 主动移动保持视口位置；其他变更沿用内容锚点，保持原完整行的屏幕位置。
+        // An explicit move keeps the viewport position. Every other mutation uses the content anchor, which
+        // keeps the complete rows at their screen position.
         SetAndRaise(IsDataStaleProperty, ref _isDataStale, true);
         BeginRangeLoad(
             isInvalidation: true,

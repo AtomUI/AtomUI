@@ -3,7 +3,9 @@ using AtomUI.Theme.Languages;
 
 namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 
-/// <summary>The PrimeNG view of <see cref="MessageBoxToken"/>.</summary>
+/// <summary>
+/// The PrimeNG view of <see cref="MessageBoxToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class MessageBoxTokenRule : IControlTokenRule<PrimeNGToken, MessageBoxToken>
 {
@@ -11,9 +13,13 @@ internal sealed class MessageBoxTokenRule : IControlTokenRule<PrimeNGToken, Mess
     {
         var token  = target.Own;
         var global = target.Global;
-        // PrimeNG: the control-global overrides, read by the formulas below.
+        // PrimeNG: the control-global overrides (MotionDurationMid, BorderRadiusLG, BorderRadiusSM, BoxShadows,
+        // FontWeightStrong), read by the MessageBox theme, not by the formulas below; MotionDurationSlow by neither.
         PrimeNGMessageBoxTokens.EvaluateGlobal(in context, global);
         DialogTokenCalculator.Calculate(in context, global, token);
+        // Ant Design formula kept as is: the PrimeNG message box stage (PrimeNGMessageBoxTokens.EvaluateOwn)
+        // replaces HeaderPadding and StyleIconSize below, so MinHeight is computed again after it. MinWidth
+        // 410 is not replaced.
         token.HeaderPadding = DialogTokenCalculator.CalculateHeaderPadding(token, global);
         token.MinHeight = DialogTokenCalculator.CalculateMinimumHeight(token, global, token.HeaderPadding);
         token.MinWidth = 410;

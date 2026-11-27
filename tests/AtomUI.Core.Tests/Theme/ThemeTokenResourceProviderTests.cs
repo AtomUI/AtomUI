@@ -419,7 +419,9 @@ internal sealed class BrushControlToken : AbstractControlDesignToken, IControlTo
     public SolidColorBrush? Brush { get; set; }
 }
 
-/// <summary>The test brush control gets a mutable brush, which the compiler must copy into the snapshot.</summary>
+/// <summary>
+/// The test brush control gets a mutable brush, which the compiler must copy into the snapshot.
+/// </summary>
 internal sealed class BrushControlTokenRule : IControlTokenRule<AntDesignToken, BrushControlToken>
 {
     public void Apply(in TokenEvaluationContext<AntDesignToken> context, ControlTokenTarget<BrushControlToken> target) =>

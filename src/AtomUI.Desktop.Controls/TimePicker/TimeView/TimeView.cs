@@ -54,7 +54,8 @@ internal partial class TimeView : TemplatedControl
         AvaloniaProperty.Register<TimeView, int>(nameof(SelectorRowCount), 7);
 
     /// <summary>
-    /// Gets or sets the minute increment in the selector
+    /// Step, in minutes, between the options of the minute column. The valid values and the default are those of
+    /// <see cref="TimePicker.MinuteIncrement" />.
     /// </summary>
     public int MinuteIncrement
     {
@@ -69,7 +70,9 @@ internal partial class TimeView : TemplatedControl
     }
 
     /// <summary>
-    /// Gets or sets the current clock identifier, either 12HourClock or 24HourClock
+    /// Hour notation of the time columns: <see cref="ClockIdentifierType.HourClock12" /> lists the hours from 1 to 12
+    /// with the AM or PM column, <see cref="ClockIdentifierType.HourClock24" /> the hours from 0 to 23 without that
+    /// column. The default is <see cref="ClockIdentifierType.HourClock24" />.
     /// </summary>
     public ClockIdentifierType ClockIdentifier
     {
@@ -113,8 +116,9 @@ internal partial class TimeView : TemplatedControl
             (o, v) => o.SpacerWidth = v);
 
     /// <summary>
-    /// Line width of the column separators, read from the owner by the theme; <see cref="SpacerWidth"/> is this width
-    /// in device pixels.
+    /// Line width of the column separators in device pixels, read from the owner by the theme.
+    /// <see cref="SpacerWidth" /> is the same width in device-independent units, so the separators keep this width at
+    /// any render scaling.
     /// </summary>
     internal static readonly StyledProperty<double> SpacerLineWidthProperty =
         AvaloniaProperty.Register<TimeView, double>(nameof(SpacerLineWidth));
@@ -228,7 +232,7 @@ internal partial class TimeView : TemplatedControl
     }
 
     // The picker terminals' Own Tokens, keyed by their generated TokenKind values so the reads stay visible to the
-    // Token consumption analysis. Date pickers have no background inset or centred content; time pickers no header.
+    // Token consumption analysis. Date pickers have no background inset or centered content; time pickers no header.
     private static readonly IReadOnlyList<(Type OwnerType, IReadOnlyList<(AvaloniaProperty Property, object Key)> Inputs)>
         s_ownerInputs =
         [
@@ -662,7 +666,9 @@ internal partial class TimeView : TemplatedControl
         return columns[column].StepByKey(key);
     }
 
-    /// <summary>Clears the keyboard-active column, so the next forwarded key starts from the hour column.</summary>
+    /// <summary>
+    /// Clears the keyboard-active column, so the next forwarded key starts from the hour column.
+    /// </summary>
     internal void ResetKeyboardNavigation()
     {
         _keyboardColumn = -1;

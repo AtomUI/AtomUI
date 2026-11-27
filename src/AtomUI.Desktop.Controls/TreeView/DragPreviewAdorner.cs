@@ -28,7 +28,7 @@ internal class DragPreviewAdorner : Decorator
     }
 
     /// <summary>
-    /// The Preview's Offset in the Y direction from the GridSplitter.
+    /// Vertical translation of the drag preview in device-independent pixels.
     /// </summary>
     public double OffsetY
     {
@@ -39,7 +39,7 @@ internal class DragPreviewAdorner : Decorator
     protected override Size ArrangeOverride(Size finalSize)
     {
         // Adorners always get clipped to the owner control. In this case we want
-        // to constrain size to the splitter size but draw on top of the parent grid.
+        // to constrain size to the owner's size but draw on top of the parent.
         Clip = null;
         return base.ArrangeOverride(finalSize);
     }

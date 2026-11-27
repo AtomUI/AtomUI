@@ -13,7 +13,8 @@ using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
 
-// 键盘与焦点：按键分派、方向/翻页/Home/End/Tab 导航与焦点进出
+// Keyboard and focus: key dispatch, navigation with the arrow, page, Home, End and Tab keys, and focus
+// entering and leaving.
 public partial class DataGrid
 {
     private void HandleKeyDown(object? sender, KeyEventArgs e)
@@ -24,6 +25,10 @@ public partial class DataGrid
         }
     }
 
+    /// <summary>
+    /// Calls the base method first. A key that it did not mark as handled is passed to the DataGrid key handling,
+    /// which marks the keys it handles as handled.
+    /// </summary>
     protected override void OnKeyDown(KeyEventArgs e)
     {
         base.OnKeyDown(e);
@@ -50,6 +55,9 @@ public partial class DataGrid
         }
     }
 
+    /// <summary>
+    /// Calls the base method first. A key that it did not mark as handled is passed to the DataGrid key up handling.
+    /// </summary>
     protected override void OnKeyUp(KeyEventArgs e)
     {
         base.OnKeyUp(e);
@@ -75,8 +83,8 @@ public partial class DataGrid
         }
 
         // Keep track of which row contains the newly focused element.
-        // 使用 FindAncestorOfType 替代手写 visual tree walk，避免在 Avalonia 12 下
-        // 撞到窗口装饰系统形成的循环边导致 CPU spin（参见 datagrid-cross-instance-rowdetails-hang.md）。
+        // FindAncestorOfType is used instead of a hand written visual tree walk: under Avalonia 12 that walk
+        // could hit the cyclic edge formed by the window decoration system and spin the CPU.
         var focusedElement = e.Source as Visual;
         _focusedObject = focusedElement;
         var focusedRow = focusedElement?.FindAncestorOfType<DataGridRow>(includeSelf: true);
@@ -87,6 +95,10 @@ public partial class DataGrid
         }
     }
 
+    /// <summary>
+    /// Calls the base method first. When it did not handle the event, the focused row is updated from the element
+    /// that received the focus, and the LostFocus event of an external editing element is subscribed to.
+    /// </summary>
     protected override void OnGotFocus(FocusChangedEventArgs e)
     {
         base.OnGotFocus(e);
@@ -138,6 +150,10 @@ public partial class DataGrid
         }
     }
 
+    /// <summary>
+    /// Calls the base method first. When it did not handle the event and the focus has just left the grid, an open
+    /// edit is committed, unless a template column is being edited, and the focused row is reset.
+    /// </summary>
     protected override void OnLostFocus(FocusChangedEventArgs e)
     {
         base.OnLostFocus(e);
@@ -210,8 +226,12 @@ public partial class DataGrid
     /// element loses focus only if this method returns true.  If it returns false, then the action
     /// will not be performed later on, and should instead be performed by the caller, if necessary.
     /// </summary>
-    /// <param name="action">Action to perform after the editing element loses focus</param>
-    /// <returns>True if the editing element had focus and the action was cached away; false otherwise</returns>
+    /// <param name="action">
+    /// Action to perform after the editing element loses focus
+    /// </param>
+    /// <returns>
+    /// True if the editing element had focus and the action was cached away; false otherwise
+    /// </returns>
     //TODO TabStop
     internal bool WaitForLostFocus(Action action)
     {
@@ -246,8 +266,8 @@ public partial class DataGrid
         return false;
     }
 
-    //TODO TabStop
-    //TODO FlowDirection
+    // TODO TabStop: verify this member handles it and complete it where missing. Remove this TODO when that is done.
+    // TODO FlowDirection: verify it is handled and complete it where missing. Remove this TODO when that is done.
     private bool ProcessDataGridKey(KeyEventArgs e)
     {
         bool focusDataGrid = false;

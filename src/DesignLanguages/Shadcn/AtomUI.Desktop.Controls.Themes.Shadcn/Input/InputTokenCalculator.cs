@@ -5,9 +5,10 @@ using AtomUI.Theme.Languages;
 namespace AtomUI.Desktop.Controls.Themes.Shadcn;
 
 /// <summary>
-/// The global tokens the shadcn input family sees: the focused border (<see cref="DesignToken.InputActiveBorderColor"/>)
-/// is the <c>--ring</c> variable (not the theme primary), the resting border the <c>--input</c> variable, the dark field background the style's share of the input
-/// variable, and one radius class at every size (the registry input has no size variants).
+/// The global tokens the shadcn input family sees: the focused border
+/// (<see cref="DesignToken.InputActiveBorderColor" />) is the <c>--ring</c> variable (not the theme primary), the
+/// resting border the <c>--input</c> variable, the dark field background the style's share of the input variable,
+/// and one radius class at every size (the registry input has no size variants).
 /// </summary>
 internal static class InputTokenCalculator
 {
@@ -24,8 +25,8 @@ internal static class InputTokenCalculator
     }
 
     /// <summary>
-    /// <see cref="CalculateGlobal"/> plus the field frame of the style: Sera draws only the bottom border without a
-    /// focus shadow, Luma and Rhea fill the field with half the input colour.
+    /// <see cref="CalculateGlobal" /> plus the field frame of the style: Sera draws only the bottom border without a
+    /// focus shadow, Luma and Rhea fill the field with half the input color.
     /// </summary>
     public static (bool Transparent, bool Bottom) CalculateFieldGlobal(in TokenEvaluationContext<ShadcnToken> context, DesignToken global)
     {
@@ -47,7 +48,9 @@ internal static class InputTokenCalculator
     }
 }
 
-/// <summary>Shapes shared by the shadcn floating surfaces.</summary>
+/// <summary>
+/// Shapes shared by the shadcn floating surfaces.
+/// </summary>
 internal static class ShadcnOverlayShapes
 {
     /// <summary>
@@ -57,6 +60,8 @@ internal static class ShadcnOverlayShapes
     /// </summary>
     public static readonly double ArrowSize = 2 * (5 * Math.Sqrt(2) - 2);
 
-    /// <summary>The <c>rounded-[2px]</c> corner of the arrow square.</summary>
+    /// <summary>
+    /// The <c>rounded-[2px]</c> corner of the arrow square.
+    /// </summary>
     public const double ArrowTipRadius = 2;
 }

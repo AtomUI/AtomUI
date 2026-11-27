@@ -28,7 +28,8 @@ internal static class RegistrationFingerprint
         return hash.Value;
     }
 
-    // [contract version head] → [global names]；与 Core 侧 HashGlobalTokenNames 的契约前缀逐位一致。
+    // [contract version head] -> [global names]. Matches, bit for bit, the contract prefix that the Core side
+    // computes in HashGlobalTokenNames.
     internal static ulong ComputeContractPrefix(IReadOnlyList<string> globalNames)
     {
         var hash = new Fnv1a();
@@ -36,7 +37,8 @@ internal static class RegistrationFingerprint
         return hash.Value;
     }
 
-    // [resource-key version head] → [global names]；与 Core 侧 HashGlobalTokenNames 的资源键前缀逐位一致。
+    // [resource-key version head] -> [global names]. Matches, bit for bit, the resource-key prefix that the Core
+    // side computes in HashGlobalTokenNames.
     internal static ulong ComputeResourceKeyPrefix(IReadOnlyList<string> globalNames)
     {
         var hash = new Fnv1a();

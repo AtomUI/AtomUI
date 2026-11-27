@@ -23,6 +23,11 @@ using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
 
+/// <summary>
+/// A button whose primary part acts as a regular button and whose secondary part opens a <see cref="Flyout" />
+/// anchored at it. The primary part shows <see cref="ContentControl.Content" /> and <see cref="Icon" />, the
+/// secondary part shows <see cref="OpenIndicator" />.
+/// </summary>
 public partial class SplitButton : ContentControl,
                            ICommandSource, 
                            ICustomizableSizeTypeAware,
@@ -31,101 +36,195 @@ public partial class SplitButton : ContentControl,
 {
     #region 公共属性定义
 
+    /// <summary>
+    /// Identifies the <see cref="OpenMotion" /> property.
+    /// </summary>
     public static readonly StyledProperty<AbstractMotion?> OpenMotionProperty =
         Popup.OpenMotionProperty.AddOwner<SplitButton>();
 
+    /// <summary>
+    /// Identifies the <see cref="CloseMotion" /> property.
+    /// </summary>
     public static readonly StyledProperty<AbstractMotion?> CloseMotionProperty =
         Popup.CloseMotionProperty.AddOwner<SplitButton>();
 
+    /// <summary>
+    /// Identifies the <see cref="Click" /> routed event.
+    /// </summary>
     public static readonly RoutedEvent<RoutedEventArgs> ClickEvent =
         RoutedEvent.Register<SplitButton, RoutedEventArgs>(
             nameof(Click),
             RoutingStrategies.Bubble);
 
+    /// <summary>
+    /// Identifies the <see cref="Command" /> property.
+    /// </summary>
     public static readonly StyledProperty<ICommand?> CommandProperty =
         Avalonia.Controls.Button.CommandProperty.AddOwner<SplitButton>();
 
+    /// <summary>
+    /// Identifies the <see cref="CommandParameter" /> property.
+    /// </summary>
     public static readonly StyledProperty<object?> CommandParameterProperty =
         Avalonia.Controls.Button.CommandParameterProperty.AddOwner<SplitButton>();
 
+    /// <summary>
+    /// Identifies the <see cref="Flyout" /> property.
+    /// </summary>
     public static readonly StyledProperty<Flyout?> FlyoutProperty =
         AvaloniaProperty.Register<SplitButton, Flyout?>(nameof(Flyout));
 
+    /// <summary>
+    /// Identifies the <see cref="HotKey" /> property.
+    /// </summary>
     public static readonly StyledProperty<KeyGesture?> HotKeyProperty =
         Avalonia.Controls.Button.HotKeyProperty.AddOwner<SplitButton>();
 
+    /// <summary>
+    /// Identifies the <see cref="TriggerType" /> property.
+    /// </summary>
     public static readonly StyledProperty<FlyoutTriggerType> TriggerTypeProperty =
         FlyoutStateHelper.TriggerTypeProperty.AddOwner<SplitButton>();
 
+    /// <summary>
+    /// Identifies the <see cref="IsArrowVisible" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsArrowVisibleProperty =
         ArrowDecoratedBox.IsArrowVisibleProperty.AddOwner<SplitButton>();
 
+    /// <summary>
+    /// Identifies the <see cref="IsPointAtCenter" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsPointAtCenterProperty =
         Flyout.IsPointAtCenterProperty.AddOwner<SplitButton>();
 
+    /// <summary>
+    /// Identifies the <see cref="Placement" /> property.
+    /// </summary>
     public static readonly StyledProperty<PlacementMode> PlacementProperty =
         Popup.PlacementProperty.AddOwner<SplitButton>();
 
+    /// <summary>
+    /// Identifies the <see cref="PlacementAnchor" /> property.
+    /// </summary>
     public static readonly StyledProperty<PopupAnchor> PlacementAnchorProperty =
         Popup.PlacementAnchorProperty.AddOwner<SplitButton>();
 
+    /// <summary>
+    /// Identifies the <see cref="PlacementGravity" /> property.
+    /// </summary>
     public static readonly StyledProperty<PopupGravity> PlacementGravityProperty =
         Popup.PlacementGravityProperty.AddOwner<SplitButton>();
 
+    /// <summary>
+    /// Identifies the <see cref="GutterToFlyout" /> property.
+    /// </summary>
     public static readonly StyledProperty<double> GutterToFlyoutProperty =
         AvaloniaProperty.Register<SplitButton, double>(nameof(GutterToFlyout));
 
+    /// <summary>
+    /// Identifies the <see cref="MouseEnterDelay" /> property.
+    /// </summary>
     public static readonly StyledProperty<int> MouseEnterDelayProperty =
         FlyoutStateHelper.MouseEnterDelayProperty.AddOwner<SplitButton>();
 
+    /// <summary>
+    /// Identifies the <see cref="MouseLeaveDelay" /> property.
+    /// </summary>
     public static readonly StyledProperty<int> MouseLeaveDelayProperty =
         FlyoutStateHelper.MouseLeaveDelayProperty.AddOwner<SplitButton>();
 
+    /// <summary>
+    /// Identifies the <see cref="SizeType" /> property.
+    /// </summary>
     public static readonly StyledProperty<CustomizableSizeType> SizeTypeProperty =
         CustomizableSizeTypeControlProperty.SizeTypeProperty.AddOwner<SplitButton>();
 
+    /// <summary>
+    /// Identifies the <see cref="Icon" /> property.
+    /// </summary>
     public static readonly StyledProperty<PathIcon?> IconProperty =
         Button.IconProperty.AddOwner<SplitButton>();
 
+    /// <summary>
+    /// Identifies the <see cref="OpenIndicator" /> property.
+    /// </summary>
     public static readonly StyledProperty<PathIcon?> OpenIndicatorProperty =
         AvaloniaProperty.Register<SplitButton, PathIcon?>(nameof(OpenIndicator));
 
+    /// <summary>
+    /// Identifies the <see cref="IsDanger" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsDangerProperty =
         Button.IsDangerProperty.AddOwner<SplitButton>();
 
+    /// <summary>
+    /// Identifies the <see cref="IsPrimaryButtonType" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsPrimaryButtonTypeProperty =
         AvaloniaProperty.Register<SplitButton, bool>(nameof(IsPrimaryButtonType));
     
+    /// <summary>
+    /// Identifies the <see cref="IsMotionEnabled" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<SplitButton>();
 
+    /// <summary>
+    /// Identifies the <see cref="ShouldUseOverlayPopup" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> ShouldUseOverlayPopupProperty =
         Flyout.ShouldUseOverlayPopupProperty.AddOwner<SplitButton>();
 
+    /// <summary>
+    /// Identifies the <see cref="IsPopupPinnedOpen" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsPopupPinnedOpenProperty =
         Flyout.IsPopupPinnedOpenProperty.AddOwner<SplitButton>();
 
+    /// <summary>
+    /// Identifies the <see cref="IsWaveSpiritEnabled" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsWaveSpiritEnabledProperty =
         WaveSpiritAwareControlProperty.IsWaveSpiritEnabledProperty.AddOwner<SplitButton>();
     
+    /// <summary>
+    /// The motion the flyout plays when it opens. The value is relayed to the flyout; without a local value the
+    /// theme supplies <c>PopupMotionDefaults.DropdownOpen</c>.
+    /// </summary>
     public AbstractMotion? OpenMotion
     {
         get => GetValue(OpenMotionProperty);
         set => SetValue(OpenMotionProperty, value);
     }
 
+    /// <summary>
+    /// The motion the flyout plays when it closes. The value is relayed to the flyout; without a local value the
+    /// theme supplies <c>PopupMotionDefaults.DropdownClose</c>. It is skipped while
+    /// <see cref="IsMotionEnabled" /> is <see langword="false" />.
+    /// </summary>
     public AbstractMotion? CloseMotion
     {
         get => GetValue(CloseMotionProperty);
         set => SetValue(CloseMotionProperty, value);
     }
 
+    /// <summary>
+    /// Occurs when the primary part is activated, by a click or by releasing Space or Enter, while the control is
+    /// effectively enabled. It is raised before <see cref="Command" /> runs, and a handler that marks the event
+    /// handled prevents the command from running.
+    /// </summary>
     public event EventHandler<RoutedEventArgs>? Click
     {
         add => AddHandler(ClickEvent, value);
         remove => RemoveHandler(ClickEvent, value);
     }
 
+    /// <summary>
+    /// The command that runs when the primary part is activated and the <see cref="Click" /> event was not marked
+    /// handled. It runs only while it can execute with <see cref="CommandParameter" />, and while it cannot the
+    /// control is effectively disabled.
+    /// </summary>
     public ICommand? Command
     {
         get => GetValue(CommandProperty);
@@ -142,7 +241,8 @@ public partial class SplitButton : ContentControl,
     }
 
     /// <summary>
-    /// Gets or sets the <see cref="Flyout" /> that is shown when the secondary part is pressed.
+    /// The flyout that opens at the secondary part when the input chosen by <see cref="TriggerType" /> occurs. Its
+    /// motion, placement and arrow are relayed from the properties of this control.
     /// </summary>
     public Flyout? Flyout
     {
@@ -159,102 +259,178 @@ public partial class SplitButton : ContentControl,
         set => SetValue(HotKeyProperty, value);
     }
 
+    /// <summary>
+    /// The input that opens and closes the flyout at the secondary part: a click on it, which is the default, the
+    /// pointer resting on it and leaving it, timed by <see cref="MouseEnterDelay" /> and
+    /// <see cref="MouseLeaveDelay" />, or its keyboard focus. Alt+Down and F4 open the flyout regardless of this
+    /// value.
+    /// </summary>
     public FlyoutTriggerType TriggerType
     {
         get => GetValue(TriggerTypeProperty);
         set => SetValue(TriggerTypeProperty, value);
     }
 
+    /// <summary>
+    /// Whether the flyout draws an arrow that points at the secondary part. The value is relayed to the flyout,
+    /// and the arrow is drawn only while <see cref="Placement" />, <see cref="PlacementAnchor" /> and
+    /// <see cref="PlacementGravity" /> allow one. The default is <see langword="false" />.
+    /// </summary>
     public bool IsArrowVisible
     {
         get => GetValue(IsArrowVisibleProperty);
         set => SetValue(IsArrowVisibleProperty, value);
     }
 
+    /// <summary>
+    /// Moves the flyout so that its arrow points at the center of the secondary part. The value is relayed to the
+    /// flyout and has an effect only while the arrow is drawn.
+    /// </summary>
     public bool IsPointAtCenter
     {
         get => GetValue(IsPointAtCenterProperty);
         set => SetValue(IsPointAtCenterProperty, value);
     }
 
+    /// <summary>
+    /// Where the flyout is placed relative to the secondary part. The value is relayed to the flyout as its
+    /// requested placement. The default is <c>BottomEdgeAlignedRight</c>.
+    /// </summary>
     public PlacementMode Placement
     {
         get => GetValue(PlacementProperty);
         set => SetValue(PlacementProperty, value);
     }
 
+    /// <summary>
+    /// The direction in which the flyout opens from <see cref="PlacementAnchor" />, refining
+    /// <see cref="Placement" />. The value is relayed to the flyout and also decides whether the arrow can be
+    /// drawn.
+    /// </summary>
     public PopupGravity PlacementGravity
     {
         get => GetValue(PlacementGravityProperty);
         set => SetValue(PlacementGravityProperty, value);
     }
 
+    /// <summary>
+    /// The point on the secondary part at which the flyout is placed, refining <see cref="Placement" />. The value
+    /// is relayed to the flyout and also decides whether the arrow can be drawn.
+    /// </summary>
     public PopupAnchor PlacementAnchor
     {
         get => GetValue(PlacementAnchorProperty);
         set => SetValue(PlacementAnchorProperty, value);
     }
 
+    /// <summary>
+    /// The gap between the control and its flyout, in DIPs. The theme takes the value from the
+    /// <c>GutterToFlyout</c> token and the value is relayed to the flyout as its margin to the anchor.
+    /// </summary>
     public double GutterToFlyout
     {
         get => GetValue(GutterToFlyoutProperty);
         set => SetValue(GutterToFlyoutProperty, value);
     }
 
+    /// <summary>
+    /// The time in milliseconds the pointer must rest on the secondary part before the flyout opens. It applies to
+    /// the hover trigger only; 0 opens the flyout at once. The default is 200.
+    /// </summary>
     public int MouseEnterDelay
     {
         get => GetValue(MouseEnterDelayProperty);
         set => SetValue(MouseEnterDelayProperty, value);
     }
 
+    /// <summary>
+    /// The time in milliseconds the flyout stays open after the pointer has left both the secondary part and the
+    /// flyout. It applies to the hover trigger only; 0 closes the flyout at once. The default is 200.
+    /// </summary>
     public int MouseLeaveDelay
     {
         get => GetValue(MouseLeaveDelayProperty);
         set => SetValue(MouseLeaveDelayProperty, value);
     }
 
+    /// <summary>
+    /// The size both parts are drawn at: it is forwarded to the two buttons of the template and selects the corner
+    /// radius of the control. With <see cref="CustomizableSizeType.Custom" />, the <c>Height</c>,
+    /// <c>MinHeight</c>, <c>Width</c>, <c>MinWidth</c>, <c>Padding</c> and <c>FontSize</c> set on this control are
+    /// applied to both buttons as well.
+    /// </summary>
     public CustomizableSizeType SizeType
     {
         get => GetValue(SizeTypeProperty);
         set => SetValue(SizeTypeProperty, value);
     }
 
+    /// <summary>
+    /// The icon of the primary part, forwarded to its button. <see langword="null" /> shows no icon.
+    /// </summary>
     public PathIcon? Icon
     {
         get => GetValue(IconProperty);
         set => SetValue(IconProperty, value);
     }
 
+    /// <summary>
+    /// The icon of the secondary part, forwarded to its button. A value that is still <see langword="null" />
+    /// when the control is initialized is replaced with the default ellipsis icon.
+    /// </summary>
     public PathIcon? OpenIndicator
     {
         get => GetValue(OpenIndicatorProperty);
         set => SetValue(OpenIndicatorProperty, value);
     }
 
+    /// <summary>
+    /// Draws both parts in the danger style of their button type. In the primary form it also switches the seam
+    /// separator to the danger separator color.
+    /// </summary>
     public bool IsDanger
     {
         get => GetValue(IsDangerProperty);
         set => SetValue(IsDangerProperty, value);
     }
 
+    /// <summary>
+    /// Draws both parts as primary buttons joined by a seam separator, instead of two adjacent default buttons.
+    /// The default is <see langword="false" />.
+    /// </summary>
     public bool IsPrimaryButtonType
     {
         get => GetValue(IsPrimaryButtonTypeProperty);
         set => SetValue(IsPrimaryButtonTypeProperty, value);
     }
     
+    /// <summary>
+    /// Switches the motion of the control on or off: the color transitions and the wave animation of both parts,
+    /// and the open and close motion of the flyout. The value is forwarded to both buttons and relayed to the
+    /// flyout. The theme takes it from the <c>EnableMotion</c> token.
+    /// </summary>
     public bool IsMotionEnabled
     {
         get => GetValue(IsMotionEnabledProperty);
         set => SetValue(IsMotionEnabledProperty, value);
     }
 
+    /// <summary>
+    /// Enables the wave animation that both parts play when they are released; it runs only while
+    /// <see cref="IsMotionEnabled" /> is <see langword="true" />. The value is forwarded to both buttons, and the
+    /// theme takes it from the <c>EnableWaveSpirit</c> token.
+    /// </summary>
     public bool IsWaveSpiritEnabled
     {
         get => GetValue(IsWaveSpiritEnabledProperty);
         set => SetValue(IsWaveSpiritEnabledProperty, value);
     }
 
+    /// <summary>
+    /// Whether the flyout is shown in the overlay layer of the window instead of a native popup window. The value
+    /// is relayed to the flyout, which also uses the overlay layer on platforms without native popup windows. The
+    /// default is <see langword="true" />.
+    /// </summary>
     public bool ShouldUseOverlayPopup
     {
         get => GetValue(ShouldUseOverlayPopupProperty);
@@ -331,10 +507,13 @@ public partial class SplitButton : ContentControl,
     }
 
     /// <summary>
-    /// primary 形态接缝分隔线当前是否以其对比线色呈现。对齐上游 solid 组合规则：线色 =
-    /// 次按钮 hover 背景 token（colorPrimaryHover / colorErrorHover），因此持线的次按钮被指向时
-    /// 接缝条带与按钮 hover 背景同色，分隔线视觉上隐藏——隐藏完全由颜色涌现，
-    /// 不允许改动次按钮几何（曾用左移覆盖实现，导致 hover 位移与边缘闪烁的体验回归）。
+    /// Whether the seam separator of the primary form is currently painted in its contrast color. It follows the
+    /// solid combination rule of upstream Ant Design: the separator takes the hover background token of the
+    /// secondary button (<c>colorPrimaryHover</c> or <c>colorErrorHover</c>). While the pointer is over the
+    /// secondary button, which holds the separator, the seam therefore has the same color as the hover background
+    /// of the button and the separator is visually hidden. The hiding must emerge from these colors alone: never
+    /// change the geometry of the secondary button for it. A left shift that covered the separator was tried once
+    /// and caused the button to shift on hover and its edges to flicker.
     /// </summary>
     internal bool IsSeparatorVisible =>
         IsPrimaryButtonType && _secondaryButton is not null &&
@@ -382,8 +561,16 @@ public partial class SplitButton : ContentControl,
     }
 
     internal virtual bool InternalIsChecked => false;
+    /// <summary>
+    /// Also disables the control while <see cref="Command" /> cannot execute with
+    /// <see cref="CommandParameter" />.
+    /// </summary>
     protected override bool IsEnabledCore => base.IsEnabledCore && _commandCanExecute;
 
+    /// <summary>
+    /// Calls the base method and then replaces a <see langword="null" /> <see cref="OpenIndicator" /> with the
+    /// default ellipsis icon.
+    /// </summary>
     protected override void OnInitialized()
     {
         base.OnInitialized();
@@ -430,6 +617,9 @@ public partial class SplitButton : ContentControl,
         PseudoClasses.Set(StdPseudoClass.Checked, InternalIsChecked);
     }
 
+    /// <summary>
+    /// Opens the flyout of the secondary button; Alt+Down and F4 call it.
+    /// </summary>
     protected void OpenFlyout()
     {
         _flyoutStateHelper.ShowFlyout();
@@ -446,7 +636,9 @@ public partial class SplitButton : ContentControl,
     /// <summary>
     /// Registers all flyout events.
     /// </summary>
-    /// <param name="flyout">The flyout to connect events to.</param>
+    /// <param name="flyout">
+    /// The flyout to connect events to.
+    /// </param>
     private void RegisterFlyoutEvents(Flyout? flyout)
     {
         if (flyout is null || ReferenceEquals(_registeredFlyout, flyout) || _flyoutBindingDisposables?.IsDisposed == true)
@@ -544,6 +736,11 @@ public partial class SplitButton : ContentControl,
         }
     }
     
+    /// <summary>
+    /// Binds the buttons of the new template: the handlers of the buttons of the previous template are removed
+    /// and attached to <c>PART_PrimaryButton</c> and <c>PART_SecondaryButton</c>, the flyout is anchored at the
+    /// secondary button, and the corner radius and the custom size values are applied to both buttons.
+    /// </summary>
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
@@ -578,6 +775,10 @@ public partial class SplitButton : ContentControl,
         }
     }
     
+    /// <summary>
+    /// Calls the base method and then lets the flyout trigger follow the attachment, applies the current state as
+    /// pseudo classes and hooks the events and property relays on the <see cref="Flyout" />.
+    /// </summary>
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
@@ -586,6 +787,10 @@ public partial class SplitButton : ContentControl,
         RegisterFlyoutEvents(Flyout);
     }
 
+    /// <summary>
+    /// Calls the base method and then releases the flyout hooked on attach: it is closed and its events and
+    /// property relays are removed. The flyout trigger then stops following the control.
+    /// </summary>
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnDetachedFromVisualTree(e);
@@ -593,6 +798,10 @@ public partial class SplitButton : ContentControl,
         _flyoutStateHelper.NotifyDetachedFromVisualTree();
     }
 
+    /// <summary>
+    /// Calls the base method and then updates <c>UseInsetSeparator</c> from the theme token, restores the hot key
+    /// that was cleared on detach and starts tracking whether <see cref="Command" /> can execute.
+    /// </summary>
     protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
     {
         base.OnAttachedToLogicalTree(e);
@@ -609,6 +818,11 @@ public partial class SplitButton : ContentControl,
         }
     }
     
+    /// <summary>
+    /// Stops the theme subscription that maintains <c>UseInsetSeparator</c> and calls the base method; then
+    /// clears the hot key so that the hot key manager releases this control and stops tracking whether
+    /// <see cref="Command" /> can execute. The hot key is restored on the next attach.
+    /// </summary>
     protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
     {
         _themeSubscription?.Dispose();
@@ -626,6 +840,13 @@ public partial class SplitButton : ContentControl,
         }
     }
     
+    /// <summary>
+    /// Reacts to property changes and then calls the base method: the enabled state follows <see cref="Command" />
+    /// and <see cref="CommandParameter" />, the hooked flyout follows <see cref="Flyout" />,
+    /// <see cref="IsPrimaryButtonType" /> selects the button type of both parts, and a change of the corner
+    /// radius, the separator mode, the compact space position or a size property updates the two buttons of the
+    /// template.
+    /// </summary>
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         if (change.Property == CommandProperty)
@@ -822,6 +1043,9 @@ public partial class SplitButton : ContentControl,
         });
     }
     
+    /// <summary>
+    /// Calls the base method after entering the pressed state while Space or Enter is held down.
+    /// </summary>
     protected override void OnKeyDown(KeyEventArgs e)
     {
         var key = e.Key;
@@ -835,6 +1059,11 @@ public partial class SplitButton : ContentControl,
         base.OnKeyDown(e);
     }
     
+    /// <summary>
+    /// Calls the base method after handling the keys of this control: releasing Space or Enter activates the
+    /// primary part, Alt+Down and F4 open the flyout, and Escape closes the flyout while it is open. Each of
+    /// these keys is marked handled.
+    /// </summary>
     protected override void OnKeyUp(KeyEventArgs e)
     {
         var key = e.Key;
@@ -873,9 +1102,14 @@ public partial class SplitButton : ContentControl,
     }
 
     /// <summary>
-    /// Invokes the <see cref="Click" /> event when the primary button part is clicked.
+    /// Raises <see cref="Click" /> and then runs <see cref="Command" /> with <see cref="CommandParameter" />,
+    /// unless a handler marked the event handled. It is called when the primary button part is clicked and when
+    /// Space or Enter is released, and does nothing while the control is not effectively enabled.
     /// </summary>
-    /// <param name="e">The event args from the internal Click event.</param>
+    /// <param name="e">
+    /// The event args of the click of the internal primary button, or <see langword="null" /> when the keyboard
+    /// activated the primary part.
+    /// </param>
     protected virtual void OnClickPrimary(RoutedEventArgs? e)
     {
         var (command, parameter) = (Command, CommandParameter);
@@ -920,7 +1154,7 @@ public partial class SplitButton : ContentControl,
     }
 
     /// <summary>
-    /// Called when the <see cref="PopupFlyoutBase.Placement" /> property changes.
+    /// Refreshes the pseudo classes when the <c>RequestedPlacement</c> of the flyout changes.
     /// </summary>
     private void HandleFlyoutPlacementPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
@@ -968,9 +1202,11 @@ public partial class SplitButton : ContentControl,
         }
     }
 
-    // Flyout 关闭（上游 HideCore）会清掉 Target 与 popup 的 PlacementTarget / 逻辑父子，
-    // Popup 侧的钉住恢复监控随之拆除。钉住弹层的关闭只能来自放置目标生命周期失效
-    //（页签切走 / 滚出视口），owner 持有钉住意图：锚点重新可见后重新 ShowAt 重建整条链。
+    // Closing the flyout (the upstream HideCore) clears its Target and the PlacementTarget and the logical parent
+    // of the popup, which also tears down the pinned-open recovery monitoring on the popup side. A pinned flyout
+    // can only be closed because its placement target left the lifecycle (the tab was switched away or it
+    // scrolled out of the viewport). The owner keeps the pin intent: once the anchor is visible again, a new
+    // ShowAt rebuilds the whole chain.
     private void QueuePinnedOpenRetry()
     {
         if (_isPinnedOpenRetryArmed)
@@ -1017,6 +1253,13 @@ public partial class SplitButton : ContentControl,
                ReferenceEquals(target, _secondaryButton);
     }
 
+    /// <summary>
+    /// Arranges the content with the base method and then places the secondary button against the right edge of
+    /// the primary button. Without <see cref="IsPrimaryButtonType" /> it overlaps the primary button by its own
+    /// left border thickness; with it, a gap as wide as the left border of this control is left between the two
+    /// for the seam that <see cref="Render" /> paints. With the inset separator in the primary form the template
+    /// already reserves that gap, so only the corner radius of both buttons is updated.
+    /// </summary>
     protected override Size ArrangeOverride(Size finalSize)
     {
         var size = base.ArrangeOverride(finalSize);
@@ -1066,11 +1309,17 @@ public partial class SplitButton : ContentControl,
 
     private void SetSeparatorVisibility(bool visible)
     {
-        // 分隔线的 hover 隐藏由颜色涌现实现（线色 = 次按钮 hover 背景 token），
-        // 状态翻转不驱动布局或重绘——改动次按钮几何会造成可见位移与边缘闪烁。
+        // The hover hiding of the separator emerges from the colors (the separator color equals the hover background
+        // token of the secondary button), so this state flip drives neither layout nor a redraw. Changing the
+        // geometry of the secondary button for it would cause a visible shift and edge flicker.
         _isPointerOverSecondaryButton = !visible;
     }
 
+    /// <summary>
+    /// Fills the area of the control with <c>SplitSeparatorBrush</c>, which shows as the seam between the two
+    /// buttons of the primary form. Paints nothing with the inset separator, without
+    /// <see cref="IsPrimaryButtonType" />, without a secondary button or without a separator brush.
+    /// </summary>
     public override void Render(DrawingContext context)
     {
         if (!UseInsetSeparator && IsPrimaryButtonType && _secondaryButton is not null)
@@ -1096,6 +1345,11 @@ public partial class SplitButton : ContentControl,
     
     double ICompactSpaceAware.GetBorderThickness() => GetBorderThicknessForCompactSpace();
 
+    /// <summary>
+    /// Called through <c>ICompactSpaceAware</c> while the control sits in a compact <c>Space</c>: it returns the
+    /// left border thickness in a horizontal space and the top border thickness in a vertical one, and 0 while
+    /// the control is not used in a compact space.
+    /// </summary>
     protected virtual double GetBorderThicknessForCompactSpace()
     {
         if (!IsUsedInCompactSpace)

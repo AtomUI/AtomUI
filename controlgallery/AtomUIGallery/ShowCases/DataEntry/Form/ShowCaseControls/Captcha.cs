@@ -13,18 +13,33 @@ public class Captcha : TemplatedControl,
                        IInputControlStyleVariantAware
 {
     #region 公共属性定义
+    /// <summary>
+    /// Identifies the <see cref="SizeType" /> property.
+    /// </summary>
     public static readonly StyledProperty<CustomizableSizeType> SizeTypeProperty =
         CustomizableSizeTypeControlProperty.SizeTypeProperty.AddOwner<Captcha>();
     
+    /// <summary>
+    /// Identifies the <see cref="IsMotionEnabled" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<Captcha>();
     
+    /// <summary>
+    /// Identifies the <see cref="Value" /> property.
+    /// </summary>
     public static readonly StyledProperty<string?> ValueProperty =
         AvaloniaProperty.Register<Captcha, string?>(nameof(Value));
     
+    /// <summary>
+    /// Identifies the <see cref="StyleVariant" /> property.
+    /// </summary>
     public static readonly StyledProperty<InputControlStyleVariant> StyleVariantProperty =
         InputControlStyleVariantProperty.StyleVariantProperty.AddOwner<Captcha>();
 
+    /// <summary>
+    /// Identifies the <see cref="Status" /> property.
+    /// </summary>
     public static readonly StyledProperty<InputControlStatus> StatusProperty =
         InputControlStatusProperty.StatusProperty.AddOwner<Captcha>();
     

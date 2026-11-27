@@ -25,19 +25,29 @@ internal class IndexToValueTable<T> : IEnumerable<Range<T>>
     /// <summary>
     /// Add a value with an associated index to the table
     /// </summary>
-    /// <param name="index">Index where the value is to be added or updated</param>
-    /// <param name="value">Value to add</param>
+    /// <param name="index">
+    /// Index where the value is to be added or updated
+    /// </param>
+    /// <param name="value">
+    /// Value to add
+    /// </param>
     public void AddValue(int index, T value)
     {
         AddValues(index, 1, value);
     }
 
     /// <summary>
-    /// Add multiples values with an associated start index to the table 
+    /// Adds multiple values with an associated start index to the table.
     /// </summary>
-    /// <param name="startIndex">index where first value is added</param>
-    /// <param name="count">Total number of values to add (must be greater than 0)</param>
-    /// <param name="value">Value to add</param>
+    /// <param name="startIndex">
+    /// index where first value is added
+    /// </param>
+    /// <param name="count">
+    /// Total number of values to add (must be greater than 0)
+    /// </param>
+    /// <param name="value">
+    /// Value to add
+    /// </param>
     public void AddValues(int startIndex, int count, T value)
     {
         Debug.Assert(count > 0);
@@ -55,8 +65,12 @@ internal class IndexToValueTable<T> : IEnumerable<Range<T>>
     /// <summary>
     /// Returns true if the given index is contained in the table
     /// </summary>
-    /// <param name="index">index to search for</param>
-    /// <returns>True if the index is contained in the table</returns>
+    /// <param name="index">
+    /// index to search for
+    /// </param>
+    /// <returns>
+    /// True if the index is contained in the table
+    /// </returns>
     public bool Contains(int index)
     {
         return IsCorrectRangeIndex(this.FindRangeIndex(index), index);
@@ -75,8 +89,12 @@ internal class IndexToValueTable<T> : IEnumerable<Range<T>>
     /// <summary>
     /// Returns the value at a given index or the default value if the index is not in the table
     /// </summary>
-    /// <param name="index">index to search for</param>
-    /// <returns>the value at the given index or the default value if index is not in the table</returns>
+    /// <param name="index">
+    /// index to search for
+    /// </param>
+    /// <returns>
+    /// the value at the given index or the default value if index is not in the table
+    /// </returns>
     public T? GetValueAt(int index)
     {
         return GetValueAt(index, out bool found);
@@ -85,9 +103,15 @@ internal class IndexToValueTable<T> : IEnumerable<Range<T>>
     /// <summary>
     /// Returns the value at a given index or the default value if the index is not in the table
     /// </summary>
-    /// <param name="index">index to search for</param>
-    /// <param name="found">set to true by the method if the index was found; otherwise, false</param>
-    /// <returns>the value at the given index or the default value if index is not in the table</returns>
+    /// <param name="index">
+    /// index to search for
+    /// </param>
+    /// <param name="found">
+    /// set to true by the method if the index was found; otherwise, false
+    /// </param>
+    /// <returns>
+    /// the value at the given index or the default value if index is not in the table
+    /// </returns>
     public T? GetValueAt(int index, out bool found)
     {
         int rangeIndex = FindRangeIndex(index);
@@ -103,7 +127,9 @@ internal class IndexToValueTable<T> : IEnumerable<Range<T>>
     /// <summary>
     /// Removes a value and its index from the table
     /// </summary>
-    /// <param name="index">index to remove</param>
+    /// <param name="index">
+    /// index to remove
+    /// </param>
     public void RemoveIndexAndValue(int index)
     {
         RemoveIndexesAndValues(index, 1);
@@ -112,8 +138,12 @@ internal class IndexToValueTable<T> : IEnumerable<Range<T>>
     /// <summary>
     /// Removes multiple indexes from the table.  This does not alter Values in the table
     /// </summary>
-    /// <param name="startIndex">first index to remove</param>
-    /// <param name="count">total number of indexes to remove</param>
+    /// <param name="startIndex">
+    /// first index to remove
+    /// </param>
+    /// <param name="count">
+    /// total number of indexes to remove
+    /// </param>
     public void RemoveIndexes(int startIndex, int count)
     {
         int lowerRangeIndex = FindRangeIndex(startIndex);
@@ -168,8 +198,12 @@ internal class IndexToValueTable<T> : IEnumerable<Range<T>>
     /// <summary>
     /// Removes multiple values and their indexes from the table
     /// </summary>
-    /// <param name="startIndex">first index to remove</param>
-    /// <param name="count">total number of indexes to remove</param>
+    /// <param name="startIndex">
+    /// first index to remove
+    /// </param>
+    /// <param name="count">
+    /// total number of indexes to remove (must be greater than 0)
+    /// </param>
     public void RemoveIndexesAndValues(int startIndex, int count)
     {
         RemoveValues(startIndex, count);
@@ -179,8 +213,12 @@ internal class IndexToValueTable<T> : IEnumerable<Range<T>>
     /// <summary>
     /// Removes multiple values from the table.  This does not alter other indexes in the table.
     /// </summary>
-    /// <param name="startIndex">first index where values should be removed </param>
-    /// <param name="count">total number of values to remove</param>
+    /// <param name="startIndex">
+    /// first index where values should be removed
+    /// </param>
+    /// <param name="count">
+    /// total number of values to remove (must be greater than 0)
+    /// </param>
     public void RemoveValues(int startIndex, int count)
     {
         Debug.Assert(count > 0);
@@ -196,7 +234,7 @@ internal class IndexToValueTable<T> : IEnumerable<Range<T>>
         }
         if (lowerRangeIndex >= _list.Count || _list[lowerRangeIndex].LowerBound > startIndex + count - 1)
         {
-            // If all the values are above our below our values, we have nothing to remove
+            // If all the values are above or below our values, we have nothing to remove
             return;
         }
         if (_list[lowerRangeIndex].LowerBound < startIndex)

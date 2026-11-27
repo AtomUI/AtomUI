@@ -6,7 +6,7 @@ namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 
 /// <summary>
 /// The keyboard focus outline under the PrimeNG presets: PrimeUIX <c>focus.ring.offset</c> (Aura and Nora 2px; Lara
-/// draws its <c>focus.ring.shadow</c> glow on the element edge). The ring width and colour are the global
+/// draws its <c>focus.ring.shadow</c> glow on the element edge). The ring width and color are the global
 /// <c>LineWidthFocus</c> / <c>ColorFocusBorder</c> the preset alias derivation writes.
 /// </summary>
 internal static class PrimeNGAdornerLayerTokens

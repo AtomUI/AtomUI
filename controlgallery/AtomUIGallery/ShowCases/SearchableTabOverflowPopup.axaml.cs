@@ -13,15 +13,27 @@ namespace AtomUIGallery.ShowCases;
 
 public partial class SearchableTabOverflowPopup : UserControl
 {
+    /// <summary>
+    /// Identifies the <see cref="Context" /> property.
+    /// </summary>
     public static readonly StyledProperty<TabOverflowPopupContext?> ContextProperty =
         AvaloniaProperty.Register<SearchableTabOverflowPopup, TabOverflowPopupContext?>(nameof(Context));
 
+    /// <summary>
+    /// Identifies the <see cref="Query" /> property.
+    /// </summary>
     public static readonly StyledProperty<string?> QueryProperty =
         AvaloniaProperty.Register<SearchableTabOverflowPopup, string?>(nameof(Query));
 
+    /// <summary>
+    /// Identifies the <see cref="SearchPlaceholder" /> property.
+    /// </summary>
     public static readonly StyledProperty<string?> SearchPlaceholderProperty =
         AvaloniaProperty.Register<SearchableTabOverflowPopup, string?>(nameof(SearchPlaceholder));
 
+    /// <summary>
+    /// Identifies the <see cref="EmptyText" /> property.
+    /// </summary>
     public static readonly StyledProperty<string?> EmptyTextProperty =
         AvaloniaProperty.Register<SearchableTabOverflowPopup, string?>(nameof(EmptyText));
 

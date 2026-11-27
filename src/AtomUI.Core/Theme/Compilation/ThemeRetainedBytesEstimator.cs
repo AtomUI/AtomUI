@@ -8,7 +8,8 @@ namespace AtomUI.Theme.Compilation;
 
 internal static class ThemeRetainedBytesEstimator
 {
-    // 编译器冻结的根资源和 palette 可跨快照共享，尺寸也按相同身份复用。
+    // Root resources and palettes frozen by the compiler may be shared by several snapshots, so their size
+    // is reused for the same instance.
     private static readonly ConditionalWeakTable<IReadOnlyDictionary<object, object?>, RetainedBytes> s_rootResourceBytes = new();
     private static readonly ConditionalWeakTable<IReadOnlyDictionary<PresetPrimaryColor, PaletteInfo>, RetainedBytes> s_paletteBytes = new();
 
@@ -72,9 +73,11 @@ internal static class ThemeRetainedBytesEstimator
         retainedBytes = Add(retainedBytes, EstimateRootPalettes(snapshot.PresetColorPalettes));
         retainedBytes = Add(retainedBytes, NormalizedThemeConfigCacheKey.Create(snapshot.EffectiveConfig).EstimatedInputRetainedBytes);
         retainedBytes = Add(retainedBytes, ThemeDefinitionCacheKey.Create(snapshot.Definition).EstimatedInputRetainedBytes);
-        // 槽位表固定成本与冷 source/config 或已物化值分开计费；后者读取 cell 的发布状态，
-        // 估算不会通过索引器触发控件物化。
-        // 每槽独立 cell 与锁对象，按共享对象重复计费，避免低估多个冷槽的基础占用。
+        // The fixed cost of the slot table is charged separately from cold source/config or materialized values.
+        // The latter read the cell's published state, so the estimate never materializes a control through the
+        // indexer.
+        // Each slot has its own cell and lock object; like shared objects they are charged once per slot, so the
+        // base footprint of many cold slots is not underestimated.
         retainedBytes = Add(retainedBytes, ObjectOverhead + snapshot.Controls.Count * (ReferenceBytes + 2 * ObjectOverhead + 4 * ReferenceBytes));
         return retainedBytes;
     }
@@ -186,9 +189,11 @@ internal static class ThemeRetainedBytesEstimator
         int algorithmCount,
         long keyBytes)
     {
-        // source 可由不同代的 cell 共享；单个快照按不同 source 各计一次。
-        // 预留恢复 builder 的值槽和 palette 成本，首次 Own 查询不会出现未计费的工作集。
-        // descriptor、算法委托及其自定义闭包属于 registry 共享元数据，不递归遍历对象图。
+        // A source may be shared by cells of different generations; a snapshot charges each distinct source once.
+        // The value slots and palettes of the builder restored on first use are reserved here, so the first
+        // Own-token query does not bring in an uncharged working set.
+        // Descriptors, algorithm delegates and their custom closures are metadata shared through the registry;
+        // their object graphs are not walked.
         var bytes = Add(256L + algorithmCount * ReferenceBytes, keyBytes);
         bytes = Add(bytes, values.EstimatedRetainedBytes);
         bytes = Add(bytes, EstimateRootResources(resources));
@@ -238,7 +243,8 @@ internal static class ThemeRetainedBytesEstimator
         return retainedBytes;
     }
 
-    // 任意自定义对象只计固定壳体；不调用用户代码或反射遍历其私有保留图。
+    // Any other object is charged a fixed shell only; estimation neither calls user code nor reflects over
+    // the object's private retained graph.
     internal static long EstimateValue(object? value)
     {
         return value switch
@@ -254,8 +260,9 @@ internal static class ThemeRetainedBytesEstimator
 
     private sealed record RetainedBytes(long Value);
 
-    // internal：ThemeSnapshot.EstimatedRetainedBytes 与 LazyControlSnapshots 的增量累计共用
-    // 同一饱和语义（long.MaxValue 封顶），负值不允许进入 BoundedLruCache 尺寸记账。
+    // Internal: ThemeSnapshot.EstimatedRetainedBytes and LazyControlSnapshots accumulate increments with the
+    // same saturating semantics (capped at long.MaxValue); a negative addend saturates too, so no negative
+    // size enters the BoundedLruCache accounting.
     internal static long Add(long left, long right)
     {
         if (right < 0 || left > long.MaxValue - right)

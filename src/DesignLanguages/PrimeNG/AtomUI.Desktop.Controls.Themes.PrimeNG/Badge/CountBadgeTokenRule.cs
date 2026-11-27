@@ -5,7 +5,9 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 
-/// <summary>The PrimeNG view of <see cref="CountBadgeToken"/>.</summary>
+/// <summary>
+/// The PrimeNG view of <see cref="CountBadgeToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class CountBadgeTokenRule : IControlTokenRule<PrimeNGToken, CountBadgeToken>
 {
@@ -13,7 +15,7 @@ internal sealed class CountBadgeTokenRule : IControlTokenRule<PrimeNGToken, Coun
     {
         var token  = target.Own;
         var global = target.Global;
-        // PrimeNG: the control-global overrides, read by the formulas below.
+        // PrimeNG: no control-global overrides; EvaluateGlobal writes nothing.
         PrimeNGCountBadgeTokens.EvaluateGlobal(in context, global);
 
         var lineWidth = global.LineWidth;

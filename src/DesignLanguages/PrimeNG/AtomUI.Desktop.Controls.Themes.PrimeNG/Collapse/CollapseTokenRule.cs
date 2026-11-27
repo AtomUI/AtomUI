@@ -5,7 +5,9 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 
-/// <summary>The PrimeNG view of <see cref="CollapseToken"/>.</summary>
+/// <summary>
+/// The PrimeNG view of <see cref="CollapseToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class CollapseTokenRule : IControlTokenRule<PrimeNGToken, CollapseToken>
 {
@@ -13,7 +15,8 @@ internal sealed class CollapseTokenRule : IControlTokenRule<PrimeNGToken, Collap
     {
         var token  = target.Own;
         var global = target.Global;
-        // PrimeNG: the control-global overrides, read by the formulas below.
+        // PrimeNG: the control-global overrides (ColorBorder, MotionDurationSlow), read by the Collapse theme
+        // (BorderBrush, MotionDuration) and not by the formulas below.
         PrimeNGCollapseTokens.EvaluateGlobal(in context, global);
         token.HeaderPadding             = new Thickness(global.UniformlyPadding, global.UniformlyPaddingSM);
         token.HeaderBg                  = global.ColorFillAlter;

@@ -6,8 +6,10 @@
               x:ClassModifier="internal">
     <Setter Property="Template">
         <ControlTemplate TargetType="atom:TabItem">
-            <!-- item 的 Margin 交由布局系统应用一次即可；模板内再 TemplateBinding 会双重应用，
-                 使背景框缩进 item Bounds 内，而墨条按 Bounds 绘制，导致背景右侧窄 Margin 宽度。 -->
+            <!-- The Margin of the item is applied once by the layout system; a TemplateBinding inside the template
+            applies it a second time, which insets the background frame into the item Bounds while the ink bar is
+            painted on the Bounds, leaving the background short by the width of the Margin on the right.
+            -->
             <Border Name="Frame"
                     Background="{TemplateBinding Background}"
                     Padding="{TemplateBinding Padding}">
@@ -107,7 +109,7 @@
             </Style>
         </Style>
 
-        <!-- 分为上、右、下、左 -->
+        <!-- Top, right, bottom, left -->
         <Style Selector="^[TabStripPlacement=Top]">
             <Style Selector="^ /template/ atom|IconPresenter#ItemIconPresenter">
                 <Setter Property="VerticalAlignment" Value="Center" />

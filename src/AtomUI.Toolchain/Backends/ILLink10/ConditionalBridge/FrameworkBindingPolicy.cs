@@ -17,7 +17,9 @@ internal sealed record FrameworkBindingSet(
     IReadOnlyDictionary<string, string> Bindings,
     IReadOnlyList<FrameworkBindingEvidence> Evidence);
 
-/// <summary>Explicit net8 platform-reference bindings, confined to the SDK-resolved .NET 10+ runtime pack.</summary>
+/// <summary>
+/// Explicit net8 platform-reference bindings, confined to the SDK-resolved .NET 10+ runtime pack.
+/// </summary>
 internal static class FrameworkBindingPolicy
 {
     internal static void NormalizeReferences(IEnumerable<AssemblyDefinition> owners, IReadOnlyDictionary<string, string> bindings)

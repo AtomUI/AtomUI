@@ -4,6 +4,9 @@ using Avalonia.Controls.Presenters;
 
 namespace AtomUI.Desktop.Controls;
 
+// One node of the timeline: the TimelineItem container of each item, plus the pending item when one is set.
+// Repeats once per item. The containers are created in code, and items supplied as TimelineItem receive the
+// class when they are prepared. TimelineItemStyle applies to every item.
 [SemanticPart(
     "item",
     SelectorClass = "semantic-item",
@@ -12,6 +15,8 @@ namespace AtomUI.Desktop.Controls;
     Cardinality = SemanticPartCardinality.Multiple,
     Since = "6.2.0",
     RuntimeCreated = true)]
+// The root panel of an item, which holds the section with the header, the indicator and the content.
+// Repeats once per item. TimelineItemWrapperStyle applies to the wrapper of each item.
 [SemanticPart(
     "itemWrapper",
     SelectorClass = "semantic-item-wrapper",
@@ -20,6 +25,9 @@ namespace AtomUI.Desktop.Controls;
     Cardinality = SemanticPartCardinality.Multiple,
     Since = "6.2.0",
     RuntimeCreated = true)]
+// The center of an item's indicator: the dot, or the host of the custom indicator icon while one is set.
+// The two are swapped by the icon-present state; both carry the selector class, so the style hits the visible one.
+// Repeats once per item. TimelineItemIconStyle applies to the dot or to the icon host of each item.
 [SemanticPart(
     "itemIcon",
     SelectorClass = "semantic-item-icon",
@@ -28,6 +36,8 @@ namespace AtomUI.Desktop.Controls;
     Cardinality = SemanticPartCardinality.Multiple,
     Since = "6.2.0",
     RuntimeCreated = true)]
+// The section inside an item wrapper that arranges the header, the indicator and the content.
+// Repeats once per item. TimelineItemSectionStyle applies to the section of each item.
 [SemanticPart(
     "itemSection",
     SelectorClass = "semantic-item-section",
@@ -36,6 +46,8 @@ namespace AtomUI.Desktop.Controls;
     Cardinality = SemanticPartCardinality.Multiple,
     Since = "6.2.0",
     RuntimeCreated = true)]
+// The header stack of an item, which holds the item title.
+// Repeats once per item. TimelineItemHeaderStyle applies to the header of each item.
 [SemanticPart(
     "itemHeader",
     SelectorClass = "semantic-item-header",
@@ -44,6 +56,8 @@ namespace AtomUI.Desktop.Controls;
     Cardinality = SemanticPartCardinality.Multiple,
     Since = "6.2.0",
     RuntimeCreated = true)]
+// The title text of an item, bound to its Label. It is visible only while the Label is not null or empty.
+// Repeats once per item. TimelineItemTitleStyle applies to the title of each item.
 [SemanticPart(
     "itemTitle",
     SelectorClass = "semantic-item-title",
@@ -52,6 +66,8 @@ namespace AtomUI.Desktop.Controls;
     Cardinality = SemanticPartCardinality.Multiple,
     Since = "6.2.0",
     RuntimeCreated = true)]
+// The body of an item, which presents the item's Content.
+// Repeats once per item. TimelineItemContentStyle applies to the content presenter of each item.
 [SemanticPart(
     "itemContent",
     SelectorClass = "semantic-item-content",
@@ -60,6 +76,8 @@ namespace AtomUI.Desktop.Controls;
     Cardinality = SemanticPartCardinality.Multiple,
     Since = "6.2.0",
     RuntimeCreated = true)]
+// The tail line that joins an item's indicator to the indicator of the next item. It is not hit-testable.
+// Repeats once per item. TimelineItemRailStyle applies to the rail of each item.
 [SemanticPart(
     "itemRail",
     SelectorClass = "semantic-item-rail",

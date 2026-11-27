@@ -3,7 +3,9 @@ using AtomUI.Theme.Languages;
 
 namespace AtomUI.Desktop.Controls.Themes.Shadcn;
 
-/// <summary>The shadcn view of <see cref="SpaceToken"/>.</summary>
+/// <summary>
+/// The shadcn view of <see cref="SpaceToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class SpaceTokenRule : IControlTokenRule<ShadcnToken, SpaceToken>
 {

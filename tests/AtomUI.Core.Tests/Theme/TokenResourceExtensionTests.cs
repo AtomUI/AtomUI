@@ -93,7 +93,7 @@ public class TokenResourceExtensionTests
     }
 
     /// <summary>
-    /// Allows only the control-template context query that <see cref="DynamicResourceExtension"/> performs
+    /// Allows only the control-template context query that <see cref="DynamicResourceExtension" /> performs
     /// to choose Template priority; resolving a resource or an anchor while loading markup would request
     /// anything else.
     /// </summary>

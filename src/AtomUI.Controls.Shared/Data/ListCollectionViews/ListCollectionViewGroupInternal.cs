@@ -69,13 +69,15 @@ internal class ListCollectionViewGroupInternal : ListCollectionViewGroup
     }
 
     /// <summary>
-    /// Gets or sets the most recent index where activity took place
+    /// Index in <see cref="ListCollectionViewGroup.Items" /> of the subgroup that was last matched or appended while
+    /// adding an item. While the data is in group order, <see cref="ListCollectionViewGroupRoot" /> starts the search
+    /// for the subgroup of the next item at this index.
     /// </summary>
     internal int LastIndex { get; set; }
 
     /// <summary>
-    /// Gets the first item (leaf) added to this group.  If this can't be determined,
-    /// DependencyProperty.UnsetValue.
+    /// Gets the first item (leaf) added to this group, or <see cref="AvaloniaProperty.UnsetValue" />
+    /// when the group is empty or it has explicit subgroups.
     /// </summary>
     internal object SeedItem
     {
@@ -116,7 +118,9 @@ internal class ListCollectionViewGroupInternal : ListCollectionViewGroup
     /// <summary>
     /// Adds the specified item to the collection
     /// </summary>
-    /// <param name="item">Item to add</param>
+    /// <param name="item">
+    /// Item to add
+    /// </param>
     internal void Add(object item)
     {
         ChangeCounts(item, 1);
@@ -134,14 +138,29 @@ internal class ListCollectionViewGroupInternal : ListCollectionViewGroup
     }
 
     /// <summary>
-    /// Finds the index of the specified item
+    /// Finds the index at which a new item or subgroup is to be inserted, so that the order given by
+    /// <paramref name="comparer" /> is kept. Called by <see cref="Insert" />.
     /// </summary>
-    /// <param name="item">Item we are looking for</param>
-    /// <param name="seed">Seed of the item we are looking for</param>
-    /// <param name="comparer">Comparer used to find the item</param>
-    /// <param name="low">Low range of item index</param>
-    /// <param name="high">High range of item index</param>
-    /// <returns>Index of the specified item</returns>
+    /// <param name="item">
+    /// The new item or subgroup to position; the base implementation does not read it
+    /// </param>
+    /// <param name="seed">
+    /// Seed of the new item or subgroup, compared against the seed of each child in range
+    /// </param>
+    /// <param name="comparer">
+    /// Comparer that gives the order of the children
+    /// </param>
+    /// <param name="low">
+    /// Index of the first child to consider
+    /// </param>
+    /// <param name="high">
+    /// Index one past the last child to consider
+    /// </param>
+    /// <returns>
+    /// The index of the first child in range whose seed comes after <paramref name="seed" />, skipping
+    /// children whose seed is <see cref="AvaloniaProperty.UnsetValue" />; <paramref name="high" /> when
+    /// there is none or <paramref name="comparer" /> is <see langword="null" />
+    /// </returns>
     protected virtual int FindIndex(object item, object seed, IComparer? comparer, int low, int high)
     {
         int index;
@@ -191,7 +210,9 @@ internal class ListCollectionViewGroupInternal : ListCollectionViewGroup
     /// <summary>
     /// Returns an enumerator over the leaves governed by this group
     /// </summary>
-    /// <returns>Enumerator of leaves</returns>
+    /// <returns>
+    /// Enumerator of leaves
+    /// </returns>
     internal IEnumerator GetLeafEnumerator()
     {
         return new LeafEnumerator(this);
@@ -203,10 +224,18 @@ internal class ListCollectionViewGroupInternal : ListCollectionViewGroup
     /// is used to position the new item/subgroup w.r.t. the order given
     /// by the comparer. (If comparer is null, just add at the end).
     /// </summary>
-    /// <param name="item">Item we are looking for</param>
-    /// <param name="seed">Seed of the item we are looking for</param>
-    /// <param name="comparer">Comparer used to find the item</param>
-    /// <returns>The index where the item was inserted</returns>
+    /// <param name="item">
+    /// Item or subgroup to insert
+    /// </param>
+    /// <param name="seed">
+    /// Seed of the item or subgroup to insert
+    /// </param>
+    /// <param name="comparer">
+    /// Comparer used to find the position of the new item or subgroup
+    /// </param>
+    /// <returns>
+    /// The index where the item was inserted
+    /// </returns>
     internal int Insert(object item, object seed, IComparer comparer)
     {
         // never insert the new item/group before the explicit subgroups
@@ -224,8 +253,13 @@ internal class ListCollectionViewGroupInternal : ListCollectionViewGroup
     /// Return the item at the given index within the list of leaves governed
     /// by this group
     /// </summary>
-    /// <param name="index">Index of the leaf</param>
-    /// <returns>Item at given index</returns>
+    /// <param name="index">
+    /// Index of the leaf
+    /// </param>
+    /// <returns>
+    /// Item at given index, or <see langword="null" /> when the index is outside the range of leaves
+    /// governed by this group
+    /// </returns>
     internal object? LeafAt(int index)
     {
         for (int k = 0, n = Items.Count; k < n; ++k)
@@ -259,9 +293,15 @@ internal class ListCollectionViewGroupInternal : ListCollectionViewGroup
     /// group.  The caller provides the index of the item within this group,
     /// if known, or -1 if not.
     /// </summary>
-    /// <param name="item">Item we are looking for</param>
-    /// <param name="index">Index of the leaf</param>
-    /// <returns>Number of items under that leaf</returns>
+    /// <param name="item">
+    /// Item we are looking for
+    /// </param>
+    /// <param name="index">
+    /// Index of the item among the children of this group, or -1 if it is not known
+    /// </param>
+    /// <returns>
+    /// Index of the item within the list of leaves governed by the full group structure
+    /// </returns>
     internal int LeafIndexFromItem(object? item, int index)
     {
         int result = 0;
@@ -294,8 +334,13 @@ internal class ListCollectionViewGroupInternal : ListCollectionViewGroup
     /// Returns the index of the given item within the list of leaves governed
     /// by this group
     /// </summary>
-    /// <param name="item">Item we are looking for</param>
-    /// <returns>Number of items under that leaf</returns>
+    /// <param name="item">
+    /// Item we are looking for
+    /// </param>
+    /// <returns>
+    /// The zero-based index of the item within the list of leaves governed by this group,
+    /// or -1 when the item is not among them
+    /// </returns>
     internal int LeafIndexOf(object? item)
     {
         int leaves = 0; // number of leaves we've passed over so far
@@ -331,9 +376,17 @@ internal class ListCollectionViewGroupInternal : ListCollectionViewGroup
     /// <summary>
     /// Removes the specified item from the collection
     /// </summary>
-    /// <param name="item">Item to remove</param>
-    /// <param name="returnLeafIndex">Whether we want to return the leaf index</param>
-    /// <returns>Leaf index where item was removed, if value was specified. Otherwise '-1'</returns>
+    /// <param name="item">
+    /// Item to remove
+    /// </param>
+    /// <param name="returnLeafIndex">
+    /// Whether we want to return the leaf index
+    /// </param>
+    /// <returns>
+    /// The leaf index of the removed item when <paramref name="returnLeafIndex" /> is
+    /// <see langword="true" />, otherwise -1. The result is also -1 when the item is not a child of
+    /// this group; nothing is removed then.
+    /// </returns>
     internal int Remove(object item, bool returnLeafIndex)
     {
         int index      = -1;
@@ -354,9 +407,12 @@ internal class ListCollectionViewGroupInternal : ListCollectionViewGroup
     }
 
     /// <summary>
-    /// Removes an empty group from the PagedCollectionView grouping
+    /// Removes an empty subgroup from its parent, unless the parent has no group description
+    /// or the subgroup is one of the explicit subgroups that description declares.
     /// </summary>
-    /// <param name="group">Empty subgroup to remove</param>
+    /// <param name="group">
+    /// Empty subgroup to remove
+    /// </param>
     private static void RemoveEmptyGroup(ListCollectionViewGroupInternal group)
     {
         ListCollectionViewGroupInternal? parent = group.Parent;
@@ -375,10 +431,17 @@ internal class ListCollectionViewGroupInternal : ListCollectionViewGroup
     }
 
     /// <summary>
-    /// Update the item count of the CollectionViewGroup
+    /// Updates the full count of this group and of each of its ancestors by <paramref name="delta" />.
+    /// When <paramref name="item" /> is a leaf rather than a subgroup, the item counts change as well,
+    /// and a group whose item count reaches 0 is removed from its parent, unless the parent has no
+    /// group description or the group is one of the parent's explicit subgroups.
     /// </summary>
-    /// <param name="item">CollectionViewGroup to update</param>
-    /// <param name="delta">Delta to change count by</param>
+    /// <param name="item">
+    /// The item or subgroup being added or removed
+    /// </param>
+    /// <param name="delta">
+    /// Delta to change count by
+    /// </param>
     protected void ChangeCounts(object item, int delta)
     {
         bool changeLeafCount = !(item is ListCollectionViewGroup);
@@ -407,7 +470,7 @@ internal class ListCollectionViewGroupInternal : ListCollectionViewGroup
     }
 
     /// <summary>
-    /// Enumerator for the leaves in the CollectionViewGroupInternal class.
+    /// Enumerator for the leaves in the <see cref="ListCollectionViewGroupInternal" /> class.
     /// </summary>
     private class LeafEnumerator : IEnumerator
     {
@@ -420,7 +483,9 @@ internal class ListCollectionViewGroupInternal : ListCollectionViewGroup
         /// <summary>
         /// Initializes a new instance of the LeafEnumerator class.
         /// </summary>
-        /// <param name="group">CollectionViewGroupInternal that uses the enumerator</param>
+        /// <param name="group">
+        /// The <see cref="ListCollectionViewGroupInternal" /> whose leaves are enumerated
+        /// </param>
         public LeafEnumerator(ListCollectionViewGroupInternal group)
         {
             _group = group;
@@ -449,7 +514,9 @@ internal class ListCollectionViewGroupInternal : ListCollectionViewGroup
         /// <summary>
         /// MoveNext implementation for IEnumerator
         /// </summary>
-        /// <returns>Returns whether the MoveNext operation was successful</returns>
+        /// <returns>
+        /// Returns whether the MoveNext operation was successful
+        /// </returns>
         bool IEnumerator.MoveNext()
         {
             Debug.Assert(_group != null, "_group should have been initialized in constructor");
@@ -525,7 +592,9 @@ internal class ListCollectionViewGroupInternal : ListCollectionViewGroup
         /// Constructor for the ListComparer that takes
         /// in an IList.
         /// </summary>
-        /// <param name="list">IList used to compare on</param>
+        /// <param name="list">
+        /// IList used to compare on
+        /// </param>
         internal ListComparer(IList list)
         {
             _list  = list;
@@ -546,7 +615,9 @@ internal class ListCollectionViewGroupInternal : ListCollectionViewGroup
         /// of a list being passed in and resets
         /// the index.
         /// </summary>
-        /// <param name="list">IList used to compare on</param>
+        /// <param name="list">
+        /// IList used to compare on
+        /// </param>
         internal void ResetList(IList list)
         {
             _list  = list;
@@ -557,9 +628,15 @@ internal class ListCollectionViewGroupInternal : ListCollectionViewGroup
         /// Compares objects x and y to see which one
         /// should appear first.
         /// </summary>
-        /// <param name="x">The first object</param>
-        /// <param name="y">The second object</param>
-        /// <returns>-1 if x is less than y, +1 otherwise</returns>
+        /// <param name="x">
+        /// The first object
+        /// </param>
+        /// <param name="y">
+        /// The second object
+        /// </param>
+        /// <returns>
+        /// 0 if x equals y, -1 if x is less than y, +1 otherwise
+        /// </returns>
         public int Compare(object? x, object? y)
         {
             if (Equals(x, y))
@@ -604,7 +681,9 @@ internal class ListCollectionViewGroupInternal : ListCollectionViewGroup
         /// Constructor for the CollectionViewGroupComparer that takes
         /// in an ListCollectionViewGroupRoot.
         /// </summary>
-        /// <param name="group">ListCollectionViewGroupRoot used to compare on</param>
+        /// <param name="group">
+        /// ListCollectionViewGroupRoot used to compare on
+        /// </param>
         internal CollectionViewGroupComparer(ListCollectionViewGroupRoot group)
         {
             _group = group;
@@ -625,7 +704,9 @@ internal class ListCollectionViewGroupInternal : ListCollectionViewGroup
         /// ListCollectionViewGroupRoot being passed in
         /// and resets the index.
         /// </summary>
-        /// <param name="group">ListCollectionViewGroupRoot used to compare on</param>
+        /// <param name="group">
+        /// ListCollectionViewGroupRoot used to compare on
+        /// </param>
         internal void ResetGroup(ListCollectionViewGroupRoot group)
         {
             _group = group;
@@ -636,9 +717,15 @@ internal class ListCollectionViewGroupInternal : ListCollectionViewGroup
         /// Compares objects x and y to see which one
         /// should appear first.
         /// </summary>
-        /// <param name="x">The first object</param>
-        /// <param name="y">The second object</param>
-        /// <returns>-1 if x is less than y, +1 otherwise</returns>
+        /// <param name="x">
+        /// The first object
+        /// </param>
+        /// <param name="y">
+        /// The second object
+        /// </param>
+        /// <returns>
+        /// 0 if x equals y, -1 if x is less than y, +1 otherwise
+        /// </returns>
         public int Compare(object? x, object? y)
         {
             if (Equals(x, y))

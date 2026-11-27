@@ -23,54 +23,100 @@ public abstract partial class AbstractTextInput : AvaloniaTextBox,
 {
     #region 公共属性定义
 
+    /// <summary>
+    /// Identifies the <see cref="Status" /> property.
+    /// </summary>
     public static readonly StyledProperty<InputControlStatus> StatusProperty =
         InputControlStatusProperty.StatusProperty.AddOwner<AbstractTextInput>();
 
+    /// <summary>
+    /// Identifies the <see cref="IsAllowClear" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsAllowClearProperty =
         AvaloniaProperty.Register<AbstractTextInput, bool>(nameof(IsAllowClear));
 
+    /// <summary>
+    /// Identifies the <see cref="IsEnableRevealButton" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsEnableRevealButtonProperty =
         AvaloniaProperty.Register<AbstractTextInput, bool>(nameof(IsEnableRevealButton));
 
+    /// <summary>
+    /// Identifies the <see cref="IsShowCount" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsShowCountProperty =
         AvaloniaProperty.Register<AbstractTextInput, bool>(nameof(IsShowCount));
 
+    /// <summary>
+    /// Identifies the <see cref="ClearIcon" /> property.
+    /// </summary>
     public static readonly StyledProperty<PathIcon?> ClearIconProperty =
         AvaloniaProperty.Register<AbstractTextInput, PathIcon?>(nameof(ClearIcon));
 
+    /// <summary>
+    /// Identifies the <see cref="IsMotionEnabled" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<AbstractTextInput>();
 
+    /// <summary>
+    /// Validation state of the input frame: <see cref="InputControlStatus.Warning" /> or
+    /// <see cref="InputControlStatus.Error" /> paints the frame in that state, and
+    /// <see cref="InputControlStatus.Default" /> leaves it neutral. Data validation errors and an error reported by
+    /// the form take precedence and force the error state; a warning reported by the form forces the warning state.
+    /// </summary>
     public InputControlStatus Status
     {
         get => GetValue(StatusProperty);
         set => SetValue(StatusProperty, value);
     }
 
+    /// <summary>
+    /// <see langword="true" /> lets a clear button appear in the input. The button is visible only while the text can
+    /// be cleared (<see cref="CanClearText" />) and, with <see cref="IsClearButtonOnlyWhenFocused" /> set, only while
+    /// the input has keyboard focus. Clicking it calls <see cref="Clear" /> and raises <see cref="Cleared" />.
+    /// </summary>
     public bool IsAllowClear
     {
         get => GetValue(IsAllowClearProperty);
         set => SetValue(IsAllowClearProperty, value);
     }
 
+    /// <summary>
+    /// <see langword="true" /> shows the reveal button of the theme, which toggles <c>RevealPassword</c> with its
+    /// checked state. Themes without a reveal button ignore the value.
+    /// </summary>
     public bool IsEnableRevealButton
     {
         get => GetValue(IsEnableRevealButtonProperty);
         set => SetValue(IsEnableRevealButtonProperty, value);
     }
 
+    /// <summary>
+    /// <see langword="true" /> shows a counter with the length of the text and <see cref="TextBox.MaxLength" />,
+    /// separated by a slash. The length is measured in the unit selected by <see cref="TextLengthMode" />.
+    /// </summary>
     public bool IsShowCount
     {
         get => GetValue(IsShowCountProperty);
         set => SetValue(IsShowCountProperty, value);
     }
 
+    /// <summary>
+    /// Icon of the clear button. While <see cref="IsAllowClear" /> is <see langword="true" />, a
+    /// <see langword="null" /> value is replaced with the default icon (<c>CloseCircleFilled</c>) when the control is
+    /// initialized or when <see cref="IsAllowClear" /> changes to <see langword="true" />.
+    /// </summary>
     public PathIcon? ClearIcon
     {
         get => GetValue(ClearIconProperty);
         set => SetValue(ClearIconProperty, value);
     }
 
+    /// <summary>
+    /// <see langword="true" /> enables the animated state transitions of the input frame, the clear button and the
+    /// reveal button. When the value is not set, the theme supplies it from the <c>EnableMotion</c> token.
+    /// </summary>
     public bool IsMotionEnabled
     {
         get => GetValue(IsMotionEnabledProperty);
@@ -127,12 +173,25 @@ public abstract partial class AbstractTextInput : AvaloniaTextBox,
         private set => SetAndRaise(CountTextProperty, ref _countText, value);
     }
 
+    /// <summary>
+    /// The feedback control that shows the validation messages of the form item that owns this input; the theme
+    /// presents it as content of the feedback area. The form system assigns it through
+    /// <see cref="NotifySetFeedBackControl" />; <see langword="null" />, the default, shows no feedback. While the
+    /// input is in a logical tree, the validation status of the control is observed to update
+    /// <see cref="IsFormFeedbackVisible" />.
+    /// </summary>
     internal FormValidateFeedback? FormFeedback
     {
         get => GetValue(FormFeedbackProperty);
         private set => SetCurrentValue(FormFeedbackProperty, value);
     }
 
+    /// <summary>
+    /// The validation status that the hosting form item reports for this input; the form system assigns it through
+    /// <see cref="NotifyValidateStatus" />, and <see cref="FormValidateStatus.Default" /> means that nothing is
+    /// reported. The themes pass it to a template part. Together with <see cref="Status" /> it decides the state of
+    /// the input frame, as described there.
+    /// </summary>
     internal FormValidateStatus FormStatus
     {
         get => GetValue(FormStatusProperty);
@@ -141,6 +200,12 @@ public abstract partial class AbstractTextInput : AvaloniaTextBox,
 
     private bool _isFormFeedbackVisible;
 
+    /// <summary>
+    /// Whether the feedback area of the theme is visible; the theme binds the visibility of the feedback presenter
+    /// to it. The control sets it to <see langword="true" /> while <see cref="FormFeedback" /> reports a status
+    /// other than <see cref="FormValidateStatus.Default" />, and to <see langword="false" /> while there is no
+    /// feedback control or the input is not in a logical tree.
+    /// </summary>
     internal bool IsFormFeedbackVisible
     {
         get => _isFormFeedbackVisible;
@@ -149,6 +214,11 @@ public abstract partial class AbstractTextInput : AvaloniaTextBox,
 
     private bool _isPlaceholderTextVisible = true;
 
+    /// <summary>
+    /// Whether the placeholder text of the theme is visible; the themes bind the visibility of the placeholder to
+    /// it. The control sets it to <see langword="true" /> while the text and the pre-edit text of the input method
+    /// are both empty, and to <see langword="false" /> otherwise. The initial value is <see langword="true" />.
+    /// </summary>
     internal bool IsPlaceholderTextVisible
     {
         get => _isPlaceholderTextVisible;
@@ -159,8 +229,18 @@ public abstract partial class AbstractTextInput : AvaloniaTextBox,
 
     #region 内部协作 API
 
+    /// <summary>
+    /// The <c>PART_TextPresenter</c> part of the current template, or <see langword="null" /> while no such part is
+    /// attached.
+    /// </summary>
     protected TextPresenter? InputTextPresenter => _textPresenter;
 
+    /// <summary>
+    /// Whether the text can be cleared in the current state: the input is not read-only, the text is not empty and,
+    /// for multi-line input, <see cref="AllowsClearForMultilineInput" /> is <see langword="true" />. Together with
+    /// <see cref="IsAllowClear" /> and <see cref="IsClearButtonOnlyWhenFocused" /> it decides whether the clear
+    /// button is visible.
+    /// </summary>
     protected virtual bool CanClearText =>
         !IsReadOnly && !string.IsNullOrEmpty(Text) && (!AcceptsReturn || AllowsClearForMultilineInput);
 
@@ -187,6 +267,11 @@ public abstract partial class AbstractTextInput : AvaloniaTextBox,
     {
     }
 
+    /// <summary>
+    /// Creates the default clear icon when <see cref="IsAllowClear" /> is <see langword="true" /> and
+    /// <see cref="ClearIcon" /> is <see langword="null" />. An override must call the base method to get the default
+    /// icon.
+    /// </summary>
     protected override void OnInitialized()
     {
         base.OnInitialized();
@@ -200,6 +285,11 @@ public abstract partial class AbstractTextInput : AvaloniaTextBox,
         }
     }
 
+    /// <summary>
+    /// Updates the state that depends on other properties: the visibility of the clear button and of the placeholder,
+    /// the text length limit, the counter text and the warning pseudo-class. An override must call the base method,
+    /// otherwise these states stop following their sources.
+    /// </summary>
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
@@ -240,12 +330,21 @@ public abstract partial class AbstractTextInput : AvaloniaTextBox,
         }
     }
 
+    /// <summary>
+    /// Releases the parts of the previous template, that is, the clear button subscription and the subscription to
+    /// pre-edit changes, before the new template is applied. An override must call the base method.
+    /// </summary>
     protected override void OnTemplateChanged(AvaloniaPropertyChangedEventArgs change)
     {
         ReleaseTemplateResources();
         base.OnTemplateChanged(change);
     }
 
+    /// <summary>
+    /// Resolves <c>PART_ClearButton</c> and <c>PART_TextPresenter</c>, subscribes to pre-edit changes and refreshes
+    /// the visibility of the clear button and of the placeholder, the counter text and the warning state. An override
+    /// must call the base method, otherwise the clear button and the input method state do not work.
+    /// </summary>
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
@@ -265,12 +364,20 @@ public abstract partial class AbstractTextInput : AvaloniaTextBox,
         UpdateWarningPseudoClass();
     }
 
+    /// <summary>
+    /// Starts observing the validation status of the assigned form feedback control. An override must call the base
+    /// method, otherwise the feedback is never shown.
+    /// </summary>
     protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
     {
         base.OnAttachedToLogicalTree(e);
         ConfigureFormFeedbackSubscription();
     }
 
+    /// <summary>
+    /// Stops observing the validation status of the form feedback control. An override must call the base method to
+    /// release the subscription.
+    /// </summary>
     protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
     {
         base.OnDetachedFromLogicalTree(e);
@@ -295,16 +402,54 @@ public abstract partial class AbstractTextInput : AvaloniaTextBox,
         }
     }
 
+    /// <summary>
+    /// Returns how focus moves back to the input after its clear button was clicked. The base implementation returns
+    /// <see langword="null" />, which leaves the focus where it is.
+    /// </summary>
+    /// <param name="button">
+    /// The clear button that was clicked.
+    /// </param>
+    /// <returns>
+    /// The navigation method used to focus the input, or <see langword="null" /> to leave the focus unchanged.
+    /// </returns>
     protected virtual NavigationMethod? GetClearButtonFocusReturnMethod(AvaloniaButton? button) => null;
 
+    /// <summary>
+    /// Called when the clear button of the input was clicked. The base implementation calls <see cref="Clear" />.
+    /// </summary>
     protected virtual void NotifyClearButtonClicked() => Clear();
 
+    /// <summary>
+    /// Applies a value assigned by the form system. The default sets <see cref="TextBox.Text" /> with
+    /// <c>SetCurrentValue</c>, so a binding on <see cref="TextBox.Text" /> is kept.
+    /// </summary>
+    /// <param name="value">
+    /// The text to assign, or <see langword="null" />.
+    /// </param>
     protected virtual void NotifySetFormValue(string? value) => SetCurrentValue(TextProperty, value);
 
+    /// <summary>
+    /// Returns the value reported to the form system.
+    /// </summary>
+    /// <returns>
+    /// The current <see cref="TextBox.Text" />.
+    /// </returns>
     protected virtual string? NotifyGetFormValue() => Text;
 
+    /// <summary>
+    /// Resets the value on behalf of the form system. The default sets <see cref="TextBox.Text" /> to
+    /// <see langword="null" /> with <c>SetCurrentValue</c>.
+    /// </summary>
     protected virtual void NotifyClearFormValue() => SetCurrentValue(TextProperty, null);
 
+    /// <summary>
+    /// Called when the form system reports a new validation status. The default stores a status that differs in
+    /// <c>FormStatus</c>, which lets the input frame follow the form. An override must call the base method to keep
+    /// that behavior.
+    /// </summary>
+    /// <param name="status">
+    /// The validation status reported by the form system.
+    /// </param>
     protected virtual void NotifyValidateStatus(FormValidateStatus status)
     {
         if (FormStatus != status)
@@ -313,6 +458,14 @@ public abstract partial class AbstractTextInput : AvaloniaTextBox,
         }
     }
 
+    /// <summary>
+    /// Called by the form system to assign the control that shows validation messages. The default stores a control
+    /// that differs from the current one in <c>FormFeedback</c>. An override must call the base method, otherwise the
+    /// feedback is never shown.
+    /// </summary>
+    /// <param name="value">
+    /// The feedback control, or <see langword="null" /> to show none.
+    /// </param>
     protected virtual void NotifySetFeedBackControl(FormValidateFeedback? value)
     {
         if (!ReferenceEquals(FormFeedback, value))

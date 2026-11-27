@@ -2,9 +2,21 @@ using Microsoft.CodeAnalysis;
 
 namespace AtomUI.Generator;
 
+/// <summary>
+/// Produces the build-time output of a package from its Token, design language and <c>[SemanticPart]</c>
+/// declarations, its theme AXAML assets and its compiled theme inputs: the registration of a control package, the
+/// theme build contracts and compiled theme package, the startup image, the theme schema, the Semantic Part
+/// manifest and the resource key class. The checks of the theme assets run in the same pass. A compilation in
+/// which <c>TokenResourceExtension&lt;T&gt;</c> cannot be found produces no output.
+/// </summary>
 [Generator]
 public class TokenResourceKeyGenerator : IIncrementalGenerator
 {
+    /// <summary>
+    /// Registers the pipeline that combines the Token, design language and <c>[SemanticPart]</c> declarations, the
+    /// theme assets, the compiled theme inputs, the startup references and the localization model with the compilation,
+    /// and writes the package output as implementation source.
+    /// </summary>
     public void Initialize(IncrementalGeneratorInitializationContext initContext)
     {
         // Attribute providers cache metadata names only. Bind their symbols against this compilation
@@ -192,7 +204,7 @@ public class TokenResourceKeyGenerator : IIncrementalGenerator
             }
             // Bound terminal tokens get their IControlToken half.
             ControlTokenIdentityWriter.Write(context, ControlTokenBindings.GetBindings(compilation, controlInfos));
-            // The token schema digest a value package records and the runtime compares (spec 3.3).
+            // The token schema digest that a value package records and the runtime compares.
             TokenSchemaDigestWriter.Write(context, compilation, controlInfos);
 
             if (hasSemanticRuntime)

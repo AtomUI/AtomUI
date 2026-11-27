@@ -3,7 +3,9 @@ using AtomUI.Theme.Languages;
 
 namespace AtomUI.Desktop.Controls.Themes.AntDesign;
 
-/// <summary>The AntDesign view of <see cref="ImagePreviewerToken"/>.</summary>
+/// <summary>
+/// The AntDesign view of <see cref="ImagePreviewerToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class ImagePreviewerTokenRule : IControlTokenRule<AntDesignToken, ImagePreviewerToken>
 {

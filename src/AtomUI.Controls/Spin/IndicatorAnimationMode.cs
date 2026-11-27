@@ -1,13 +1,19 @@
 namespace AtomUI.Controls.Commons;
 
 /// <summary>
-/// 指示器的动画模式。
+/// Selects which animation <see cref="AbstractSpinIndicator" /> plays.
 /// </summary>
 public enum IndicatorAnimationMode
 {
-    /// <summary>基类驱动内置旋转与圆点透明度动画。</summary>
+    /// <summary>
+    /// The base class runs the built-in animations: the rotation of the shown indicator and the fading of the dots of
+    /// the built-in one. This is the default.
+    /// </summary>
     Rotate,
 
-    /// <summary>由子类通过 StartCustomAnimation / StopCustomAnimation 提供动画，基类仍负责门控下的启停。</summary>
+    /// <summary>
+    /// A derived control supplies the animation by overriding <c>StartCustomAnimation</c> and
+    /// <c>StopCustomAnimation</c>; the base class still decides when it starts and stops.
+    /// </summary>
     Custom
 }

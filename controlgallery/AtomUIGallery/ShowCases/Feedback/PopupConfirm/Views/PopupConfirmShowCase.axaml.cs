@@ -16,9 +16,10 @@ public partial class PopupConfirmShowCase : GalleryReactiveUserControl<PopupConf
         InitializeComponent();
     }
 
-    // PopupConfirm 的弹层由 PopupConfirmFlyout 代码创建、跨视觉根，SemanticPartHighlightSession 只自动
-    // 发现模板内 Popup，因此在这里把弹层根（FlyoutPresenter）在打开时注册进
-    // SemanticPartPreview.AdditionalRoots，让 popup.* 部件能被语义高亮会话解析到。
+    // The PopupConfirm popup is created in code by PopupConfirmFlyout and lives outside the owner's visual
+    // root. SemanticPartHighlightSession only discovers popups inside the template, so the popup root
+    // (FlyoutPresenter) is registered in SemanticPartPreview.AdditionalRoots when it opens. That lets the
+    // highlight session resolve the popup.* parts.
     private void HandleSemanticPreviewLoaded(object? sender, RoutedEventArgs args)
     {
         if (sender is not SemanticPartPreview preview ||

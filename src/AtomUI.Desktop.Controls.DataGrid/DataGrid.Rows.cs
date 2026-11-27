@@ -239,8 +239,13 @@ public partial class DataGrid
     /// <summary>
     /// Returns the row associated to the provided backend data item.
     /// </summary>
-    /// <param name="dataItem">backend data item</param>
-    /// <returns>null if the DataSource is null, the provided item in not in the source, or the item is not displayed; otherwise, the associated Row</returns>
+    /// <param name="dataItem">
+    /// backend data item
+    /// </param>
+    /// <returns>
+    /// null if the DataSource is null, the provided item in not in the source, or the item is not displayed; otherwise,
+    /// the associated Row
+    /// </returns>
     internal DataGridRow? GetRowFromItem(object dataItem)
     {
         foreach (var row in DisplayData.GetScrollingRows().Cast<DataGridRow>())
@@ -446,8 +451,9 @@ public partial class DataGrid
         return true;
     }
 
-    // 范围呈现下的滚动意图必须经 QueueRangeScrollOffset 提交，期望偏移、实际偏移与滚动条才能保持同一真相；
-    // 目标行不在已提交窗口内时也由同一路径请求加载。
+    // Under range presentation a scroll intent must be committed through QueueRangeScrollOffset, so that the
+    // desired offset, the actual offset and the scroll bar share one truth. The same path also requests the
+    // load when the target row is outside the committed window.
     private bool ScrollRangeSlotIntoView(int slot)
     {
         var rowTop = GetRangeOffset(slot);
@@ -964,7 +970,8 @@ public partial class DataGrid
                 MathUtils.AreClose(RowHeightEstimate, DefaultRowHeight) &&
                 double.IsNaN(row.Height))
             {
-                // 详情可见的行同样参与普通行高度估计，只取不含详情区的部分
+                // Rows with visible details take part in the regular row height estimate as well, using only the
+                // height without the details section.
                 var rowOwnHeight = GetRowDetailsVisibility(row.Index) ? row.HeightWithoutDetails : measuredHeight;
                 if (!IsInvalidSlotElementHeight(rowOwnHeight))
                 {
@@ -1143,8 +1150,9 @@ public partial class DataGrid
 
         if (IsRangePresentationActive)
         {
-            // 范围呈现下相对当前显示位置滚动，经 QueueRangeScrollOffset 提交以保持期望偏移、实际偏移与滚动条一致，
-            // 向上越过已提交窗口时也能请求加载
+            // Under range presentation the scroll is relative to the position currently displayed. It is committed
+            // through QueueRangeScrollOffset to keep the desired offset, the actual offset and the scroll bar
+            // consistent, and to request a load when scrolling up past the committed window.
             QueueRangeScrollOffset(_verticalOffset + height, Math.Sign(height));
             return;
         }
@@ -2147,7 +2155,9 @@ public partial class DataGrid
     /// <summary>
     /// Raises the <see cref="E:Avalonia.Controls.DataGrid.RowDetailsVisibilityChanged" /> event.
     /// </summary>
-    /// <param name="e">The event data.</param>
+    /// <param name="e">
+    /// The event data.
+    /// </param>
     protected internal virtual void OnRowDetailsVisibilityChanged(DataGridRowDetailsEventArgs e)
     {
         RowDetailsVisibilityChanged?.Invoke(this, e);

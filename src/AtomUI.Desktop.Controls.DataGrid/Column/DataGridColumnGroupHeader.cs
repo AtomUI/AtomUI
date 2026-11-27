@@ -82,7 +82,8 @@ internal class DataGridColumnGroupHeader : TemplatedControl
         PointerReleasedEvent.AddClassHandler<DataGridColumnGroupHeader>((x, e) => x.NotifyHeaderPointerReleased(e));
     }
 
-    // 绑定订阅表格的属性变更；分组项离开表格时由其 OwningGrid 变化成对释放
+    // The binding subscribes to the property changes of the grid. It is released again when the OwningGrid of
+    // the group item changes, which also covers a group item that leaves the grid.
     internal void BindOwningGridProperties(DataGrid owningGrid)
     {
         _owningGridBinding?.Dispose();

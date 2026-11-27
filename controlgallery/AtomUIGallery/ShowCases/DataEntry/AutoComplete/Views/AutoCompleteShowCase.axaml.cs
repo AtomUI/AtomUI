@@ -41,7 +41,8 @@ public partial class AutoCompleteShowCase : GalleryReactiveUserControl<AutoCompl
     }
 
     /// <summary>
-    /// antd certain-category demo：三个类目（组件库 / 解决方案 / 文章）及带引用计数的条目。
+    /// antd certain-category demo: three categories (component library, solutions, articles) with items
+    /// that carry a citation count.
     /// </summary>
     private void InitCertainCategoryOptions(AutoCompleteViewModel vm)
     {

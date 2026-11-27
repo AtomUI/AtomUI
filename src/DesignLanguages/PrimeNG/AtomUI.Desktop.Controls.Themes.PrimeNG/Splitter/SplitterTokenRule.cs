@@ -3,7 +3,9 @@ using AtomUI.Theme.Languages;
 
 namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 
-/// <summary>The PrimeNG view of <see cref="SplitterToken"/>.</summary>
+/// <summary>
+/// The PrimeNG view of <see cref="SplitterToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class SplitterTokenRule : IControlTokenRule<PrimeNGToken, SplitterToken>
 {
@@ -11,8 +13,10 @@ internal sealed class SplitterTokenRule : IControlTokenRule<PrimeNGToken, Splitt
     {
         var token  = target.Own;
         var global = target.Global;
-        // PrimeNG: the control-global overrides, read by the formulas below.
+        // PrimeNG: no control-global overrides; EvaluateGlobal writes nothing.
         PrimeNGSplitterTokens.EvaluateGlobal(in context, global);
+        // Ant Design formula kept as is: the PrimeNG splitter stage at the end of the method replaces the handle
+        // line colors and thickness, the grip colors and SplitBarHandleSize (24).
         token.SplitBarDraggableSize = 20;
         token.SplitBarSize          = 2;
         token.SplitTriggerSize      = 6;

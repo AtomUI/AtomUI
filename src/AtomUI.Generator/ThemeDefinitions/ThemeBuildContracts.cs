@@ -33,7 +33,9 @@ internal sealed class ThemeBuildOwner
     internal string Key => Catalog + "\u001f" + Id;
     internal string[] Fields => new[] { Catalog, Id, OwnerAssembly, OwnerType, IdentityProvider, Digest };
 }
-/// <summary>A design language a theme definition may name: its identity and its language token class.</summary>
+/// <summary>
+/// A design language a theme definition may name: its identity and its language token class.
+/// </summary>
 internal sealed class ThemeBuildLanguage
 {
     internal string Id = "";
@@ -51,7 +53,9 @@ internal sealed class ThemeBuildContracts
     internal readonly Dictionary<string, ThemeBuildLanguage> Languages = new(StringComparer.Ordinal);
     internal readonly List<ThemeBuildLanguage> LocalLanguages = new();
 
-    /// <summary>The catalog marker of a language token contract; its owner id is the language identity.</summary>
+    /// <summary>
+    /// The catalog marker of a language token contract; its owner id is the language identity.
+    /// </summary>
     internal const string LanguageCatalog = "$language";
     internal static bool HasAbi(Compilation compilation) => compilation.GetTypeByMetadataName(Prefix + "ThemeBuildTokenAttribute") is not null &&
         compilation.GetTypeByMetadataName(Prefix + "ThemeBuildLanguageAttribute") is not null &&
@@ -166,7 +170,9 @@ internal sealed class ThemeBuildContracts
         }
         return result;
     }
-    /// <summary>A language declared in this compilation: its identity and the schema of its language token class.</summary>
+    /// <summary>
+    /// A language declared in this compilation: its identity and the schema of its language token class.
+    /// </summary>
     internal sealed record LocalLanguage(string Id, DesignLanguages.LanguageTokenSchema Schema);
 
     private static ThemeBuildToken CreateToken(Compilation compilation, SchemaTokenInfo info, string catalog, string owner, string key)

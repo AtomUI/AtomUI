@@ -3,7 +3,9 @@ using AtomUI.Theme.Languages;
 
 namespace AtomUI.Desktop.Controls.Themes.AntDesign;
 
-/// <summary>The AntDesign view of <see cref="AdornerLayerToken"/>.</summary>
+/// <summary>
+/// The AntDesign view of <see cref="AdornerLayerToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class AdornerLayerTokenRule : IControlTokenRule<AntDesignToken, AdornerLayerToken>
 {

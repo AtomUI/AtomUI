@@ -5,7 +5,9 @@ using Avalonia;
 
 namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 
-/// <summary>The PrimeNG view of <see cref="LunarCalendarToken"/>.</summary>
+/// <summary>
+/// The PrimeNG view of <see cref="LunarCalendarToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class LunarCalendarTokenRule : IControlTokenRule<PrimeNGToken, LunarCalendarToken>
 {
@@ -13,10 +15,14 @@ internal sealed class LunarCalendarTokenRule : IControlTokenRule<PrimeNGToken, L
     {
         var token  = target.Own;
         var global = target.Global;
-        // PrimeNG: the control-global overrides, read by the formulas below.
+        // PrimeNG: no control-global overrides; EvaluateGlobal writes nothing.
         PrimeNGLunarCalendarTokens.EvaluateGlobal(in context, global);
         CalendarTokenCalculator.Calculate(in context, global, token);
 
+        // Ant Design formula kept as is; in dark appearance the fullscreen month view fills a selected date
+        // with ItemActiveBg and the two text lines take the body text color there. The PrimeNG lunar
+        // calendar stage (PrimeNGLunarCalendarTokens.EvaluateOwn) replaces ItemActiveBg and ItemActiveColor
+        // in every preset.
         if ((context.Variant.Appearance == ThemeAppearance.Dark))
         {
             token.ItemActiveColor = global.ColorText;

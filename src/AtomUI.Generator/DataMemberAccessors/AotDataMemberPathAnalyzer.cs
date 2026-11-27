@@ -7,9 +7,29 @@ using Microsoft.CodeAnalysis.Diagnostics;
 
 namespace AtomUI.Generator.DataMemberAccessors;
 
+/// <summary>
+/// Checks that the data member paths used for sorting and filtering are covered by generated accessors for native
+/// AOT. It analyzes the first argument of <c>FromPath</c> on
+/// <c>AtomUI.Controls.Data.ListSortDescription</c> and <c>AtomUI.Desktop.Controls.Data.DataGridSortDescription</c>,
+/// and the value assigned to <c>SortMemberPath</c> or <c>FilterMemberPath</c> of a
+/// <c>AtomUI.Desktop.Controls.DataGridColumn</c> or a type derived from it.
+/// </summary>
+/// <remarks>
+/// A path written as <c>nameof</c> of a property is checked against the property's declaring type, its base types
+/// and its interfaces. It passes when that type is a non-generic class, struct or interface and one of them is
+/// marked with <c>GenerateDataMemberAccessors</c> and exposes an accessible instance property of the path's name.
+/// <see cref="AtomUIDiagnosticDescriptors.AotMissingGeneratedAccessor" /> (ATOMUIAOT001) is reported when none is
+/// marked, and <see cref="AtomUIDiagnosticDescriptors.AotMissingGeneratedPath" /> (ATOMUIAOT002) when a marked type
+/// exists but lacks the property.
+/// <see cref="AtomUIDiagnosticDescriptors.AotUnverifiableDataMemberPath" /> (ATOMUIAOT003) is reported for a
+/// non-empty constant that is not such a <c>nameof</c> expression; write <c>nameof(Type.Property)</c> instead.
+/// All three are warnings. Other expressions, including an <c>IDataMemberAccessorDescriptor</c> passed in place of
+/// the path, are not checked.
+/// </remarks>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class AotDataMemberPathAnalyzer : DiagnosticAnalyzer
 {
+    /// <inheritdoc />
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics { get; } =
     [
         AtomUIDiagnosticDescriptors.AotMissingGeneratedAccessor,
@@ -17,6 +37,9 @@ public sealed class AotDataMemberPathAnalyzer : DiagnosticAnalyzer
         AtomUIDiagnosticDescriptors.AotUnverifiableDataMemberPath
     ];
 
+    /// <summary>
+    /// Registers the analysis of invocations and of simple assignments. Generated code is not analyzed.
+    /// </summary>
     public override void Initialize(AnalysisContext context)
     {
         context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);

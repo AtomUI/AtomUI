@@ -69,11 +69,43 @@ internal static class TypeMapBuildContract
     }
 }
 
+/// <summary>
+/// Base class of the registration build tasks. It holds the MSBuild <c>ITask</c> members and provides
+/// <see cref="Fail" /> for reporting a failed task.
+/// </summary>
 public abstract class RegistrationBuildTask : ITask
 {
+    /// <summary>
+    /// Build engine that receives the errors and messages a task logs. MSBuild or the task host assigns it
+    /// before <see cref="Execute" /> runs.
+    /// </summary>
     public IBuildEngine BuildEngine { get; set; } = null!;
+    /// <summary>
+    /// Host object of the MSBuild <c>ITask</c> contract. No task in the toolchain reads it.
+    /// </summary>
     public ITaskHost HostObject { get; set; } = null!;
+    /// <summary>
+    /// Runs the task.
+    /// </summary>
+    /// <returns>
+    /// <see langword="true" /> when the task succeeded. <see langword="false" /> after the failure was logged
+    /// through <see cref="BuildEngine" />, for example by returning <see cref="Fail" />.
+    /// </returns>
     public abstract bool Execute();
+    /// <summary>
+    /// Logs the message of <paramref name="error" /> as an MSBuild error with the subcategory
+    /// <c>Registration</c> and returns <see langword="false" />, so an <see cref="Execute" /> override can
+    /// return it directly.
+    /// </summary>
+    /// <param name="code">
+    /// Diagnostic code, such as <c>ATOMUIREG006</c>.
+    /// </param>
+    /// <param name="error">
+    /// Exception whose message becomes the error text.
+    /// </param>
+    /// <returns>
+    /// Always <see langword="false" />.
+    /// </returns>
     protected bool Fail(string code, Exception error)
     {
         BuildEngine.LogErrorEvent(new BuildErrorEventArgs("Registration", code, BuildEngine.ProjectFileOfTaskNode, 0, 0, 0, 0,
@@ -88,24 +120,100 @@ internal sealed record TypeMapLinkSignature(string Capability, string BackendPat
     string LinkerPath, string LinkerIdentity, string LinkerVersion, string ReceiptPath, string OutputDirectory,
     string Configuration, TypeMapFile[] Files, TypeMapLinkInput[] Assemblies, TypeMapLinkConfiguration? EffectiveLink = null);
 
+/// <summary>
+/// Freezes the inputs of a TypeMap link in a signature file and clears the previous link result when
+/// the inputs changed. It does not run the link.
+/// </summary>
 public sealed class PrepareTypeMapLinkTask : RegistrationBuildTask
 {
     // Retained for older build assets. SDK version strings do not determine TypeMap support.
+    /// <summary>
+    /// SDK version string that older build assets still pass. This task does not read it.
+    /// </summary>
     public string SdkVersion { get; set; } = string.Empty;
+    /// <summary>
+    /// Path of the WebAssembly SDK tasks assembly. When set, the file is hashed into the signature as a
+    /// link input, so a change to it discards the previous link result. An empty value adds no file.
+    /// </summary>
     public string WasmSdkTasksPath { get; set; } = string.Empty;
+    /// <summary>
+    /// Path of the ILLink backend adapter assembly. Its directory locates the backend files, and its full
+    /// path, identity and hash are recorded in the signature.
+    /// </summary>
     public string BackendAssembly { get; set; } = string.Empty;
+    /// <summary>
+    /// Path of the ILLink executable (<c>illink</c>). It must be an official ILLink binary of at least
+    /// <c>OfficialTypeMapToolchain.MinimumVersion</c> with TypeMap support, otherwise the task fails. Its
+    /// directory also supplies the linker support files that are hashed into the signature.
+    /// </summary>
     public string LinkerAssembly { get; set; } = string.Empty;
+    /// <summary>
+    /// Capability string of the TypeMap contract. The task fails unless it equals
+    /// <c>TypeMapBuildContract.Capability</c>, which is also the default, and the receipt must report it.
+    /// </summary>
     public string Capability { get; set; } = TypeMapBuildContract.Capability;
+    /// <summary>
+    /// Absolute path of the receipt that the TypeMap converter writes when it completes. It is recorded in
+    /// the signature. When the inputs changed or the receipt is missing, the task deletes the receipt and
+    /// its <c>.binding</c> file.
+    /// </summary>
     public string ReceiptPath { get; set; } = string.Empty;
+    /// <summary>
+    /// Path of the JSON file that lists the link inputs with their hashes. The task rewrites it when its
+    /// content differs from the current inputs.
+    /// </summary>
     public string SignaturePath { get; set; } = string.Empty;
+    /// <summary>
+    /// Path of a semaphore file that this task never creates. It is deleted when the inputs changed or the
+    /// receipt is missing.
+    /// </summary>
     public string LinkSemaphore { get; set; } = string.Empty;
+    /// <summary>
+    /// Directory that receives the linked assemblies. This task only records its full path in the
+    /// signature. <see cref="VerifyTypeMapReceiptTask" /> looks there for the linked output of each
+    /// assembly it finds in the receipt, under the same file name.
+    /// </summary>
     public string OutputDirectory { get; set; } = string.Empty;
+    /// <summary>
+    /// Build configuration. This task only records it in the signature.
+    /// </summary>
     public string Configuration { get; set; } = string.Empty;
+    /// <summary>
+    /// Link inputs other than assemblies, each with a <c>Kind</c> metadata value that names its role.
+    /// <c>Reference</c> items are reference assemblies; one whose full identity equals an assembly in
+    /// <see cref="Assemblies" /> is dropped from the hashed files and from the link configuration.
+    /// <c>Tool</c> items are passed with <see cref="LinkerAssembly" /> to the link configuration to resolve
+    /// the files it contributes to the hashed list. Items of any other kind are only hashed.
+    /// </summary>
     public ITaskItem[] Inputs { get; set; } = [];
+    /// <summary>
+    /// Assemblies to link. The path, full identity, hash and the <c>TrimMode</c> and <c>IsTrimmable</c>
+    /// metadata of each item are recorded in the signature, sorted by identity.
+    /// </summary>
     public ITaskItem[] Assemblies { get; set; } = [];
+    /// <summary>
+    /// Scalar ILLink options. The item spec is the option name and the <c>Value</c> metadata is its value.
+    /// The names must be unique or the task fails. The value of <c>NoWarn</c> is reduced to its IL warning
+    /// codes.
+    /// </summary>
     public ITaskItem[] LinkOptions { get; set; } = [];
+    /// <summary>
+    /// Items of the ILLink input collections, in the order ILLink receives them. The <c>Kind</c> metadata
+    /// names the collection: <c>RootAssemblyNames</c>, <c>FeatureSettings</c>, <c>CustomData</c>,
+    /// <c>CustomSteps</c>, <c>RootDescriptorFiles</c> or <c>KeepMetadata</c>. Any other kind fails the task.
+    /// </summary>
     public ITaskItem[] LinkItems { get; set; } = [];
 
+    /// <summary>
+    /// Validates the capability, the receipt path and the linker, writes the signature of the current
+    /// inputs, and deletes the semaphore, the receipt and its <c>.binding</c> file when the inputs changed
+    /// or the receipt is missing.
+    /// </summary>
+    /// <returns>
+    /// <see langword="true" /> when the signature is current, whether it was rewritten or left as it was.
+    /// <see langword="false" /> after an invalid input or a file access error is logged as
+    /// <c>ATOMUIREG006</c>.
+    /// </returns>
     public override bool Execute()
     {
         try
@@ -183,14 +291,49 @@ public sealed class PrepareTypeMapLinkTask : RegistrationBuildTask
     }
 }
 
+/// <summary>
+/// Checks that the TypeMap receipt belongs to the current link inputs and that the linked outputs were
+/// not replaced afterwards, then binds the receipt to the signature or verifies the existing binding.
+/// </summary>
 public sealed class VerifyTypeMapReceiptTask : RegistrationBuildTask
 {
+    /// <summary>
+    /// Path of the receipt that the TypeMap converter wrote. It must exist, and its path and capability
+    /// must match the signature.
+    /// </summary>
     public string ReceiptPath { get; set; } = string.Empty;
+    /// <summary>
+    /// Path of the signature written by <see cref="PrepareTypeMapLinkTask" />. It is the baseline for every
+    /// check, and its hash together with the hash of the receipt at <see cref="ReceiptPath" /> forms the
+    /// binding.
+    /// </summary>
     public string SignaturePath { get; set; } = string.Empty;
+    /// <summary>
+    /// Controls how the <c>.binding</c> file next to the receipt is treated. When
+    /// <see langword="true" />, the task writes it from the hashes of the signature and the receipt. When
+    /// <see langword="false" />, the file must already exist with that content, otherwise the task fails.
+    /// </summary>
     public bool BindReceipt { get; set; }
+    /// <summary>
+    /// When <see langword="true" />, the task fails when <see cref="ConsumedAssemblies" /> is empty.
+    /// </summary>
     public bool RequireConsumedAssemblies { get; set; }
+    /// <summary>
+    /// Assembly files that the AOT or bundle step takes as its input. When not empty, every output listed
+    /// in the receipt must match exactly one item with the same file name and the recorded output hash.
+    /// </summary>
     public ITaskItem[] ConsumedAssemblies { get; set; } = [];
 
+    /// <summary>
+    /// Checks that the recorded inputs, assemblies and linked outputs still have the hashes recorded in the
+    /// signature and the receipt, that the receipt names the expected status, capability, backend and
+    /// linker, and that the consumed assemblies match the outputs. Then binds the receipt to the signature
+    /// or verifies the existing binding.
+    /// </summary>
+    /// <returns>
+    /// <see langword="true" /> when every check passed. <see langword="false" /> after a mismatch, a file
+    /// access error or malformed receipt data is logged as <c>ATOMUIREG007</c>.
+    /// </returns>
     public override bool Execute()
     {
         try
@@ -310,12 +453,47 @@ public sealed class VerifyTypeMapReceiptTask : RegistrationBuildTask
     }
 }
 
+/// <summary>
+/// Checks that the target framework, the ILLink binary and the NativeAOT compiler are the official ones
+/// that support the TypeMap contract.
+/// </summary>
 public sealed class ValidateRegistrationToolchainTask : RegistrationBuildTask
 {
+    /// <summary>
+    /// Path of the ILLink binary. When set, it must be the official <c>illink</c> with the Microsoft key,
+    /// at a version that has the major of the target framework and is at least the target framework
+    /// version and <c>TypeMapBuildContract.MinimumTypeMapVersion</c>, otherwise the task fails. When empty,
+    /// the linker is not checked.
+    /// </summary>
     public string LinkerAssembly { get; set; } = string.Empty;
+    /// <summary>
+    /// Path of the NativeAOT compiler. When set, the task starts it with <c>--version</c> and requires a
+    /// version that has the major of the target framework and is at least the target framework version and
+    /// <c>TypeMapBuildContract.MinimumTypeMapVersion</c>, otherwise the task fails. When empty, the
+    /// compiler is not checked.
+    /// </summary>
     public string NativeCompiler { get; set; } = string.Empty;
+    /// <summary>
+    /// Identifier of the target framework, such as <c>.NETCoreApp</c>. Together with
+    /// <see cref="TargetFrameworkVersion" /> it must classify as the official TypeMap framework, otherwise
+    /// the task fails.
+    /// </summary>
     public string TargetFrameworkIdentifier { get; set; } = string.Empty;
+    /// <summary>
+    /// Version of the target framework, such as <c>v10.0</c>. Together with
+    /// <see cref="TargetFrameworkIdentifier" /> it must classify as the official TypeMap framework. Its
+    /// major and minor version are the baseline for the linker and compiler checks.
+    /// </summary>
     public string TargetFrameworkVersion { get; set; } = string.Empty;
+    /// <summary>
+    /// Checks the target framework, then the linker when <see cref="LinkerAssembly" /> is set, then the
+    /// NativeAOT compiler when <see cref="NativeCompiler" /> is set. The compiler check starts the compiler
+    /// with <c>--version</c>.
+    /// </summary>
+    /// <returns>
+    /// <see langword="true" /> when every check passed or was skipped. <see langword="false" /> after an
+    /// unsupported tool, or a failure to read or start it, is logged as <c>ATOMUIREG006</c>.
+    /// </returns>
     public override bool Execute()
     {
         try

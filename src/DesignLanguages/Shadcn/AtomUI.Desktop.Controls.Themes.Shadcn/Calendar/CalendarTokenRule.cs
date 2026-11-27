@@ -3,7 +3,9 @@ using AtomUI.Theme.Languages;
 
 namespace AtomUI.Desktop.Controls.Themes.Shadcn;
 
-/// <summary>The shadcn view of <see cref="CalendarToken"/>.</summary>
+/// <summary>
+/// The shadcn view of <see cref="CalendarToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class CalendarTokenRule : IControlTokenRule<ShadcnToken, CalendarToken>
 {
@@ -20,6 +22,7 @@ internal sealed class CalendarTokenRule : IControlTokenRule<ShadcnToken, Calenda
                             global.UniformlyPaddingXS / 2 + global.LineWidthBold;
         if (context.Variant.IsDark)
         {
+            // Dark shadcn resolves the two source surfaces to the same shade.
             token.ItemActiveBg = ShadcnRecipes.CompositeOver(global.ColorText, 0.14, token.ItemActiveBg);
         }
     }

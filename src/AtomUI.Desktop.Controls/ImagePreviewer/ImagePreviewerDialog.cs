@@ -501,9 +501,10 @@ internal class ImagePreviewerDialog : Window,
             () => _imagePreviewer.LatestLoadedFullEntry);
         _imageViewer    = CreateImageViewer();
         _imageViewer.PreviewChanged += HandleViewerPreviewChanged;
-        // popup.root：native dialog 的内容根包裹 Panel，用生成的 SemanticPart 常量注入
-        // marker（overlay 宿主在模板根静态声明同一 marker）。owner 作用域 Semantic Style
-        // 不跨 Window/TopLevel 级联，仅 overlay 宿主可命中，见 semantic-part.md。
+        // popup.root is the Panel that wraps the content of the native dialog. The marker is injected with
+        // the generated SemanticPart constant; the overlay host declares the same marker statically on its
+        // template root. An owner-scoped semantic style does not cascade across a Window/TopLevel boundary;
+        // only the overlay host can be hit.
         Content = new Panel
         {
             Children = { _imageViewer },
@@ -602,7 +603,7 @@ internal class ImagePreviewerDialog : Window,
     {
         base.NotifyConfigureTitleBar(titleBar);
 
-        // 使用预览标题算法结果，而不是直接展示 Window.Title。
+        // Shows the result of the preview title algorithm instead of Window.Title directly.
         titleBar[!WindowTitleBar.TitleProperty] = this[!EffectivePreviewTitleProperty];
 
         if (titleBar is ImagePreviewerTitleBar previewerTitleBar)
@@ -807,9 +808,11 @@ internal class ImagePreviewerDialog : Window,
 
     private void HandleItemsSourceCollectionChanged(object? sender, NotifyCollectionChangedEventArgs args)
     {
-        // 有效集合增量变更时 CurrentIndex 属性值可能不变（如封顶裁剪后索引稳定），
-        // 但索引处的 entry 已更换：宿主必须与 previewer 的 ConfigureCurrentEntry 同步重配
-        // 当前项，否则显示跟踪会持有过期（可能已 Dispose）的 entry，表现为预览窗口白屏。
+        // An incremental change of the effective collection can leave CurrentIndex unchanged, for example
+        // when the index is still valid after being clamped to the new upper bound, while the entry at that
+        // index has been replaced. The host must reconfigure the current item in step with the previewer's
+        // ConfigureCurrentEntry; otherwise display tracking keeps a stale entry (possibly already disposed)
+        // and the preview window turns blank.
         SetCurrentValue(IsMultiImagesProperty, ItemsSource?.Count > 1);
         Count = ItemsSource?.Count ?? 0;
         HandleCurrentIndexChanged();

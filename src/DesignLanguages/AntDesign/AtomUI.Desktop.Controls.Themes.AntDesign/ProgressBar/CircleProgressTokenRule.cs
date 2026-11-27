@@ -3,7 +3,9 @@ using AtomUI.Theme.Languages;
 
 namespace AtomUI.Desktop.Controls.Themes.AntDesign;
 
-/// <summary>The AntDesign view of <see cref="CircleProgressToken"/>.</summary>
+/// <summary>
+/// The AntDesign view of <see cref="CircleProgressToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class CircleProgressTokenRule : IControlTokenRule<AntDesignToken, CircleProgressToken>
 {

@@ -123,7 +123,7 @@
         </Style>
 
         <Style Selector="^:labelinner">
-            <!-- 如果是 Inner 模式，成功状态下不显示成功 icon -->
+            <!-- In Inner mode the success icon is not shown in the success state -->
             <Style Selector="^ /template/ atom|IconPresenter">
                 <Setter Property="IsVisible" Value="False" />
             </Style>

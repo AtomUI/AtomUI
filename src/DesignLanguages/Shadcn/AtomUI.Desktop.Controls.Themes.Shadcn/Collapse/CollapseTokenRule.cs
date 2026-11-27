@@ -5,7 +5,9 @@ using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls.Themes.Shadcn;
 
-/// <summary>The shadcn view of <see cref="CollapseToken"/>.</summary>
+/// <summary>
+/// The shadcn view of <see cref="CollapseToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class CollapseTokenRule : IControlTokenRule<ShadcnToken, CollapseToken>
 {
@@ -18,6 +20,7 @@ internal sealed class CollapseTokenRule : IControlTokenRule<ShadcnToken, Collaps
         token.HeaderColor               = global.ColorTextHeading;
         token.HeaderActiveColor         = global.ColorTextHeading;
         token.HeaderFontWeight          = FontWeight.Normal;
+        // Ant Design formula kept as is: no registry value is merged into the collapse tokens.
         token.ContentPadding            = new Thickness(16, global.UniformlyPadding);
         token.CollapseContentPaddingSM  = global.PaddingSM;
         token.CollapseContentPaddingLG  = global.PaddingLG;

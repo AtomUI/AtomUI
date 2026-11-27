@@ -3,7 +3,9 @@ using AtomUI.Theme.Languages;
 
 namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 
-/// <summary>The PrimeNG view of <see cref="CalendarToken"/>.</summary>
+/// <summary>
+/// The PrimeNG view of <see cref="CalendarToken" />.
+/// </summary>
 [ControlTokenRule]
 internal sealed class CalendarTokenRule : IControlTokenRule<PrimeNGToken, CalendarToken>
 {
@@ -11,9 +13,12 @@ internal sealed class CalendarTokenRule : IControlTokenRule<PrimeNGToken, Calend
     {
         var token  = target.Own;
         var global = target.Global;
-        // PrimeNG: the control-global overrides, read by the formulas below.
+        // PrimeNG: no control-global overrides; EvaluateGlobal writes nothing.
         PrimeNGCalendarTokens.EvaluateGlobal(in context, global);
         CalendarTokenCalculator.Calculate(in context, global, token);
+        // Ant Design formula kept as is: the PrimeNG calendar stage (PrimeNGCalendarTokens.EvaluateOwn)
+        // replaces only ItemActiveColor, so these sizes stay the Ant Design formula over the PrimeNG global
+        // tokens.
         token.YearMonthCellWidth = global.ControlHeightLG * 1.5;
         token.MiniContentHeight = 256;
         var dateContentHeight = (global.FontHeightSM + global.UniformlyMarginXS) * 3 +

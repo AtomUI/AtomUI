@@ -4,20 +4,44 @@ using Avalonia.Media.Immutable;
 
 namespace AtomUI.Media;
 
+/// <summary>
+/// Creates and updates the pens that controls keep for their <c>Render</c> method.
+/// </summary>
 public static class PenUtils
 {
    /// <summary>
-   /// Smart reuse and update pen properties.
+   /// Brings a cached pen to the given brush and stroke settings, reusing the previous pen where that is possible.
    /// </summary>
-   /// <param name="pen">Old pen to modify.</param>
-   /// <param name="brush">The brush used to draw.</param>
-   /// <param name="thickness">The stroke thickness.</param>
-   /// <param name="strokeDashArray">The stroke dask array.</param>
-   /// <param name="strokeDaskOffset">The stroke dask offset.</param>
-   /// <param name="lineCap">The line cap.</param>
-   /// <param name="lineJoin">The line join.</param>
-   /// <param name="miterLimit">The miter limit.</param>
-   /// <returns>If a new instance was created and visual invalidation required.</returns>
+   /// <param name="pen">
+   /// The pen used so far. On return it is the pen to draw with, or <see langword="null" /> when
+   /// <paramref name="brush" /> is <see langword="null" />.
+   /// </param>
+   /// <param name="brush">
+   /// The brush that strokes the line. <see langword="null" /> clears the pen.
+   /// </param>
+   /// <param name="thickness">
+   /// The stroke thickness.
+   /// </param>
+   /// <param name="strokeDashArray">
+   /// The lengths of the dashes and gaps. <see langword="null" /> or an empty list draws a solid line.
+   /// </param>
+   /// <param name="strokeDaskOffset">
+   /// The offset into the dash pattern.
+   /// </param>
+   /// <param name="lineCap">
+   /// The line cap.
+   /// </param>
+   /// <param name="lineJoin">
+   /// The line join.
+   /// </param>
+   /// <param name="miterLimit">
+   /// The miter limit.
+   /// </param>
+   /// <returns>
+   /// <see langword="true" /> when a new instance was created or the pen was cleared, which means the caller has to
+   /// invalidate what it draws with the pen. <see langword="false" /> when the previous pen was kept, either because
+   /// it already matched or because its properties were changed in place.
+   /// </returns>
    internal static bool TryModifyOrCreate(ref IPen? pen,
                                           IBrush? brush,
                                           double thickness,

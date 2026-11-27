@@ -10,6 +10,11 @@ using Avalonia.Threading;
 
 namespace AtomUI.Desktop.Controls;
 
+/// <summary>
+/// Shows notifications as cards at one edge of a window and closes each of them after its expiration. A manager
+/// created with a <see cref="TopLevel" /> installs itself into the feedback layer of that window; one created
+/// without a host renders inline wherever the caller places it.
+/// </summary>
 [TemplatePart("PART_Items", typeof(FeedbackStackPresenter))]
 [PseudoClasses(NotificationPseudoClass.TopLeft,
     NotificationPseudoClass.TopRight,
@@ -19,22 +24,40 @@ namespace AtomUI.Desktop.Controls;
     NotificationPseudoClass.BottomCenter)]
 public partial class WindowNotificationManager : TemplatedControl, INotificationManager, IMotionAwareControl, IDisposable
 {
+    /// <summary>
+    /// Identifies the <see cref="Position" /> property.
+    /// </summary>
     public static readonly StyledProperty<NotificationPosition> PositionProperty =
         AvaloniaProperty.Register<WindowNotificationManager, NotificationPosition>(
             nameof(Position), NotificationPosition.TopRight);
 
+    /// <summary>
+    /// Identifies the <see cref="MaxItems" /> property.
+    /// </summary>
     public static readonly StyledProperty<int> MaxItemsProperty =
         AvaloniaProperty.Register<WindowNotificationManager, int>(nameof(MaxItems));
 
+    /// <summary>
+    /// Identifies the <see cref="IsStackEnabled" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsStackEnabledProperty =
         AvaloniaProperty.Register<WindowNotificationManager, bool>(nameof(IsStackEnabled));
 
+    /// <summary>
+    /// Identifies the <see cref="StackThreshold" /> property.
+    /// </summary>
     public static readonly StyledProperty<int> StackThresholdProperty =
         AvaloniaProperty.Register<WindowNotificationManager, int>(nameof(StackThreshold), 3);
 
+    /// <summary>
+    /// Identifies the <see cref="IsPauseOnHover" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsPauseOnHoverProperty =
         AvaloniaProperty.Register<WindowNotificationManager, bool>(nameof(IsPauseOnHover), true);
 
+    /// <summary>
+    /// Identifies the <see cref="IsMotionEnabled" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<WindowNotificationManager>();
 
@@ -53,36 +76,65 @@ public partial class WindowNotificationManager : TemplatedControl, INotification
     private bool _hostLayerRetryScheduled;
     private int _hostLayerRetryCount;
 
+    /// <summary>
+    /// The window edge where the cards appear; the card list is aligned to that corner or side. The item presenter
+    /// and every card shown receive the value, and the card uses it for its entry and close motion. The theme also
+    /// derives the default <c>Padding</c> of the manager, which becomes the margin of the card list, from the
+    /// value. The default is <see cref="NotificationPosition.TopRight" />.
+    /// </summary>
     public NotificationPosition Position
     {
         get => GetValue(PositionProperty);
         set => SetValue(PositionProperty, value);
     }
 
+    /// <summary>
+    /// The greatest number of cards that may be open at the same time. When a notification is shown and more cards
+    /// are open, the oldest ones that are not closing are closed until the number fits. A value of <c>0</c> or
+    /// less removes the limit; the default is <c>0</c>.
+    /// </summary>
     public int MaxItems
     {
         get => GetValue(MaxItemsProperty);
         set => SetValue(MaxItemsProperty, value);
     }
 
+    /// <summary>
+    /// Lets the cards pile up into a stack while more than <see cref="StackThreshold" /> of them are open, instead
+    /// of listing every card. The value is passed to the item presenter. The default is <see langword="false" />.
+    /// </summary>
     public bool IsStackEnabled
     {
         get => GetValue(IsStackEnabledProperty);
         set => SetValue(IsStackEnabledProperty, value);
     }
 
+    /// <summary>
+    /// The number of open cards that may be listed before they pile up into a stack. The stack is used while more
+    /// cards than this are open and <see cref="IsStackEnabled" /> is <see langword="true" />. Values below <c>1</c>
+    /// count as <c>1</c>. The default is <c>3</c>.
+    /// </summary>
     public int StackThreshold
     {
         get => GetValue(StackThresholdProperty);
         set => SetValue(StackThresholdProperty, value);
     }
 
+    /// <summary>
+    /// Pauses the expiry of a card while the pointer is over it, and of all cards while the pointer is over the
+    /// collapsed stack. Turning it off resumes every paused card at once. The default is <see langword="true" />.
+    /// </summary>
     public bool IsPauseOnHover
     {
         get => GetValue(IsPauseOnHoverProperty);
         set => SetValue(IsPauseOnHoverProperty, value);
     }
 
+    /// <summary>
+    /// Controls whether the cards animate. The value is relayed to the item presenter and to every card shown,
+    /// which use it for their motion. The theme takes the value from the <c>EnableMotion</c> design Token. Without
+    /// a value from a style or the control it is <see langword="false" />.
+    /// </summary>
     public bool IsMotionEnabled
     {
         get => GetValue(IsMotionEnabledProperty);
@@ -107,6 +159,14 @@ public partial class WindowNotificationManager : TemplatedControl, INotification
 
     internal bool IsLifetimePaused => _lifetimeScheduler?.IsAllPaused ?? _isLifecyclePaused;
 
+    /// <summary>
+    /// Creates the manager and, when <paramref name="host" /> is not <see langword="null" />, installs it into the
+    /// feedback layer of that window, or into the adorner layer of the window while it has no feedback layer. When
+    /// neither layer exists yet, the installation is retried later.
+    /// </summary>
+    /// <param name="host">
+    /// The window that hosts the cards. Pass <see langword="null" /> to place the manager in a visual tree yourself.
+    /// </param>
     public WindowNotificationManager(TopLevel? host) : this()
     {
         if (host is not null)
@@ -120,6 +180,12 @@ public partial class WindowNotificationManager : TemplatedControl, INotification
     {
     }
 
+    /// <summary>
+    /// Binds the template's <c>PART_Items</c> presenter: it receives the cards and the values of
+    /// <see cref="Position" />, <see cref="IsStackEnabled" />, <see cref="StackThreshold" /> and
+    /// <see cref="IsMotionEnabled" />, and it reports the hover state of the stack here. The base method is called
+    /// before the new presenter is looked up.
+    /// </summary>
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         if (_presenter is not null)
@@ -143,6 +209,10 @@ public partial class WindowNotificationManager : TemplatedControl, INotification
         UpdatePseudoClasses(Position);
     }
 
+    /// <summary>
+    /// Resumes the expiry of the cards, which is paused while the manager is not in the tree, and records that the
+    /// manager was attached, so that a later detach releases its cards. Calls the base method first.
+    /// </summary>
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
@@ -151,6 +221,10 @@ public partial class WindowNotificationManager : TemplatedControl, INotification
         UpdateSchedulerPauseState();
     }
 
+    /// <summary>
+    /// Pauses the expiry of the cards and schedules the release of every card once the detach has finished, unless
+    /// the manager is attached again before that. Calls the base method after the expiry is paused.
+    /// </summary>
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         _isLifecyclePaused = true;
@@ -159,9 +233,12 @@ public partial class WindowNotificationManager : TemplatedControl, INotification
         ScheduleReleaseCardsOnHostDetach();
     }
 
-    // 宿主层释放契约：manager 运行途中离开视觉树即释放其上的全部卡片（对齐上游 notification-list 卸载行为）。
-    // 必须推迟到 detach 级联完成之后：在 detach 过程中同步关闭卡片会让 presenter 重建容器树，
-    // 触发 Avalonia 视觉树内部集合越界。从未 attach 过的 manager 不适用——release/6.0 允许 attach 前 Show。
+    // Host layer release contract: a manager that leaves the visual tree while it is running releases all of its
+    // cards, which matches the unload behavior of the upstream notification list.
+    // The release must wait until the detach cascade has finished: closing the cards synchronously during the
+    // detach makes the presenter rebuild its container tree, which hits an out-of-range access in a collection
+    // internal to the Avalonia visual tree. A manager that was never attached is not covered, because a
+    // notification may be shown before the manager is attached.
     private void ScheduleReleaseCardsOnHostDetach()
     {
         if (!_hasBeenAttached || _isDisposed)
@@ -171,13 +248,14 @@ public partial class WindowNotificationManager : TemplatedControl, INotification
 
         Dispatcher.UIThread.Post(() =>
         {
-            // 执行时已重新入树（反馈层迁移等瞬时 detach）则不释放。
+            // Skip the release when the manager has been attached again by then, which happens after a transient
+            // detach such as a feedback layer migration.
             if (_isDisposed || !_isLifecyclePaused)
             {
                 return;
             }
 
-            // 关闭回调可能同步修改 _cards，先拷贝快照。
+            // A close callback may change _cards synchronously, so iterate over a snapshot.
             var cards = _cards.ToArray();
             for (var i = 0; i < cards.Length; i++)
             {
@@ -188,6 +266,20 @@ public partial class WindowNotificationManager : TemplatedControl, INotification
         });
     }
 
+    /// <summary>
+    /// Adds a card that shows the values of <paramref name="notification" /> and moves the manager to the top of
+    /// its host layer. When the expiration of the notification is greater than <see cref="TimeSpan.Zero" />, the
+    /// countdown to its automatic close starts; when more cards are open than <see cref="MaxItems" /> allows, the
+    /// oldest ones are closed. The values are copied into the card, so changing the notification later has no
+    /// effect on it. May be called before the manager is attached to a visual tree; the countdown then starts
+    /// when it is attached. Must be called on the UI thread; does nothing after <see cref="Dispose" />.
+    /// </summary>
+    /// <param name="notification">
+    /// The notification to show: its text, type, icon and actions, how long it stays open and its callbacks.
+    /// </param>
+    /// <param name="classes">
+    /// Style classes to add to the card, or <see langword="null" /> to add none.
+    /// </param>
     public void Show(INotification notification, string[]? classes = null)
     {
         Dispatcher.VerifyAccess();
@@ -233,6 +325,10 @@ public partial class WindowNotificationManager : TemplatedControl, INotification
         RemoveExcessNotifications();
     }
 
+    /// <summary>
+    /// Closes every card, the newest first; the <see cref="INotification.OnClose" /> callback of a card runs when
+    /// its close has completed. Must be called on the UI thread; does nothing after <see cref="Dispose" />.
+    /// </summary>
     public void DestroyAll()
     {
         Dispatcher.VerifyAccess();
@@ -254,6 +350,11 @@ public partial class WindowNotificationManager : TemplatedControl, INotification
         }
     }
 
+    /// <summary>
+    /// Updates the position pseudo-classes when <see cref="Position" /> changes, and resumes the expiry of all
+    /// cards when <see cref="IsPauseOnHover" /> or <see cref="IsStackEnabled" /> is turned off. Calls the base
+    /// method first.
+    /// </summary>
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
@@ -451,6 +552,11 @@ public partial class WindowNotificationManager : TemplatedControl, INotification
         _hostLayerUsesNativeAdorner = false;
     }
 
+    /// <summary>
+    /// Releases the manager. Every card is dropped without a close motion and without running its close callback,
+    /// the expiry timers stop, and the manager is removed from the host layer. Later calls of <see cref="Show" />
+    /// and <see cref="DestroyAll" /> do nothing.
+    /// </summary>
     public void Dispose()
     {
         if (_isDisposed)

@@ -4,11 +4,21 @@ using Mono.Linker.Steps;
 
 namespace AtomUI.TypeMap.Linker;
 
-/// <summary>ILLink build-only ABI 1 entry point. Inject exactly once immediately after MarkStep.</summary>
+/// <summary>
+/// ILLink build-only ABI 1 entry point. Inject exactly once immediately after MarkStep.
+/// </summary>
 public sealed class MaterializeTypeMapsStep : IStep
 {
     private bool _processed;
 
+    /// <summary>
+    /// Rewrites every registration accessor so that its body creates the TypeMap and adds the registered entries, then
+    /// schedules <see cref="VerifyTypeMapsStep" /> to run right after <see cref="SweepStep" />.
+    /// </summary>
+    /// <remarks>
+    /// A second call on the same step is rejected. An I/O error and a <see cref="BackendDiagnostic" /> are reported
+    /// through the linker context instead of thrown.
+    /// </remarks>
     public void Process(LinkContext context)
     {
         try

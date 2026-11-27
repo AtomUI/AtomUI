@@ -7,44 +7,42 @@ public partial class DesignToken
 {
      // ----------   Text   ---------- //
     /// <summary>
-    /// 一级文本色
-    /// 最深的文本色。为了符合W3C标准，默认的文本颜色使用了该色，同时这个颜色也是最深的中性色。
+    /// The darkest text color and the darkest neutral color. It is the default text color, chosen to meet the
+    /// W3C standard.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Map)]
     public partial Color ColorText { get; set; }
 
     /// <summary>
-    /// 二级文本色
-    /// 作为第二梯度的文本色，一般用在不那么需要强化文本颜色的场景，例如 Label 文本、Menu 的文本选中态等场景。
+    /// Second-level text color, for text that needs less emphasis, such as label text or the selected state of
+    /// menu text.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Map)]
     public partial Color ColorTextSecondary { get; set; }
 
     /// <summary>
-    /// 三级文本色
-    /// 第三级文本色一般用于描述性文本，例如表单的中的补充说明文本、列表的描述性文本等场景。
+    /// Third-level text color, for descriptive text such as the supplementary text of a form field or the
+    /// description of a list item.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Map)]
     public partial Color ColorTextTertiary { get; set; }
 
     /// <summary>
-    /// 四级文本色
-    /// 第四级文本色是最浅的文本色，例如表单的输入提示文本、禁用色文本等。
+    /// Fourth-level text color, the lightest one, for text such as a form placeholder or disabled text.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Map)]
     public partial Color ColorTextQuaternary { get; set; }
 
     // ----------   Border   ---------- //
     /// <summary>
-    /// 一级边框色
-    /// 默认使用的边框颜色, 用于分割不同的元素，例如：表单的分割线、卡片的分割线等。
+    /// Default border color, used to separate elements, for example the divider of a form or of a card.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Map)]
     public partial Color ColorBorder { get; set; }
 
     /// <summary>
-    /// 二级边框色
-    /// 比默认使用的边框色要浅一级，此颜色和 colorSplit 的颜色一致。使用的是实色。
+    /// Border color one step lighter than <see cref="ColorBorder" />. It is a solid color, not a transparent one,
+    /// and it has the same value as <see cref="ColorSplit" />.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Map)]
     public partial Color ColorBorderSecondary { get; set; }
@@ -52,87 +50,82 @@ public partial class DesignToken
     // ----------   Fill   ---------- //
 
     /// <summary>
-    /// 一级填充色
-    /// 最深的填充色，用于拉开与二、三级填充色的区分度，目前只用在 Slider 的 hover 效果。
+    /// The darkest fill level, clearly stronger than the secondary and tertiary fills.
+    /// The Segmented, Skeleton, Splitter and title bar action token rules read it, among others.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Map)]
     public partial Color ColorFill { get; set; }
 
     /// <summary>
-    /// 二级填充色
-    /// 二级填充色可以较为明显地勾勒出元素形体，如 Rate、Skeleton 等。也可以作为三级填充色的 Hover 状态，如 Table 等。
+    /// Second-level fill, strong enough to outline the shape of an element, as in Rate and Skeleton.
+    /// It also serves as the hover state of the tertiary fill, as in Table.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Map)]
     public partial Color ColorFillSecondary { get; set; }
 
     /// <summary>
-    /// 三级填充色
-    /// 三级填充色用于勾勒出元素形体的场景，如 Slider、Segmented 等。如无强调需求的情况下，建议使用三级填色作为默认填色。
+    /// Third-level fill, used to outline the shape of an element, as in Slider and Segmented.
+    /// When no emphasis is needed, it is the recommended default fill.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Map)]
     public partial Color ColorFillTertiary { get; set; }
 
     /// <summary>
-    /// 四级填充色
-    /// 最弱一级的填充色，适用于不易引起注意的色块，例如斑马纹、区分边界的色块等。
+    /// Fourth-level fill, the weakest one, for color blocks that should not attract attention,
+    /// such as zebra stripes or blocks that mark a boundary.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Map)]
     public partial Color ColorFillQuaternary { get; set; }
 
     // ----------   Surface   ---------- //
     /// <summary>
-    /// 布局背景色
-    /// 该色用于页面整体布局的背景色，只有需要在页面中处于 B1 的视觉层级时才会使用该 token，其他用法都是错误的
+    /// Background of the whole page layout. Use it only for regions that must sit on the page layout level of
+    /// the visual hierarchy; any other use is wrong.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Map)]
     public partial Color ColorBgLayout { get; set; }
 
     /// <summary>
-    /// 组件容器背景色
-    /// 组件的容器背景色，例如：默认按钮、输入框等。务必不要将其与 `colorBgElevated` 混淆。
+    /// Background of a component container, such as a default button or an input field.
+    /// Do not confuse it with <see cref="ColorBgElevated" />, the background of floating layers.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Map)]
     public partial Color ColorBgContainer { get; set; }
 
     /// <summary>
-    /// 浮层容器背景色
-    /// 浮层容器背景色，在暗色模式下该 token 的色值会比 `colorBgContainer` 要亮一些。例如：模态框、弹出框、菜单等。
+    /// Background of floating layers, such as modal dialogs, popups and menus.
+    /// In the dark theme it is lighter than <see cref="ColorBgContainer" />.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Map)]
     public partial Color ColorBgElevated { get; set; }
 
     /// <summary>
-    /// 引起注意的背景色
-    /// 该色用于引起用户强烈关注注意的背景色，目前只用在 Tooltip 的背景色上。
+    /// Background that draws strong attention. Currently only the Tooltip background uses it.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Map)]
     public partial Color ColorBgSpotlight { get; set; }
 
     /// <summary>
-    /// 毛玻璃容器背景色
-    /// 控制毛玻璃容器的背景色，通常为透明色。
+    /// Background of frosted-glass containers. It is usually a transparent color.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Map)]
     public partial Color ColorBgBlur { get; set; }
     
     // ----------   Solid   ---------- //
     /// <summary>
-    /// 实心的背景颜色，目前只用在默认实心按钮背景色上。
-    /// Solid background color active state, currently only used in the active effect of the default solid button.
+    /// Solid background color of the default solid button. Tag also uses it as the background of solid tags.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Map)]
     public partial Color ColorBgSolid { get; set; }
     
     /// <summary>
-    /// 实心的背景颜色激活态，目前只用在默认实心按钮的 active 效果。
-    /// Solid background color active state, currently only used in the active effect of the default solid button.
+    /// Active state of the solid background color, used for the pressed effect of the default solid button.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Map)]
     public partial Color ColorBgSolidActive { get; set; }
     
     /// <summary>
-    /// 实心的背景颜色悬浮态，目前只用在默认实心按钮的 hover 效果。
-    /// Solid background color hover state, currently only used in the hover effect of the default solid button.
+    /// Hover state of the solid background color, used for the hover effect of the default solid button.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Map)]
     public partial Color ColorBgSolidHover { get; set; }

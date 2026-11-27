@@ -12,58 +12,124 @@ using Avalonia.VisualTree;
 
 namespace AtomUI.Desktop.Controls;
 
+/// <summary>
+/// Displays label and content pairs in a grid whose column count follows the media breakpoint, below an optional
+/// bar with a title and an extra area.
+/// The entries are <see cref="DescriptionItem" /> objects in <see cref="Items" /> or imported from
+/// <see cref="ItemsSource" />; this control creates the visual of each entry.
+/// </summary>
 public partial class Descriptions : TemplatedControl, ISizeTypeAware
 {
     #region 公共属性定义
 
+    /// <summary>
+    /// Identifies the <see cref="IsBordered" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsBorderedProperty =
         AvaloniaProperty.Register<Descriptions, bool>(nameof(IsBordered));
 
+    /// <summary>
+    /// Identifies the <see cref="IsShowColon" /> property.
+    /// </summary>
     public static readonly StyledProperty<bool> IsShowColonProperty =
         AvaloniaProperty.Register<Descriptions, bool>(nameof(IsShowColon), true);
 
+    /// <summary>
+    /// Identifies the <see cref="ColumnInfo" /> property.
+    /// </summary>
     public static readonly StyledProperty<ResponsiveInt?> ColumnInfoProperty =
         AvaloniaProperty.Register<Descriptions, ResponsiveInt?>(nameof(ColumnInfo));
 
+    /// <summary>
+    /// Identifies the <see cref="Extra" /> property.
+    /// </summary>
     public static readonly StyledProperty<object?> ExtraProperty =
         AvaloniaProperty.Register<Descriptions, object?>(nameof(Extra));
 
+    /// <summary>
+    /// Identifies the <see cref="ExtraTemplate" /> property.
+    /// </summary>
     public static readonly StyledProperty<IDataTemplate?> ExtraTemplateProperty =
         AvaloniaProperty.Register<Descriptions, IDataTemplate?>(nameof(ExtraTemplate));
 
+    /// <summary>
+    /// Identifies the <see cref="Layout" /> property.
+    /// </summary>
     public static readonly StyledProperty<Orientation> LayoutProperty =
         AvaloniaProperty.Register<Descriptions, Orientation>(nameof(Layout));
 
+    /// <summary>
+    /// Identifies the <see cref="SizeType" /> property.
+    /// </summary>
     public static readonly StyledProperty<SizeType> SizeTypeProperty =
         SizeTypeControlProperty.SizeTypeProperty.AddOwner<Descriptions>();
 
+    /// <summary>
+    /// Identifies the <see cref="Header" /> property.
+    /// </summary>
     public static readonly StyledProperty<object?> HeaderProperty =
         AvaloniaProperty.Register<Descriptions, object?>(nameof(Header));
 
+    /// <summary>
+    /// Identifies the <see cref="HeaderTemplate" /> property.
+    /// </summary>
     public static readonly StyledProperty<IDataTemplate?> HeaderTemplateProperty =
         AvaloniaProperty.Register<Descriptions, IDataTemplate?>(nameof(HeaderTemplate));
 
+    /// <summary>
+    /// Identifies the <see cref="ItemsSource" /> property.
+    /// </summary>
     public static readonly StyledProperty<IEnumerable?> ItemsSourceProperty =
         AvaloniaProperty.Register<Descriptions, IEnumerable?>(nameof(ItemsSource));
 
+    /// <summary>
+    /// Gets or sets whether the items are drawn as bordered cells inside a bordered item area.
+    /// </summary>
+    /// <remarks>
+    /// In the horizontal layout each item becomes a label cell followed by a content cell, as in a table, and
+    /// <see cref="ColumnInfo" /> still counts items per row. In the vertical layout each item becomes a box with a
+    /// divider between its label and its content. Without borders, a gap that depends on <see cref="SizeType" />
+    /// separates the item rows.
+    /// </remarks>
     public bool IsBordered
     {
         get => GetValue(IsBorderedProperty);
         set => SetValue(IsBorderedProperty, value);
     }
 
+    /// <summary>
+    /// Gets or sets whether a colon is shown after the label of each item. The default is <see langword="true" />.
+    /// </summary>
+    /// <remarks>
+    /// It has no effect in the horizontal layout with <see cref="IsBordered" /> set, whose label cells show no colon.
+    /// </remarks>
     public bool IsShowColon
     {
         get => GetValue(IsShowColonProperty);
         set => SetValue(IsShowColonProperty, value);
     }
 
+    /// <summary>
+    /// Gets or sets how many items a row holds, as one number or as a number per media breakpoint.
+    /// </summary>
+    /// <remarks>
+    /// The breakpoint is taken from the closest surrounding element that provides one; without any, <c>xxl</c> is used.
+    /// A breakpoint takes the value of the nearest configured breakpoint at or below it, and otherwise the default:
+    /// 1 on <c>xs</c>, 2 on <c>sm</c>, 4 on <c>xxxl</c> and 3 on the others. <see langword="null" />, the default,
+    /// uses these values for every breakpoint.
+    /// </remarks>
     public ResponsiveInt? ColumnInfo
     {
         get => GetValue(ColumnInfoProperty);
         set => SetValue(ColumnInfoProperty, value);
     }
 
+    /// <summary>
+    /// Gets or sets the content shown at the right end of the bar above the items, next to the <see cref="Header" />.
+    /// </summary>
+    /// <remarks>
+    /// That bar is shown only while this property or <see cref="Header" /> is not <see langword="null" />.
+    /// </remarks>
     [DependsOn(nameof(ExtraTemplate))]
     public object? Extra
     {
@@ -71,36 +137,79 @@ public partial class Descriptions : TemplatedControl, ISizeTypeAware
         set => SetValue(ExtraProperty, value);
     }
 
+    /// <summary>
+    /// Gets or sets the template that presents <see cref="Extra" />.
+    /// </summary>
+    /// <remarks>
+    /// When it is <see langword="null" />, the data templates of the control are used, and content without a matching
+    /// template is shown as text.
+    /// </remarks>
     public IDataTemplate? ExtraTemplate
     {
         get => GetValue(ExtraTemplateProperty);
         set => SetValue(ExtraTemplateProperty, value);
     }
 
+    /// <summary>
+    /// Gets or sets whether each item places its label to the left of its content or above it.
+    /// </summary>
+    /// <remarks>
+    /// With <see cref="IsBordered" /> set, the horizontal layout turns the items into table cells instead. A change
+    /// rebuilds the visuals of the items once the control is attached to the visual tree.
+    /// </remarks>
     public Orientation Layout
     {
         get => GetValue(LayoutProperty);
         set => SetValue(LayoutProperty, value);
     }
 
+    /// <summary>
+    /// Gets or sets the size that this control passes to the visual of every item.
+    /// The default is <c>SizeType.Large</c>.
+    /// </summary>
+    /// <remarks>
+    /// The size selects the padding of bordered items and cells, and the gap between the rows of items without a
+    /// border.
+    /// </remarks>
     public SizeType SizeType
     {
         get => GetValue(SizeTypeProperty);
         set => SetValue(SizeTypeProperty, value);
     }
 
+    /// <summary>
+    /// Gets or sets the title shown at the left of the bar above the items.
+    /// </summary>
+    /// <remarks>
+    /// That bar is shown only while this property or <see cref="Extra" /> is not <see langword="null" />.
+    /// </remarks>
     public object? Header
     {
         get => GetValue(HeaderProperty);
         set => SetValue(HeaderProperty, value);
     }
 
+    /// <summary>
+    /// Gets or sets the template that presents <see cref="Header" />.
+    /// </summary>
+    /// <remarks>
+    /// When it is <see langword="null" />, the data templates of the control are used, and content without a matching
+    /// template is shown as text.
+    /// </remarks>
     public IDataTemplate? HeaderTemplate
     {
         get => GetValue(HeaderTemplateProperty);
         set => SetValue(HeaderTemplateProperty, value);
     }
 
+    /// <summary>
+    /// Gets or sets a source whose <see cref="DescriptionItem" /> objects are copied into <see cref="Items" />.
+    /// </summary>
+    /// <remarks>
+    /// The source is read once, when this property is set: <see cref="Items" /> is cleared and every
+    /// <see cref="DescriptionItem" /> in the source is added to it. Objects of other types are skipped, later changes
+    /// of the source are not observed, and <see langword="null" /> leaves <see cref="Items" /> unchanged.
+    /// </remarks>
     public IEnumerable? ItemsSource
     {
         get => GetValue(ItemsSourceProperty);
@@ -109,6 +218,17 @@ public partial class Descriptions : TemplatedControl, ISizeTypeAware
 
     private DescriptionItems _items = new();
 
+    /// <summary>
+    /// Gets or sets the entries that this control displays. This is the XAML content property.
+    /// </summary>
+    /// <remarks>
+    /// Assigning another collection replaces the entries; while the control is attached, the previous ones are detached
+    /// and the new ones are attached to it as their resource host. <see langword="null" /> is replaced by an empty
+    /// collection. Adding, removing and resetting entries keeps the visuals of the items in sync; once the control is
+    /// attached and its template is applied, moving or replacing an entry throws a
+    /// <see cref="NotSupportedException" />. The last entry, and every entry whose <c>IsFilled</c> is set, fills the
+    /// rest of its row.
+    /// </remarks>
     [Content]
     public DescriptionItems Items
     {
@@ -174,6 +294,11 @@ public partial class Descriptions : TemplatedControl, ISizeTypeAware
         _items.CollectionChanged += HandleCollectionChanged;
     }
 
+    /// <summary>
+    /// Called when the control is attached to the visual tree. After the base member has run, it starts following the
+    /// media breakpoint of the closest surrounding element that provides one, attaches the entries of
+    /// <see cref="Items" /> to this control as their resource host, and applies the column count of that breakpoint.
+    /// </summary>
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
@@ -182,6 +307,10 @@ public partial class Descriptions : TemplatedControl, ISizeTypeAware
         UpdateGridColumnsForCurrentBreakPoint(true);
     }
 
+    /// <summary>
+    /// Called when the control is detached from the visual tree. After the base member has run, it detaches every entry
+    /// of <see cref="Items" /> and stops following the media breakpoint.
+    /// </summary>
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnDetachedFromVisualTree(e);
@@ -189,6 +318,11 @@ public partial class Descriptions : TemplatedControl, ISizeTypeAware
         DetachMediaOwner();
     }
 
+    /// <summary>
+    /// Called when the control template is applied. After the base member has run, it takes the grid of the template,
+    /// creates the visual of every entry in <see cref="Items" /> for the current <see cref="Layout" /> and
+    /// <see cref="IsBordered" />, and applies the column count of the current breakpoint.
+    /// </summary>
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
@@ -197,6 +331,11 @@ public partial class Descriptions : TemplatedControl, ISizeTypeAware
         UpdateGridColumnsForCurrentBreakPoint(true);
     }
 
+    /// <summary>
+    /// Called when a property of this control changes. After the base member has run, it reacts to changes of
+    /// <see cref="ItemsSource" />, <see cref="IsBordered" />, <see cref="Header" />, <see cref="Extra" /> and
+    /// <see cref="ColumnInfo" />, and to <see cref="Layout" /> while the control is attached to the visual tree.
+    /// </summary>
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
@@ -227,6 +366,23 @@ public partial class Descriptions : TemplatedControl, ISizeTypeAware
         }
     }
 
+    /// <summary>
+    /// Called when <see cref="Items" /> reports a change. It updates the attachments of the entries and, once the
+    /// control is attached and its template is applied, adds, removes or rebuilds the visuals of the items to match
+    /// the collection, then lays the items out again.
+    /// </summary>
+    /// <param name="sender">
+    /// The collection that changed.
+    /// </param>
+    /// <param name="e">
+    /// The change that was reported.
+    /// </param>
+    /// <exception cref="NotSupportedException">
+    /// The change moves or replaces an entry while the control is attached and its template is applied.
+    /// </exception>
+    /// <remarks>
+    /// An override must call the base member to keep the attachments and the item visuals in sync with the collection.
+    /// </remarks>
     protected virtual void HandleCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
         var isAttached       = this.IsAttachedToVisualTree();

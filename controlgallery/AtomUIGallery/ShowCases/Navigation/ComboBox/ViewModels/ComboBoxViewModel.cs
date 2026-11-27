@@ -104,8 +104,9 @@ public class ComboBoxItemData
 {
     public string Text { get; set; } = string.Empty;
 
-    // ComboBox 从候选项推导显示文本时（可编辑输入框的 Text、溢出提示、过滤匹配）会依次尝试
-    // TextSearch.Text、DisplayMemberBinding，最后回落到 object.ToString()。本演示模型不带绑定，
-    // 若不声明文本表示，输入框会显示类型全名而不是候选项文本。
+    // When ComboBox derives the display text of a candidate (the editable text box text, the overflow tip and
+    // the filter match), it tries TextSearch.Text, then DisplayMemberBinding, and finally falls back to
+    // object.ToString(). This demo model has no binding, so without a text representation the text box would
+    // show the type's full name instead of the candidate text.
     public override string ToString() => Text;
 }

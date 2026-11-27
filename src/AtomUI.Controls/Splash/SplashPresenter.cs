@@ -4,8 +4,9 @@ using Avalonia.Rendering.Composition;
 namespace AtomUI.Controls;
 
 /// <summary>
-/// Splash 呈现器：创建并显示 SplashWindow，汇报启动进度，错误态等待用户确认，交接时先隐藏、后关闭。
-/// 全部成员在 UI 线程调用（由 Core 的启动编排保证）。
+/// Creates and shows the <see cref="SplashWindow" /> of the startup splash, forwards startup progress to it,
+/// waits in the error state until the user acknowledges it, and hides it before closing it at handoff. Every
+/// member is called on the UI thread by the startup orchestration in <c>AtomUI.Core</c>.
 /// </summary>
 internal sealed class SplashPresenter : ISplashPresenter
 {
@@ -67,7 +68,8 @@ internal sealed class SplashPresenter : ISplashPresenter
         }
         splash.Status = SplashStatus.Error;
         splash.Message = exception.GetBaseException().Message;
-        // 交接隐藏失败时，错误态必须重新可见、可操作。
+        // The handoff may have hidden the window already when a failure is reported: the error state must
+        // become visible and interactive again.
         if (_window is { } window)
         {
             window.SetCurrentValue(Avalonia.Visual.OpacityProperty, 1d);
@@ -91,7 +93,9 @@ internal sealed class SplashPresenter : ISplashPresenter
         {
             return Task.CompletedTask;
         }
-        // 主窗体首帧已经完成，直接隐藏 Splash，避免透明度合成和主窗体上屏之间形成空档。
+        // The first frame of the main window has been rendered, so the splash is hidden directly, without an
+        // opacity animation. A fade would leave a gap between the splash disappearing and the main window
+        // reaching the screen.
         window.IsHitTestVisible = false;
         window.Topmost = false;
         window.Hide();

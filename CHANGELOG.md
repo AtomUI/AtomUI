@@ -6,6 +6,10 @@ All notable changes to AtomUI are documented in this file.
 
 ## Unreleased
 
+- Breaking Changes
+  - `FlexPanel.Direction` and `DirectionProperty` now use `Avalonia.Controls.FlexDirection`. Replace references to the removed `AtomUI.Controls.FlexDirection` in C# and typed AXAML, then rebuild affected assemblies. AXAML literals such as `Direction="Row"` remain valid.
+  - AtomUI FlexPanel now uses Avalonia's `Flex` attached properties and `FlexAlignItems` for `AlignItems`. Use `Avalonia.Controls.Flex`, `FlexBasis`, `FlexBasisKind` and `FlexAlignItems` in C#. With the default Avalonia AXAML namespace, replace `atom:Flex.*` with `Flex.*`. Rebuild affected assemblies.
+
 ## 6.3.0
 
 `2026-11-24`

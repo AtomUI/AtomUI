@@ -11,11 +11,6 @@
 主要源码文件：
 
 - `src/AtomUI.Controls/FlexPanel/AlignContent.cs`
-- `src/AtomUI.Controls/FlexPanel/AlignItems.cs`
-- `src/AtomUI.Controls/FlexPanel/Flex.cs`
-- `src/AtomUI.Controls/FlexPanel/FlexBasis.cs`
-- `src/AtomUI.Controls/FlexPanel/FlexBasisKind.cs`
-- `src/AtomUI.Controls/FlexPanel/FlexDirection.cs`
 - `src/AtomUI.Controls/FlexPanel/FlexPanel.cs`
 - `src/AtomUI.Controls/FlexPanel/FlexWrap.cs`
 - `src/AtomUI.Controls/FlexPanel/JustifyContent.cs`
@@ -90,6 +85,8 @@ FlexPanel 的交互事件应从输入源收敛到控件级语义事件：
 当前没有抽取到控件专属 public 事件；交互语义主要通过继承事件、命令、属性变化和 Gallery 可观察行为体现。
 
 ## 7. 内部算法与关键流程
+
+面板直接读取 Avalonia `Flex` 的子项配置。`Order`、`Basis`、`Grow` 和 `Shrink` 变化会使父面板重新测量，`AlignSelf` 变化会使父面板重新排列。每个子项的基础长度、最小长度和最终长度通过面板私有的附加属性在测量与排列之间传递。
 
 维护者需要重点关注以下流程：
 

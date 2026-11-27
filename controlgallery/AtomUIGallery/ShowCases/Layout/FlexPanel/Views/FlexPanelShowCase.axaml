@@ -261,10 +261,10 @@
                     <Border x:Name="BasisItem"  Background="#4F7CF5" Height="50" MinWidth="60" CornerRadius="4">
                         <atom:TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#0A0A0A" Text="{gallery:FlexPanelShowCaseLangResource P2TextItemA}" />
                     </Border>
-                    <Border x:Name="BasisGrowItem1" Background="#1F5BFF" Height="50" atom:Flex.Grow="1" CornerRadius="4">
+                    <Border x:Name="BasisGrowItem1" Background="#1F5BFF" Height="50" Flex.Grow="1" CornerRadius="4">
                         <atom:TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="White" Text="{gallery:FlexPanelShowCaseLangResource P2TextGrow}" />
                     </Border>
-                    <Border x:Name="BasisGrowItem2" Background="#4F7CF5" Height="50" atom:Flex.Grow="1" CornerRadius="4">
+                    <Border x:Name="BasisGrowItem2" Background="#4F7CF5" Height="50" Flex.Grow="1" CornerRadius="4">
                         <atom:TextBlock HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="#0A0A0A" Text="{gallery:FlexPanelShowCaseLangResource P2TextGrow}" />
                     </Border>
                 </atom:FlexPanel>
@@ -340,8 +340,8 @@
                         <Border Background="#4F7CF5"
                                 Height="50"
                                 CornerRadius="4"
-                                atom:Flex.Basis="200"
-                                atom:Flex.Shrink="1">
+                                Flex.Basis="200"
+                                Flex.Shrink="1">
                             <atom:TextBlock HorizontalAlignment="Center"
                                             VerticalAlignment="Center"
                                             Foreground="#0A0A0A"
@@ -350,8 +350,8 @@
                         <Border Background="#1F5BFF"
                                 Height="50"
                                 CornerRadius="4"
-                                atom:Flex.Basis="100"
-                                atom:Flex.Shrink="1">
+                                Flex.Basis="100"
+                                Flex.Shrink="1">
                             <atom:TextBlock HorizontalAlignment="Center"
                                             VerticalAlignment="Center"
                                             Foreground="White"
@@ -371,7 +371,7 @@
         <StackPanel Margin="20" Spacing="16">
             <atom:PixelAlignedBorder BorderBrush="{atom:SharedTokenResource ColorBorder}" BorderThickness="1" CornerRadius="8" Padding="16">
                 <atom:FlexPanel Direction="Row" ColumnSpacing="16" AlignItems="Center">
-                    <Border Width="260" Height="160" CornerRadius="6" ClipToBounds="True" atom:Flex.Shrink="0">
+                    <Border Width="260" Height="160" CornerRadius="6" ClipToBounds="True" Flex.Shrink="0">
                         <Image Source="/Assets/CardShowCase/Cover1.png" Stretch="UniformToFill" />
                     </Border>
                     <atom:FlexPanel Direction="Column"
@@ -379,14 +379,14 @@
                                     RowSpacing="12"
                                     AlignItems="FlexStart"
                                     MinWidth="0"
-                                    atom:Flex.Grow="1">
+                                    Flex.Grow="1">
                         <atom:TextBlock FontSize="20"
                                         FontWeight="Bold"
                                         TextWrapping="Wrap"
                                         Text="{gallery:FlexPanelShowCaseLangResource P2TextAtomuiIsAnEnterpriseClassUiDesignLanguage}" />
                         <atom:Button ButtonType="Primary"
                                      Width="120"
-                                     atom:Flex.AlignSelf="FlexEnd" Content="{gallery:FlexPanelShowCaseLangResource P2ContentGetStarted}" />
+                                     Flex.AlignSelf="FlexEnd" Content="{gallery:FlexPanelShowCaseLangResource P2ContentGetStarted}" />
                     </atom:FlexPanel>
                 </atom:FlexPanel>
             </atom:PixelAlignedBorder>
@@ -601,9 +601,9 @@
                                 MinHeight="50"
                                 MinWidth="60"
                                 CornerRadius="4"
-                                atom:Flex.Basis="160"
-                                atom:Flex.Grow="1"
-                                atom:Flex.Shrink="1">
+                                Flex.Basis="160"
+                                Flex.Grow="1"
+                                Flex.Shrink="1">
                             <atom:TextBlock HorizontalAlignment="Center"
                                             VerticalAlignment="Center"
                                             Foreground="#0A0A0A"
@@ -614,9 +614,9 @@
                                 MinHeight="50"
                                 MinWidth="60"
                                 CornerRadius="4"
-                                atom:Flex.Basis="100"
-                                atom:Flex.Grow="1"
-                                atom:Flex.Shrink="1">
+                                Flex.Basis="100"
+                                Flex.Grow="1"
+                                Flex.Shrink="1">
                             <atom:TextBlock HorizontalAlignment="Center"
                                             VerticalAlignment="Center"
                                             Foreground="White"
@@ -627,9 +627,9 @@
                                 MinHeight="50"
                                 MinWidth="60"
                                 CornerRadius="4"
-                                atom:Flex.Basis="80"
-                                atom:Flex.Grow="0"
-                                atom:Flex.Shrink="1">
+                                Flex.Basis="80"
+                                Flex.Grow="0"
+                                Flex.Shrink="1">
                             <atom:TextBlock HorizontalAlignment="Center"
                                             VerticalAlignment="Center"
                                             Foreground="#0A0A0A"

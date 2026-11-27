@@ -6,8 +6,8 @@
 
 | 项 | 值 |
 | --- | --- |
-| NuGet 包 | `AtomUI.Desktop.Controls` |
-| .NET 命名空间 | `AtomUI.Desktop.Controls` |
+| NuGet 包 | `AtomUI.Controls` |
+| .NET 命名空间 | `AtomUI.Controls` |
 | AXAML 命名空间 | `https://atomui.net` |
 | Gallery 页面 | `controlgallery/AtomUIGallery/ShowCases/Layout/FlexPanel` |
 | 控件状态 | Stable |
@@ -39,16 +39,14 @@ FlexPanel 的公共契约由 public/protected 类型成员、Avalonia 属性、�
 
 | 契约组 | 代表成员 | 维护含义 |
 | --- | --- | --- |
-| 内容与数据 | `AlignContent`、`AlignItems`、`JustifyContent` | 定义控件展示内容、输入数据、模板或业务对象入口。 |
+| 对齐 | `AlignContent`、`AlignItems`、`JustifyContent` | 控制行和子项的对齐。`AlignItems` 使用 `Avalonia.Controls.FlexAlignItems`，默认值为 `Stretch`。 |
 | 视觉与布局 | `ColumnSpacing`、`RowSpacing` | 影响尺寸、位置、颜色、形状、密度和模板视觉变量。 |
-| 其他稳定入口 | `Direction`、`Wrap` | 保留为 public surface，变更前需确认 Gallery 和用户 XAML 依赖。 |
+| 主轴与换行 | `Direction`、`Wrap` | `Direction` 使用 `Avalonia.Controls.FlexDirection`，默认值为 `Row`。`Wrap` 使用 `AtomUI.Controls.FlexWrap`。 |
+| 子项配置 | `Flex.AlignSelf`、`Flex.Order`、`Flex.Basis`、`Flex.Grow`、`Flex.Shrink` | 使用 `Avalonia.Controls.Flex` 的附加属性。`Flex.Basis` 使用 Avalonia 的 `FlexBasis` 和 `FlexBasisKind`。 |
 
 当前没有抽取到控件专属 public 事件；交互通知主要来自继承事件、命令或 Gallery 可观察状态。
 
-主要公开类型与枚举：
-
-- 类型：无。
-- 枚举：`AlignContent`、`AlignItems`、`FlexBasisKind`、`FlexDirection`、`FlexWrap`、`JustifyContent`。
+AXAML 中用 AtomUI 命名空间创建面板，用 Avalonia 命名空间设置子项属性。以 Avalonia 为默认命名空间时，写法为 `<atom:FlexPanel><Border Flex.Grow="1" /></atom:FlexPanel>`。
 
 稳定 template part：
 

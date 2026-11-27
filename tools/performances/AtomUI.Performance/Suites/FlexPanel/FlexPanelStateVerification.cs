@@ -1,6 +1,9 @@
 using AtomUI.Controls;
 using Avalonia.Media;
 using Border = Avalonia.Controls.Border;
+using Flex = Avalonia.Controls.Flex;
+using FlexBasis = Avalonia.Controls.FlexBasis;
+using FlexDirection = Avalonia.Controls.FlexDirection;
 
 namespace AtomUI.Performance;
 

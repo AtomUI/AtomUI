@@ -14,11 +14,7 @@ namespace AtomUI.Controls;
 /// </remarks>
 public sealed class FlexPanel : Panel
 {
-    private static readonly Func<Layoutable, int> s_getOrder = x => x is { } y ? Flex.GetOrder(y) : 0;
-    private static readonly Func<Layoutable, bool> s_isVisible = x => x.IsVisible;
-
-    // Tolerance for treating a resolved flex length as unchanged from the item's base length.
-    private const double FlexLengthTolerance = 1e-4;
+    #region 公共属性定义
 
     /// <summary>
     /// Defines the <see cref="Direction" /> property.
@@ -35,8 +31,8 @@ public sealed class FlexPanel : Panel
     /// <summary>
     /// Defines the <see cref="AlignItems" /> property.
     /// </summary>
-    public static readonly StyledProperty<AlignItems> AlignItemsProperty =
-        AvaloniaProperty.Register<FlexPanel, AlignItems>(nameof(AlignItems), AlignItems.Stretch);
+    public static readonly StyledProperty<FlexAlignItems> AlignItemsProperty =
+        AvaloniaProperty.Register<FlexPanel, FlexAlignItems>(nameof(AlignItems), FlexAlignItems.Stretch);
 
     /// <summary>
     /// Defines the <see cref="AlignContent" /> property.
@@ -61,42 +57,6 @@ public sealed class FlexPanel : Panel
     /// </summary>
     public static readonly StyledProperty<double> RowSpacingProperty =
         AvaloniaProperty.Register<FlexPanel, double>(nameof(RowSpacing));
-
-    private FlexLayoutState? _state;
-
-    static FlexPanel()
-    {
-        AffectsMeasure<FlexPanel>(
-            DirectionProperty,
-            JustifyContentProperty,
-            WrapProperty,
-            ColumnSpacingProperty,
-            RowSpacingProperty);
-
-        AffectsArrange<FlexPanel>(
-            AlignItemsProperty,
-            AlignContentProperty);
-
-        // Size properties are listed explicitly: a child measured against its flexed length keeps the same clamped
-        // DesiredSize when they change, so the regular desired-size propagation would not reach this panel.
-        AffectsParentMeasure<FlexPanel>(
-            HorizontalAlignmentProperty,
-            VerticalAlignmentProperty,
-            WidthProperty,
-            HeightProperty,
-            MinWidthProperty,
-            MinHeightProperty,
-            MaxWidthProperty,
-            MaxHeightProperty,
-            MarginProperty,
-            Flex.OrderProperty,
-            Flex.BasisProperty,
-            Flex.ShrinkProperty,
-            Flex.GrowProperty);
-
-        AffectsParentArrange<FlexPanel>(
-            Flex.AlignSelfProperty);
-    }
 
     /// <summary>
     /// Gets or sets the direction of the <see cref="FlexPanel" />'s main-axis,
@@ -131,10 +91,10 @@ public sealed class FlexPanel : Panel
     /// Similar to <see cref="JustifyContent" />, but in the perpendicular direction.
     /// </summary>
     /// <remarks>
-    /// When omitted, it is set to <see cref="AlignItems.Stretch" />.
+    /// When omitted, it is set to <see cref="FlexAlignItems.Stretch" />.
     /// Equivalent to CSS align-items property.
     /// </remarks>
-    public AlignItems AlignItems
+    public FlexAlignItems AlignItems
     {
         get => GetValue(AlignItemsProperty);
         set => SetValue(AlignItemsProperty, value);
@@ -203,6 +163,60 @@ public sealed class FlexPanel : Panel
     {
         get => GetValue(RowSpacingProperty);
         set => SetValue(RowSpacingProperty, value);
+    }
+
+    #endregion
+
+    private static readonly Func<Layoutable, int> s_getOrder = x => x is { } y ? Flex.GetOrder(y) : 0;
+    private static readonly Func<Layoutable, bool> s_isVisible = x => x.IsVisible;
+
+    // Tolerance for treating a resolved flex length as unchanged from the item's base length.
+    private const double FlexLengthTolerance = 1e-4;
+
+    // Per-child lengths computed by this panel during measure and arrange.
+    private static readonly AttachedProperty<double> BaseLengthProperty =
+        AvaloniaProperty.RegisterAttached<Layoutable, double>("BaseLength", typeof(FlexPanel), 0.0);
+
+    private static readonly AttachedProperty<double> MinLengthProperty =
+        AvaloniaProperty.RegisterAttached<Layoutable, double>("MinLength", typeof(FlexPanel), 0.0);
+
+    private static readonly AttachedProperty<double> CurrentLengthProperty =
+        AvaloniaProperty.RegisterAttached<Layoutable, double>("CurrentLength", typeof(FlexPanel), 0.0);
+
+    private FlexLayoutState? _state;
+
+    static FlexPanel()
+    {
+        AffectsMeasure<FlexPanel>(
+            DirectionProperty,
+            JustifyContentProperty,
+            WrapProperty,
+            ColumnSpacingProperty,
+            RowSpacingProperty);
+
+        AffectsArrange<FlexPanel>(
+            AlignItemsProperty,
+            AlignContentProperty);
+
+        // Size properties are listed explicitly: a child measured against its flexed length keeps the same clamped
+        // DesiredSize when they change, so the regular desired-size propagation would not reach this panel.
+        AffectsParentMeasure<FlexPanel>(
+            HorizontalAlignmentProperty,
+            VerticalAlignmentProperty,
+            WidthProperty,
+            HeightProperty,
+            MinWidthProperty,
+            MinHeightProperty,
+            MaxWidthProperty,
+            MaxHeightProperty,
+            MarginProperty,
+            Flex.OrderProperty,
+            Flex.BasisProperty,
+            Flex.ShrinkProperty,
+            Flex.GrowProperty);
+
+        AffectsParentArrange<FlexPanel>(
+            Flex.AlignSelfProperty);
     }
 
     /// <inheritdoc />
@@ -274,11 +288,11 @@ public sealed class FlexPanel : Panel
 
                 foreach (var element in lineItems)
                 {
-                    var length = Flex.GetCurrentLength(element);
+                    var length = element.GetValue(CurrentLengthProperty);
                     // Only remeasure items whose length was actually flexed. Avalonia clamps DesiredSize to the last
                     // measure constraint, so constraining an unflexed item to its own base length would hide later
                     // growth of its content from this panel and leave the cached layout stale.
-                    if (Math.Abs(length - Flex.GetBaseLength(element)) > FlexLengthTolerance)
+                    if (Math.Abs(length - element.GetValue(BaseLengthProperty)) > FlexLengthTolerance)
                     {
                         element.Measure(Uv.ToSize(max.WithU(length), isColumn));
                     }
@@ -359,7 +373,7 @@ public sealed class FlexPanel : Panel
             var itemsCount = lineItems.Length;
             var totalSpacingU = (itemsCount - 1) * spacing.U;
             var lineU = state.UseFinalSizeForRelativeBasis
-                ? lineItems.Sum(item => Flex.GetCurrentLength(item))
+                ? lineItems.Sum(item => item.GetValue(CurrentLengthProperty))
                 : line.U;
             var totalU = lineU + totalSpacingU;
             var freeU = panelSize.U - totalU;
@@ -374,12 +388,12 @@ public sealed class FlexPanel : Panel
             {
                 foreach (var element in lineItems)
                 {
-                    var baseLength = Flex.GetCurrentLength(element);
+                    var baseLength = element.GetValue(CurrentLengthProperty);
                     var autoMargins = GetItemAutoMargins(element, isColumn);
                     if (autoMargins != 0)
                     {
                         var length = Math.Max(0.0, baseLength + remainingFreeU * autoMargins / lineAutoMargins);
-                        Flex.SetCurrentLength(element, length);
+                        element.SetValue(CurrentLengthProperty, length);
                         currentFreeU -= length - baseLength;
                     }
                 }
@@ -390,35 +404,35 @@ public sealed class FlexPanel : Panel
 
             foreach (var element in lineItems)
             {
-                var size = Uv.FromSize(element.DesiredSize, isColumn).WithU(Flex.GetCurrentLength(element));
+                var size = Uv.FromSize(element.DesiredSize, isColumn).WithU(element.GetValue(CurrentLengthProperty));
                 var align = Flex.GetAlignSelf(element) ?? AlignItems;
                 var hasExplicitCrossSize = isColumn
                     ? element.IsSet(Layoutable.WidthProperty)
                     : element.IsSet(Layoutable.HeightProperty);
-                if (align == AlignItems.Stretch && hasExplicitCrossSize)
+                if (align == FlexAlignItems.Stretch && hasExplicitCrossSize)
                 {
-                    align = AlignItems.FlexStart;
+                    align = FlexAlignItems.FlexStart;
                 }
                 if (isWrapReverse)
                 {
                     align = align switch
                     {
-                        AlignItems.FlexStart => AlignItems.FlexEnd,
-                        AlignItems.FlexEnd => AlignItems.FlexStart,
+                        FlexAlignItems.FlexStart => FlexAlignItems.FlexEnd,
+                        FlexAlignItems.FlexEnd => FlexAlignItems.FlexStart,
                         _ => align
                     };
                 }
 
                 var positionV = align switch
                 {
-                    AlignItems.FlexStart => lineStart,
-                    AlignItems.FlexEnd => lineStart + lineV - size.V,
-                    AlignItems.Center => lineStart + (lineV - size.V) / 2,
-                    AlignItems.Stretch => lineStart,
+                    FlexAlignItems.FlexStart => lineStart,
+                    FlexAlignItems.FlexEnd => lineStart + lineV - size.V,
+                    FlexAlignItems.Center => lineStart + (lineV - size.V) / 2,
+                    FlexAlignItems.Stretch => lineStart,
                     _ => throw new InvalidOperationException()
                 };
 
-                size = size.WithV(align == AlignItems.Stretch ? lineV : size.V);
+                size = size.WithV(align == FlexAlignItems.Stretch ? lineV : size.V);
                 var position = new Uv(isReverse ? panelSize.U - size.U - u : u, positionV);
                 element.Arrange(new Rect(Uv.ToPoint(position, isColumn), Uv.ToSize(size, isColumn)));
 
@@ -474,7 +488,7 @@ public sealed class FlexPanel : Panel
         var minLength = hasExplicitMin
             ? Math.Max(0.0, isColumn ? element.MinHeight : element.MinWidth)
             : Math.Max(0.0, useAutoBasisLength ? autoBasisLength : useAutoMeasuredMin ? autoMinLength : size.U);
-        Flex.SetMinLength(element, minLength);
+        element.SetValue(MinLengthProperty, minLength);
 
         var baseLength = basisKind == FlexBasisKind.Auto
             ? useAutoBasisLength ? autoBasisLength : size.U
@@ -496,8 +510,8 @@ public sealed class FlexPanel : Panel
             size = size.WithU(flexLength);
         }
 
-        Flex.SetBaseLength(element, flexLength);
-        Flex.SetCurrentLength(element, flexLength);
+        element.SetValue(BaseLengthProperty, flexLength);
+        element.SetValue(CurrentLengthProperty, flexLength);
         return size;
     }
 
@@ -605,7 +619,7 @@ public sealed class FlexPanel : Panel
     {
         foreach (var element in items)
         {
-            Flex.SetCurrentLength(element, Flex.GetBaseLength(element));
+            element.SetValue(CurrentLengthProperty, element.GetValue(BaseLengthProperty));
         }
 
         if (flexFreeU == 0.0)
@@ -621,7 +635,7 @@ public sealed class FlexPanel : Panel
             var mult = isShrink ? Flex.GetShrink(element) : Flex.GetGrow(element);
             if (mult > 0.0 && isShrink)
             {
-                mult *= Flex.GetBaseLength(element);
+                mult *= element.GetValue(BaseLengthProperty);
             }
 
             if (mult > 0.0)
@@ -651,12 +665,12 @@ public sealed class FlexPanel : Panel
                 for (var i = activeItems.Count - 1; i >= 0; i--)
                 {
                     var (element, mult) = activeItems[i];
-                    var baseLength = Flex.GetBaseLength(element);
+                    var baseLength = element.GetValue(BaseLengthProperty);
                     var target = baseLength + remainingFreeU * mult / totalMult;
                     var minLength = GetItemMinLength(element);
                     if (target < minLength)
                     {
-                        Flex.SetCurrentLength(element, minLength);
+                        element.SetValue(CurrentLengthProperty, minLength);
                         remainingFreeU -= minLength - baseLength;
                         activeItems.RemoveAt(i);
                         clamped = true;
@@ -672,10 +686,10 @@ public sealed class FlexPanel : Panel
             var consumed = 0.0;
             foreach (var (element, mult) in activeItems)
             {
-                var baseLength = Flex.GetBaseLength(element);
+                var baseLength = element.GetValue(BaseLengthProperty);
                 var target = baseLength + remainingFreeU * mult / totalMult;
                 var length = Math.Max(0.0, target);
-                Flex.SetCurrentLength(element, length);
+                element.SetValue(CurrentLengthProperty, length);
                 consumed += length - baseLength;
             }
 
@@ -702,16 +716,16 @@ public sealed class FlexPanel : Panel
             }
 
             var flexConstraint = panelSizeU * basis.Value;
-            var minLength = Flex.GetMinLength(element);
+            var minLength = element.GetValue(MinLengthProperty);
             var flexLength = Math.Max(flexConstraint, minLength);
-            Flex.SetBaseLength(element, flexLength);
-            Flex.SetCurrentLength(element, flexLength);
+            element.SetValue(BaseLengthProperty, flexLength);
+            element.SetValue(CurrentLengthProperty, flexLength);
         }
     }
 
     private static double GetItemMinLength(Layoutable element)
     {
-        var minLength = Flex.GetMinLength(element);
+        var minLength = element.GetValue(MinLengthProperty);
         return Math.Max(0.0, minLength);
     }
 

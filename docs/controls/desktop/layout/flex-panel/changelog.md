@@ -2,6 +2,12 @@
 
 本文档记录 FlexPanel 控件级设计、API、主题契约、Token 和实现结构的变化。它不替代仓库根目录 `CHANGELOG.md`，也不作为正式版本发布说明。
 
+## 2026-11-27
+
+- API
+  - Use `Avalonia.Controls.FlexDirection` for `Direction` and `DirectionProperty`. Update explicit references to `AtomUI.Controls.FlexDirection` and rebuild affected assemblies. AXAML values such as `Direction="Row"` remain valid.
+  - Use `Avalonia.Controls.Flex` for child layout settings. Replace explicit references to AtomUI's `Flex`, `FlexBasis`, `FlexBasisKind` and `AlignItems` with Avalonia's `Flex`, `FlexBasis`, `FlexBasisKind` and `FlexAlignItems`. In AXAML with the default Avalonia namespace, use `Flex.Grow` and other `Flex.*` properties on children of `atom:FlexPanel`.
+
 ## 2026-11-21
 
 - Fix

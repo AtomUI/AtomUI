@@ -10,10 +10,6 @@ using AtomFlexPanel = AtomUI.Controls.FlexPanel;
 using AtomScrollViewer = AtomUI.Desktop.Controls.ScrollViewer;
 using AtomTextBlock = AtomUI.Desktop.Controls.TextBlock;
 using AvaloniaSlider = Avalonia.Controls.Slider;
-using Flex = AtomUI.Controls.Flex;
-using FlexBasis = AtomUI.Controls.FlexBasis;
-using FlexBasisKind = AtomUI.Controls.FlexBasisKind;
-using FlexDirection = AtomUI.Controls.FlexDirection;
 using FlexWrap = AtomUI.Controls.FlexWrap;
 using NumericUpDown = AtomUI.Desktop.Controls.NumericUpDown;
 
@@ -88,8 +84,8 @@ public partial class FlexPanelShowCase : GalleryReactiveUserControl<FlexPanelVie
         {
             basicFlexPanel.Direction  = direction;
             basicFlexPanel.AlignItems = direction == FlexDirection.Column
-                ? AlignItems.FlexStart
-                : AlignItems.Stretch;
+                ? FlexAlignItems.FlexStart
+                : FlexAlignItems.Stretch;
             var grow = direction == FlexDirection.Row ? 1.0 : 0.0;
             Flex.SetGrow(basicItem1, grow);
             Flex.SetGrow(basicItem2, grow);
@@ -127,10 +123,10 @@ public partial class FlexPanelShowCase : GalleryReactiveUserControl<FlexPanelVie
         {
             alignFlexPanel.AlignItems = alignSegmented.SelectedIndex switch
             {
-                0 => AlignItems.FlexStart,
-                1 => AlignItems.Center,
-                2 => AlignItems.FlexEnd,
-                3 => AlignItems.Stretch,
+                0 => FlexAlignItems.FlexStart,
+                1 => FlexAlignItems.Center,
+                2 => FlexAlignItems.FlexEnd,
+                3 => FlexAlignItems.Stretch,
                 _ => alignFlexPanel.AlignItems
             };
         };
@@ -254,11 +250,11 @@ public partial class FlexPanelShowCase : GalleryReactiveUserControl<FlexPanelVie
         {
             var align = alignSelfSegmented.SelectedIndex switch
             {
-                0 => AlignItems.FlexStart,
-                1 => AlignItems.Center,
-                2 => AlignItems.FlexEnd,
-                3 => AlignItems.Stretch,
-                _ => AlignItems.FlexStart
+                0 => FlexAlignItems.FlexStart,
+                1 => FlexAlignItems.Center,
+                2 => FlexAlignItems.FlexEnd,
+                3 => FlexAlignItems.Stretch,
+                _ => FlexAlignItems.FlexStart
             };
             Flex.SetAlignSelf(alignSelfTarget, align);
         }
@@ -566,10 +562,10 @@ public partial class FlexPanelShowCase : GalleryReactiveUserControl<FlexPanelVie
 
             playgroundFlexPanel.AlignItems = playgroundAlignItemsSegmented.SelectedIndex switch
             {
-                0 => AlignItems.FlexStart,
-                1 => AlignItems.Center,
-                2 => AlignItems.FlexEnd,
-                _ => AlignItems.Stretch
+                0 => FlexAlignItems.FlexStart,
+                1 => FlexAlignItems.Center,
+                2 => FlexAlignItems.FlexEnd,
+                _ => FlexAlignItems.Stretch
             };
 
             playgroundFlexPanel.AlignContent = playgroundAlignContentSegmented.SelectedIndex switch
@@ -627,11 +623,11 @@ public partial class FlexPanelShowCase : GalleryReactiveUserControl<FlexPanelVie
             var item = GetPlaygroundItem();
             var align = playgroundAlignSelfSegmented.SelectedIndex switch
             {
-                1 => AlignItems.FlexStart,
-                2 => AlignItems.Center,
-                3 => AlignItems.FlexEnd,
-                4 => AlignItems.Stretch,
-                _ => (AlignItems?)null
+                1 => FlexAlignItems.FlexStart,
+                2 => FlexAlignItems.Center,
+                3 => FlexAlignItems.FlexEnd,
+                4 => FlexAlignItems.Stretch,
+                _ => (FlexAlignItems?)null
             };
             Flex.SetAlignSelf(item, align);
         }
@@ -740,10 +736,10 @@ public partial class FlexPanelShowCase : GalleryReactiveUserControl<FlexPanelVie
             playgroundAlignSelfSegmented.SelectedIndex = Flex.GetAlignSelf(item) switch
             {
                 null => 0,
-                AlignItems.FlexStart => 1,
-                AlignItems.Center    => 2,
-                AlignItems.FlexEnd   => 3,
-                AlignItems.Stretch   => 4,
+                FlexAlignItems.FlexStart => 1,
+                FlexAlignItems.Center    => 2,
+                FlexAlignItems.FlexEnd   => 3,
+                FlexAlignItems.Stretch   => 4,
                 _                    => 0
             };
 

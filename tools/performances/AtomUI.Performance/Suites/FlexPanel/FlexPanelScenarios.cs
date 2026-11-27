@@ -1,6 +1,10 @@
 using AtomUI.Controls;
 using Avalonia.Media;
 using Border = Avalonia.Controls.Border;
+using Flex = Avalonia.Controls.Flex;
+using FlexAlignItems = Avalonia.Controls.FlexAlignItems;
+using FlexBasis = Avalonia.Controls.FlexBasis;
+using FlexDirection = Avalonia.Controls.FlexDirection;
 
 namespace AtomUI.Performance;
 
@@ -25,7 +29,7 @@ internal static partial class Program
             Width         = 720,
             Direction     = FlexDirection.Row,
             ColumnSpacing = 8,
-            AlignItems    = AlignItems.Stretch
+            AlignItems    = FlexAlignItems.Stretch
         };
 
         AddFlexPanelBorders(panel, count, width: 64, height: 36);

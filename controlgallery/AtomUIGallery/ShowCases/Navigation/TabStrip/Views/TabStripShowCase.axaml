@@ -592,7 +592,7 @@
                             </atom:TabStripItemStyle>
                         </Style>
                         <Style Selector="atom|TabStripItem.semantic-style-demo">
-                            <atom:TabStripItemIconStyle x:SetterTargetType="atom:IconPresenter">
+                            <atom:TabStripItemIconStyle x:SetterTargetType="ContentPresenter">
                                 <Setter Property="Margin" Value="0,0,4,0" />
                             </atom:TabStripItemIconStyle>
                             <atom:TabStripItemLabelStyle x:SetterTargetType="ContentPresenter">

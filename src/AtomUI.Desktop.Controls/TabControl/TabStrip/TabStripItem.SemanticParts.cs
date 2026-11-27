@@ -1,4 +1,3 @@
-using AtomUI.Controls;
 using AtomUI.Theme;
 using Avalonia.Controls.Presenters;
 
@@ -12,11 +11,11 @@ namespace AtomUI.Desktop.Controls;
     ContractType = typeof(IconButton),
     Cardinality = SemanticPartCardinality.Single,
     Since = "6.2.0")]
-// The icon in front of the tab label, taken from the tab's Icon. TabStripItemIconStyle applies to it.
+// The icon in front of the tab label, taken from the tab's Icon and IconTemplate. TabStripItemIconStyle applies to it.
 [SemanticPart(
     "icon",
     SelectorClass = "semantic-icon",
-    ContractType = typeof(IconPresenter),
+    ContractType = typeof(ContentPresenter),
     Cardinality = SemanticPartCardinality.Single,
     Since = "6.2.0")]
 // The label of the tab, taken from the tab's Content. TabStripItemLabelStyle applies to it.

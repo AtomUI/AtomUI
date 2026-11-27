@@ -25,7 +25,7 @@ descriptor；它们是基类或 internal 协作类型，不能作为公共 descr
 | `CardTabStrip` | `item` | `.semantic-item` | `TabStripItem` | `Multiple` | `Selector` | `false` | `true` |
 | `TabStripItem` | `root` | owner | `TabStripItem` | `Single` | `Root` | `false` | `false` |
 | `TabStripItem` | `close` | `.semantic-close` | `IconButton` | `Single` | `Selector` | `false` | `false` |
-| `TabStripItem` | `icon` | `.semantic-icon` | `IconPresenter` | `Single` | `Selector` | `false` | `false` |
+| `TabStripItem` | `icon` | `.semantic-icon` | `ContentPresenter` | `Single` | `Selector` | `false` | `false` |
 | `TabStripItem` | `label` | `.semantic-label` | `ContentPresenter` | `Single` | `Selector` | `false` | `false` |
 
 `root` 是各 owner 自身，承载选择、集合、关闭、排序等 public API、主题入口和状态归一，不声明 `.semantic-root` marker。
@@ -166,14 +166,14 @@ descriptor；它们是基类或 internal 协作类型，不能作为公共 descr
 | Part | `icon` |
 | Selector | `.semantic-icon` |
 | SelectorRoute | `/template/ .semantic-icon` |
-| ContractType | `IconPresenter` |
+| ContractType | `ContentPresenter` |
 | Cardinality | `Single` |
 | Customization | `Selector` |
 | CrossVisualRoot | `false` |
 | RuntimeCreated | `false` |
-| AtomUI 节点 | `ItemIconPresenter`（`IconPresenter`） |
+| AtomUI 节点 | `ItemIconPresenter`（`ContentPresenter`） |
 | 职责 | 承载页签图标区域的尺寸、间距与视觉样式。 |
-| 相关 API | `Icon`、`HasIcon`、`IsIconSlotReserved`、`SizeType`、`TabStripPlacement` |
+| 相关 API | `Icon`、`IconTemplate`、`HasIcon`、`IsIconSlotReserved`、`SizeType`、`TabStripPlacement` |
 | 相关 Token | `ItemIconMargin` + SharedToken（`IconSize`、`IconSizeSM`） |
 | 稳定性 | stable since 6.2.0 |
 
@@ -246,7 +246,7 @@ descriptor；它们是基类或 internal 协作类型，不能作为公共 descr
 </Style>
 
 <Style Selector="atom|TabStripItem.semantic-demo">
-    <atom:TabStripItemIconStyle x:SetterTargetType="IconPresenter">
+    <atom:TabStripItemIconStyle x:SetterTargetType="ContentPresenter">
         <Setter Property="Margin" Value="0,0,4,0" />
     </atom:TabStripItemIconStyle>
     <atom:TabStripItemLabelStyle x:SetterTargetType="ContentPresenter">

@@ -16,9 +16,10 @@
                 <!-- Ant Design line tabs outline the tab button (icon and label), not the padded tab. -->
                 <StackPanel Name="ContentLayout" Orientation="Horizontal"
                             TemplatedControl.IsTemplateFocusTarget="True">
-                    <atom:IconPresenter Name="ItemIconPresenter"
-                                        Classes.semantic-icon="True"
-                                        Icon="{TemplateBinding Icon}" />
+                    <ContentPresenter Name="ItemIconPresenter"
+                                      Classes.semantic-icon="True"
+                                      Content="{TemplateBinding Icon}"
+                                      ContentTemplate="{TemplateBinding IconTemplate}" />
                     <ContentPresenter Name="ContentPresenter"
                                       Classes.semantic-label="True"
                                       Content="{TemplateBinding Content}"
@@ -45,20 +46,22 @@
             <Setter Property="IconHeight" Value="{atom:TabStripItemTokenResource IconSizeSM}" />
         </Style>
 
-        <Style Selector="^ /template/ atom|IconPresenter#ItemIconPresenter">
+        <Style Selector="^ /template/ ContentPresenter#ItemIconPresenter">
             <Setter Property="IsVisible" Value="False" />
             <Setter Property="Margin" Value="{atom:TabTokenResourceBinding ItemIconMargin}" />
-            <Setter Property="IconBrush" Value="{TemplateBinding Foreground}" />
+            <Setter Property="Foreground" Value="{TemplateBinding Foreground}" />
+            <Setter Property="HorizontalContentAlignment" Value="Center" />
+            <Setter Property="VerticalContentAlignment" Value="Center" />
         </Style>
 
         <Style Selector="^[HasIcon=True]">
-            <Style Selector="^ /template/ atom|IconPresenter#ItemIconPresenter">
+            <Style Selector="^ /template/ ContentPresenter#ItemIconPresenter">
                 <Setter Property="IsVisible" Value="True" />
             </Style>
         </Style>
 
         <Style Selector="^[IsIconSlotReserved=True]">
-            <Style Selector="^ /template/ atom|IconPresenter#ItemIconPresenter">
+            <Style Selector="^ /template/ ContentPresenter#ItemIconPresenter">
                 <Setter Property="IsVisible" Value="True" />
             </Style>
         </Style>
@@ -81,7 +84,7 @@
 
         <Style Selector="^[SizeType=Large]">
             <Setter Property="FontSize" Value="{atom:TabTokenResourceBinding TitleFontSize}" />
-            <Style Selector="^ /template/ atom|IconPresenter#ItemIconPresenter">
+            <Style Selector="^ /template/ ContentPresenter#ItemIconPresenter">
                 <Setter Property="Width"
                         Value="{atom:TabStripItemTokenResource IconSize}" />
                 <Setter Property="Height"
@@ -91,7 +94,7 @@
 
         <Style Selector="^[SizeType=Middle]">
             <Setter Property="FontSize" Value="{atom:TabTokenResourceBinding TitleFontSize}" />
-            <Style Selector="^ /template/ atom|IconPresenter#ItemIconPresenter">
+            <Style Selector="^ /template/ ContentPresenter#ItemIconPresenter">
                 <Setter Property="Width"
                         Value="{atom:TabStripItemTokenResource IconSize}" />
                 <Setter Property="Height"
@@ -101,7 +104,7 @@
 
         <Style Selector="^[SizeType=Small]">
             <Setter Property="FontSize" Value="{atom:TabTokenResourceBinding TitleFontSize}" />
-            <Style Selector="^ /template/ atom|IconPresenter#ItemIconPresenter">
+            <Style Selector="^ /template/ ContentPresenter#ItemIconPresenter">
                 <Setter Property="Width"
                         Value="{atom:TabStripItemTokenResource IconSizeSM}" />
                 <Setter Property="Height"
@@ -111,26 +114,26 @@
 
         <!-- Top, right, bottom, left -->
         <Style Selector="^[TabStripPlacement=Top]">
-            <Style Selector="^ /template/ atom|IconPresenter#ItemIconPresenter">
+            <Style Selector="^ /template/ ContentPresenter#ItemIconPresenter">
                 <Setter Property="VerticalAlignment" Value="Center" />
             </Style>
         </Style>
 
         <Style Selector="^[TabStripPlacement=Right]">
-            <Style Selector="^ /template/ atom|IconPresenter#ItemIconPresenter">
+            <Style Selector="^ /template/ ContentPresenter#ItemIconPresenter">
                 <Setter Property="HorizontalAlignment" Value="Left" />
                 <Setter Property="VerticalAlignment" Value="Center" />
             </Style>
         </Style>
 
         <Style Selector="^[TabStripPlacement=Bottom]">
-            <Style Selector="^ /template/ atom|IconPresenter#ItemIconPresenter">
+            <Style Selector="^ /template/ ContentPresenter#ItemIconPresenter">
                 <Setter Property="VerticalAlignment" Value="Center" />
             </Style>
         </Style>
 
         <Style Selector="^[TabStripPlacement=Left]">
-            <Style Selector="^ /template/ atom|IconPresenter#ItemIconPresenter">
+            <Style Selector="^ /template/ ContentPresenter#ItemIconPresenter">
                 <Setter Property="HorizontalAlignment" Value="Left" />
                 <Setter Property="VerticalAlignment" Value="Center" />
             </Style>

@@ -23,9 +23,10 @@
                                          Background="{TemplateBinding Background}"
                                          Padding="{TemplateBinding Padding}">
                     <StackPanel Name="ContentLayout" Orientation="Horizontal">
-                        <atom:IconPresenter Name="ItemIconPresenter"
-                                            Classes.semantic-icon="True"
-                                            Icon="{TemplateBinding Icon}" />
+                        <ContentPresenter Name="ItemIconPresenter"
+                                          Classes.semantic-icon="True"
+                                          Content="{TemplateBinding Icon}"
+                                          ContentTemplate="{TemplateBinding IconTemplate}" />
                         <ContentPresenter Name="ContentPresenter"
                                           Classes.semantic-label="True"
                                           Content="{TemplateBinding Content}"
@@ -87,25 +88,25 @@
         <!-- Sets the style of the items presenter panel -->
         <!-- Top, right, bottom, left -->
         <Style Selector="^[TabStripPlacement=Top]">
-            <Style Selector="^ /template/ atom|IconPresenter#ItemIconPresenter">
+            <Style Selector="^ /template/ ContentPresenter#ItemIconPresenter">
                 <Setter Property="VerticalAlignment" Value="Center" />
             </Style>
         </Style>
 
         <Style Selector="^[TabStripPlacement=Right]">
-            <Style Selector="^ /template/ atom|IconPresenter#ItemIconPresenter">
+            <Style Selector="^ /template/ ContentPresenter#ItemIconPresenter">
                 <Setter Property="HorizontalAlignment" Value="Center" />
             </Style>
         </Style>
 
         <Style Selector="^[TabStripPlacement=Bottom]">
-            <Style Selector="^ /template/ atom|IconPresenter#ItemIconPresenter">
+            <Style Selector="^ /template/ ContentPresenter#ItemIconPresenter">
                 <Setter Property="VerticalAlignment" Value="Center" />
             </Style>
         </Style>
 
         <Style Selector="^[TabStripPlacement=Left]">
-            <Style Selector="^ /template/ atom|IconPresenter#ItemIconPresenter">
+            <Style Selector="^ /template/ ContentPresenter#ItemIconPresenter">
                 <Setter Property="HorizontalAlignment" Value="Center" />
             </Style>
         </Style>

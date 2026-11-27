@@ -229,10 +229,15 @@ internal sealed class StartupRun
 
     private async Task PresentAsync(AtomUIBuilder builder)
     {
-        var desktop = (IClassicDesktopStyleApplicationLifetime)_application.ApplicationLifetime!;
         try
         {
             _cancellation.Token.ThrowIfCancellationRequested();
+            if (_application.ApplicationLifetime is not IClassicDesktopStyleApplicationLifetime desktop)
+            {
+                await CloseSplashAsync();
+                _process.CompleteReady();
+                return;
+            }
             Window? mainWindow;
             if (builder.MainWindowFactory is { } factory)
             {

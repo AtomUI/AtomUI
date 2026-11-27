@@ -1,10 +1,13 @@
+using System.Reactive.Disposables;
 using AtomUI.Theme;
 using AtomUI.Animations;
 using AtomUI.Controls;
 using AtomUI.Controls.Utils;
+using AtomUI.Data;
 using AtomUI.Icons.AntDesign;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Presenters;
 using Avalonia.Controls.Primitives;
 using Avalonia.Data;
 using Avalonia.Input;
@@ -16,6 +19,7 @@ using Avalonia.VisualTree;
 namespace AtomUI.Desktop.Controls;
 
 using AvaloniaTabStripItem = Avalonia.Controls.Primitives.TabStripItem;
+using IconControl = AtomUI.Controls.Icon;
 
 /// <summary>
 /// The shape of the tabs of a tab strip or tab control.
@@ -46,12 +50,6 @@ public partial class TabStripItem : AvaloniaTabStripItem
     #region 公共属性定义
 
     /// <summary>
-    /// Identifies the <see cref="Icon" /> property.
-    /// </summary>
-    public static readonly StyledProperty<PathIcon?> IconProperty =
-        AvaloniaProperty.Register<TabStripItem, PathIcon?>(nameof(Icon));
-
-    /// <summary>
     /// Identifies the <see cref="CloseIcon" /> property.
     /// </summary>
     public static readonly StyledProperty<PathIcon?> CloseIconProperty =
@@ -75,18 +73,6 @@ public partial class TabStripItem : AvaloniaTabStripItem
     public static readonly DirectProperty<TabStripItem, Dock?> TabStripPlacementProperty =
         AvaloniaProperty.RegisterDirect<TabStripItem, Dock?>(nameof(TabStripPlacement),
             o => o.TabStripPlacement);
-
-    /// <summary>
-    /// Icon shown in front of the tab label, or <see langword="null" /> to show none. For an item that implements
-    /// <see cref="ITabItemData" />, the strip copies the icon of the item onto the tab unless a value is set on the
-    /// tab. Setting or clearing the icon notifies the owning strip, which then decides whether the tabs without an
-    /// icon keep an empty icon slot.
-    /// </summary>
-    public PathIcon? Icon
-    {
-        get => GetValue(IconProperty);
-        set => SetValue(IconProperty, value);
-    }
 
     /// <summary>
     /// Icon of the close button, shown only while <see cref="IsClosable" /> is <see langword="true" />. While the
@@ -218,6 +204,8 @@ public partial class TabStripItem : AvaloniaTabStripItem
     #endregion
 
     private IconButton? _closeButton;
+    private ContentPresenter? _iconPresenter;
+    private CompositeDisposable? _iconChildBindings;
 
     private void ConfigureHasIcon()
     {
@@ -262,6 +250,61 @@ public partial class TabStripItem : AvaloniaTabStripItem
         _closeButton = null;
     }
 
+    private void ReleaseIconPresenter()
+    {
+        if (_iconPresenter is not null)
+        {
+            _iconPresenter.PropertyChanged -= HandleIconPresenterPropertyChanged;
+            _iconPresenter = null;
+        }
+
+        DisposeIconChildBindings();
+    }
+
+    private void DisposeIconChildBindings()
+    {
+        _iconChildBindings?.Dispose();
+        _iconChildBindings = null;
+    }
+
+    private void HandleIconPresenterPropertyChanged(object? sender, AvaloniaPropertyChangedEventArgs e)
+    {
+        if (e.Property == ContentPresenter.ChildProperty)
+        {
+            ConfigureIconChild();
+        }
+    }
+
+    private void ConfigureIconChild()
+    {
+        DisposeIconChildBindings();
+
+        if (_iconPresenter?.Child is not PathIcon pathIcon)
+        {
+            return;
+        }
+
+        // ControlTheme cannot express these bindings: the icon lives inside ContentPresenter.Child (a dynamic content
+        // subtree outside the /template/ scope, possibly created by IconTemplate), and Template priority is required so
+        // the tab's size and foreground state outrank IconTheme's Style setters while still allowing local overrides.
+        var bindings = new CompositeDisposable(pathIcon is IconControl ? 7 : 3);
+        bindings.Add(BindUtils.RelayBind(_iconPresenter, WidthProperty, pathIcon, WidthProperty, BindingMode.Default, BindingPriority.Template));
+        bindings.Add(BindUtils.RelayBind(_iconPresenter, HeightProperty, pathIcon, HeightProperty, BindingMode.Default, BindingPriority.Template));
+        if (pathIcon is IconControl icon)
+        {
+            bindings.Add(BindUtils.RelayBind(_iconPresenter, ContentPresenter.ForegroundProperty, icon, IconControl.StrokeBrushProperty, BindingMode.Default, BindingPriority.Template));
+            bindings.Add(BindUtils.RelayBind(_iconPresenter, ContentPresenter.ForegroundProperty, icon, IconControl.FillBrushProperty, BindingMode.Default, BindingPriority.Template));
+            bindings.Add(BindUtils.RelayBind(_iconPresenter, ContentPresenter.ForegroundProperty, icon, IconControl.SecondaryStrokeBrushProperty, BindingMode.Default, BindingPriority.Template));
+            bindings.Add(BindUtils.RelayBind(_iconPresenter, ContentPresenter.ForegroundProperty, icon, IconControl.SecondaryFillBrushProperty, BindingMode.Default, BindingPriority.Template));
+            bindings.Add(BindUtils.RelayBind(_iconPresenter, ContentPresenter.ForegroundProperty, icon, IconControl.FallbackBrushProperty, BindingMode.Default, BindingPriority.Template));
+        }
+        else
+        {
+            bindings.Add(BindUtils.RelayBind(_iconPresenter, ContentPresenter.ForegroundProperty, pathIcon, PathIcon.ForegroundProperty, BindingMode.Default, BindingPriority.Template));
+        }
+        _iconChildBindings = bindings;
+    }
+
     private readonly TransitionInitializationSession _transitionInitialization;
 
     public TabStripItem()
@@ -270,12 +313,23 @@ public partial class TabStripItem : AvaloniaTabStripItem
     }
 
     /// <summary>
-    /// Resets the transition initialization session, then calls the base method. An override that does not call the
-    /// base method must still reset the session, so that it is completed again by <see cref="OnLoaded" />, when the
-    /// tab is attached once more.
+    /// Calls the base method, then rebinds any presented <see cref="PathIcon" /> to the icon presenter's size and
+    /// foreground brush. An override that does not call the base method must still rebind the presented icon.
+    /// </summary>
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);
+        ConfigureIconChild();
+    }
+
+    /// <summary>
+    /// Releases the icon child bindings and resets the transition initialization session, then calls the base method.
+    /// An override that does not call the base method must still reset the session, so that it is completed again by
+    /// <see cref="OnLoaded" />, when the tab is attached once more.
     /// </summary>
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
+        DisposeIconChildBindings();
         _transitionInitialization.Reset();
         base.OnDetachedFromVisualTree(e);
     }
@@ -325,9 +379,9 @@ public partial class TabStripItem : AvaloniaTabStripItem
 
     /// <summary>
     /// Applies the default close icon before the template is built, then releases the click handler of the previous
-    /// close button, subscribes the click of the <c>PART_ItemCloseButton</c> of the new template and completes the
-    /// transition initialization. An override that does not call the base method must still complete the
-    /// initialization.
+    /// close button and the bindings of the previous icon presenter, subscribes to <c>PART_ItemCloseButton</c> and
+    /// <c>ItemIconPresenter</c> of the new template, and completes the transition initialization. An override that does
+    /// not call the base method must still complete the initialization.
     /// </summary>
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
@@ -335,12 +389,20 @@ public partial class TabStripItem : AvaloniaTabStripItem
 
         base.OnApplyTemplate(e);
         ReleaseCloseButton();
+        ReleaseIconPresenter();
 
         _closeButton = e.NameScope.Find<IconButton>("PART_ItemCloseButton");
 
         if (_closeButton is not null)
         {
             _closeButton.Click += HandleCloseRequest;
+        }
+
+        _iconPresenter = e.NameScope.Find<ContentPresenter>("ItemIconPresenter");
+        if (_iconPresenter is not null)
+        {
+            _iconPresenter.PropertyChanged += HandleIconPresenterPropertyChanged;
+            ConfigureIconChild();
         }
         _transitionInitialization.CompleteInitialization();
     }

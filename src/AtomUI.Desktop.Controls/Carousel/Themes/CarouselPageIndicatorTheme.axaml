@@ -65,8 +65,8 @@
             <Setter Property="Transitions">
                 <atom:TokenTransitions>
                     <Transitions>
-                        <DoubleTransition Property="Width" atom:TokenTransitions.Duration="MotionDurationMid" />
-                        <DoubleTransition Property="FrameOpacity" atom:TokenTransitions.Duration="MotionDurationMid" />
+                        <DoubleTransition Property="Width" atom:TokenTransitions.Duration="StateTransitionDuration" />
+                        <DoubleTransition Property="FrameOpacity" atom:TokenTransitions.Duration="StateTransitionDuration" />
                     </Transitions>
                 </atom:TokenTransitions>
             </Setter>

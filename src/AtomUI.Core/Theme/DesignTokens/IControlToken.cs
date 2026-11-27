@@ -1,3 +1,4 @@
+using System.ComponentModel;
 using AtomUI.Theme.Schema;
 
 namespace AtomUI.Theme.DesignTokens;
@@ -15,4 +16,10 @@ public interface IControlToken
     /// The token identity of the control this token class belongs to.
     /// </summary>
     static abstract ControlTokenIdentity ControlIdentity { get; }
+
+    /// <summary>
+    /// The schema digest supplied by the generated owner of this token type.
+    /// </summary>
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    static virtual string? TokenSchemaDigest => null;
 }

@@ -185,9 +185,9 @@
             <Setter Property="Transitions">
                 <atom:TokenTransitions>
                     <Transitions>
-                        <atom:SolidColorBrushTransition Property="Background" atom:TokenTransitions.Duration="MotionDurationMid" />
-                        <atom:SolidColorBrushTransition Property="BorderBrush" atom:TokenTransitions.Duration="MotionDurationMid" />
-                        <atom:SolidColorBrushTransition Property="Foreground" atom:TokenTransitions.Duration="MotionDurationMid" />
+                        <atom:SolidColorBrushTransition Property="Background" atom:TokenTransitions.Duration="StateTransitionDuration" />
+                        <atom:SolidColorBrushTransition Property="BorderBrush" atom:TokenTransitions.Duration="StateTransitionDuration" />
+                        <atom:SolidColorBrushTransition Property="Foreground" atom:TokenTransitions.Duration="StateTransitionDuration" />
                     </Transitions>
                 </atom:TokenTransitions>
             </Setter>
@@ -195,7 +195,7 @@
                 <Setter Property="Transitions">
                     <atom:TokenTransitions>
                         <Transitions>
-                            <DoubleTransition Property="Opacity" atom:TokenTransitions.Duration="MotionDurationMid" />
+                            <DoubleTransition Property="Opacity" atom:TokenTransitions.Duration="StateTransitionDuration" />
                         </Transitions>
                     </atom:TokenTransitions>
                 </Setter>

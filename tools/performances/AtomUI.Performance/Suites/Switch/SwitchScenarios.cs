@@ -15,7 +15,7 @@ internal static partial class Program
             new PerfScenario("Switch.Default", _ => new AtomSwitch()),
             new PerfScenario("Switch.Checked", _ => new AtomSwitch { IsChecked = true }),
             new PerfScenario("Switch.Small", _ => new AtomSwitch { SizeType = CustomizableSizeType.Small }),
-            new PerfScenario("Switch.NoWave", _ => new AtomSwitch { IsWaveSpiritEnabled = false }),
+            new PerfScenario("Switch.NoWave", _ => new AtomSwitch { IsInteractionEffectEnabled = false }),
             new PerfScenario("Switch.Text", _ => new AtomSwitch { OnContent = "On", OffContent = "Off", IsChecked = true }),
             new PerfScenario("Switch.Icon", _ => new AtomSwitch { OnContent = new TwitterOutlined(), OffContent = new WechatOutlined() }),
             new PerfScenario("Switch.Loading", _ => new AtomSwitch { IsLoading = true, IsChecked = true }),

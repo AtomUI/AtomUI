@@ -7,6 +7,21 @@ internal static class BridgeProgram
 {
     private static int Main(string[] args)
     {
+        if (args is ["scoped-theme", var inputAssembly, var outputAssembly])
+        {
+            try
+            {
+                ScopedThemeAdapter.Prepare(inputAssembly, outputAssembly);
+                return 0;
+            }
+            catch (Exception error) when (error is IOException or UnauthorizedAccessException or InvalidDataException or
+                                          ArgumentException or BadImageFormatException or InvalidOperationException)
+            {
+                Console.Error.WriteLine("error ATOMUITHEME001: " + error.Message);
+                return 1;
+            }
+        }
+
         try
         {
             if (Environment.Version.Major < 10 || args.Length != 11 || args[0] != "bridge")

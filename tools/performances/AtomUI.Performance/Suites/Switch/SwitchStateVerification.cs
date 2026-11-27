@@ -42,8 +42,8 @@ internal static partial class Program
         var toggleSwitch = new AtomSwitch();
         using var _ = RealizeControl(toggleSwitch);
 
-        Expect(FindVisualByTypeName(toggleSwitch, "WaveSpiritDecorator", "PART_WaveSpirit") != null,
-            "Switch template should realize PART_WaveSpirit.",
+        Expect(FindVisualByTypeName(toggleSwitch, "SwitchTrack", "PART_Track") != null,
+            "Switch template should realize its replaceable track.",
             failures);
         var onPresenter = FindVisualByName<ContentPresenter>(toggleSwitch, "PART_OnContentPresenter");
         Expect(onPresenter != null,
@@ -172,40 +172,21 @@ internal static partial class Program
     private static void VerifySwitchWaveTemplateContract(ICollection<string> failures)
     {
         var toggleSwitch = new AtomSwitch();
-        using var realized = RealizeControl(toggleSwitch);
-
-        var wave = FindVisualByTypeName(toggleSwitch, "WaveSpiritDecorator", "PART_WaveSpirit");
-        Expect(wave != null,
-            "Switch should keep template PART_WaveSpirit in idle state.",
-            failures);
+        using var realized = RealizeFeedbackControl(toggleSwitch);
+        Expect(FindInteractionAdornment(toggleSwitch) is null, "Idle Switch should have no feedback visual.", failures);
 
         toggleSwitch.IsChecked = true;
         RefreshLayout(realized.Window);
-        Expect(ReferenceEquals(wave, FindVisualByTypeName(toggleSwitch, "WaveSpiritDecorator", "PART_WaveSpirit")),
-            "Switch should keep the same PART_WaveSpirit after checked-state change.",
-            failures);
+        Expect(FindInteractionAdornment(toggleSwitch) is null, "Programmatic Switch state changes should not trigger feedback.", failures);
 
-        toggleSwitch.IsWaveSpiritEnabled = false;
-        RefreshLayout(realized.Window);
-        Expect(ReferenceEquals(wave, FindVisualByTypeName(toggleSwitch, "WaveSpiritDecorator", "PART_WaveSpirit")),
-            "Switch should keep template PART_WaveSpirit when wave is disabled.",
-            failures);
+        ClickControl(realized.Window, toggleSwitch, failures, "Switch feedback");
+        var active = FindInteractionAdornment(toggleSwitch);
+        Expect(active is not null, "User activation should attach Switch feedback.", failures);
 
-        toggleSwitch.IsWaveSpiritEnabled = true;
-        toggleSwitch.IsMotionEnabled = false;
-        toggleSwitch.IsChecked = false;
+        toggleSwitch.IsInteractionEffectEnabled = false;
         RefreshLayout(realized.Window);
-        Expect(ReferenceEquals(wave, FindVisualByTypeName(toggleSwitch, "WaveSpiritDecorator", "PART_WaveSpirit")),
-            "Switch should keep template PART_WaveSpirit when motion is disabled.",
-            failures);
-
-        toggleSwitch.IsMotionEnabled = true;
-        toggleSwitch.IsLoading = true;
-        toggleSwitch.IsChecked = true;
-        RefreshLayout(realized.Window);
-        Expect(ReferenceEquals(wave, FindVisualByTypeName(toggleSwitch, "WaveSpiritDecorator", "PART_WaveSpirit")),
-            "Switch should keep template PART_WaveSpirit while loading.",
-            failures);
+        Expect(FindInteractionAdornment(toggleSwitch) is null && active?.GetVisualParent() is null,
+            "Disabling Switch feedback should detach the active decoration.", failures);
     }
 
     private static void VerifySwitchCheckedChangeKeepsMeasureValid(ICollection<string> failures)
@@ -223,6 +204,7 @@ internal static partial class Program
             "Switch should be measure-valid after initial layout.",
             failures);
 
+        toggleSwitch.IsMotionEnabled = false;
         toggleSwitch.IsChecked = true;
         Expect(toggleSwitch.IsMeasureValid,
             "Switch checked-state change should not invalidate measure because switch size is state-independent.",
@@ -235,36 +217,19 @@ internal static partial class Program
             failures);
 
         var knob = FindVisualByTypeName(toggleSwitch, "SwitchKnob", "PART_SwitchKnob");
-        var knobMovingRect = GetNonPublicProperty(toggleSwitch, "AtomUI.Controls.AbstractToggleSwitch", "KnobMovingRect");
-        Expect(knobMovingRect is Rect,
-            "Switch KnobMovingRect should be available after checked-state change.",
-            failures);
-        if (knobMovingRect is Rect rect)
-        {
-            Expect(MathUtils.AreClose(knob?.Bounds.X ?? double.NaN, rect.X),
-                $"Checked Switch knob should arrange to the checked target X {rect.X:0.###}, actual {knob?.Bounds.X:0.###}.",
-                failures);
-        }
+        var position = knob?.TranslatePoint(default, toggleSwitch);
+        Expect(position is { } point && point.X > toggleSwitch.TrackPadding &&
+               point.X + knob!.Bounds.Width <= toggleSwitch.Bounds.Width,
+            "The checked knob should land on the far end of the arranged track.", failures);
     }
 
     private static void VerifySwitchDisabledWaveDoesNotPlay(ICollection<string> failures)
     {
-        var toggleSwitch = new AtomSwitch
-        {
-            IsWaveSpiritEnabled = false
-        };
-        using var realized = RealizeControl(toggleSwitch);
-        var wave = FindVisualByTypeName(toggleSwitch, "WaveSpiritDecorator", "PART_WaveSpirit");
-        Expect(wave != null,
-            "Switch should keep template PART_WaveSpirit when wave is disabled.",
-            failures);
-
-        toggleSwitch.IsChecked = true;
-        RefreshLayout(realized.Window);
-
-        Expect(GetPrivateField(wave!, "AtomUI.Controls.Primitives.WaveSpiritDecorator", "_isPlaying") is false,
-            "Switch should not start WaveSpirit animation when IsWaveSpiritEnabled is false.",
-            failures);
+        var toggleSwitch = new AtomSwitch { IsInteractionEffectEnabled = false };
+        using var realized = RealizeFeedbackControl(toggleSwitch);
+        ClickControl(realized.Window, toggleSwitch, failures, "Switch with disabled feedback");
+        Expect(toggleSwitch.IsChecked == true && FindInteractionAdornment(toggleSwitch) is null,
+            "Disabling feedback should keep the Switch operation and skip its decoration.", failures);
     }
 
     private static void VerifySwitchLoadingLifecycle(ICollection<string> failures)
@@ -279,8 +244,8 @@ internal static partial class Program
         Expect(knob != null,
             "Loading Switch should realize PART_SwitchKnob.",
             failures);
-        Expect(GetPrivateField(knob!, "AtomUI.Controls.SwitchKnob", "_cancellationTokenSource") != null,
-            "Loading SwitchKnob should start a cancellation token source.",
+        Expect(GetPrivateField(knob!, "AtomUI.Controls.SwitchKnob", "_loadingMotionGate") != null,
+            "Loading SwitchKnob should start a loading motion gate.",
             failures);
         Expect(toggleSwitch.Cursor?.ToString() == "Arrow",
             $"Loading Switch should use Arrow cursor, actual {toggleSwitch.Cursor?.ToString() ?? "<null>"}.",
@@ -288,8 +253,8 @@ internal static partial class Program
 
         toggleSwitch.IsLoading = false;
         RefreshLayout(realized.Window);
-        Expect(GetPrivateField(knob!, "AtomUI.Controls.SwitchKnob", "_cancellationTokenSource") == null,
-            "SwitchKnob should dispose its cancellation token source when loading stops.",
+        Expect(GetPrivateField(knob!, "AtomUI.Controls.SwitchKnob", "_loadingMotionGate") == null,
+            "SwitchKnob should dispose its loading motion gate when loading stops.",
             failures);
         Expect(toggleSwitch.Cursor?.ToString() == "Hand",
             $"Non-loading Switch should fall back to Hand cursor, actual {toggleSwitch.Cursor?.ToString() ?? "<null>"}.",
@@ -297,16 +262,16 @@ internal static partial class Program
 
         toggleSwitch.IsLoading = true;
         RefreshLayout(realized.Window);
-        Expect(GetPrivateField(knob!, "AtomUI.Controls.SwitchKnob", "_cancellationTokenSource") != null,
-            "SwitchKnob should recreate its cancellation token source when loading restarts.",
+        Expect(GetPrivateField(knob!, "AtomUI.Controls.SwitchKnob", "_loadingMotionGate") != null,
+            "SwitchKnob should recreate its loading motion gate when loading restarts.",
             failures);
         Expect(toggleSwitch.Cursor?.ToString() == "Arrow",
             $"Restarted loading Switch should use Arrow cursor, actual {toggleSwitch.Cursor?.ToString() ?? "<null>"}.",
             failures);
 
         realized.Dispose();
-        Expect(GetPrivateField(knob!, "AtomUI.Controls.SwitchKnob", "_cancellationTokenSource") == null,
-            "Detached loading SwitchKnob should cancel and clear its cancellation token source.",
+        Expect(GetPrivateField(knob!, "AtomUI.Controls.SwitchKnob", "_loadingMotionGate") == null,
+            "Detached loading SwitchKnob should cancel and clear its loading motion gate.",
             failures);
     }
 
@@ -315,21 +280,16 @@ internal static partial class Program
         var toggleSwitch = new AtomSwitch();
         using var realized = RealizeControl(toggleSwitch);
 
+        toggleSwitch.IsMotionEnabled = false;
         toggleSwitch.IsChecked = true;
         toggleSwitch.IsEnabled = false;
         RefreshLayout(realized.Window);
 
         var knob = FindVisualByTypeName(toggleSwitch, "SwitchKnob", "PART_SwitchKnob");
-        var knobMovingRect = GetNonPublicProperty(toggleSwitch, "AtomUI.Controls.AbstractToggleSwitch", "KnobMovingRect");
-        Expect(knobMovingRect is Rect,
-            "Switch KnobMovingRect should be available after disabling during a state change.",
-            failures);
-        if (knobMovingRect is Rect rect)
-        {
-            Expect(MathUtils.AreClose(knob?.Bounds.X ?? double.NaN, rect.X),
-                $"Disabled Switch knob should arrange to the checked target X {rect.X:0.###}, actual {knob?.Bounds.X:0.###}.",
-                failures);
-        }
+        var position = knob?.TranslatePoint(default, toggleSwitch);
+        Expect(position is { } point && point.X > toggleSwitch.TrackPadding &&
+               point.X + knob!.Bounds.Width <= toggleSwitch.Bounds.Width,
+            "The checked knob should land on the far end of the arranged track.", failures);
     }
 
     private static void VerifySwitchKnobBoxShadowLifecycle(ICollection<string> failures)

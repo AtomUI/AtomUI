@@ -1,4 +1,7 @@
+using AtomUI.Animations;
 using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 
 namespace AtomUI.Controls.Commons;
@@ -10,7 +13,7 @@ using AvaloniaRadioButton = Avalonia.Controls.RadioButton;
 /// lets a form item read and write the checked state.
 /// </summary>
 public abstract class AbstractRadioButton : AvaloniaRadioButton,
-                                            IWaveSpiritAwareControl,
+                                            IInteractionEffectAwareControl,
                                             IFormItemAware
 {
     #region 公共属性定义
@@ -22,10 +25,10 @@ public abstract class AbstractRadioButton : AvaloniaRadioButton,
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<AbstractRadioButton>();
 
     /// <summary>
-    /// Identifies the <see cref="IsWaveSpiritEnabled" /> property.
+    /// Identifies the <see cref="IsInteractionEffectEnabled" /> property.
     /// </summary>
-    public static readonly StyledProperty<bool> IsWaveSpiritEnabledProperty =
-        WaveSpiritAwareControlProperty.IsWaveSpiritEnabledProperty.AddOwner<AbstractRadioButton>();
+    public static readonly StyledProperty<bool> IsInteractionEffectEnabledProperty =
+        InteractionEffectAwareControlProperty.IsInteractionEffectEnabledProperty.AddOwner<AbstractRadioButton>();
     
     /// <summary>
     /// Gets or sets whether changes of the indicator animate: the border brush, the background and the size of the
@@ -38,20 +41,37 @@ public abstract class AbstractRadioButton : AvaloniaRadioButton,
     }
 
     /// <summary>
-    /// Gets or sets whether a click wave expands from the indicator when the radio button becomes checked.
-    /// The theme forwards the value to the indicator and sets it from the <c>EnableWaveSpirit</c> token.
+    /// Gets or sets whether interaction feedback plays from the indicator when the radio button state changes.
+    /// The theme forwards the value to the indicator and sets it from the <c>EnableInteractionEffect</c> token.
     /// </summary>
     /// <remarks>
-    /// The wave plays only while <see cref="IsMotionEnabled" /> is also <see langword="true" /> and the radio button
+    /// Feedback plays only while <see cref="IsMotionEnabled" /> is also <see langword="true" /> and the radio button
     /// is enabled.
     /// </remarks>
-    public bool IsWaveSpiritEnabled
+    public bool IsInteractionEffectEnabled
     {
-        get => GetValue(IsWaveSpiritEnabledProperty);
-        set => SetValue(IsWaveSpiritEnabledProperty, value);
+        get => GetValue(IsInteractionEffectEnabledProperty);
+        set => SetValue(IsInteractionEffectEnabledProperty, value);
     }
 
     #endregion
+
+    private Control? _feedbackSurface;
+
+    static AbstractRadioButton()
+    {
+        ToggleInteractionFeedback.Configure<AbstractRadioButton>(static owner => owner._feedbackSurface ?? owner,
+            static owner => owner.IsChecked == true, quick: true);
+    }
+
+    /// <inheritdoc />
+    protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
+    {
+        ToggleInteractionFeedback.Cancel(this);
+        InteractionEffectHost.CancelFor(_feedbackSurface ?? this);
+        base.OnApplyTemplate(e);
+        _feedbackSurface = e.NameScope.Find<Control>("Indicator");
+    }
     
     /// <summary>
     /// Runs the Avalonia handling and then marks the pointer-pressed event as unhandled again, so that it keeps

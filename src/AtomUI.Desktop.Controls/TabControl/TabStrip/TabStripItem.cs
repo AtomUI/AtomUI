@@ -1,4 +1,5 @@
 using System.Reactive.Disposables;
+using System.Reactive.Linq;
 using AtomUI.Theme;
 using AtomUI.Animations;
 using AtomUI.Controls;
@@ -352,7 +353,7 @@ public partial class TabStripItem : AvaloniaTabStripItem
     protected override void OnAttachedToLogicalTree(LogicalTreeAttachmentEventArgs e)
     {
         base.OnAttachedToLogicalTree(e);
-        SetupShapeThemeBindings(false);
+        UpdateShapeThemeBinding();
         ConfigureHasIcon();
         NotifyIconSlotOwner();
     }
@@ -364,6 +365,8 @@ public partial class TabStripItem : AvaloniaTabStripItem
     /// </summary>
     protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
     {
+        _shapeThemeBinding?.Dispose();
+        _shapeThemeBinding = null;
         base.OnDetachedFromLogicalTree(e);
         // A direct detach (e.Source == this) means the tab strip dropped this item from
         // its logical children. Items that are their own container never receive
@@ -428,7 +431,7 @@ public partial class TabStripItem : AvaloniaTabStripItem
         {
             if (change.Property == ShapeProperty)
             {
-                SetupShapeThemeBindings(true);
+                UpdateShapeThemeBinding();
             }
         }
 
@@ -446,26 +449,18 @@ public partial class TabStripItem : AvaloniaTabStripItem
         }
     }
 
-    private void SetupShapeThemeBindings(bool force)
-    {
-        if (force || Theme == null)
-        {
-            string? resourceKey = null;
-            if (Shape == TabSharp.Line)
-            {
-                resourceKey = "TabStripItemTheme";
-            }
-            else
-            {
-                resourceKey = "CardTabStripItemTheme";
-            }
+    private IDisposable? _shapeThemeBinding;
 
-            // Resolve from the item itself so a theme supplied in a local resource scope wins over the application one.
-            if (this.TryFindResource(resourceKey, out var resource) && resource is ControlTheme theme)
-            {
-                Theme = theme;
-            }
-        }
+    private void UpdateShapeThemeBinding()
+    {
+        _shapeThemeBinding?.Dispose();
+        // A ControlTheme cannot choose its own Theme. Keep this named shape fallback at Style priority,
+        // scoped by Avalonia's resource observable so that an application Theme or binding remains effective.
+        var key = Shape == TabSharp.Line ? "TabStripItemTheme" : "CardTabStripItemTheme";
+        _shapeThemeBinding = this.Bind(ThemeProperty,
+            this.GetResourceObservable(key).Select(static value => value is ControlTheme theme
+                ? new BindingValue<ControlTheme?>(theme)
+                : BindingValue<ControlTheme?>.Unset), BindingPriority.Style);
     }
 
     /// <summary>

@@ -63,7 +63,9 @@ internal static class AliasTokenRules
         token.FocusVisualBorderThickness = new Thickness(token.LineWidthFocus);
         token.ColorFocusBorder           = token.ColorPrimaryBorder;
         token.WaveAnimationRange         = token.LineWidth * 6;
-        token.WaveStartOpacity           = 0.4;
+        token.WaveStartOpacity           = 0.2;
+        token.WaveFadeDuration           = TimeSpan.FromSeconds(2);
+        token.WaveEasing                 = null;
 
         // Control
         token.ControlOutlineWidth = token.LineWidth * 2;

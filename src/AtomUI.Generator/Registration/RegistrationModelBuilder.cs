@@ -79,8 +79,28 @@ internal sealed class RegistrationModelBuilder
 
             ResourceAvailability(input, root);
         }
+        foreach (var (input, root) in _parsed.Values)
+        {
+            input.SemanticThemes = SemanticThemeAssetParser.Parse(root, ResolveTemplateResource);
+        }
         ReadSemanticAssignments(new HashSet<string>(semantics.SelectMany(s => s.Parts)
             .Where(p => p.ThemePropertyName is not null).Select(p => p.ThemePropertyName!), StringComparer.Ordinal));
+    }
+
+    private XElement? ResolveTemplateResource(XElement setter)
+    {
+        var value = setter.Attribute("Value")?.Value.Trim();
+        if (value is null || !value.StartsWith("{StaticResource ", StringComparison.Ordinal))
+        {
+            return null;
+        }
+        var keys = MarkupResourceKeys(value, "StaticResource").ToArray();
+        if (keys.Length != 1)
+        {
+            return null;
+        }
+        var resource = FindResource(setter, NormalizeResourceKey(setter, keys[0])).Element;
+        return resource?.Name.LocalName == "ControlTemplate" ? resource : null;
     }
 
     internal RegistrationPackage Build(List<ControlThemeInfo> tokens, IReadOnlyList<SemanticControlDeclaration> semantics,

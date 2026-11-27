@@ -32,11 +32,7 @@ internal static class PrimeNGToolTipTokens
         token.ToolTipMinHeight = fontSize * 1.5 + padding.Top + padding.Bottom;
         // The map derivation already wrote the neutral 700 to ColorBgSpotlight; reading it lets a theme's explicit value win.
         token.ToolTipBackground   = effectiveGlobal.ColorBgSpotlight;
-        if (effectiveGlobal.EnableMotion && PrimeNGMotion.HasInstantTransitions(context))
-        {
-            // PrimeNG fades the tooltip in over 250ms in every preset (the token default reads MotionDurationFast).
-            token.MotionDuration = PrimeNGMotion.ToolTipFade;
-        }
+        token.MotionDuration = effectiveGlobal.EnableMotion ? PrimeNGMotion.ToolTipFade : TimeSpan.Zero;
         token.ToolTipColor        = recipes.TooltipForeground;
         token.ToolTipCornerRadius = effectiveGlobal.BorderRadius;
         token.ContentPadding      = padding;

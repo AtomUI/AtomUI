@@ -146,7 +146,7 @@ public class ThemeCatalogReloadTests
                          .WithAppearance(ThemeAppearance.Dark)
                          .WithDensity(DesignDensity.Compact)
                          .WithToken(nameof(DesignToken.EnableMotion), "false")
-                         .WithToken(nameof(DesignToken.EnableWaveSpirit), "false")
+                         .WithToken(nameof(DesignToken.EnableInteractionEffect), "false")
                          .Build();
             await manager.ApplyThemeAsync(new ThemeRequest(
                 "Custom",
@@ -162,7 +162,7 @@ public class ThemeCatalogReloadTests
             manager.CurrentTheme.Variant.Density.ShouldBe(DesignDensity.Compact);
             var snapshot = manager.CurrentSnapshot.ShouldNotBeNull();
             snapshot.Global<bool>(nameof(DesignToken.EnableMotion)).ShouldBeFalse();
-            snapshot.Global<bool>(nameof(DesignToken.EnableWaveSpirit)).ShouldBeFalse();
+            snapshot.Global<bool>(nameof(DesignToken.EnableInteractionEffect)).ShouldBeFalse();
             manager.CurrentTheme.Appearance.ShouldBe(ThemeAppearance.Dark);
         });
     }

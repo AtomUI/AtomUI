@@ -1,4 +1,5 @@
 using AtomUI.Theme.Schema;
+using AtomUI.Theme.Definitions.Compiled;
 using Avalonia;
 using Avalonia.Animation.Easings;
 using Avalonia.Media;
@@ -37,6 +38,42 @@ public class ThemeTokenValueParserTests
         ThemeTokenValueParser.Parse<double>("1.5").ShouldBe(1.5);
         ThemeTokenValueParser.Parse<int>("14").ShouldBe(14);
         ThemeTokenValueParser.Parse<TimeSpan>("00:00:00.1000000").ShouldBe(TimeSpan.FromMilliseconds(100));
+    }
+
+    /// <summary>
+    /// Verifies spring easing parsing produces identical parameters in both runtime and compiled theme paths.
+    /// </summary>
+    [Fact]
+    public void Spring_Easing_Uses_The_Same_Parameters_In_The_Runtime_And_Compiler()
+    {
+        const string text = "Spring(1,120,12,0.5)";
+        var curve = ThemeTokenValueParser.Parse<Easing>(text).ShouldBeOfType<SpringEasing>();
+        var literal = BuiltInThemeLiteralCodec.Compile(text).Single(value => value.Kind == "spring");
+        literal.Canonical.ShouldBe(text);
+        literal.Numbers.ShouldBe(new[] { 1d, 120d, 12d, 0.5d });
+        ThemeTokenValueFormatter.Format(curve).ShouldBe(text);
+
+        var reference = new SpringEasing(1, 120, 12, 0.5);
+        foreach (var time in new[] { 0d, 0.25d, 0.5d, 0.75d, 1d })
+        {
+            double.IsFinite(curve.Ease(time)).ShouldBeTrue();
+            curve.Ease(time).ShouldBe(reference.Ease(time), 1e-12);
+        }
+    }
+
+    /// <summary>
+    /// Verifies malformed spring easing expressions are rejected.
+    /// </summary>
+    [Theory]
+    [InlineData("Spring(0,120,12,0.5)")]
+    [InlineData("Spring(1,-1,12,0.5)")]
+    [InlineData("Spring(1,120,-1,0.5)")]
+    [InlineData("Spring(1,120,12,Infinity)")]
+    [InlineData("Spring(1,120,12,0,0)")]
+    public void Spring_Easing_Does_Not_Accept_Invalid_Parameters(string text)
+    {
+        Should.Throw<InvalidOperationException>(() => ThemeTokenValueParser.Parse<Easing>(text));
+        BuiltInThemeLiteralCodec.Compile(text).ShouldNotContain(value => value.Type == typeof(Easing).FullName);
     }
 
     [Fact]

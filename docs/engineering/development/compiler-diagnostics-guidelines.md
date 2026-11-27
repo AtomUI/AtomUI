@@ -80,6 +80,7 @@ dotnet_diagnostic.ATOMUIAOT001.severity = error
 
 | ID | Category | Severity | Trigger | Fix | Owner |
 |---|---|---|---|---|---|
+| `ATOMUITHEME001` | Theme | Error | 应用开启首次装载接入，但 Avalonia 运行时输入或构建工具与支持范围不符 | 核对应用目标框架、包版本及报错中的程序集位置，恢复匹配的包输入 | 基于包的构建接入 |
 | `ATOMUITOKEN001` | Token | Error | 编译主题输入无效、超限，或构建中间产物不能可靠生成 | 修正 XML/输入路径及容量，清理失效输出后重建 | Compiled theme input task |
 | `ATOMUITOKEN002` | Token | Error | 编译主题绑定失败，或设计语言 / 控件取值规则的声明不合法，包括：主题 XML 的 `Language` 不由任何被引用的语言包声明（`Design language '…' is not declared by any referenced language package.`）、未知或重复的 Control、未知 Token、`<LanguageTokens>` 里的名称不是该语言的语言 Token、`Locked` 用在非种子或条件段 / Control 上、条件段里的 Control 固定轴、Token 类型没有静态字面量能力或字面量转换失败、包内重复的主题 `Id`（在 XML 行列，该主题不生成程序）；`[DesignLanguage]` 类不是派生自 `DesignLanguage<TLanguageToken>`、带公开无参构造函数的非抽象非泛型类，`Id` 不返回常量字符串，语言 Token 类型未在同一程序集用 `[LanguageDesignToken]` 声明，`[LanguageDesignToken]` 类不是派生自 `LanguageDesignToken` 的顶层非泛型类；`[ControlTokenRule]` 类不是带公开无参构造函数的非抽象非泛型类、未恰好实现一次 `IControlTokenRule<TLanguageToken, TToken>`、`TToken` 不是绑定了控件的控件 Token，或两个推导类绑定同一对类型（在出错的类型上） | 按带源位置的诊断修正主题定义或声明；主题引用的语言需由本程序集或被引用的语言包声明 | Compiled theme generator / Derivation generators |
 | `ATOMUIREG001` | Registration | Error | 顶层主题导出目标、key 不明确或重复 | 声明可解析的 target 和唯一 Type/string key | Registration generator |
@@ -135,6 +136,7 @@ dotnet_diagnostic.ATOMUIAOT001.severity = error
 | `ATOMUIGEN051` | Generator | Error | 推导在第一次写入自己的某个控件 Token 之前读取了它（`'…' reads token '…' before writing it`，在读取表达式上）；推导里第一次带参数的方法调用之后的读取不检查 | 先写再读；显式值在推导之前冻结，写入后读取得到的就是有效值 | Derivation |
 | `ATOMUIGEN052` | Generator | Error | 取值包在某种语言下为某个控件包的部分 Token 类写了推导，却漏掉该控件包的其他公开终端 Token 类（无位置） | 为诊断指出的 Token 类补上 `[ControlTokenRule]` 推导 | Derivation |
 | `ATOMUIGEN053` | Generator | Error | 包依赖方向错误：控件包引用了语言包或取值包；语言包引用了控件包；自身不声明控件 Token 的取值包里有派生自 `Control` 的类型 | 去掉错误方向的引用；控件放回控件包，取值包只放推导与共享推导辅助方法 | Derivation |
+| `ATOMUIGEN056` | Generator | Error | `[ControlBehaviorContribution]` 的语言类型、控件策略类、构造入口无效，或重复声明同一语言和控件 | 继承控件公开的策略类型，提供公开无参构造，并为每对语言与控件只声明一份 | Registration |
 | `ATOMUIGEN101` | Generator | Warning | Gallery source code display generator 发现参与默认源码匹配的 `ShowCasePanel` 缺少 `Name` | 给 `ShowCasePanel` 设置稳定 `Name`，或使用显式源码 key 规则 | GallerySourceCodeDisplay |
 | `ATOMUILOC001` | Localization | Error | AtomUI 固定语言数据记录的 schema、标识符、BCP 47 标签或元数据无效 | 按数据 schema 修正发生错误的具体记录 | LanguageTags |
 | `ATOMUILOC002` | Localization | Error | AtomUI 固定语言数据包含重复的属性标识符或规范 BCP 47 标签 | 删除重复记录并为每个属性和标签保留唯一映射 | LanguageTags |

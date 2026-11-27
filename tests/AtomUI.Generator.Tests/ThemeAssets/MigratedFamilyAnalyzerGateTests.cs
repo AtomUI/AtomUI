@@ -72,15 +72,6 @@ public class MigratedFamilyAnalyzerGateTests
     ];
 
     /// <summary>
-    /// Single theme assets (relative to the package) of migrated families whose directory holds other families.
-    /// </summary>
-    private static readonly string[] s_familyFiles =
-    [
-        // Identity-less WaveSpirit part; Flyouts is now entirely covered by the family directories.
-        "Primitives/Themes/WaveSpiritDecoratorTheme.axaml"
-    ];
-
-    /// <summary>
     /// Token identities declared in those directories.
     /// </summary>
     private static readonly string[] s_familyControls =
@@ -129,7 +120,6 @@ public class MigratedFamilyAnalyzerGateTests
         s_familyDirectories
             .SelectMany(directory => Directory.EnumerateFiles(
                 Path.Combine(RepositoryRoot, DesktopControls, directory), "*.axaml", SearchOption.AllDirectories))
-            .Concat(s_familyFiles.Select(static file => Path.Combine(RepositoryRoot, DesktopControls, file)))
             .Concat(s_controlsFamilyDirectories.SelectMany(directory => Directory.EnumerateFiles(
                 Path.Combine(RepositoryRoot, Controls, directory), "*.axaml", SearchOption.AllDirectories)))
             // Extras currently has no assets. Discover future additions without inventing an empty theory row.

@@ -11,5 +11,7 @@ internal static partial class AtomUIDiagnosticDescriptors
     internal static readonly DiagnosticDescriptor RegistrationInvalidResourceDependency = CreateRegistrationDiagnostic(AtomUIDiagnosticIds.RegistrationInvalidResourceDependency, "Resource dependency is invalid", "Resource dependency is invalid: {0}");
     internal static readonly DiagnosticDescriptor RegistrationIdentityConflict = CreateRegistrationDiagnostic(AtomUIDiagnosticIds.RegistrationIdentityConflict, "Registration identity conflicts", "Registration identity is conflicting or invalid: {0}");
     internal static readonly DiagnosticDescriptor RegistrationUnsupportedBackend = CreateRegistrationDiagnostic(AtomUIDiagnosticIds.RegistrationUnsupportedBackend, "Registration ABI or platform is unsupported", "Registration ABI or platform is unsupported: {0}");
+    internal static readonly DiagnosticDescriptor InvalidControlBehaviorContribution = CreateRegistrationDiagnostic(
+        AtomUIDiagnosticIds.InvalidControlBehaviorContribution, "Invalid control behavior contribution", "{0}");
     private static DiagnosticDescriptor CreateRegistrationDiagnostic(string id, string title, string message) => new(id, title, message, AtomUIDiagnosticCategories.Registration, DiagnosticSeverity.Error, true, customTags: [WellKnownDiagnosticTags.Telemetry]);
 }

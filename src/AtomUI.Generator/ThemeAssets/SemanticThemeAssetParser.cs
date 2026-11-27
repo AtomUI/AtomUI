@@ -6,7 +6,7 @@ internal static class SemanticThemeAssetParser
 {
     private static readonly XNamespace XamlNamespace = "http://schemas.microsoft.com/winfx/2006/xaml";
 
-    internal static IReadOnlyList<ThemeAssetSemanticThemeInfo> Parse(XElement root)
+    internal static IReadOnlyList<ThemeAssetSemanticThemeInfo> Parse(XElement root, Func<XElement, XElement?> resolveTemplate)
     {
         var themes = new List<ThemeAssetSemanticThemeInfo>();
         var nextTemplateIndex = 0;
@@ -33,6 +33,11 @@ internal static class SemanticThemeAssetParser
                                                       "Style",
                                                       StringComparison.Ordinal));
                 overridesBaseTemplate |= !isConditional;
+                if (resolveTemplate(templateSetter) is { } resourceTemplate)
+                {
+                    templates.Add(new ThemeAssetSemanticTemplateInfo(++nextTemplateIndex, ParseMarkers(resourceTemplate)));
+                    continue;
+                }
                 foreach (var template in templateSetter.Descendants().Where(static element =>
                              string.Equals(
                                  element.Name.LocalName,
@@ -56,7 +61,8 @@ internal static class SemanticThemeAssetParser
                 CreateBasedOnReference(controlTheme),
                 templates,
                 overridesBaseTemplate,
-                controlTheme.Attribute(XamlNamespace + "Class")?.Value));
+                controlTheme.Attribute(XamlNamespace + "Class")?.Value,
+                controlTheme.Attribute(XamlNamespace + "Key")?.Value));
         }
         return themes;
     }

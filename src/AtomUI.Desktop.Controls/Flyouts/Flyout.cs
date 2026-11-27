@@ -5,6 +5,7 @@ using AtomUI.Data;
 using AtomUI.Desktop.Controls.DesignTokens;
 using AtomUI.Generated.AtomUIDesktopControls;
 using AtomUI.Animations;
+using AtomUI.Theme;
 using AtomUI.Theme.Resources;
 using Avalonia;
 using Avalonia.Controls;
@@ -607,7 +608,7 @@ public class Flyout : PopupFlyoutBase, IMotionAwareControl
     /// the popup. Derived flyouts override it to start with another motion; they need not call the base
     /// implementation.
     /// </summary>
-    internal virtual AbstractMotion GetDefaultOpenMotion() => PopupMotionDefaults.Create(PopupMotionDefaults.PopoverOpen);
+    internal virtual AbstractMotion GetDefaultOpenMotion() => PopupMotionDefaults.PopoverOpen;
 
     /// <summary>
     /// Returns the popover close motion. The flyout installs it as the default <see cref="CloseMotion" />, below a
@@ -615,7 +616,10 @@ public class Flyout : PopupFlyoutBase, IMotionAwareControl
     /// the popup. Derived flyouts override it to start with another motion; they need not call the base
     /// implementation.
     /// </summary>
-    internal virtual AbstractMotion GetDefaultCloseMotion() => PopupMotionDefaults.Create(PopupMotionDefaults.PopoverClose);
+    internal virtual AbstractMotion GetDefaultCloseMotion() => PopupMotionDefaults.PopoverClose;
+
+    internal virtual MotionSlot OpenMotionSlot => MotionSlot.PopoverOpen;
+    internal virtual MotionSlot CloseMotionSlot => MotionSlot.PopoverClose;
 
     internal void ReleasePlacementTokenBindings()
     {
@@ -707,6 +711,7 @@ public class Flyout : PopupFlyoutBase, IMotionAwareControl
                 BindingPriority.Template));
             context.ResourcesChanged += HandlePlacementTargetResourcesChanged;
             UpdatePointerOffsetTokenBindings();
+            ConfigureDefaultMotionValues();
         }
         catch
         {
@@ -717,6 +722,11 @@ public class Flyout : PopupFlyoutBase, IMotionAwareControl
 
     private void HandlePlacementTargetResourcesChanged(object? sender, ResourcesChangedEventArgs e)
     {
+        if (sender is StyledElement owner && ThemeScope.ResolveContext(owner) is { } scope &&
+            scope.LastPublish.Previous is { } previous && previous.Variant != scope.Snapshot.Variant)
+        {
+            ConfigureDefaultMotionValues();
+        }
         // PopupFlyoutBase sets the placement target as the popup's logical parent without adding it to LogicalChildren.
         // Resource lookup follows that parent, but the popup needs the placement session to relay change notifications.
         if (_popupControl is { } popup && ReferenceEquals(popup.Parent, sender))
@@ -785,10 +795,15 @@ public class Flyout : PopupFlyoutBase, IMotionAwareControl
         _defaultMotionValues = bindings;
         try
         {
-            bindings.Add(SetValue(OpenMotionProperty, GetDefaultOpenMotion(), BindingPriority.Style)!);
+            var anchor = _resourcePlacementTarget;
+            var opening = anchor is not null && ScopedMotionSelection.TryResolve(anchor, OpenMotionSlot, out var open)
+                ? open : GetDefaultOpenMotion();
+            bindings.Add(SetValue(OpenMotionProperty, opening, BindingPriority.Style)!);
             if (ReferenceEquals(_defaultMotionValues, bindings))
             {
-                bindings.Add(SetValue(CloseMotionProperty, GetDefaultCloseMotion(), BindingPriority.Style)!);
+                var closing = anchor is not null && ScopedMotionSelection.TryResolve(anchor, CloseMotionSlot, out var close)
+                    ? close : GetDefaultCloseMotion();
+                bindings.Add(SetValue(CloseMotionProperty, closing, BindingPriority.Style)!);
             }
         }
         catch

@@ -30,7 +30,7 @@ public sealed class StartupImage
     public StartupImage(uint formatId, ulong stamp, IReadOnlyList<StartupPackageProof> packages,
         IReadOnlyList<string> controlOrder, IEnumerable<KeyValuePair<string, string>>? resourceOwners = null,
         IEnumerable<string>? verifiedLanguages = null, IEnumerable<KeyValuePair<string, string>>? languageModules = null,
-        IReadOnlyList<ControlValuePackage>? controlValuePackages = null)
+        IReadOnlyList<ControlValuePackage?>? controlValuePackages = null)
     {
         if (formatId != StartupImageFormat.Id)
         {
@@ -63,7 +63,7 @@ public sealed class StartupImage
         }
         VerifiedLanguages = (verifiedLanguages ?? []).ToHashSet(StringComparer.Ordinal);
         LanguageModules = languageModules?.ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.Ordinal) ?? new(StringComparer.Ordinal);
-        ControlValuePackages = controlValuePackages?.ToArray() ?? [];
+        ControlValuePackages = controlValuePackages?.OfType<ControlValuePackage>().ToArray() ?? [];
     }
 
     internal ulong Stamp { get; }

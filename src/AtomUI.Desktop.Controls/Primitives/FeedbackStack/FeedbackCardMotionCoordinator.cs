@@ -11,7 +11,7 @@ namespace AtomUI.Desktop.Controls;
 /// <summary>
 /// Owns card entry and close intent; Core Motion owns playback and replacement.
 /// </summary>
-internal sealed class FeedbackCardMotionCoordinator(Action completeClose) : IDisposable
+internal sealed class FeedbackCardMotionCoordinator(Action completeClose, Func<bool, AbstractMotion?> selectMotion) : IDisposable
 {
     private Action? _completeClose = completeClose;
     private Control? _target;
@@ -207,14 +207,30 @@ internal sealed class FeedbackCardMotionCoordinator(Action completeClose) : IDis
         try
         {
             target.UpdateLayout();
-            Task<MotionResult> playback;
+            Task<MotionResult>? playback;
             try
             {
-                playback = new FeedbackCardMotion(entering, _position, _duration).PlayAsync(target);
+                var placement = _position switch
+                {
+                    NotificationPosition.TopCenter => PlacementMode.Top,
+                    NotificationPosition.BottomCenter => PlacementMode.Bottom,
+                    NotificationPosition.TopLeft => PlacementMode.TopEdgeAlignedLeft,
+                    NotificationPosition.BottomLeft => PlacementMode.BottomEdgeAlignedLeft,
+                    NotificationPosition.BottomRight => PlacementMode.BottomEdgeAlignedRight,
+                    _ => PlacementMode.TopEdgeAlignedRight
+                };
+                var geometry = new PlacementMotionContext(placement, false, false, target.FlowDirection,
+                    new Rect(target.Bounds.Size), default, false, 0);
+                playback = ComponentMotionSelection.Play(selectMotion(entering), target, geometry, _duration);
             }
             finally
             {
                 preparation?.Dispose();
+            }
+            if (playback is null)
+            {
+                Complete(entering);
+                return;
             }
             var result = await playback;
             if (!IsCurrent(version, target, entering) ||

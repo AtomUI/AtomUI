@@ -56,15 +56,15 @@
             <Setter Property="SelectedThumbCornerRadius" Value="9999" />
         </Style>
 
-        <Style Selector="^[IsMotionEnabled=True]">
+        <Style Selector="^[IsMotionEnabled=True][IndicatorMotionMode=Slide], ^[IsMotionEnabled=True][IndicatorMotionMode=Stretch]">
             <Setter Property="Transitions">
                 <atom:TokenTransitions>
                     <Transitions>
                         <!-- Matches the antd thumb motion: position and size interpolate together, motionDurationSlow
                         (300ms), motionEaseInOut cubic-bezier(0.645, 0.045, 0.355, 1).
                         -->
-                        <PointTransition Property="SelectedThumbPos" atom:TokenTransitions.Duration="MotionDurationSlow" Easing="0.645,0.045,0.355,1" />
-                        <SizeTransition Property="SelectedThumbSize" atom:TokenTransitions.Duration="MotionDurationSlow" Easing="0.645,0.045,0.355,1" />
+                        <PointTransition Property="SelectedThumbPos" atom:TokenTransitions.Duration="MotionDurationSlow" atom:TokenTransitions.Easing="MotionEaseInOut" />
+                        <SizeTransition Property="SelectedThumbSize" atom:TokenTransitions.Duration="MotionDurationSlow" atom:TokenTransitions.Easing="MotionEaseInOut" />
                     </Transitions>
                 </atom:TokenTransitions>
             </Setter>

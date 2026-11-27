@@ -289,16 +289,16 @@ internal sealed class OverlayDialogPresenter : ContentControl,
             _entryPreparation = null;
             try
             {
-                Task<MotionResult> surfacePlayback;
+                Task<MotionResult>? surfacePlayback;
                 Task<MotionResult>? maskPlayback = null;
                 using var contentCache = !_closeRequested && IsModal && _dialogMask is not null
                     ? _ownerWindow?.AcquireContentCache(this) : null;
                 try
                 {
-                    surfacePlayback = CreateSurfaceMotion(true).PlayAsync(target, cancellation.Token);
+                    surfacePlayback = PlaySurfaceMotion(true, target, cancellation.Token);
                     if (!_closeRequested && IsModal && _dialogMask is { } mask)
                     {
-                        maskPlayback = new FadeInMotion(OpeningMotionDuration).PlayAsync(mask, cancellation.Token);
+                        maskPlayback = PlayMaskMotion(true, mask, cancellation.Token);
                     }
                 }
                 finally
@@ -315,10 +315,9 @@ internal sealed class OverlayDialogPresenter : ContentControl,
                 }
                 if (maskPlayback is not null)
                 {
-                    await Task.WhenAll(surfacePlayback, maskPlayback);
+                    await (surfacePlayback is null ? (Task)maskPlayback : Task.WhenAll(surfacePlayback, maskPlayback));
                 }
-                var result = await surfacePlayback;
-                if (!_closeRequested && result.Outcome == MotionOutcome.NotReady)
+                if (surfacePlayback is not null && (await surfacePlayback).Outcome == MotionOutcome.NotReady && !_closeRequested)
                 {
                     ResetMotionTargets();
                 }
@@ -399,15 +398,21 @@ internal sealed class OverlayDialogPresenter : ContentControl,
         {
             return;
         }
-        var surface = CreateSurfaceMotion(false).PlayAsync(target);
+        var surface = PlaySurfaceMotion(false, target);
         if (IsModal && _dialogMask is { } mask)
         {
             // While the full-window mask fades, composite the cached window content instead of re-rendering it.
             using var contentCache = _ownerWindow?.AcquireContentCache(this);
-            var masking = new FadeOutMotion(MotionDuration).PlayAsync(mask);
-            await Task.WhenAll(surface, masking);
+            if (PlayMaskMotion(false, mask) is { } masking)
+            {
+                await (surface is null ? (Task)masking : Task.WhenAll(surface, masking));
+            }
+            else if (surface is not null)
+            {
+                await surface;
+            }
         }
-        else
+        else if (surface is not null)
         {
             await surface;
         }
@@ -979,12 +984,24 @@ internal sealed class OverlayDialogPresenter : ContentControl,
         return double.IsFinite(value) ? Math.Clamp(value, min, max) : double.NaN;
     }
 
-    private AbstractMotion CreateSurfaceMotion(bool isOpening)
+    private Task<MotionResult>? PlaySurfaceMotion(bool isOpening, Control target, CancellationToken cancellationToken = default)
     {
         var origin = _motionOrigin ?? ResolveMotionOrigin();
-        return isOpening
-            ? new DialogZoomInMotion(origin, OpeningMotionDuration)
-            : new DialogZoomOutMotion(origin, MotionDuration);
+        var property = isOpening ? Dialog.OpenMotionProperty : Dialog.CloseMotionProperty;
+        var slot = isOpening ? MotionSlot.DialogOpen : MotionSlot.DialogClose;
+        var geometry = new PlacementMotionContext(default, false, false, target.FlowDirection,
+            new Rect(target.Bounds.Size), default, false, _surface.CornerRadius.TopLeft,
+            TriggerOrigin: origin.ToPixels(target.Bounds.Size));
+        return ComponentMotionSelection.Play(ComponentMotionSelection.Resolve(_dialog, property, slot, _placementTarget), target, geometry,
+            isOpening ? OpeningMotionDuration : MotionDuration, cancellationToken, _motionOrigin);
+    }
+
+    private Task<MotionResult>? PlayMaskMotion(bool opening, Control target, CancellationToken cancellationToken = default)
+    {
+        var slot = opening ? MotionSlot.OverlayMaskOpen : MotionSlot.OverlayMaskClose;
+        var motion = ComponentMotionSelection.ResolveScoped(_dialog, slot, _placementTarget);
+        return ComponentMotionSelection.Play(motion, target, default, opening ? OpeningMotionDuration : MotionDuration,
+            cancellationToken);
     }
 
     private RelativePoint ResolveMotionOrigin()

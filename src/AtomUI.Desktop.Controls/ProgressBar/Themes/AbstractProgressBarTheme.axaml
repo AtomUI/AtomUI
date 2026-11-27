@@ -36,9 +36,9 @@
             <Setter Property="Transitions">
                 <atom:TokenTransitions>
                     <Transitions>
-                        <DoubleTransition Property="Value" atom:TokenTransitions.Duration="MotionDurationVerySlow" Easing="ExponentialEaseOut" />
-                        <atom:SolidColorBrushTransition Property="StrokeBrush" atom:TokenTransitions.Duration="MotionDurationFast" />
-                        <atom:SolidColorBrushTransition Property="Foreground" atom:TokenTransitions.Duration="MotionDurationFast" />
+                        <DoubleTransition Property="Value" atom:TokenTransitions.Duration="MotionDurationVerySlow" Easing="ExponentialEaseOut" atom:TokenTransitions.Easing="StateTransitionEasingOverride" />
+                        <atom:SolidColorBrushTransition Property="StrokeBrush" atom:TokenTransitions.Duration="StateTransitionDurationFast" />
+                        <atom:SolidColorBrushTransition Property="Foreground" atom:TokenTransitions.Duration="StateTransitionDurationFast" />
                     </Transitions>
                 </atom:TokenTransitions>
             </Setter>

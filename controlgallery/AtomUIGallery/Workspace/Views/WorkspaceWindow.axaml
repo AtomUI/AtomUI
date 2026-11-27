@@ -79,7 +79,7 @@
                                ToggleType="CheckBox"
                                IsChecked="True"
                                Tag="{x:Static workspaceviews:WindowMenuItemKind.Motion}" />
-                <atom:MenuItem Header="{gallery:WorkspaceWindowLangResource MenuItemEnableWaveSpirit}"
+                <atom:MenuItem Header="{gallery:WorkspaceWindowLangResource MenuItemEnableInteractionEffect}"
                                ToggleType="CheckBox"
                                IsChecked="True"
                                Tag="{x:Static workspaceviews:WindowMenuItemKind.WaveSpirit}" />

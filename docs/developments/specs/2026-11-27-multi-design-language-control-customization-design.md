@@ -75,7 +75,7 @@ CheckBox、RadioButton 已分别为标签槽设置居中并开放标签及指示
 | 入口 | 实际观察 | 对设计的影响 |
 | --- | --- | --- |
 | 初次按类型键取主题 | 资源先于控件挂载。同一最小宿主用延迟工厂分别统计默认主题/默认树、语言主题/语言树。只用默认时为 1/1、0/0。框架默认仍挂在公开类型键、根 Style 另选语言时为 **1/0、1/1**。把类型键的延迟入口直接指向已选语言时为 **0/0、1/1**。语言主题显式 BasedOn 默认且覆盖 Template 时为 **1/0、1/1**。 | 单作用域机制实验。必须在取资源前选择来源，还要保住用户资源与多作用域优先级。已有登记与延迟工厂可以用于验证，无需为此新增运行时统计服务。 |
-| 8 个普通 Shadcn 按钮 | 8 个按钮均关闭波浪、均未加载。各自仍有 1 个 WaveSpiritDecorator、1 组已初始化的波浪 Token 观察对象、1 个不可见的 LoadingOutlined。 | 优先迁移交互反馈，关闭时去掉每实例专属观察。加载图标检查是否能只延迟具体字形，同时保留稳定 Semantic Part 及第一次进入加载态的正确呈现。隐藏节点数不能当成运行中的动画数。[波浪订阅](../../../src/AtomUI.Controls/Primitives/WaveSpiritDecorator.cs) · [Button 模板](../../../src/AtomUI.Desktop.Controls/Buttons/Themes/ButtonTheme.axaml) · [现有图标部件契约](../../controls/desktop/general/button/semantic-part.md) |
+| 8 个普通 Shadcn 按钮 | 8 个按钮均关闭波浪、均未加载。各自仍有 1 个 WaveSpiritDecorator、1 组已初始化的波浪 Token 观察对象、1 个不可见的 LoadingOutlined。 | 优先迁移交互反馈，关闭时去掉每实例专属观察。加载图标检查是否能只延迟具体字形，同时保留稳定 Semantic Part 及第一次进入加载态的正确呈现。隐藏节点数不能当成运行中的动画数。[Button 模板](../../../src/AtomUI.Desktop.Controls/Buttons/Themes/ButtonTheme.axaml) · [现有图标部件契约](../../controls/desktop/general/button/semantic-part.md) |
 | ProgressBar 与 Select | 进度值 30、信息区关闭时，ProgressBar 的成功、异常图标均已存在。Select 首次关闭时候选列表为空，首次打开才构造。 | 状态替代内容应先区分必要锚点与具体内容工厂。进度图标还须考虑公开 getter 的兼容性。Select 是保留轻量壳、延迟重内容的现有正例。[进度图标默认值](../../../src/AtomUI.Controls/ProgressBar/AbstractProgressBar.cs) · [Select](../../../src/AtomUI.Desktop.Controls/Select/Select.cs) |
 | 资源查找与作用域 | 复用两项现有定向测试，2/2 通过。无键清单的测试字典在首次命中时只建 1 个；随后查询不存在的键，6 个测试字典全部已构造。空继承作用域复用父快照。 | 生成资产提供完整键索引，不能为了判断 miss 加载无关字典。未知的外部资源提供者依然保留查找机会。用于验证全部资产的显式入口独立于普通启动。[查找实现](../../../src/AtomUI.Core/Theme/Resources/StartupResourceProvider.cs) · [资源工厂对照](../../../tests/AtomUI.Core.Tests/Registration/ControlRegistrationRuntimeTests.cs) |
 | 弹层默认动效 | 源码核对：PopupMotionDefaults 同一个静态类型初始化 14 个预设定义。无配置 owner 的 Flyout 在创建 Popup 时先调用默认开闭定义工厂，再把结果以 Style 优先级写入，显式 null 或自定义值可以遮住该结果。 | 这会产生未被选中的**定义对象**。按槽位解析后再构造，显式 null 仍关闭该方向，ClearValue 后首次需要默认轨迹时再取。静态定义与实际播放、帧订阅分别计数。[预设定义](../../../src/AtomUI.Desktop.Controls/Popup/PopupMotion.cs) · [Flyout 默认配置](../../../src/AtomUI.Desktop.Controls/Flyouts/Flyout.cs) |
@@ -93,7 +93,33 @@ Avalonia 12.2.0（5d9e6d1b），独立 Headless 进程，两个相同类型的�
 | 应用普通 Style 给 Theme 显式赋值 | 1 / 1 / 1 | 0 / 0 / 2 | 最终两个用户视觉树都正确，但两个框架候选已在隐式查找时构造 |
 | 挂载前两个实例都显式指定用户 Theme | 0 / 0 / 1 | 0 / 0 / 2 | 原生已有有效 Theme 时能跳过隐式工厂；该对照不作为框架写 LocalValue 的实现方案 |
 
-这与上一节的单作用域对照共同限定实现位置：键选择须发生在首次取值之前，应用样式仍须胜过框架默认。仅新增局部类型键会破坏资源优先级，仅靠应用基线 Style 又迟于原生隐式查找。实验覆盖当前公开机制的这两种接法，未验证完整产品解析器或修改过的 Avalonia 内核。实现职责与联合门禁见[主规范](../../engineering/development/multi-language-control-contracts.md)。
+这两组原包对照限定了接入位置。键选择须发生在首次取值之前，应用样式仍须胜过框架默认。仅新增局部类型键会破坏资源优先级，仅靠应用基线 Style 又迟于原生隐式查找。
+
+### 4.3 首次装载联合验证
+
+2026-11-27，在 AtomUI `0c95ee2d2` 工作树上，以官方 Avalonia / Avalonia.Headless 12.2.0 做对照。原包 `lib/net10.0/Avalonia.Base.dll` 与 NuGet 归档中的字节一致，SHA-256 为 `007ab726f2bd1f90fb275c90b11f7dc8dda33e0afae382e538f251f30438098d`。该版本在逻辑挂载时先重查隐式主题，然后应用主题和普通 Style。资源提供者收到键和变体，根级提供者拿不到发起查找的控件。[官方 StyledElement 源码](https://github.com/AvaloniaUI/Avalonia/blob/5d9e6d1b0e87337f74f233bead580db186412357/src/Avalonia.Base/StyledElement.cs#L819-L865) · [官方资源遍历](https://github.com/AvaloniaUI/Avalonia/blob/5d9e6d1b0e87337f74f233bead580db186412357/src/Avalonia.Base/Controls/ResourceNodeExtensions.cs)
+
+**对照方法。** 共用一个窗口，外层 Shadcn、内层 AntDesign，两区明暗变体相同。每个场景重新创建资源提供者和计数器，分别在未缓存主题的构造入口与模板的 Build 入口计数。官方原包侧保留公开类型键，使用最低优先的应用 Style 提供作用域主题。候选侧在应用私有的 12.2.0 程序集副本中用 Mono.Cecil 接入托管样式引擎，无需基线 Style。两侧运行同一组输入。表内每格依次为 **主题工厂 / 模板建树**，四元组顺序为 **公开基础、外层语言、内层语言、用户**。用户主题在需要时由场景显式提供。
+
+| 输入 | 官方原包 + 基线 Style | 定向托管适配 |
+| --- | --- | --- |
+| 应用普通 Style 为两个控件指定完整主题 | `1,0,0,1 / 0,0,0,2` | `0,0,0,1 / 0,0,0,2` |
+| 无用户覆盖，同一窗口两个作用域 | `1,1,1,0 / 0,1,1,0` | `0,1,1,0 / 0,1,1,0` |
+| 仅内层控件有用户类型键 | `1,1,0,1 / 0,1,0,1` | `0,1,0,1 / 0,1,0,1` |
+| 外层显式 BasedOn 并继承基础模板，内层选自己的语言 | `1,0,1,0 / 1,0,1,0` | `1,0,1,0 / 1,0,1,0` |
+| 同一 BasedOn，外层改用自己声明的 Template | `1,0,1,0 / 0,0,1,0` | `1,0,1,0 / 0,0,1,0` |
+
+最后一行的派生模板由编译 AXAML 定义，另外断言它的命名 Border 已实际出现；四个候选的模板计数不含这棵派生视觉树。两条 BasedOn 用例均核对基础对象与公开类型键返回的对象为同一实例。应用或局部普通 Style 胜出时，候选侧还断言框架隐式解析调用数为 0。移除应用 Style 或应用类型键后，两控件分别呈现各自语言模板。实例显式主题和应用合并字典的覆盖也分别通过。
+
+**最终原型怎样接入。**
+
+1. 在 `ApplyStyling` 和 `GetEffectiveTheme` 的入口，只对本应用已启用且参与解析的控件，在第一次需要时复用原生样式批次，先附加父模板的样式，再匹配普通 Style。批次结束后读取有效 Theme。利用既有应用标志避免重复匹配；初始化中的控件延至 EndInit 再求隐式值。
+2. 保留非空 Theme 快速返回和 Avalonia 的隐式缓存。只替换冷缓存上的 `TryFindResource` 调用，向解析器传入发起控件；命中用户资源时取其值，轮到已挂载的框架提供者时，才按起点所在作用域取资产。常规资源读取和编译 AXAML 的词法 StaticResource 保持原路径。移除覆盖和作用域变化复用原生隐式主题失效。输入和输出分别是当前来源与获选主题，无需给业务控件设置 LocalValue。
+3. 一版只跳过首次隐式查找的试验在 `Theme=null` 时丢失模板。另一版只提前匹配普通 Style，父模板对子控件指定完整 Theme 时，内层语言工厂仍执行 1 次。最终版把两个来源都纳入结算。实例或普通 Style 显式置 null 时，内层语言主题各为 1 次工厂、1 次建树，切换作用域后更新；父模板给子控件指定完整 Theme 时，框架三方均为 0，用户为 1/1。初始化批次和参与类型在应用关闭此机制时的原生回退也通过。
+
+**验证范围。** JIT 运行了八个共同场景及五个候选边界场景。Release NativeAOT 使用 .NET SDK 10.0.403、运行时 10.0.14 和 `osx-arm64`。官方原包二进制通过九个共同场景，适配二进制通过这九项及五个边界场景。核对了两份 ILC 输入路径并实际运行发布产物。另以真实 AtomUI Window、Button 子类、启用两套语言包的应用和内层 ThemeConfigProvider 在 JIT 重跑八个共同场景，使用可计数的主题资产，并在当前实例上往返切换语言。
+
+**生产边界。** 原型的资源定位针对已知挂载结构；真实语言包的 `ThemeManager.Resources`、第三方提供者的查询顺序及失效订阅生命周期仍需在正式集成时验证。适配落点属于托管样式系统。AtomUI.Native 的窗口钩子无法改变此处的执行顺序。优先采用上游接入；固定版本的应用私有适配还要解决可分发产物的身份、版本校验和 ILC 输入一致性。此次 Headless 工厂计数不测量完整窗口启动耗时。发布候选仍按现有标准比较 Release Gallery 完整 Shell 的 JIT 配对中位差和 AOT 同机交错采样。[主规范](../../engineering/development/multi-language-control-contracts.md#51-在第一次消费时选定实现) · [启动验收线](../../architecture/systems/startup/verification.md#2-验收线)
 
 ## 5. 消除同类问题的方法
 

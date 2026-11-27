@@ -1,3 +1,4 @@
+using AtomUI.Animations;
 using AtomUI.Controls;
 using AtomUI.Generated.AtomUIDesktopControls;
 using AtomUI.Icons.AntDesign;
@@ -60,6 +61,18 @@ public partial class NotificationCard : ContentControl,
     /// </summary>
     public static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<NotificationCard>();
+
+    /// <summary>
+    /// Identifies the <see cref="EnterMotion" /> property.
+    /// </summary>
+    public static readonly StyledProperty<AbstractMotion?> EnterMotionProperty =
+        AvaloniaProperty.Register<NotificationCard, AbstractMotion?>(nameof(EnterMotion));
+
+    /// <summary>
+    /// Identifies the <see cref="LeaveMotion" /> property.
+    /// </summary>
+    public static readonly StyledProperty<AbstractMotion?> LeaveMotionProperty =
+        AvaloniaProperty.Register<NotificationCard, AbstractMotion?>(nameof(LeaveMotion));
     
     /// <summary>
     /// Identifies the <see cref="NotificationClosed" /> routed event.
@@ -225,6 +238,24 @@ public partial class NotificationCard : ContentControl,
         get => GetValue(IsMotionEnabledProperty);
         set => SetValue(IsMotionEnabledProperty, value);
     }
+
+    /// <summary>
+    /// The entry motion. An explicit null disables this direction.
+    /// </summary>
+    public AbstractMotion? EnterMotion
+    {
+        get => GetValue(EnterMotionProperty);
+        set => SetValue(EnterMotionProperty, value);
+    }
+
+    /// <summary>
+    /// The exit motion. An explicit null disables this direction.
+    /// </summary>
+    public AbstractMotion? LeaveMotion
+    {
+        get => GetValue(LeaveMotionProperty);
+        set => SetValue(LeaveMotionProperty, value);
+    }
     
     #endregion
 
@@ -295,7 +326,7 @@ public partial class NotificationCard : ContentControl,
     public NotificationCard(WindowNotificationManager manager)
     {
         _notificationManager = manager;
-        _motionCoordinator = new FeedbackCardMotionCoordinator(CompleteCloseMotion);
+        _motionCoordinator = new FeedbackCardMotionCoordinator(CompleteCloseMotion, SelectMotion);
     }
 
     /// <summary>
@@ -305,7 +336,7 @@ public partial class NotificationCard : ContentControl,
     /// </summary>
     public NotificationCard()
     {
-        _motionCoordinator = new FeedbackCardMotionCoordinator(CompleteCloseMotion);
+        _motionCoordinator = new FeedbackCardMotionCoordinator(CompleteCloseMotion, SelectMotion);
     }
     
     /// <summary>
@@ -443,6 +474,9 @@ public partial class NotificationCard : ContentControl,
         ApplyMotionTarget();
         ConfigureProgressBar();
     }
+
+    private AbstractMotion? SelectMotion(bool entering) => ComponentMotionSelection.Resolve(this,
+        entering ? EnterMotionProperty : LeaveMotionProperty, entering ? MotionSlot.NotificationEnter : MotionSlot.NotificationLeave);
 
     private void ApplyMotionTarget()
     {

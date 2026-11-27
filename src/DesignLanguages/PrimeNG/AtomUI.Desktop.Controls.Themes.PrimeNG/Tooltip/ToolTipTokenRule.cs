@@ -26,7 +26,6 @@ internal sealed class ToolTipTokenRule : IControlTokenRule<PrimeNGToken, ToolTip
         token.ToolTipBackground = global.ColorBgSpotlight;
         token.ToolTipCornerRadius = new CornerRadius(4);
         token.ContentPadding = new Thickness(global.UniformlyPaddingSM, global.UniformlyPaddingSM / 2 + 2);
-        token.MotionDuration = global.MotionDurationFast;
         token.ToolTipShadows = global.BoxShadowsSecondary;
         token.MarginToAnchor       = 4;
         token.ArrowSize            = global.SizePopupArrow;

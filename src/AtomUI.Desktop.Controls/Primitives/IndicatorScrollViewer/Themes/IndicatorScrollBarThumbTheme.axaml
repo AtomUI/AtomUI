@@ -18,8 +18,8 @@
             <Setter Property="Transitions">
                 <atom:TokenTransitions>
                     <Transitions>
-                        <atom:SolidColorBrushTransition Property="Background" Easing="LinearEasing"
-                                                        atom:TokenTransitions.Duration="MotionDurationMid" />
+                        <atom:SolidColorBrushTransition Property="Background" Easing="LinearEasing" atom:TokenTransitions.Easing="StateTransitionEasingOverride"
+                                                        atom:TokenTransitions.Duration="StateTransitionDuration" />
                     </Transitions>
                 </atom:TokenTransitions>
             </Setter>

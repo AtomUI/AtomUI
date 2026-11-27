@@ -1,4 +1,5 @@
 ﻿using Avalonia;
+using Avalonia.Animation.Easings;
 using Avalonia.Media;
 
 namespace AtomUI.Theme.DesignTokens;
@@ -304,6 +305,18 @@ public partial class DesignToken
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Alias)]
     public partial double WaveStartOpacity { get; set; }
+
+    /// <summary>
+    /// Fade duration of the regular wave feedback.
+    /// </summary>
+    [DesignTokenKind(DesignTokenKind.Alias)]
+    public partial TimeSpan WaveFadeDuration { get; set; } = TimeSpan.FromSeconds(2);
+
+    /// <summary>
+    /// Optional curve override for the regular wave feedback.
+    /// </summary>
+    [DesignTokenKind(DesignTokenKind.Alias)]
+    public partial Easing? WaveEasing { get; set; }
 
     // Padding
     /// <summary>

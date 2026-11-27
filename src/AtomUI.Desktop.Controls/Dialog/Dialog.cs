@@ -1,4 +1,5 @@
 using System.ComponentModel;
+using AtomUI.Animations;
 using AtomUI.Controls;
 using AtomUI.Theme;
 using Avalonia;
@@ -176,6 +177,18 @@ public partial class Dialog : TemplatedControl,
     /// </summary>
     public static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<Dialog>();
+
+    /// <summary>
+    /// Identifies the <see cref="OpenMotion" /> property.
+    /// </summary>
+    public static readonly StyledProperty<AbstractMotion?> OpenMotionProperty =
+        AvaloniaProperty.Register<Dialog, AbstractMotion?>(nameof(OpenMotion));
+
+    /// <summary>
+    /// Identifies the <see cref="CloseMotion" /> property.
+    /// </summary>
+    public static readonly StyledProperty<AbstractMotion?> CloseMotionProperty =
+        AvaloniaProperty.Register<Dialog, AbstractMotion?>(nameof(CloseMotion));
 
     /// <summary>
     /// Identifies the <see cref="DialogHostType" /> property.
@@ -522,6 +535,24 @@ public partial class Dialog : TemplatedControl,
     {
         get => GetValue(IsMotionEnabledProperty);
         set => SetValue(IsMotionEnabledProperty, value);
+    }
+
+    /// <summary>
+    /// The opening motion. An explicit null disables this direction.
+    /// </summary>
+    public AbstractMotion? OpenMotion
+    {
+        get => GetValue(OpenMotionProperty);
+        set => SetValue(OpenMotionProperty, value);
+    }
+
+    /// <summary>
+    /// The closing motion. An explicit null disables this direction.
+    /// </summary>
+    public AbstractMotion? CloseMotion
+    {
+        get => GetValue(CloseMotionProperty);
+        set => SetValue(CloseMotionProperty, value);
     }
 
     /// <summary>

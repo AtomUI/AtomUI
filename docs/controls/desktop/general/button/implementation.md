@@ -21,7 +21,9 @@ Button.cs 保留公共属性、事件和接口实现入口；内部 helper 可�
 - `src/AtomUI.Desktop.Controls/GeneratedFiles/.../GeneratedSemanticPartManifest.g.cs`：Button `root/icon/content` 静态 descriptor。
 - `src/AtomUI.Desktop.Controls/Buttons/ButtonToken.cs`：Button 控件 Token 定义与派生。
 - `Button.Properties.cs` 声明按钮自身的内部样式属性。`ButtonStyleValues.cs` 提供 AXAML 引用的固定样式值。
-- `src/AtomUI.Desktop.Controls/Buttons/Themes/ButtonTheme.axaml`：Button 跨平台模板、状态 selector 和主题变量映射。
+- `src/AtomUI.Desktop.Controls/Buttons/Themes/ButtonTheme.axaml` 保存公开类型键的默认主题和模板选择器。默认模板由 `AntButtonTemplateResources.axaml` 供 Button 和表单按钮共用。
+- `src/AtomUI.Desktop.Controls/Buttons/Themes/ButtonAppearanceResources.axaml` 保存共用的尺寸、状态样式及主题变量映射。
+- `src/DesignLanguages/Shadcn/AtomUI.Desktop.Controls.Themes.Shadcn/Buttons/Themes/ShadcnButtonResources.axaml` 保存 Shadcn 的独立模板。
 - `src/AtomUI.Desktop.Controls/Buttons/Themes/DropdownButtonBaseTheme.axaml`、`DropdownButtonTheme.axaml`：DropdownButton 对 Button 图标尺寸和状态语义的跨平台投影。
 - `src/AtomUI.Desktop.Controls/Buttons/Themes/IconButtonTheme.axaml`：IconButton 默认主题叶子。
 - `src/AtomUI.Desktop.Controls/Buttons/Themes/ButtonTheme.cs`：主题资源注册辅助。
@@ -63,7 +65,7 @@ Color? / Variant?
 Normalize semantic state
       ↓
 EffectiveColor / EffectiveVariant / EffectiveIsDanger / EffectiveIsGhost
-EffectiveBorderThickness / EffectiveCornerRadius / WaveSpiritType
+EffectiveBorderThickness / EffectiveCornerRadius
       ↓
 Pseudo-classes + internal StyledProperty theme variables
       ↓
@@ -91,7 +93,11 @@ ControlTheme 只绑定这些变量。
 
 Button 在静态构造中注册属性、伪类和主题关联，在实例构造中完成需要的状态订阅。模板应用时读取稳定 template part，并把状态同步到视觉节点。
 
-共享 Button ControlTheme 的三个 Button ControlTemplate 都为 `PART_ButtonIcon` 与 `PART_LoadingIcon` 添加
+启用首次装载接入后，默认类型键继续提供可供编译 AXAML 的 `BasedOn` 使用的基础对象。普通隐式查找按 Button 所在作用域选择，
+Shadcn 模板直接引用共用外观资源。主题运行时负责隐式选择失效，Button 的快照订阅继续负责交互外观。
+标准默认模板通过主题 Setter 生效，派生主题可以用自己的 Template Setter 替换。虚线变体仍使用状态选择器。
+
+默认与 Shadcn 的 Button ControlTemplate 都为 `PART_ButtonIcon` 与 `PART_LoadingIcon` 添加
 `Classes.semantic-icon="True"`，并为 `PART_ContentPresenter` 添加 `Classes.semantic-content="True"`。这些 marker 是
 静态 AXAML，不在 `OnApplyTemplate` 中查找、补写或同步。该写法属于 AtomUI 模板作者约定；应用仍通过
 Button owner Style 中的 `ButtonIconStyle` 和 `ButtonContentStyle` 消费 Part。
@@ -119,15 +125,11 @@ Button 交互沿 Avalonia Button 基类处理点击、命令、键盘和 enabled
 
 当前变体使用的颜色和阴影资源由同一个 `OwnerTokenSet` 观察。资源变化只更新发生变化的槽位。固定值与预设色继续由变体计算提供。
 
-Wave 播放条件必须同时考虑 `IsWaveSpiritEnabled`、`IsMotionEnabled`、disabled、loading 和 Button 语义状态。释放触发
-Wave 时，Button 读取当时已经合并 Theme、状态 selector、Semantic root Style 和用户 Style 的最终视觉属性，按
-`BorderBrush -> Background` 顺序选择有效实色 Brush。透明、纯白和非实色 Brush 不参与取色；没有有效 Brush 时清除
-本地 `WaveBrush`，由 `WaveSpiritDecorator` 使用主题默认值。用户定制的 root `Background` / `BorderBrush` 属于最终
-视觉属性，同样参与该取色顺序。
+Button 在交给 Avalonia 的输入流程中报告按下和有效激活。`IsInteractionEffectEnabled`、动效开关、禁用及加载状态共同决定是否播放。默认轮廓从有效 `BorderBrush`、`Background` 和当前作用域主色依次取值。独立效果通过 `InteractionEffect.Effect` 提供。
 
-桌面波纹在同一资源观察组读取扩散范围、起始透明度和默认时长。尺寸与淡出共享时长来源，并保留分别设置时长的入口。
+默认模板在静置时没有反馈装饰节点。成功激活时，宿主从当前表面的 AdornerLayer 挂接视觉并管理租约。Ant Design 6.7.0 普通按钮的轮廓扩张与淡出分别为 400 ms 和 2 s，采用 `motionEaseOutCirc`。
 
-Loading 状态影响 loading icon、原 icon 可见性和交互反馈，但不应通过直接禁用控件来模拟。
+`LoadingIndicatorTemplate` 提供加载指示器。默认模板在加载状态进入后才建树，在状态退出时释放视觉。加载状态保留已有命令与禁用语义。
 
 ## 7. 内部算法与关键流程
 

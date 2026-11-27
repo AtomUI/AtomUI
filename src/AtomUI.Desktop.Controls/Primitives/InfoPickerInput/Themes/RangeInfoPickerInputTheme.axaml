@@ -195,9 +195,9 @@
                 <atom:TokenTransitions>
                     <Transitions>
                         <DoubleTransition Property="PickerIndicatorOffsetX"
-                                          atom:TokenTransitions.Duration="MotionDurationMid" />
+                                          atom:TokenTransitions.Duration="StateTransitionDuration" />
                         <DoubleTransition Property="RangePickerIndicatorOpacity"
-                                          atom:TokenTransitions.Duration="MotionDurationMid" />
+                                          atom:TokenTransitions.Duration="StateTransitionDuration" />
                     </Transitions>
                 </atom:TokenTransitions>
             </Setter>

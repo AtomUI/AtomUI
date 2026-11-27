@@ -151,7 +151,7 @@ internal static class PrimeNGPopupConfirmTokens
 {
     internal static void EvaluateGlobal(in TokenEvaluationContext<PrimeNGToken> context, DesignToken controlGlobal)
     {
-        PrimeNGMotion.Restore(context, controlGlobal, mid: PrimeNGMotion.AnchoredOverlay);
+        controlGlobal.MotionDurationMid = PrimeNGMotion.AnchoredOverlay;
         // confirmpopup.icon.size 1.25rem.
         controlGlobal.IconSizeLG = 20;
     }

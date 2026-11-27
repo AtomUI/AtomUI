@@ -7,66 +7,56 @@ using Avalonia.Media;
 namespace AtomUI.Desktop.Controls;
 
 /// <summary>
-/// Prepares a definition using layout values, without retaining a popup.
-/// </summary>
-internal interface IPopupMotion
-{
-    bool RequiresPositionedAnchorForEntry => false;
-
-    AbstractMotion Resolve(PopupMotionGeometry geometry, RelativePoint? retainedOrigin);
-}
-
-/// <summary>
-/// Layout and menu semantics by value; no owner or running presentation is retained.
-/// </summary>
-internal readonly record struct PopupMotionGeometry(
-    PlacementMode Placement,
-    bool HorizontalFlipped,
-    bool VerticalFlipped,
-    FlowDirection FlowDirection,
-    Rect ContentBounds,
-    Rect AnchorBounds,
-    bool HasAlignment,
-    double SurfaceCornerRadius,
-    MenuSemanticLevel? MenuLevel = null,
-    bool IsHorizontalMenu = false);
-
-/// <summary>
 /// Stateless theme defaults. Definitions never retain a popup or owner.
 /// </summary>
 internal static class PopupMotionDefaults
 {
-    public static readonly AbstractMotion SelectOpen = new SlideIn(GetSelectDirection);
-    public static readonly AbstractMotion SelectClose = new SlideOut(GetSelectDirection);
-    public static readonly AbstractMotion DropdownOpen = new SlideIn(GetDirection);
-    public static readonly AbstractMotion DropdownClose = new SlideOut(GetDirection);
-    public static readonly AbstractMotion HorizontalMenuOpen = new SlideIn(GetBottomDirection);
-    public static readonly AbstractMotion HorizontalMenuClose = new SlideOut(GetBottomDirection);
-    public static readonly AbstractMotion MenuOpen = new ZoomIn(GetMenuOrigin);
-    public static readonly AbstractMotion MenuClose = new ZoomOut(GetMenuOrigin);
-    public static readonly AbstractMotion NavMenuOpen = new NavMenuIn();
-    public static readonly AbstractMotion NavMenuClose = new NavMenuOut();
-    public static readonly AbstractMotion PopoverOpen = new ZoomIn(GetPopoverOrigin) { RequiresPositionedAnchorForEntry = true };
-    public static readonly AbstractMotion PopoverClose = new ZoomOut(GetPopoverOrigin);
-    public static readonly AbstractMotion TooltipOpen = new ZoomIn(GetTooltipOrigin) { RequiresPositionedAnchorForEntry = true };
-    public static readonly AbstractMotion TooltipClose = new ZoomOut(GetTooltipOrigin);
+    public static AbstractMotion SelectOpen => new SlideIn(GetSelectDirection);
+    public static AbstractMotion SelectClose => new SlideOut(GetSelectDirection);
+    public static AbstractMotion DropdownOpen => new SlideIn(GetDirection);
+    public static AbstractMotion DropdownClose => new SlideOut(GetDirection);
+    public static AbstractMotion HorizontalMenuOpen => new SlideIn(GetBottomDirection);
+    public static AbstractMotion HorizontalMenuClose => new SlideOut(GetBottomDirection);
+    public static AbstractMotion MenuOpen => new ZoomIn(GetMenuOrigin);
+    public static AbstractMotion MenuClose => new ZoomOut(GetMenuOrigin);
+    public static AbstractMotion NavMenuOpen => new NavMenuIn();
+    public static AbstractMotion NavMenuClose => new NavMenuOut();
+    public static AbstractMotion PopoverOpen => new ZoomIn(GetPopoverOrigin) { RequiresPositionedAnchorForEntry = true };
+    public static AbstractMotion PopoverClose => new ZoomOut(GetPopoverOrigin);
+    public static AbstractMotion TooltipOpen => new ZoomIn(GetTooltipOrigin) { RequiresPositionedAnchorForEntry = true };
+    public static AbstractMotion TooltipClose => new ZoomOut(GetTooltipOrigin);
 
-    // The AXAML-visible members are genuine AbstractMotion values. Setter
-    // materializes their ITemplate implementation for each style instance;
-    // non-visual Flyouts explicitly use the same copy path at Style priority.
-    internal static AbstractMotion Create(AbstractMotion definition) =>
-        (AbstractMotion)((ITemplate)definition).Build()!;
+    internal static AbstractMotion? CreateForSlot(MotionSlot slot) => slot switch
+    {
+        MotionSlot.SelectOpen => SelectOpen,
+        MotionSlot.SelectClose => SelectClose,
+        MotionSlot.DropdownOpen => DropdownOpen,
+        MotionSlot.DropdownClose => DropdownClose,
+        MotionSlot.SubMenuOpen => MenuOpen,
+        MotionSlot.SubMenuClose => MenuClose,
+        MotionSlot.HorizontalMenuOpen => HorizontalMenuOpen,
+        MotionSlot.HorizontalMenuClose => HorizontalMenuClose,
+        MotionSlot.NavigationMenuOpen => NavMenuOpen,
+        MotionSlot.NavigationMenuClose => NavMenuClose,
+        MotionSlot.PopoverOpen => PopoverOpen,
+        MotionSlot.PopoverClose => PopoverClose,
+        MotionSlot.TooltipOpen => TooltipOpen,
+        MotionSlot.TooltipClose => TooltipClose,
+        MotionSlot.InlineExpand => new ExpandMotion(),
+        MotionSlot.InlineCollapse => new CollapseMotion(),
+        _ => DefaultComponentMotions.Create(slot)
+    };
 
-    private static Direction GetSelectDirection(PopupMotionGeometry geometry) =>
+    private static Direction GetSelectDirection(PlacementMotionContext geometry) =>
         GetDirection(geometry) is Direction.Top ? Direction.Top : Direction.Bottom;
 
-    private static Direction GetBottomDirection(PopupMotionGeometry geometry) => Direction.Bottom;
-    private static Point GetPopoverOrigin(PopupMotionGeometry geometry) => GetAlignedOrigin(geometry, geometry.SurfaceCornerRadius);
-    private static Point GetTooltipOrigin(PopupMotionGeometry geometry) => GetAlignedOrigin(geometry, geometry.SurfaceCornerRadius);
+    private static Direction GetBottomDirection(PlacementMotionContext geometry) => Direction.Bottom;
+    private static Point GetPopoverOrigin(PlacementMotionContext geometry) => GetAlignedOrigin(geometry, geometry.SurfaceCornerRadius);
+    private static Point GetTooltipOrigin(PlacementMotionContext geometry) => GetAlignedOrigin(geometry, geometry.SurfaceCornerRadius);
 
-    private static Point GetMenuOrigin(PopupMotionGeometry geometry)
+    private static Point GetMenuOrigin(PlacementMotionContext geometry)
     {
-        if (geometry.MenuLevel == MenuSemanticLevel.None)
+        if (geometry.IsRootMenu)
         {
             return geometry.ContentBounds.TopLeft;
         }
@@ -88,7 +78,7 @@ internal static class PopupMotionDefaults
         return ToSurface(point, geometry.ContentBounds);
     }
 
-    private static Direction GetDirection(PopupMotionGeometry geometry)
+    private static Direction GetDirection(PlacementMotionContext geometry)
     {
         var direction = PopupUtils.IsCanonicalAnchorPlacementMode(geometry.Placement)
             ? PopupUtils.GetDirection(geometry.Placement) : Direction.Bottom;
@@ -112,7 +102,7 @@ internal static class PopupMotionDefaults
         return motion;
     }
 
-    private static Point GetAlignedOrigin(PopupMotionGeometry geometry, double radius)
+    private static Point GetAlignedOrigin(PlacementMotionContext geometry, double radius)
     {
         var bounds = geometry.ContentBounds;
         var point = bounds.Center;
@@ -140,8 +130,10 @@ internal static class PopupMotionDefaults
     {
         result.Origin = source.Origin ?? retainedOrigin ?? result.Origin;
         result.Duration = source.Duration;
+        result.DurationToken = source.DurationToken;
         result.Delay = source.Delay;
         result.Easing = source.Easing;
+        result.EasingToken = source.EasingToken;
         result.FillMode = source.FillMode;
         return result;
     }
@@ -149,56 +141,56 @@ internal static class PopupMotionDefaults
     // These definitions inherit the normal built-in Build behavior. Only Popup
     // invokes their layout preparation capability; no target, observer, task or
     // request state can be retained by a theme definition or its static factory.
-    private sealed class SlideIn(Func<PopupMotionGeometry, Direction> direction) : SlideUpInMotion, IPopupMotion, ITemplate
+    private sealed class SlideIn(Func<PlacementMotionContext, Direction> direction) : SlideUpInMotion, IPlacementAwareMotion, ITemplate
     {
         object ITemplate.Build() => Configure(this, new SlideIn(direction), null);
 
-        public AbstractMotion Resolve(PopupMotionGeometry geometry, RelativePoint? retainedOrigin) =>
+        public AbstractMotion Resolve(PlacementMotionContext geometry, RelativePoint? retainedOrigin) =>
             Configure(this, CreateSlide(direction(geometry), true, geometry.ContentBounds), retainedOrigin);
     }
 
-    private sealed class SlideOut(Func<PopupMotionGeometry, Direction> direction) : SlideUpOutMotion, IPopupMotion, ITemplate
+    private sealed class SlideOut(Func<PlacementMotionContext, Direction> direction) : SlideUpOutMotion, IPlacementAwareMotion, ITemplate
     {
         object ITemplate.Build() => Configure(this, new SlideOut(direction), null);
 
-        public AbstractMotion Resolve(PopupMotionGeometry geometry, RelativePoint? retainedOrigin) =>
+        public AbstractMotion Resolve(PlacementMotionContext geometry, RelativePoint? retainedOrigin) =>
             Configure(this, CreateSlide(direction(geometry), false, geometry.ContentBounds), retainedOrigin);
     }
 
-    private sealed class ZoomIn(Func<PopupMotionGeometry, Point> origin) : ZoomBigInMotion, IPopupMotion, ITemplate
+    private sealed class ZoomIn(Func<PlacementMotionContext, Point> origin) : ZoomBigInMotion, IPlacementAwareMotion, ITemplate
     {
         public bool RequiresPositionedAnchorForEntry { get; init; }
 
         object ITemplate.Build() => Configure(this,
             new ZoomIn(origin) { RequiresPositionedAnchorForEntry = RequiresPositionedAnchorForEntry }, null);
 
-        public AbstractMotion Resolve(PopupMotionGeometry geometry, RelativePoint? retainedOrigin) =>
+        public AbstractMotion Resolve(PlacementMotionContext geometry, RelativePoint? retainedOrigin) =>
             Configure(this, new ZoomBigInMotion { Origin = new RelativePoint(origin(geometry), RelativeUnit.Absolute) }, retainedOrigin);
     }
 
-    private sealed class ZoomOut(Func<PopupMotionGeometry, Point> origin) : ZoomBigOutMotion, IPopupMotion, ITemplate
+    private sealed class ZoomOut(Func<PlacementMotionContext, Point> origin) : ZoomBigOutMotion, IPlacementAwareMotion, ITemplate
     {
         object ITemplate.Build() => Configure(this, new ZoomOut(origin), null);
 
-        public AbstractMotion Resolve(PopupMotionGeometry geometry, RelativePoint? retainedOrigin) =>
+        public AbstractMotion Resolve(PlacementMotionContext geometry, RelativePoint? retainedOrigin) =>
             Configure(this, new ZoomBigOutMotion { Origin = new RelativePoint(origin(geometry), RelativeUnit.Absolute) }, retainedOrigin);
     }
 
-    private sealed class NavMenuIn : SlideUpInMotion, IPopupMotion, ITemplate
+    private sealed class NavMenuIn : SlideUpInMotion, IPlacementAwareMotion, ITemplate
     {
         object ITemplate.Build() => Configure(this, new NavMenuIn(), null);
 
-        public AbstractMotion Resolve(PopupMotionGeometry geometry, RelativePoint? retainedOrigin) =>
+        public AbstractMotion Resolve(PlacementMotionContext geometry, RelativePoint? retainedOrigin) =>
             Configure(this, geometry.IsHorizontalMenu
                 ? CreateSlide(Direction.Bottom, true, geometry.ContentBounds)
                 : new ZoomBigInMotion { Origin = new RelativePoint(GetMenuOrigin(geometry), RelativeUnit.Absolute) }, retainedOrigin);
     }
 
-    private sealed class NavMenuOut : SlideUpOutMotion, IPopupMotion, ITemplate
+    private sealed class NavMenuOut : SlideUpOutMotion, IPlacementAwareMotion, ITemplate
     {
         object ITemplate.Build() => Configure(this, new NavMenuOut(), null);
 
-        public AbstractMotion Resolve(PopupMotionGeometry geometry, RelativePoint? retainedOrigin) =>
+        public AbstractMotion Resolve(PlacementMotionContext geometry, RelativePoint? retainedOrigin) =>
             Configure(this, geometry.IsHorizontalMenu
                 ? CreateSlide(Direction.Bottom, false, geometry.ContentBounds)
                 : new ZoomBigOutMotion { Origin = new RelativePoint(GetMenuOrigin(geometry), RelativeUnit.Absolute) }, retainedOrigin);

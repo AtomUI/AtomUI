@@ -53,7 +53,7 @@ Public API / ItemsSource / Command / Event
 源码中的状态入口按以下语义维护：
 
 - 内容与数据：`Content`、`Icon`。
-- 交互与状态：`IsArrowVisible`、`IsDanger`、`IsMotionEnabled`、`IsPointAtCenter`、`IsPrimaryButtonType`、`IsWaveSpiritEnabled`、`ShouldUseOverlayPopup`。
+- 交互与状态：`IsArrowVisible`、`IsDanger`、`IsMotionEnabled`、`IsPointAtCenter`、`IsPrimaryButtonType`、`IsInteractionEffectEnabled`、`ShouldUseOverlayPopup`。
 - 视觉与布局：`Placement`、`PlacementAnchor`、`PlacementGravity`、`SizeType`。
 - 弹层与窗口：`Flyout`、`GutterToFlyout`。
 - 动效与异步：`MouseEnterDelay`、`MouseLeaveDelay`。

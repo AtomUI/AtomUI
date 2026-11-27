@@ -317,7 +317,7 @@ internal static class PrimeNGTreeViewTokens
 {
     internal static void EvaluateGlobal(in TokenEvaluationContext<PrimeNGToken> context, DesignToken controlGlobal)
     {
-        PrimeNGMotion.Restore(context, controlGlobal, slow: PrimeNGMotion.Collapsible);
+        controlGlobal.MotionDurationSlow = PrimeNGMotion.Collapsible;
     }
     internal static void EvaluateOwn(in TokenEvaluationContext<PrimeNGToken> context, DesignToken effectiveGlobal, TreeViewToken token) =>
         PrimeNGTreeStage.Apply(context, effectiveGlobal, token);
@@ -343,7 +343,7 @@ internal static class PrimeNGCarouselTokens
 {
     internal static void EvaluateGlobal(in TokenEvaluationContext<PrimeNGToken> context, DesignToken controlGlobal)
     {
-        PrimeNGMotion.Restore(context, controlGlobal, slow: PrimeNGMotion.Carousel);
+        controlGlobal.MotionDurationSlow = PrimeNGMotion.Carousel;
     }
     internal static void EvaluateOwn(in TokenEvaluationContext<PrimeNGToken> context, DesignToken effectiveGlobal, CarouselToken token)
     {

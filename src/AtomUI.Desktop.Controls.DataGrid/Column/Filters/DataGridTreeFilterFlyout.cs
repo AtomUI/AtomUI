@@ -42,9 +42,11 @@ internal class DataGridTreeFilterFlyout : TreeViewFlyout
     #region 内部协作 API
 
     // The filter has Dropdown semantics regardless of its tree content.
-    internal override AbstractMotion GetDefaultOpenMotion() => PopupMotionDefaults.Create(PopupMotionDefaults.DropdownOpen);
+    internal override AbstractMotion GetDefaultOpenMotion() => PopupMotionDefaults.DropdownOpen;
+    internal override MotionSlot OpenMotionSlot => MotionSlot.DropdownOpen;
 
-    internal override AbstractMotion GetDefaultCloseMotion() => PopupMotionDefaults.Create(PopupMotionDefaults.DropdownClose);
+    internal override AbstractMotion GetDefaultCloseMotion() => PopupMotionDefaults.DropdownClose;
+    internal override MotionSlot CloseMotionSlot => MotionSlot.DropdownClose;
 
     #endregion
 

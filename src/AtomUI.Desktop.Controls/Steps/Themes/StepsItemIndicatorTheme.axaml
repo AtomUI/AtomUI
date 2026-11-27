@@ -10,13 +10,10 @@
         <Setter Property="FontSize" Value="{atom:StepsTokenResource IconFontSize}" />
         <Setter Property="UseProgressRingTokenResources" Value="True" />
         <Setter Property="ProgressLineThickness" Value="{atom:StepsTokenResource LineWidthBold}" />
-        <Setter Property="IsWaveSpiritEnabled" Value="{atom:StepsTokenResource EnableWaveSpirit}" />
+        <Setter Property="IsInteractionEffectEnabled" Value="{atom:StepsTokenResource EnableInteractionEffect}" />
         <Setter Property="Template">
             <ControlTemplate>
                 <Panel Margin="{TemplateBinding Padding}">
-                    <atom:WaveSpiritDecorator Name="{x:Static atom:WaveSpiritDecorator.WaveSpiritPart}"
-                                              IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
-                                              IsWaveSpiritEnabled="{TemplateBinding IsWaveSpiritEnabled}" />
                     <atom:PixelAlignedBorder
                         Name="Frame"
                         HorizontalAlignment="Center"
@@ -64,9 +61,9 @@
             <Setter Property="Transitions">
                 <atom:TokenTransitions>
                     <Transitions>
-                        <atom:SolidColorBrushTransition Property="Background" atom:TokenTransitions.Duration="MotionDurationMid" />
-                        <atom:SolidColorBrushTransition Property="Foreground" atom:TokenTransitions.Duration="MotionDurationMid" />
-                        <atom:SolidColorBrushTransition Property="BorderBrush" atom:TokenTransitions.Duration="MotionDurationMid" />
+                        <atom:SolidColorBrushTransition Property="Background" atom:TokenTransitions.Duration="StateTransitionDuration" />
+                        <atom:SolidColorBrushTransition Property="Foreground" atom:TokenTransitions.Duration="StateTransitionDuration" />
+                        <atom:SolidColorBrushTransition Property="BorderBrush" atom:TokenTransitions.Duration="StateTransitionDuration" />
                     </Transitions>
                 </atom:TokenTransitions>
             </Setter>
@@ -74,7 +71,7 @@
                 <Setter Property="Transitions">
                     <atom:TokenTransitions>
                         <Transitions>
-                            <atom:SolidColorBrushTransition Property="IconBrush" atom:TokenTransitions.Duration="MotionDurationMid" />
+                            <atom:SolidColorBrushTransition Property="IconBrush" atom:TokenTransitions.Duration="StateTransitionDuration" />
                         </Transitions>
                     </atom:TokenTransitions>
                 </Setter>
@@ -91,9 +88,6 @@
             <Setter Property="BorderBrush" Value="{atom:StepsTokenResource WaitIconBorderColor}" />
             <Setter Property="Background" Value="{atom:StepsTokenResource WaitIconBgColor}" />
             <Setter Property="Foreground" Value="{atom:StepsTokenResource WaitIconColor}" />
-            <Style Selector="^ /template/ atom|WaveSpiritDecorator#PART_WaveSpirit">
-                <Setter Property="WaveBrush" Value="{atom:StepsTokenResource WaitIconColor}" />
-            </Style>
             <Style Selector="^ /template/ atom|IconPresenter#CustomIconPresenter">
                 <Setter Property="IconBrush" Value="{atom:StepsTokenResource WaitIconColor}" />
             </Style>
@@ -102,9 +96,6 @@
             <Setter Property="BorderBrush" Value="{atom:StepsTokenResource ProcessIconBorderColor}" />
             <Setter Property="Background" Value="{atom:StepsTokenResource ProcessIconBgColor}" />
             <Setter Property="Foreground" Value="{atom:StepsTokenResource ProcessIconColor}" />
-            <Style Selector="^ /template/ atom|WaveSpiritDecorator#PART_WaveSpirit">
-                <Setter Property="WaveBrush" Value="{atom:StepsTokenResource ProcessIconBorderColor}" />
-            </Style>
             <Style Selector="^ /template/ atom|IconPresenter#CustomIconPresenter">
                 <Setter Property="IconBrush" Value="{atom:StepsTokenResource ProcessIconBorderColor}" />
             </Style>
@@ -113,9 +104,6 @@
             <Setter Property="BorderBrush" Value="{atom:StepsTokenResource FinishIconBorderColor}" />
             <Setter Property="Background" Value="{atom:StepsTokenResource FinishIconBgColor}" />
             <Setter Property="Foreground" Value="{atom:StepsTokenResource FinishIconColor}" />
-            <Style Selector="^ /template/ atom|WaveSpiritDecorator#PART_WaveSpirit">
-                <Setter Property="WaveBrush" Value="{atom:StepsTokenResource FinishIconColor}" />
-            </Style>
             <Style Selector="^ /template/ atom|IconPresenter#CustomIconPresenter">
                 <Setter Property="IconBrush" Value="{atom:StepsTokenResource FinishIconColor}" />
             </Style>
@@ -132,9 +120,6 @@
             <Setter Property="BorderBrush" Value="{atom:StepsTokenResource ErrorIconBorderColor}" />
             <Setter Property="Background" Value="{atom:StepsTokenResource ErrorIconBgColor}" />
             <Setter Property="Foreground" Value="{atom:StepsTokenResource ErrorIconColor}" />
-            <Style Selector="^ /template/ atom|WaveSpiritDecorator#PART_WaveSpirit">
-                <Setter Property="WaveBrush" Value="{atom:StepsTokenResource ErrorIconBorderColor}" />
-            </Style>
             <Style Selector="^ /template/ atom|IconPresenter#CustomIconPresenter">
                 <Setter Property="IconBrush" Value="{atom:StepsTokenResource ErrorIconBorderColor}" />
             </Style>
@@ -188,27 +173,15 @@
         </Style>
         <Style Selector="^[Type=Dot][Status=Wait]">
             <Setter Property="Background" Value="{atom:StepsTokenResource WaitDotColor}" />
-            <Style Selector="^ /template/ atom|WaveSpiritDecorator#PART_WaveSpirit">
-                <Setter Property="WaveBrush" Value="{atom:StepsTokenResource WaitDotColor}" />
-            </Style>
         </Style>
         <Style Selector="^[Type=Dot][Status=Process]">
             <Setter Property="Background" Value="{atom:StepsTokenResource ProcessDotColor}" />
-            <Style Selector="^ /template/ atom|WaveSpiritDecorator#PART_WaveSpirit">
-                <Setter Property="WaveBrush" Value="{atom:StepsTokenResource ProcessDotColor}" />
-            </Style>
         </Style>
         <Style Selector="^[Type=Dot][Status=Finish]">
             <Setter Property="Background" Value="{atom:StepsTokenResource FinishDotColor}" />
-            <Style Selector="^ /template/ atom|WaveSpiritDecorator#PART_WaveSpirit">
-                <Setter Property="WaveBrush" Value="{atom:StepsTokenResource FinishDotColor}" />
-            </Style>
         </Style>
         <Style Selector="^[Type=Dot][Status=Error]">
             <Setter Property="Background" Value="{atom:StepsTokenResource ErrorDotColor}" />
-            <Style Selector="^ /template/ atom|WaveSpiritDecorator#PART_WaveSpirit">
-                <Setter Property="WaveBrush" Value="{atom:StepsTokenResource ErrorDotColor}" />
-            </Style>
         </Style>
 
         <Style Selector="^[Type=OutlineDot]">
@@ -237,30 +210,18 @@
         <Style Selector="^[Type=OutlineDot][Status=Wait]">
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="BorderBrush" Value="{atom:StepsTokenResource WaitDotColor}" />
-            <Style Selector="^ /template/ atom|WaveSpiritDecorator#PART_WaveSpirit">
-                <Setter Property="WaveBrush" Value="{atom:StepsTokenResource WaitDotColor}" />
-            </Style>
         </Style>
         <Style Selector="^[Type=OutlineDot][Status=Process]">
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="BorderBrush" Value="{atom:StepsTokenResource ProcessDotColor}" />
-            <Style Selector="^ /template/ atom|WaveSpiritDecorator#PART_WaveSpirit">
-                <Setter Property="WaveBrush" Value="{atom:StepsTokenResource ProcessDotColor}" />
-            </Style>
         </Style>
         <Style Selector="^[Type=OutlineDot][Status=Finish]">
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="BorderBrush" Value="{atom:StepsTokenResource FinishDotColor}" />
-            <Style Selector="^ /template/ atom|WaveSpiritDecorator#PART_WaveSpirit">
-                <Setter Property="WaveBrush" Value="{atom:StepsTokenResource FinishDotColor}" />
-            </Style>
         </Style>
         <Style Selector="^[Type=OutlineDot][Status=Error]">
             <Setter Property="Background" Value="Transparent" />
             <Setter Property="BorderBrush" Value="{atom:StepsTokenResource ErrorDotColor}" />
-            <Style Selector="^ /template/ atom|WaveSpiritDecorator#PART_WaveSpirit">
-                <Setter Property="WaveBrush" Value="{atom:StepsTokenResource ErrorDotColor}" />
-            </Style>
         </Style>
 
         <Style Selector="^[Type=Inline]">
@@ -287,27 +248,15 @@
         </Style>
         <Style Selector="^[Type=Inline][Status=Wait]">
             <Setter Property="Background" Value="{atom:StepsTokenResource WaitDotColor}" />
-            <Style Selector="^ /template/ atom|WaveSpiritDecorator#PART_WaveSpirit">
-                <Setter Property="WaveBrush" Value="{atom:StepsTokenResource WaitDotColor}" />
-            </Style>
         </Style>
         <Style Selector="^[Type=Inline][Status=Process]">
             <Setter Property="Background" Value="{atom:StepsTokenResource ProcessDotColor}" />
-            <Style Selector="^ /template/ atom|WaveSpiritDecorator#PART_WaveSpirit">
-                <Setter Property="WaveBrush" Value="{atom:StepsTokenResource ProcessDotColor}" />
-            </Style>
         </Style>
         <Style Selector="^[Type=Inline][Status=Finish]">
             <Setter Property="Background" Value="{atom:StepsTokenResource FinishDotColor}" />
-            <Style Selector="^ /template/ atom|WaveSpiritDecorator#PART_WaveSpirit">
-                <Setter Property="WaveBrush" Value="{atom:StepsTokenResource FinishDotColor}" />
-            </Style>
         </Style>
         <Style Selector="^[Type=Inline][Status=Error]">
             <Setter Property="Background" Value="{atom:StepsTokenResource ErrorDotColor}" />
-            <Style Selector="^ /template/ atom|WaveSpiritDecorator#PART_WaveSpirit">
-                <Setter Property="WaveBrush" Value="{atom:StepsTokenResource ErrorDotColor}" />
-            </Style>
         </Style>
 
         <Style Selector="^[IsProgressFrameReserved=True]">
@@ -342,8 +291,5 @@
             <Setter Property="Foreground" Value="{atom:StepsTokenResource ProcessIconColor}" />
         </Style>
 
-        <Style Selector="^ /template/ atom|WaveSpiritDecorator#PART_WaveSpirit">
-            <Setter Property="WaveType" Value="CircleWave" />
-        </Style>
     </ControlTheme>
 </ResourceDictionary>

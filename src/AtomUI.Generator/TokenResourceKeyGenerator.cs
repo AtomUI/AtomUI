@@ -139,6 +139,11 @@ public class TokenResourceKeyGenerator : IIncrementalGenerator
             var registrationAssets = assets.Where(static asset => ThemeAssetInfo.IsThemeAssetPath(asset.AssetPath)).ToArray();
             resourceFacts.ReadResources(registrationAssets, documents, semanticDeclarations);
             var semanticControls = hasSemanticRuntime ? SemanticPartModelBuilder.Build(compilation, semanticDeclarations, registrationAssets, resourceFacts, context.ReportDiagnostic) : Array.Empty<SemanticControlDeclaration>();
+            if (hasSemanticRuntime)
+            {
+                ExternalThemeSemanticValidator.Validate(compilation, registrationAssets, context.ReportDiagnostic, cancellationToken);
+                SemanticThemeFacts.Write(context, registrationAssets);
+            }
             RegistrationPackage? ownRegistration = null;
             if (compilation.GetTypeByMetadataName("AtomUI.Registration.ControlPackageMarkerAttribute") is not null)
             {
@@ -202,10 +207,12 @@ public class TokenResourceKeyGenerator : IIncrementalGenerator
             {
                 new GeneratedThemeSchemaWriter(context, assemblyName, catalog, info.SchemaTokens, controlInfos, ThemeBuildContracts.HasAbi(compilation)).Write();
             }
-            // Bound terminal tokens get their IControlToken half.
-            ControlTokenIdentityWriter.Write(context, ControlTokenBindings.GetBindings(compilation, controlInfos));
             // The token schema digest that a value package records and the runtime compares.
-            TokenSchemaDigestWriter.Write(context, compilation, controlInfos);
+            var tokenSchemaDigest = TokenSchemaDigestWriter.Write(context, compilation, controlInfos);
+            var controlToken = compilation.GetTypeByMetadataName(TargetMarkConstants.ControlTokenInterface);
+            // Bound terminal tokens get their IControlToken half.
+            ControlTokenIdentityWriter.Write(context, ControlTokenBindings.GetBindings(compilation, controlInfos),
+                controlToken?.GetMembers("TokenSchemaDigest").IsEmpty == false ? tokenSchemaDigest : null);
 
             if (hasSemanticRuntime)
             {

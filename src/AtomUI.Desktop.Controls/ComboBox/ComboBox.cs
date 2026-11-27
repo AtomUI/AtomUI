@@ -1633,7 +1633,14 @@ public partial class ComboBox : AvaloniaComboBox,
         {
             _editableTextBoxPreeditTextSubscription =
                 _editableTextBoxPresenter.GetObservable(TextPresenter.PreeditTextProperty)
-                                         .Subscribe(_ => ConfigureEditableTextBoxPlaceholderVisibility());
+                                         .Subscribe(text =>
+                                         {
+                                             if (_editableTextBox is { } editor)
+                                             {
+                                                 AtomUI.Theme.ThemeCompositionProtection.Track(editor, !string.IsNullOrEmpty(text));
+                                             }
+                                             ConfigureEditableTextBoxPlaceholderVisibility();
+                                         });
         }
 
         ConfigureEditableTextBoxPlaceholderVisibility();
@@ -1641,6 +1648,10 @@ public partial class ComboBox : AvaloniaComboBox,
 
     private void ClearEditableTextBoxPlaceholderParts()
     {
+        if (_editableTextBox is { } editor)
+        {
+            AtomUI.Theme.ThemeCompositionProtection.Track(editor, false);
+        }
         _editableTextBoxPreeditTextSubscription?.Dispose();
         _editableTextBoxPreeditTextSubscription = null;
         _editableTextBoxPlaceholder             = null;

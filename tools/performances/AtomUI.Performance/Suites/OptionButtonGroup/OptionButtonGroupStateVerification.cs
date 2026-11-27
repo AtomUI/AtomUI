@@ -45,12 +45,12 @@ internal static partial class Program
         group.Items.Add(new OptionButton { Content = "Pear" });
         group.Items.Add(new OptionButton { Content = "Orange" });
 
-        using var realized = RealizeControl(group);
-        Expect(FindVisualByName<IconPresenter>(first, "IconPresenter") == null,
-            "Text-only OptionButton should not create IconPresenter.",
+        using var realized = RealizeFeedbackControl(group);
+        Expect(FindVisualByName<IconPresenter>(first, "IconPresenter")?.Icon is null,
+            "A text-only OptionButton should have no displayed icon.",
             failures);
-        Expect(CountVisualByTypeName(first, "WaveSpiritDecorator") == 0,
-            "Idle OptionButton should not create WaveSpiritDecorator.",
+        Expect(FindInteractionAdornment(first) is null,
+            "Idle OptionButton should not create feedback decoration.",
             failures);
 
         first.SetCurrentValue(OptionButton.IconProperty, new AppleOutlined());
@@ -68,12 +68,8 @@ internal static partial class Program
 
         first.SetCurrentValue(OptionButton.IconProperty, null);
         RefreshLayout(realized.Window);
-        Expect(FindVisualByName<IconPresenter>(first, "IconPresenter") == null,
-            "OptionButton should remove IconPresenter when Icon is cleared.",
-            failures);
-        Expect(iconPresenter?.GetVisualParent() == null,
-            "Removed OptionButton IconPresenter should not keep a visual parent.",
-            failures);
+        Expect(FindVisualByName<IconPresenter>(first, "IconPresenter")?.Icon is null,
+            "Clearing an OptionButton icon should release the presenter's icon value.", failures);
 
         var point = GetControlCenterPoint(realized.Window, first);
         if (point.HasValue)
@@ -82,18 +78,18 @@ internal static partial class Program
             realized.Window.MouseDown(point.Value, MouseButton.Left);
             realized.Window.MouseUp(point.Value, MouseButton.Left);
             RefreshLayout(realized.Window);
-            var wave = FindVisualByName<Control>(first, "PART_WaveSpirit");
+            var wave = FindInteractionAdornment(first);
             Expect(wave != null,
-                "OptionButton should create WaveSpiritDecorator on first press/release.",
+                "OptionButton should create feedback decoration on first press/release.",
                 failures);
 
-            group.SetCurrentValue(OptionButtonGroup.IsWaveSpiritEnabledProperty, false);
+            group.SetCurrentValue(OptionButtonGroup.IsInteractionEffectEnabledProperty, false);
             RefreshLayout(realized.Window);
-            Expect(FindVisualByName<Control>(first, "PART_WaveSpirit") == null,
-                "OptionButton should remove WaveSpiritDecorator when wave is disabled.",
+            Expect(FindInteractionAdornment(first) == null,
+                "OptionButton should remove feedback decoration when wave is disabled.",
                 failures);
             Expect(wave?.GetVisualParent() == null,
-                "Removed OptionButton WaveSpiritDecorator should not keep a visual parent.",
+                "Removed OptionButton feedback decoration should not keep a visual parent.",
                 failures);
         }
         else

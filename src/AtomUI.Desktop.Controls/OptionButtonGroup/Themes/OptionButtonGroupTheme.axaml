@@ -18,7 +18,7 @@
         
         <Setter Property="ClipToBounds" Value="False" />
         <Setter Property="IsMotionEnabled" Value="{atom:OptionButtonGroupTokenResource EnableMotion}" />
-        <Setter Property="IsWaveSpiritEnabled" Value="{atom:OptionButtonGroupTokenResource EnableWaveSpirit}" />
+        <Setter Property="IsInteractionEffectEnabled" Value="{atom:OptionButtonGroupTokenResource EnableInteractionEffect}" />
         <Setter Property="ItemsPanel">
             <ItemsPanelTemplate>
                 <StackPanel Orientation="{CompiledBinding $parent[atom:OptionButtonGroup].Orientation}" />

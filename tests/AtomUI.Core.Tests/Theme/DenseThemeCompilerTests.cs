@@ -98,7 +98,7 @@ public class DenseThemeCompilerTests
                 Token(registry, nameof(DesignToken.MotionDurationMid), "00:00:02"),
                 Token(registry, nameof(DesignToken.MotionDurationSlow), "00:00:03"),
                 Token(registry, nameof(DesignToken.MotionDurationVerySlow), "00:00:04"),
-                Token(registry, nameof(DesignToken.EnableWaveSpirit), "False"),
+                Token(registry, nameof(DesignToken.EnableInteractionEffect), "False"),
                 Token(registry, nameof(DesignToken.WaveAnimationRange), "24"),
                 Token(registry, nameof(DesignToken.WaveStartOpacity), "0.8")
             ]);
@@ -112,7 +112,7 @@ public class DenseThemeCompilerTests
         GetGlobal<TimeSpan>(snapshot, registry, nameof(DesignToken.MotionDurationMid)).ShouldBe(TimeSpan.Zero);
         GetGlobal<TimeSpan>(snapshot, registry, nameof(DesignToken.MotionDurationSlow)).ShouldBe(TimeSpan.Zero);
         GetGlobal<TimeSpan>(snapshot, registry, nameof(DesignToken.MotionDurationVerySlow)).ShouldBe(TimeSpan.Zero);
-        GetGlobal<bool>(snapshot, registry, nameof(DesignToken.EnableWaveSpirit)).ShouldBeFalse();
+        GetGlobal<bool>(snapshot, registry, nameof(DesignToken.EnableInteractionEffect)).ShouldBeFalse();
         GetGlobal<double>(snapshot, registry, nameof(DesignToken.WaveAnimationRange)).ShouldBe(0);
         GetGlobal<double>(snapshot, registry, nameof(DesignToken.WaveStartOpacity)).ShouldBe(0);
     }

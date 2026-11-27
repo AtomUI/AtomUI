@@ -17,7 +17,7 @@ internal static partial class Program
             new PerfScenario("Button.Default.NoWave", _ => new AtomUI.Desktop.Controls.Button
             {
                 Content = "Button",
-                IsWaveSpiritEnabled = false
+                IsInteractionEffectEnabled = false
             }),
             new PerfScenario("Button.Primary.Text", _ => new AtomUI.Desktop.Controls.Button
             {

@@ -1,8 +1,11 @@
 using AtomUI.Generated.AtomUICore;
 using AtomUI.Registration;
 using AtomUI.Startup.Data;
+using AtomUI.Theme;
 using AtomUI.Theme.Compilation;
 using AtomUI.Theme.Definitions;
+using AtomUI.Theme.DesignTokens;
+using AtomUI.Theme.Languages;
 using AtomUI.Theme.Schema;
 using Shouldly;
 using Xunit;
@@ -11,6 +14,43 @@ namespace AtomUI.Core.Tests.Theme;
 
 public class ThemeSchemaRegistryTests
 {
+    /// <summary>
+    /// Verifies generated rule descriptors expose control identity metadata lazily without constructing rule instances.
+    /// </summary>
+    [Fact]
+    public void Generated_Rules_Declare_Their_Identity_Before_Constructing_The_Implementation()
+    {
+        var registrations = 0;
+        var builder = new ThemeManagerBuilder();
+        builder.AddDeferredControlTokenRules(target =>
+        {
+            registrations++;
+            target.AddControlTokenRules([ControlTokenRuleDescriptor.Create<ProbeLanguageToken, ViewProbeToken, ColdViewRule>()]);
+        });
+
+        builder.HasControlContributions.ShouldBeTrue();
+        registrations.ShouldBe(0);
+        builder.CompletePendingRegistrations();
+        registrations.ShouldBe(1);
+        var rule = builder.TokenRules.ShouldHaveSingleItem();
+        ColdViewRule.ConstructionCount.ShouldBe(0);
+
+        var variant = TestDesignLanguages.Probe().DefaultVariant(DesignIdiom.Desktop);
+        rule.Apply(variant, new ProbeLanguageToken(), new ViewProbeToken(), new DesignToken());
+        rule.Apply(variant, new ProbeLanguageToken(), new ViewProbeToken(), new DesignToken());
+
+        ColdViewRule.ConstructionCount.ShouldBe(1);
+    }
+
+    private sealed class ColdViewRule : IControlTokenRule<ProbeLanguageToken, ViewProbeToken>
+    {
+        internal static int ConstructionCount;
+
+        public ColdViewRule() => ConstructionCount++;
+
+        public void Apply(in TokenEvaluationContext<ProbeLanguageToken> context, ControlTokenTarget<ViewProbeToken> target) { }
+    }
+
     [Fact]
     public void Registry_Indexes_Descriptors_By_Ordinal_Identity_And_Dense_Slot()
     {

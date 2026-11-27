@@ -5,8 +5,8 @@
               xmlns:atom="https://atomui.net"
               x:Class="AtomUI.Desktop.Controls.Primitives.Themes.InfoPickerInputTheme"
               TargetType="atom:InfoPickerInput">
-    <Setter Property="OpenMotion" Value="{x:Static atom:PopupMotionDefaults.SelectOpen}" />
-    <Setter Property="CloseMotion" Value="{x:Static atom:PopupMotionDefaults.SelectClose}" />
+    <Setter Property="OpenMotion" Value="{atom:MotionResource SelectOpen}" />
+    <Setter Property="CloseMotion" Value="{atom:MotionResource SelectClose}" />
     <!-- Focus is shown by the input frame (border + outline shadow), not a separate adorner. -->
     <Setter Property="FocusAdorner" Value="{x:Null}" />
     <!-- The focus outline shadow is drawn outside the input frame and must not be clipped by the host. -->

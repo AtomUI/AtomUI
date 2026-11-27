@@ -3,6 +3,8 @@
         <TargetFrameworks>$(AtomUITargetFrameworks)</TargetFrameworks>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
+        <AtomUIGenerateControlThemeAssetResources>true</AtomUIGenerateControlThemeAssetResources>
+        <AtomUIRegistrationPackageId>$(AssemblyName)</AtomUIRegistrationPackageId>
         <RootNamespace>AtomUI.Desktop.Controls.Themes.Shadcn</RootNamespace>
         <Description>The shadcn values of the desktop controls (AtomUI.Desktop.Controls).</Description>
     </PropertyGroup>

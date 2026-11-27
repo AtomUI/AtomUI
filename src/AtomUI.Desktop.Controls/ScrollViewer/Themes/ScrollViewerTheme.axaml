@@ -66,8 +66,8 @@
             <Setter Property="Transitions">
                 <atom:TokenTransitions>
                     <Transitions>
-                        <DoubleTransition Property="ScrollBarsSeparatorOpacity" atom:TokenTransitions.Duration="MotionDurationMid"/>
-                        <DoubleTransition Property="ScrollBarOpacity" atom:TokenTransitions.Duration="MotionDurationMid"/>
+                        <DoubleTransition Property="ScrollBarsSeparatorOpacity" atom:TokenTransitions.Duration="StateTransitionDuration"/>
+                        <DoubleTransition Property="ScrollBarOpacity" atom:TokenTransitions.Duration="StateTransitionDuration"/>
                     </Transitions>
                 </atom:TokenTransitions>
             </Setter>

@@ -1,19 +1,20 @@
 using AtomUI.Animations;
 using Avalonia;
+using Avalonia.Controls;
 
 namespace AtomUI.Desktop.Controls;
 
 /// <summary>
 /// Finite card entry/exit; queue positioning and stack scale stay on the outer card.
 /// </summary>
-internal sealed class FeedbackCardMotion : AbstractMotion
+internal sealed class FeedbackCardMotion : AbstractMotion, IPlacementAwareMotion
 {
     internal const double Offset = 64d;
 
     private readonly bool _entering;
     private readonly Vector _offset;
 
-    internal FeedbackCardMotion(bool isEntering, NotificationPosition position, TimeSpan duration)
+    internal FeedbackCardMotion(bool isEntering, NotificationPosition position, TimeSpan? duration = null)
         : base(duration, MotionCurves.InOut)
     {
         _entering = isEntering;
@@ -24,6 +25,20 @@ internal sealed class FeedbackCardMotion : AbstractMotion
             NotificationPosition.TopLeft or NotificationPosition.BottomLeft => new Vector(-Offset, 0),
             _ => new Vector(Offset, 0)
         };
+    }
+
+    public AbstractMotion Resolve(PlacementMotionContext geometry, RelativePoint? retainedOrigin)
+    {
+        var position = geometry.Placement switch
+        {
+            PlacementMode.Top => NotificationPosition.TopCenter,
+            PlacementMode.Bottom => NotificationPosition.BottomCenter,
+            PlacementMode.TopEdgeAlignedLeft => NotificationPosition.TopLeft,
+            PlacementMode.BottomEdgeAlignedLeft => NotificationPosition.BottomLeft,
+            PlacementMode.BottomEdgeAlignedRight => NotificationPosition.BottomRight,
+            _ => NotificationPosition.TopRight
+        };
+        return ComponentMotionSelection.CopyOptions(this, new FeedbackCardMotion(_entering, position));
     }
 
     protected override void Build(MotionBuilder builder, in MotionContext context)

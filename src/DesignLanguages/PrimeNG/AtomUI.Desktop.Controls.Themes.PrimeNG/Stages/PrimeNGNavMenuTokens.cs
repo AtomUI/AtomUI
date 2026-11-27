@@ -27,7 +27,7 @@ internal static class PrimeNGNavMenuTokens
 {
     internal static void EvaluateGlobal(in TokenEvaluationContext<PrimeNGToken> context, DesignToken controlGlobal)
     {
-        PrimeNGMotion.Restore(context, controlGlobal, mid: PrimeNGMotion.Collapsible);
+        controlGlobal.MotionDurationMid = PrimeNGMotion.Collapsible;
     }
     internal static void EvaluateOwn(in TokenEvaluationContext<PrimeNGToken> context, DesignToken effectiveGlobal, NavMenuToken token)
     {

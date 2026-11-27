@@ -53,7 +53,7 @@
             <Setter Property="Transitions">
                 <atom:TokenTransitions>
                     <Transitions>
-                        <DoubleTransition Property="MaskOpacity" atom:TokenTransitions.Duration="MotionDurationMid" />
+                        <DoubleTransition Property="MaskOpacity" atom:TokenTransitions.Duration="StateTransitionDuration" />
                     </Transitions>
                 </atom:TokenTransitions>
             </Setter>

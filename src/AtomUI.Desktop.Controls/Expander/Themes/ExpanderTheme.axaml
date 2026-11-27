@@ -68,13 +68,9 @@
                             ClipToBounds="True"
                             atom:Motion.IsVisible="{TemplateBinding IsExpanded}"
                             atom:Motion.IsEnabled="{TemplateBinding IsMotionEnabled}"
-                            atom:Motion.DurationOverride="{TemplateBinding MotionDuration}">
-                            <atom:Motion.Enter>
-                                <atom:ExpandMotion />
-                            </atom:Motion.Enter>
-                            <atom:Motion.Leave>
-                                <atom:CollapseMotion />
-                            </atom:Motion.Leave>
+                            atom:Motion.DurationOverride="{TemplateBinding MotionDuration}"
+                            atom:Motion.Enter="{atom:MotionResource InlineExpand}"
+                            atom:Motion.Leave="{atom:MotionResource InlineCollapse}">
                             <atom:PixelAlignedBorder
                                 BorderBrush="{atom:ExpanderTokenResource ColorBorder}"
                                 BorderThickness="{TemplateBinding ContentBorderThickness}">

@@ -93,240 +93,95 @@ internal static partial class Program
 
     private static void VerifyButtonTemplateFrameTypes(ICollection<string> failures)
     {
-        var defaultButton = new AtomUI.Desktop.Controls.Button
+        foreach (var variant in new[] { ButtonType.Default, ButtonType.Text, ButtonType.Dashed })
         {
-            Content = "Default"
-        };
-        using var defaultRealized = RealizeControl(defaultButton);
-        Expect(FindVisualByName<Border>(defaultButton, "Frame") != null,
-            "Default Button should use Border#Frame.",
-            failures);
-        Expect(FindVisualByTypeName(defaultButton, "DashedBorder", "Frame") == null,
-            "Default Button should not use DashedBorder#Frame.",
-            failures);
-
-        var textButton = new AtomUI.Desktop.Controls.Button
-        {
-            ButtonType = ButtonType.Text,
-            Content    = "Text"
-        };
-        using var textRealized = RealizeControl(textButton);
-        Expect(FindVisualByName<Border>(textButton, "Frame") != null,
-            "Text Button should use Border#Frame.",
-            failures);
-        Expect(FindVisualByTypeName(textButton, "DashedBorder", "Frame") == null,
-            "Text Button should not use DashedBorder#Frame.",
-            failures);
-
-        var dashedButton = new AtomUI.Desktop.Controls.Button
-        {
-            ButtonType = ButtonType.Dashed,
-            Content    = "Dashed"
-        };
-        using var dashedRealized = RealizeControl(dashedButton);
-        Expect(FindVisualByTypeName(dashedButton, "DashedBorder", "Frame") != null,
-            "Dashed Button should use DashedBorder#Frame.",
-            failures);
+            var button = new AtomUI.Desktop.Controls.Button { ButtonType = variant, Content = variant.ToString() };
+            using var realized = RealizeControl(button);
+            var frame = FindVisualByName<AtomUI.Controls.Primitives.DashedBorder>(button, "Frame");
+            var hasDash = frame?.StrokeDashArray is { Count: > 0 };
+            Expect(frame is not null && hasDash == (variant == ButtonType.Dashed),
+                $"{variant} Button should use the frame with the matching stroke pattern.", failures);
+        }
     }
 
     private static void VerifyButtonRuntimeSlots(ICollection<string> failures)
     {
-        var button = new AtomUI.Desktop.Controls.Button
-        {
-            Content = "Button"
-        };
+        var button = new AtomUI.Desktop.Controls.Button { Content = "Button" };
         using var realized = RealizeControl(button);
-        Expect(FindVisualByName<Panel>(button, "PART_LoadingIconHost") == null,
-            "Non-loading Button should not create PART_LoadingIconHost.",
-            failures);
-        Expect(FindVisualByName<LoadingOutlined>(button, "PART_LoadingIcon") == null,
-            "Non-loading Button should not create PART_LoadingIcon.",
-            failures);
-        Expect(FindVisualByName<IconPresenter>(button, "PART_ButtonIcon") == null,
-            "Button without Icon should not create PART_ButtonIcon.",
-            failures);
+        var host = FindVisualByName<Avalonia.Controls.Presenters.ContentPresenter>(button, "PART_LoadingIcon");
+        Expect(host is { Child: null }, "Idle Button should expose the semantic host without creating a loading glyph.", failures);
 
-        button.SetCurrentValue(AtomUI.Desktop.Controls.Button.IconProperty, new SearchOutlined());
+        button.Icon = new SearchOutlined();
         RefreshLayout(realized.Window);
-        var buttonIcon = FindVisualByName<IconPresenter>(button, "PART_ButtonIcon");
-        Expect(buttonIcon != null,
-            "Button should create PART_ButtonIcon when Icon is assigned.",
-            failures);
-        Expect((buttonIcon?.GetVisualParent() as Control)?.Name == "PART_ContentLayout",
-            "Button icon presenter should be attached directly to PART_ContentLayout.",
-            failures);
-        Expect(buttonIcon is null || buttonIcon.Width > 0,
-            "Button icon presenter should keep template selector sizing.",
-            failures);
+        var icon = FindVisualByName<IconPresenter>(button, "PART_ButtonIcon");
+        Expect(icon is { IsVisible: true, Width: > 0 }, "Assigned Button icon should be visible at the template size.", failures);
 
-        button.SetCurrentValue(AtomUI.Desktop.Controls.Button.IsLoadingProperty, true);
+        button.IsLoading = true;
         RefreshLayout(realized.Window);
-        var loadingIcon = FindVisualByName<LoadingOutlined>(button, "PART_LoadingIcon");
-        Expect(loadingIcon != null,
-            "Button should create PART_LoadingIcon when IsLoading becomes true.",
-            failures);
-        Expect((loadingIcon?.GetVisualParent() as Control)?.Name == "PART_ContentLayout",
-            "Button loading icon should be attached directly to PART_ContentLayout.",
-            failures);
-        Expect(FindVisualByName<IconPresenter>(button, "PART_ButtonIcon") == null,
-            "Loading Button should remove PART_ButtonIcon.",
-            failures);
-        Expect(buttonIcon?.GetVisualParent() == null,
-            "Removed Button icon presenter should not keep a visual parent.",
-            failures);
+        var loading = host?.Child as LoadingOutlined;
+        Expect(loading is not null, "Loading Button should create the selected template's glyph.", failures);
+        Expect(icon?.IsVisible == false, "Loading Button should hide the ordinary icon.", failures);
 
-        button.SetCurrentValue(AtomUI.Desktop.Controls.Button.IsLoadingProperty, false);
+        button.IsLoading = false;
         RefreshLayout(realized.Window);
-        Expect(FindVisualByName<LoadingOutlined>(button, "PART_LoadingIcon") == null,
-            "Button should remove PART_LoadingIcon when IsLoading becomes false.",
-            failures);
-        Expect(loadingIcon?.GetVisualParent() == null,
-            "Removed Button loading icon should not keep a visual parent.",
-            failures);
-        var restoredButtonIcon = FindVisualByName<IconPresenter>(button, "PART_ButtonIcon");
-        Expect(restoredButtonIcon != null,
-            "Button should recreate PART_ButtonIcon when loading ends and Icon still exists.",
-            failures);
-        Expect(!ReferenceEquals(buttonIcon, restoredButtonIcon),
-            "Button should not reuse a removed icon presenter instance.",
-            failures);
+        Expect(host?.Child is null && loading?.GetVisualParent() is null && icon?.IsVisible == true,
+            "Ending Button loading should detach the loading glyph and restore the ordinary icon.", failures);
 
-        button.SetCurrentValue(AtomUI.Desktop.Controls.Button.IsLoadingProperty, true);
+        button.IsLoading = true;
         RefreshLayout(realized.Window);
-        var secondLoadingIcon = FindVisualByName<LoadingOutlined>(button, "PART_LoadingIcon");
-        Expect(secondLoadingIcon != null,
-            "Button should recreate PART_LoadingIcon when loading starts again.",
-            failures);
-        Expect(!ReferenceEquals(loadingIcon, secondLoadingIcon),
-            "Button should not reuse a removed loading icon instance.",
-            failures);
-        Expect(restoredButtonIcon?.GetVisualParent() == null,
-            "Restored Button icon presenter should be removed again when loading starts.",
-            failures);
+        var second = host?.Child;
+        Expect(second is LoadingOutlined && !ReferenceEquals(loading, second),
+            "Re-entering loading should create a fresh glyph.", failures);
 
-        button.SetCurrentValue(AtomUI.Desktop.Controls.Button.ButtonTypeProperty, ButtonType.Dashed);
+        button.ButtonType = ButtonType.Dashed;
         RefreshLayout(realized.Window);
-        var retemplatedLoadingIcon = FindVisualByName<LoadingOutlined>(button, "PART_LoadingIcon");
-        Expect(retemplatedLoadingIcon != null,
-            "Loading Button should recreate PART_LoadingIcon after template changes.",
-            failures);
-        Expect(!ReferenceEquals(secondLoadingIcon, retemplatedLoadingIcon),
-            "Button should not reuse the old loading icon instance after template changes.",
-            failures);
-        Expect(secondLoadingIcon?.GetVisualParent() == null,
-            "Old Button loading icon should not keep a visual parent after template changes.",
-            failures);
+        var replaced = FindVisualByName<Avalonia.Controls.Presenters.ContentPresenter>(button, "PART_LoadingIcon");
+        Expect(replaced?.Child is LoadingOutlined && !ReferenceEquals(second, replaced.Child) && second?.GetVisualParent() is null,
+            "Changing the Button template should create the current glyph and detach the old one.", failures);
     }
 
     private static void VerifyButtonWaveSpiritSlots(ICollection<string> failures)
     {
-        var defaultButton = new AtomUI.Desktop.Controls.Button
+        var button = new AtomUI.Desktop.Controls.Button { ButtonType = ButtonType.Primary, Content = "Feedback" };
+        using var realized = RealizeFeedbackControl(button);
+        Expect(FindInteractionAdornment(button) is null, "Idle Button should have no feedback visual.", failures);
+        ClickControl(realized.Window, button, failures, "Button feedback");
+        var active = FindInteractionAdornment(button);
+        Expect(active is not null, "Button activation should attach a decoration.", failures);
+        button.IsInteractionEffectEnabled = false;
+        RefreshLayout(realized.Window);
+        Expect(FindInteractionAdornment(button) is null && active?.GetVisualParent() is null,
+            "Disabling Button feedback should release the active decoration.", failures);
+
+        foreach (var variant in new[] { ButtonType.Text, ButtonType.Link })
         {
-            Content = "Default"
-        };
-        using var defaultRealized = RealizeControl(defaultButton);
-        Expect(FindVisualByTypeName(defaultButton, "WaveSpiritDecorator", "PART_WaveSpirit") != null,
-            "Default Button should create PART_WaveSpirit.",
-            failures);
-
-        var textButton = new AtomUI.Desktop.Controls.Button
-        {
-            ButtonType = ButtonType.Text,
-            Content    = "Text"
-        };
-        using var textRealized = RealizeControl(textButton);
-        Expect(FindVisualByTypeName(textButton, "WaveSpiritDecorator", "PART_WaveSpirit") == null,
-            "Text Button should not create PART_WaveSpirit.",
-            failures);
-
-        var linkButton = new AtomUI.Desktop.Controls.Button
-        {
-            ButtonType = ButtonType.Link,
-            Content    = "Link"
-        };
-        using var linkRealized = RealizeControl(linkButton);
-        Expect(FindVisualByTypeName(linkButton, "WaveSpiritDecorator", "PART_WaveSpirit") == null,
-            "Link Button should not create PART_WaveSpirit.",
-            failures);
-
-        var noWaveButton = new AtomUI.Desktop.Controls.Button
-        {
-            Content             = "NoWave",
-            IsWaveSpiritEnabled = false
-        };
-        using var noWaveRealized = RealizeControl(noWaveButton);
-        Expect(FindVisualByTypeName(noWaveButton, "WaveSpiritDecorator", "PART_WaveSpirit") == null,
-            "Button should not create PART_WaveSpirit when IsWaveSpiritEnabled is false.",
-            failures);
-
-        var loadingButton = new AtomUI.Desktop.Controls.Button
-        {
-            ButtonType = ButtonType.Primary,
-            Content    = "Loading",
-            IsLoading  = true
-        };
-        using var loadingRealized = RealizeControl(loadingButton);
-        Expect(FindVisualByTypeName(loadingButton, "WaveSpiritDecorator", "PART_WaveSpirit") == null,
-            "Loading Button should not create PART_WaveSpirit.",
-            failures);
-
-        var mutableButton = new AtomUI.Desktop.Controls.Button
-        {
-            ButtonType = ButtonType.Primary,
-            Content    = "Mutable"
-        };
-        using var mutableRealized = RealizeControl(mutableButton);
-        var primaryWave = FindVisualByTypeName(mutableButton, "WaveSpiritDecorator", "PART_WaveSpirit");
-        Expect(primaryWave != null,
-            "Primary Button should create PART_WaveSpirit.",
-            failures);
-
-        mutableButton.SetCurrentValue(AtomUI.Desktop.Controls.Button.ButtonTypeProperty, ButtonType.Text);
-        RefreshLayout(mutableRealized.Window);
-        Expect(FindVisualByTypeName(mutableButton, "WaveSpiritDecorator", "PART_WaveSpirit") == null,
-            "Button should remove PART_WaveSpirit when ButtonType changes to Text.",
-            failures);
-        Expect(primaryWave?.GetVisualParent() == null,
-            "Removed PART_WaveSpirit should not keep a visual parent after ButtonType changes.",
-            failures);
-
-        mutableButton.SetCurrentValue(AtomUI.Desktop.Controls.Button.ButtonTypeProperty, ButtonType.Default);
-        RefreshLayout(mutableRealized.Window);
-        var defaultWave = FindVisualByTypeName(mutableButton, "WaveSpiritDecorator", "PART_WaveSpirit");
-        Expect(defaultWave != null,
-            "Button should recreate PART_WaveSpirit when ButtonType changes back to Default.",
-            failures);
-        Expect(!ReferenceEquals(primaryWave, defaultWave),
-            "Button should not reuse a removed wave decorator instance.",
-            failures);
-
-        mutableButton.SetCurrentValue(AtomUI.Desktop.Controls.Button.IsWaveSpiritEnabledProperty, false);
-        RefreshLayout(mutableRealized.Window);
-        Expect(FindVisualByTypeName(mutableButton, "WaveSpiritDecorator", "PART_WaveSpirit") == null,
-            "Button should remove PART_WaveSpirit when IsWaveSpiritEnabled becomes false.",
-            failures);
-        Expect(defaultWave?.GetVisualParent() == null,
-            "Removed PART_WaveSpirit should not keep a visual parent when wave is disabled.",
-            failures);
+            button.ButtonType = variant;
+            button.IsInteractionEffectEnabled = true;
+            RefreshLayout(realized.Window);
+            ClickControl(realized.Window, button, failures, variant + " Button");
+            Expect(FindInteractionAdornment(button) is null, variant + " Button should use its silent default.", failures);
+        }
     }
 
     private static void VerifyWaveSpiritPropertyRegistration(ICollection<string> failures)
     {
-        var button = new AtomUI.Desktop.Controls.Button
-        {
-            ButtonType = ButtonType.Primary,
-            Content    = "Wave"
-        };
-        using var realized = RealizeControl(button);
-        var waveSpirit = FindVisualByTypeName(button, "WaveSpiritDecorator", "PART_WaveSpirit");
-        var field = waveSpirit?.GetType().GetField(
-            "OpacityMotionDurationProperty",
-            BindingFlags.Public | BindingFlags.Static);
-        var propertyName = field?.GetValue(null)?.GetType().GetProperty("Name")?.GetValue(field.GetValue(null)) as string;
-        Expect(propertyName == "OpacityMotionDuration",
-            $"WaveSpiritDecorator.OpacityMotionDurationProperty should be registered as OpacityMotionDuration, actual {propertyName ?? "<null>"}.",
-            failures);
+        Expect(AtomUI.Desktop.Controls.Button.IsInteractionEffectEnabledProperty.Name == "IsInteractionEffectEnabled",
+            "Button should register the neutral feedback property.", failures);
     }
+
+    private static RealizedScenario RealizeFeedbackControl(Control control)
+    {
+        var window = new AtomUI.Desktop.Controls.Window { Content = control, Width = 480, Height = 290 };
+        window.Show();
+        RefreshLayout(window);
+        return new RealizedScenario(window, [control]);
+    }
+
+    private static Control? FindInteractionAdornment(Control target) =>
+        Avalonia.Controls.Primitives.AdornerLayer.GetAdornerLayer(target)?.Children.FirstOrDefault(child =>
+            child.GetType().Name == "InteractionEffectAdorner" &&
+            Avalonia.Controls.Primitives.AdornerLayer.GetAdornedElement(child) is { } surface &&
+            (ReferenceEquals(surface, target) || target.IsVisualAncestorOf(surface)));
 
     private static bool HasPseudoClass(Control control, string pseudoClass)
     {

@@ -869,10 +869,10 @@ public partial class TreeView : AvaloniaTreeView,
     }
     
     /// <summary>
-    /// Gets the handler that implements the pointer and keyboard interaction of this tree. It is attached when the
-    /// tree is attached to the visual tree and detached when the tree is detached.
+    /// Gets the handler that implements the pointer and keyboard interaction of this tree when explicitly supplied.
+    /// It is attached when the tree is attached to the visual tree and detached when the tree is detached.
     /// </summary>
-    protected internal ITreeViewInteractionHandler InteractionHandler { get; }
+    protected internal ITreeViewInteractionHandler? InteractionHandler { get; }
     
     #endregion
     
@@ -918,14 +918,15 @@ public partial class TreeView : AvaloniaTreeView,
     }
 
     public TreeView()
-        : this(new DefaultTreeViewInteractionHandler(false))
     {
+        _treeDataController = new TreeDataController(this);
+        Items.CollectionChanged += HandleCollectionChanged;
     }
-    
+
     /// <summary>
     /// Creates a tree whose interaction is implemented by <paramref name="interactionHandler" />. Derived
-    /// trees use this constructor to supply their own handler; the parameterless constructor installs the default
-    /// handler.
+    /// trees use this constructor to supply their own handler; the parameterless constructor resolves the active
+    /// design language behavior instead.
     /// </summary>
     /// <param name="interactionHandler">
     /// The handler that receives the pointer and keyboard interaction of the tree. It may not be
@@ -934,11 +935,9 @@ public partial class TreeView : AvaloniaTreeView,
     /// <exception cref="ArgumentNullException">
     /// <paramref name="interactionHandler" /> is <see langword="null" />.
     /// </exception>
-    protected TreeView(ITreeViewInteractionHandler interactionHandler)
+    protected TreeView(ITreeViewInteractionHandler interactionHandler) : this()
     {
         InteractionHandler = interactionHandler ?? throw new ArgumentNullException(nameof(interactionHandler));
-        _treeDataController = new TreeDataController(this);
-        Items.CollectionChanged           += HandleCollectionChanged;
     }
 
     internal bool ShouldPreserveSelectedContainerDuringSelectedItemsSync(TreeViewItem treeViewItem)
@@ -1325,7 +1324,12 @@ public partial class TreeView : AvaloniaTreeView,
         base.OnAttachedToVisualTree(e);
         _isTreeDataControllerAttached = true;
         _treeDataController.SetRootSource(ItemsSource);
-        InteractionHandler.Attach(this);
+        AttachInteraction();
+        if (InteractionHandler is null)
+        {
+            PointerPressed += HandleTreePointerPressed;
+            PointerReleased += HandleTreePointerReleased;
+        }
         ObserveSelectedItems();
         UpdatePseudoClasses();
         if (DefaultSelectedPaths is { Count: > 0 } || DefaultCheckedPaths is { Count: > 0 })
@@ -1346,7 +1350,12 @@ public partial class TreeView : AvaloniaTreeView,
         base.OnDetachedFromVisualTree(e);
         ClearKeyboardActiveItem();
         CancelItemsSourceReplay();
-        InteractionHandler.Detach(this);
+        if (InteractionHandler is null)
+        {
+            PointerPressed -= HandleTreePointerPressed;
+            PointerReleased -= HandleTreePointerReleased;
+        }
+        DetachInteraction();
         StopObservingSelectedItems();
         
         // Cancel every pending asynchronous node load.
@@ -1578,7 +1587,7 @@ public partial class TreeView : AvaloniaTreeView,
     /// </summary>
     protected override void OnPointerPressed(PointerPressedEventArgs e)
     {
-        var container = DefaultTreeViewInteractionHandler.GetTreeViewItemCore(e.Source as Control);
+        var container = GetTreeViewItemCore(e.Source as Control);
         if (container is not null && e.Source is Visual source)
         {
             var point = e.GetCurrentPoint(source);

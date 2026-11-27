@@ -176,7 +176,8 @@ public partial class TabControl : BaseTabControl, ITransitionInitializationOwner
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
-        if (change.Property == IsIndicatorLengthAnimatedProperty || change.Property == IsSelectedItemCenteredProperty)
+        if (change.Property == IsIndicatorLengthAnimatedProperty || change.Property == IsSelectedItemCenteredProperty ||
+            change.Property == IndicatorMotionModeProperty)
         {
             ConfigureCustomIndicator();
             InvalidateArrange();
@@ -189,11 +190,13 @@ public partial class TabControl : BaseTabControl, ITransitionInitializationOwner
         }
     }
 
+    private bool UsesComposedIndicator => IsIndicatorLengthAnimated || IndicatorMotionMode == IndicatorMotionMode.Stretch;
+
     private void ConfigureCustomIndicator()
     {
-        if (IsIndicatorLengthAnimated || IsSelectedItemCentered)
+        if (UsesComposedIndicator || IsSelectedItemCentered)
         {
-            SetCustomIndicatorParts(IsIndicatorLengthAnimated ? _selectedIndicator : null,
+            SetCustomIndicatorParts(UsesComposedIndicator ? _selectedIndicator : null,
                 IsSelectedItemCentered ? _scrollViewer : null, _itemsPresenter);
         }
         else
@@ -241,7 +244,7 @@ public partial class TabControl : BaseTabControl, ITransitionInitializationOwner
     
     private void SetupSelectedIndicator()
     {
-        if (IsIndicatorLengthAnimated || IsTabReorderIndicatorRefreshDeferred)
+        if (UsesComposedIndicator || IsTabReorderIndicatorRefreshDeferred)
         {
             return;
         }

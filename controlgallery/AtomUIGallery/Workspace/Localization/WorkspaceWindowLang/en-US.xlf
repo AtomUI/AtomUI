@@ -120,9 +120,9 @@
         <source>Enable Resize</source>
       </segment>
     </unit>
-    <unit id="MenuItemEnableWaveSpirit">
+    <unit id="MenuItemEnableInteractionEffect">
       <segment>
-        <source>Enable WaveSpirit</source>
+        <source>Enable interaction feedback</source>
       </segment>
     </unit>
     <unit id="MenuItemFollowSystem">

@@ -4,6 +4,8 @@
     xmlns:atom="https://atomui.net"
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:MessageCard}" TargetType="atom:MessageCard">
+        <Setter Property="EnterMotion" Value="{atom:MotionResource MessageEnter}" />
+        <Setter Property="LeaveMotion" Value="{atom:MotionResource MessageLeave}" />
         <Setter Property="Template">
             <ControlTemplate>
                     <Border Name="PART_Frame"
@@ -84,11 +86,11 @@
             <atom:TokenTransitions>
                 <Transitions>
                     <TransformOperationsTransition Property="RenderTransform"
-                                                   atom:TokenTransitions.Duration="MotionDurationMid"
-                                                   Easing="0.645,0.045,0.355,1" />
+                                                   atom:TokenTransitions.Duration="StateTransitionDuration"
+                                                   atom:TokenTransitions.Easing="MotionEaseInOut" />
                     <DoubleTransition Property="Opacity"
-                                      atom:TokenTransitions.Duration="MotionDurationMid"
-                                      Easing="0.645,0.045,0.355,1" />
+                                      atom:TokenTransitions.Duration="StateTransitionDuration"
+                                      atom:TokenTransitions.Easing="MotionEaseInOut" />
                 </Transitions>
             </atom:TokenTransitions>
         </Setter>

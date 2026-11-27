@@ -1,4 +1,4 @@
-using System.Diagnostics;
+using AtomUI.Animations;
 using AtomUI.Controls;
 using AtomUI.Controls.Primitives;
 using AtomUI.Theme.Derivation;
@@ -8,6 +8,7 @@ using Avalonia.Controls;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
+using Avalonia.Input;
 using Avalonia.Layout;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
@@ -63,7 +64,7 @@ public enum ButtonType
     ButtonPseudoClass.TextType)]
 public partial class Button : AbstractButton,
                               ICustomizableSizeTypeAware,
-                              IWaveSpiritAwareControl,
+                              IInteractionEffectAwareControl,
                               ICompactSpaceAware,
                               IFormItemAware,
                               IFocusOutlineShapeProvider
@@ -99,6 +100,12 @@ public partial class Button : AbstractButton,
     /// </summary>
     public new static readonly StyledProperty<bool> IsLoadingProperty =
         AbstractButton.IsLoadingProperty.AddOwner<Button>();
+
+    /// <summary>
+    /// Identifies the <see cref="LoadingIndicatorTemplate" /> property.
+    /// </summary>
+    public static readonly StyledProperty<IDataTemplate?> LoadingIndicatorTemplateProperty =
+        AvaloniaProperty.Register<Button, IDataTemplate?>(nameof(LoadingIndicatorTemplate));
 
     /// <summary>
     /// Identifies the <see cref="SizeType" /> property.
@@ -143,10 +150,10 @@ public partial class Button : AbstractButton,
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<Button>();
 
     /// <summary>
-    /// Identifies the <see cref="IsWaveSpiritEnabled" /> property.
+    /// Identifies the <see cref="IsInteractionEffectEnabled" /> property.
     /// </summary>
-    public static readonly StyledProperty<bool> IsWaveSpiritEnabledProperty =
-        WaveSpiritAwareControlProperty.IsWaveSpiritEnabledProperty.AddOwner<Button>();
+    public static readonly StyledProperty<bool> IsInteractionEffectEnabledProperty =
+        InteractionEffectAwareControlProperty.IsInteractionEffectEnabledProperty.AddOwner<Button>();
 
     /// <summary>
     /// Identifies the <see cref="Color" /> property.
@@ -299,16 +306,25 @@ public partial class Button : AbstractButton,
     }
 
     /// <summary>
-    /// Enables the wave animation while <see langword="true" />. It runs when a pressed button is released,
+    /// The template used to create the indicator while the button is loading.
+    /// </summary>
+    public IDataTemplate? LoadingIndicatorTemplate
+    {
+        get => GetValue(LoadingIndicatorTemplateProperty);
+        set => SetValue(LoadingIndicatorTemplateProperty, value);
+    }
+
+    /// <summary>
+    /// Enables interaction feedback while <see langword="true" />. It runs when a pressed button is interacted with,
     /// and only while <see cref="IsMotionEnabled" /> is also <see langword="true" />, the button is not loading
     /// and its effective variant is <see cref="ButtonVariant.Solid" />,
     /// <see cref="ButtonVariant.Outlined" /> or <see cref="ButtonVariant.Dashed" />. The default theme sets it
-    /// from the <c>EnableWaveSpirit</c> token; a value set on the button replaces that.
+    /// from the <c>EnableInteractionEffect</c> token; a value set on the button replaces that.
     /// </summary>
-    public bool IsWaveSpiritEnabled
+    public bool IsInteractionEffectEnabled
     {
-        get => GetValue(IsWaveSpiritEnabledProperty);
-        set => SetValue(IsWaveSpiritEnabledProperty, value);
+        get => GetValue(IsInteractionEffectEnabledProperty);
+        set => SetValue(IsInteractionEffectEnabledProperty, value);
     }
 
     /// <summary>
@@ -368,9 +384,6 @@ public partial class Button : AbstractButton,
     internal static readonly DirectProperty<Button, ButtonVariantAppearance> VariantAppearanceProperty =
         AvaloniaProperty.RegisterDirect<Button, ButtonVariantAppearance>(
             nameof(VariantAppearance), button => button.VariantAppearance);
-
-    internal static readonly StyledProperty<WaveSpiritType> WaveSpiritTypeProperty =
-        WaveSpiritAwareControlProperty.WaveSpiritTypeProperty.AddOwner<Button>();
 
     internal static readonly DirectProperty<Button, CornerRadius> EffectiveCornerRadiusProperty =
         AvaloniaProperty.RegisterDirect<Button, CornerRadius>(nameof(EffectiveCornerRadius),
@@ -490,12 +503,6 @@ public partial class Button : AbstractButton,
         }
     }
 
-    internal WaveSpiritType WaveSpiritType
-    {
-        get => GetValue(WaveSpiritTypeProperty);
-        set => SetValue(WaveSpiritTypeProperty, value);
-    }
-
     private CornerRadius _effectiveCornerRadius;
 
     internal CornerRadius EffectiveCornerRadius
@@ -589,7 +596,10 @@ public partial class Button : AbstractButton,
     #endregion
 
     private static readonly ThemeTokenResolver s_themeTokenResolver = new();
-    private WaveSpiritDecorator? _waveSpiritDecorator;
+    private InteractionEffectHost? _pressFeedback;
+    private bool _feedbackGesture;
+    private bool _feedbackActivated;
+    private InteractionEffectInputSource _activationSource = InteractionEffectInputSource.Automation;
     private IDisposable? _themeScopeSubscription;
     private CornerRadius? _shapeCornerRadius;
 
@@ -747,10 +757,10 @@ public partial class Button : AbstractButton,
     /// </summary>
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
+        CancelFeedback();
+        InteractionEffectHost.CancelFor(this);
         base.OnApplyTemplate(e);
-        _waveSpiritDecorator = e.NameScope.Find<WaveSpiritDecorator>("PART_WaveSpirit");
         UpdateButtonTypePseudoClasses();
-        ConfigureWaveSpiritType();
         ConfigureEffectiveCornerRadius();
     }
 
@@ -811,20 +821,16 @@ public partial class Button : AbstractButton,
             EffectiveIconVisible = Icon is AtomUI.Controls.Icon && IsIconVisible && !IsLoading;
         }
 
-        if (change.Property == IsPressedProperty)
-        {
-            HandlePressedChanged(change);
-        }
-
         if (change.Property == FlyoutProperty)
         {
             PseudoClasses.Set(":popup-trigger", Flyout is not null);
         }
 
-        if (change.Property == ButtonTypeProperty ||
-            change.Property == ShapeProperty)
+        if ((change.Property == IsInteractionEffectEnabledProperty && !IsInteractionEffectEnabled) ||
+            (change.Property == IsLoadingProperty && IsLoading))
         {
-            ConfigureWaveSpiritType();
+            CancelFeedback();
+            InteractionEffectHost.CancelFor(this);
         }
 
         if (change.Property == ButtonTypeProperty || change.Property == IsGhostProperty)
@@ -861,68 +867,124 @@ public partial class Button : AbstractButton,
         ConfigureVariantThemeVariables();
     }
 
-    private void HandlePressedChanged(AvaloniaPropertyChangedEventArgs change)
+    /// <inheritdoc />
+    protected override void OnPointerPressed(PointerPressedEventArgs e)
     {
-        if (!CanPlayWaveSpirit(change))
+        if (e.GetCurrentPoint(this).Properties.IsLeftButtonPressed && IsEffectivelyEnabled)
         {
-            return;
+            BeginFeedback(InteractionEffectInputSource.Pointer, e.GetPosition(this));
         }
-
-        Debug.Assert(_waveSpiritDecorator != null);
-        Dispatcher.Post(() =>
+        base.OnPointerPressed(e);
+        if (!IsPressed)
         {
-            ConfigureWaveSpiritBrush();
-            _waveSpiritDecorator?.Play();
-        });
-    }
-
-    private bool CanPlayWaveSpirit(AvaloniaPropertyChangedEventArgs change)
-    {
-        return !IsLoading &&
-               IsMotionEnabled &&
-               IsWaveSpiritEnabled &&
-               (change.OldValue as bool? == true) &&
-               IsWaveSpiritSupportedButtonType();
-    }
-
-    private bool IsWaveSpiritSupportedButtonType()
-    {
-        return EffectiveVariant == ButtonVariant.Solid ||
-               EffectiveVariant == ButtonVariant.Outlined ||
-               EffectiveVariant == ButtonVariant.Dashed;
-    }
-
-    private void ConfigureWaveSpiritBrush()
-    {
-        if (_waveSpiritDecorator is null)
-        {
-            return;
-        }
-
-        var waveBrush = ResolveWaveSpiritBrush();
-        if (waveBrush is not null)
-        {
-            _waveSpiritDecorator.WaveBrush = waveBrush;
-        }
-        else
-        {
-            _waveSpiritDecorator.ClearValue(WaveSpiritDecorator.WaveBrushProperty);
+            CompleteFeedback();
         }
     }
 
-    private IBrush? ResolveWaveSpiritBrush()
+    /// <inheritdoc />
+    protected override void OnPointerReleased(PointerReleasedEventArgs e)
     {
-        return WaveSpiritDecorator.ResolveWaveSpiritBrush(BorderBrush, Background);
+        base.OnPointerReleased(e);
+        if (e.InitialPressMouseButton == MouseButton.Left)
+        {
+            CompleteFeedback();
+        }
     }
 
-    private void ConfigureWaveSpiritType()
+    /// <inheritdoc />
+    protected override void OnPointerCaptureLost(PointerCaptureLostEventArgs e)
     {
-        WaveSpiritType = Shape switch
+        CancelFeedback();
+        base.OnPointerCaptureLost(e);
+    }
+
+    /// <inheritdoc />
+    protected override void OnKeyDown(KeyEventArgs e)
+    {
+        if (e.Key == Key.Space && IsFocused && !_feedbackGesture)
         {
-            ButtonShape.Round => WaveSpiritType.PillWave,
-            ButtonShape.Circle => WaveSpiritType.CircleWave,
-            _ => WaveSpiritType.RoundRectWave
-        };
+            BeginFeedback(InteractionEffectInputSource.Keyboard, null);
+        }
+        _activationSource = InteractionEffectInputSource.Keyboard;
+        try
+        {
+            base.OnKeyDown(e);
+        }
+        finally
+        {
+            _activationSource = InteractionEffectInputSource.Automation;
+        }
+    }
+
+    /// <inheritdoc />
+    protected override void OnKeyUp(KeyEventArgs e)
+    {
+        base.OnKeyUp(e);
+        if (e.Key == Key.Space)
+        {
+            CompleteFeedback();
+        }
+    }
+
+    /// <inheritdoc />
+    protected override void OnLostFocus(FocusChangedEventArgs e)
+    {
+        CancelFeedback();
+        base.OnLostFocus(e);
+    }
+
+    /// <inheritdoc />
+    protected override void OnClick()
+    {
+        if (IsEffectivelyEnabled && CanPlayFeedback())
+        {
+            if (_feedbackGesture)
+            {
+                _feedbackActivated = true;
+                _pressFeedback?.Accept();
+            }
+            else
+            {
+                InteractionEffectHost.Activate(this, DefaultFeedback, _activationSource, null,
+                    EffectiveCornerRadius, AntDesignWaveEffect.ResolveBrush(BorderBrush, Background));
+            }
+        }
+        base.OnClick();
+    }
+
+    private InteractionEffect DefaultFeedback => EffectiveVariant is ButtonVariant.Solid or ButtonVariant.Outlined or ButtonVariant.Dashed
+        ? AntDesignWaveEffect.Default : InteractionEffect.None;
+
+    private bool CanPlayFeedback() => !IsLoading && InteractionEffectAwareControlProperty.IsEnabled(this);
+
+    private void BeginFeedback(InteractionEffectInputSource source, Point? position)
+    {
+        CancelFeedback();
+        _feedbackGesture = true;
+        if (CanPlayFeedback())
+        {
+            _pressFeedback = InteractionEffectHost.Begin(this, DefaultFeedback, source, position,
+                EffectiveCornerRadius, AntDesignWaveEffect.ResolveBrush(BorderBrush, Background));
+        }
+    }
+
+    private void CompleteFeedback()
+    {
+        var press = _pressFeedback;
+        var activated = _feedbackActivated;
+        _pressFeedback = null;
+        _feedbackGesture = false;
+        _feedbackActivated = false;
+        press?.Complete(activated);
+    }
+
+    private void CancelFeedback()
+    {
+        var press = _pressFeedback;
+        _pressFeedback = null;
+        _feedbackGesture = false;
+        _feedbackActivated = false;
+        press?.Cancel();
     }
 
     private void ConfigureEffectiveBorderThickness()

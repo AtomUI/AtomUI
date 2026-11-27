@@ -71,8 +71,8 @@ public abstract class AbstractOptionButton : AvaloniaRadioButton
     internal static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<AbstractOptionButton>();
 
-    internal static readonly StyledProperty<bool> IsWaveSpiritEnabledProperty =
-        WaveSpiritAwareControlProperty.IsWaveSpiritEnabledProperty.AddOwner<AbstractOptionButton>();
+    internal static readonly StyledProperty<bool> IsInteractionEffectEnabledProperty =
+        InteractionEffectAwareControlProperty.IsInteractionEffectEnabledProperty.AddOwner<AbstractOptionButton>();
 
     /// <summary>
     /// Identifies the <see cref="OutlineCheckedFill" /> property.
@@ -121,15 +121,15 @@ public abstract class AbstractOptionButton : AvaloniaRadioButton
     }
 
     /// <summary>
-    /// Whether the option may play the click wave. The group binds it one-way to
-    /// <see cref="AbstractOptionButtonGroup.IsWaveSpiritEnabled" />, so the value of the group applies to every
-    /// option. The wave plays when a press ends while <see cref="IsMotionEnabled" /> is <see langword="true" />.
-    /// The template passes the value to <c>PART_WaveSpirit</c>.
+    /// Whether the option may play interaction feedback. The group binds it one-way to
+    /// <see cref="AbstractOptionButtonGroup.IsInteractionEffectEnabled" />, so the value of the group applies to
+    /// every option. Feedback plays when a press ends while <see cref="IsMotionEnabled" /> is
+    /// <see langword="true" />.
     /// </summary>
-    internal bool IsWaveSpiritEnabled
+    internal bool IsInteractionEffectEnabled
     {
-        get => GetValue(IsWaveSpiritEnabledProperty);
-        set => SetValue(IsWaveSpiritEnabledProperty, value);
+        get => GetValue(IsInteractionEffectEnabledProperty);
+        set => SetValue(IsInteractionEffectEnabledProperty, value);
     }
 
     /// <summary>
@@ -188,12 +188,12 @@ public abstract class AbstractOptionButton : AvaloniaRadioButton
     #endregion
 
     private readonly BorderRenderHelper _borderRenderHelper;
-    private WaveSpiritDecorator? _waveSpiritDecorator;
 
     private readonly TransitionInitializationSession _transitionInitialization;
 
     static AbstractOptionButton()
     {
+        ToggleInteractionFeedback.Configure<AbstractOptionButton>(static owner => owner, static _ => true);
         AffectsMeasure<AbstractOptionButton>(SizeTypeProperty, ButtonStyleProperty);
         AffectsRender<AbstractOptionButton>(IsCheckedProperty,
             EffectiveCornerRadiusProperty,
@@ -263,18 +263,6 @@ public abstract class AbstractOptionButton : AvaloniaRadioButton
         {
             // The group paints the fill.
             this.FindAncestorOfType<AbstractOptionButtonGroup>()?.InvalidateVisual();
-        }
-        if (change.Property == IsPointerOverProperty ||
-            change.Property == IsPressedProperty ||
-            change.Property == IsCheckedProperty)
-        {
-            if (change.Property == IsPressedProperty &&
-                change.OldValue as bool? == true &&
-                IsMotionEnabled &&
-                IsWaveSpiritEnabled)
-            {
-                _waveSpiritDecorator?.Play();
-            }
         }
 
         if (change.Property == CornerRadiusProperty ||
@@ -395,7 +383,6 @@ public abstract class AbstractOptionButton : AvaloniaRadioButton
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
-        _waveSpiritDecorator = e.NameScope.Find<WaveSpiritDecorator>("PART_WaveSpirit");
         _transitionInitialization.CompleteInitialization();
     }
 

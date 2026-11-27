@@ -26,7 +26,7 @@ ToggleSwitch 的 public 桌面类型位于 `AtomUI.Desktop.Controls`，实际交
 
 `SwitchKnob` 是内部把手，负责绘制圆形或胶囊轮廓以及 loading 状态的旋转弧线。
 
-`WaveSpiritDecorator` 是视觉效果边界，只在 checked 状态变化且 `IsWaveSpiritEnabled=true` 时播放，不参与值状态计算。
+`SwitchTrack` 由默认模板按轨道几何绘制胶囊背景。交互反馈由有效激活触发，使用共享播放宿主，值状态仍由 `AbstractToggleSwitch` 提交。
 
 ## 4. 状态与数据流
 
@@ -74,8 +74,7 @@ Form.ClearValue()    → IsChecked = null
 内容偏移；owner 已加载且最终尺寸、把手排列有效后释放根控件的过渡覆盖。`SwitchKnob` 在模板构建时通过固定的
 `TransitionInitialization.Mode="Owner"` 接入，与 owner 基线和自身 Loaded 汇合后恢复宽度过渡。主题只保留
 `IsMotionEnabled` 条件，不订阅动态 Ready 属性；自定义过渡的绑定及最新集合也由属性系统保留并恢复。
-初始化 checked 不排队波纹，已就绪的状态切换才生成反馈，执行时再次核对当前部件与生命周期，分离及模板替换时
-取消 owner 持有的待执行操作。共享规则见
+程序赋值与初始化同步 checked 状态。指针或键盘的实际激活才提交反馈，分离及模板替换时释放租约。共享规则见
 [状态动效初始化设计](../../../../architecture/systems/control-infrastructure/transition-initialization.md)，验证范围见
 [状态动效初始化验证](../../../../architecture/systems/control-infrastructure/transition-initialization-verification.md)。
 
@@ -84,7 +83,7 @@ Form.ClearValue()    → IsChecked = null
 - `PART_SwitchKnob`
 - `PART_OnContentPresenter`
 - `PART_OffContentPresenter`
-- `PART_WaveSpirit`
+- 可选 `PART_Track`
 - `PART_MainContainer`
 
 模板接入后，控件把当前 `KnobSize` 写入 `SwitchKnob`，再根据当前 `IsLoading` 同步把手 loading 状态。自定义模板省略把手的平移或宽度增量绑定时，控件使用 `TemplateBinding` 补齐。更换模板会清除旧把手的 `TemplatedParent`，使其释放对原 owner 的订阅。模板部件的其他生命周期管理主要涉及内容图标 relay binding 和 loading animation。

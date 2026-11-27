@@ -4,6 +4,8 @@
     xmlns:atom="https://atomui.net"
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:Dialog}" TargetType="atom:Dialog">
+        <Setter Property="OpenMotion" Value="{atom:MotionResource DialogOpen}" />
+        <Setter Property="CloseMotion" Value="{atom:MotionResource DialogClose}" />
         <Setter Property="atom:DialogSurface.HeaderBackground" Value="{atom:DialogTokenResource HeaderBg}" />
         <Setter Property="atom:DialogSurface.HeaderBottomMargin" Value="{atom:DialogTokenResource HeaderMarginBottom}" />
         <Setter Property="atom:DialogSurface.LogoSize" Value="{atom:DialogTokenResource LogoSize}" />

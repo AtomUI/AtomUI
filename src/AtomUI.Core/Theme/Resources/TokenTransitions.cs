@@ -45,6 +45,12 @@ public sealed class TokenTransitions : MarkupExtension
     public static readonly AttachedProperty<SharedTokenKind?> DurationProperty =
         AvaloniaProperty.RegisterAttached<TokenTransitions, TransitionBase, SharedTokenKind?>("Duration");
 
+    /// <summary>
+    /// The effective global Token that supplies a transition's easing. A null token value keeps the declared easing.
+    /// </summary>
+    public static readonly AttachedProperty<SharedTokenKind?> EasingProperty =
+        AvaloniaProperty.RegisterAttached<TokenTransitions, TransitionBase, SharedTokenKind?>("Easing");
+
     private TokenTransitionsFactory? _factory;
 
     /// <summary>
@@ -63,6 +69,24 @@ public sealed class TokenTransitions : MarkupExtension
     {
         ArgumentNullException.ThrowIfNull(transition);
         transition.SetValue(DurationProperty, kind);
+    }
+
+    /// <summary>
+    /// Gets the global Design Token that supplies the easing of <paramref name="transition" />.
+    /// </summary>
+    public static SharedTokenKind? GetEasing(TransitionBase transition)
+    {
+        ArgumentNullException.ThrowIfNull(transition);
+        return transition.GetValue(EasingProperty);
+    }
+
+    /// <summary>
+    /// Sets the global Design Token that supplies the easing of <paramref name="transition" />.
+    /// </summary>
+    public static void SetEasing(TransitionBase transition, SharedTokenKind? kind)
+    {
+        ArgumentNullException.ThrowIfNull(transition);
+        transition.SetValue(EasingProperty, kind);
     }
 
     /// <summary>

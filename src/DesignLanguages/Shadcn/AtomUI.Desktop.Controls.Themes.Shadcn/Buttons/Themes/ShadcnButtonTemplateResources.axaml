@@ -1,0 +1,40 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:atom="https://atomui.net">
+    <ControlTemplate x:Key="AtomUI.Shadcn.Button.Template" TargetType="atom:Button">
+        <Panel Name="ShadcnButtonRoot">
+            <Border Name="ShadowsFrame" />
+            <atom:DashedBorder Name="Frame"
+                               Classes.shadcn-button-frame="True"
+                               Height="{TemplateBinding Height}"
+                               Padding="{TemplateBinding Padding}"
+                               BorderBrush="{TemplateBinding BorderBrush}"
+                               BackgroundSizing="{TemplateBinding BackgroundSizing}"
+                               Background="{TemplateBinding Background}" />
+            <Border Padding="{TemplateBinding Padding}">
+                <DockPanel Name="PART_RootLayout"
+                           LastChildFill="True"
+                           HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                           VerticalAlignment="{TemplateBinding VerticalContentAlignment}">
+                    <ContentPresenter Name="PART_LoadingIcon"
+                                      Classes.semantic-icon="True"
+                                      Width="{TemplateBinding IconWidth}"
+                                      Height="{TemplateBinding IconHeight}"
+                                      Foreground="{TemplateBinding Foreground}"
+                                      DockPanel.Dock="Left" />
+                    <atom:IconPresenter Name="PART_ButtonIcon"
+                                        Classes.semantic-icon="True"
+                                        Width="{TemplateBinding IconWidth}"
+                                        Height="{TemplateBinding IconHeight}"
+                                        Icon="{TemplateBinding Icon}"
+                                        IconBrush="{TemplateBinding Foreground}" />
+                    <ContentPresenter Name="PART_ContentPresenter"
+                                      Classes.semantic-content="True"
+                                      Content="{TemplateBinding Content}"
+                                      ContentTemplate="{TemplateBinding ContentTemplate}"
+                                      IsVisible="{TemplateBinding Content, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                </DockPanel>
+            </Border>
+        </Panel>
+    </ControlTemplate>
+</ResourceDictionary>

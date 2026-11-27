@@ -26,7 +26,7 @@ namespace AtomUI.Controls.Commons;
 /// </summary>
 public abstract class AbstractOptionButtonGroup : SelectingItemsControl,
                                                   ICustomizableSizeTypeAware,
-                                                  IWaveSpiritAwareControl,
+                                                  IInteractionEffectAwareControl,
                                                   IFormItemAware
 {
     #region 公共属性定义
@@ -56,10 +56,10 @@ public abstract class AbstractOptionButtonGroup : SelectingItemsControl,
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<AbstractOptionButtonGroup>();
 
     /// <summary>
-    /// Identifies the <see cref="IsWaveSpiritEnabled" /> property.
+    /// Identifies the <see cref="IsInteractionEffectEnabled" /> property.
     /// </summary>
-    public static readonly StyledProperty<bool> IsWaveSpiritEnabledProperty =
-        WaveSpiritAwareControlProperty.IsWaveSpiritEnabledProperty.AddOwner<AbstractOptionButtonGroup>();
+    public static readonly StyledProperty<bool> IsInteractionEffectEnabledProperty =
+        InteractionEffectAwareControlProperty.IsInteractionEffectEnabledProperty.AddOwner<AbstractOptionButtonGroup>();
 
     /// <summary>
     /// Size preset of the group and of every option, <see cref="CustomizableSizeType.Middle" /> by default.
@@ -106,14 +106,14 @@ public abstract class AbstractOptionButtonGroup : SelectingItemsControl,
     }
 
     /// <summary>
-    /// Whether an option plays the click wave when a press on it ends; this also needs
+    /// Whether an option plays interaction feedback when a press on it ends; this also needs
     /// <see cref="IsMotionEnabled" /> to be <see langword="true" />. The theme sets it from the shared
-    /// <c>EnableWaveSpirit</c> token, and every option follows the value set on the group.
+    /// <c>EnableInteractionEffect</c> token, and every option follows the value set on the group.
     /// </summary>
-    public bool IsWaveSpiritEnabled
+    public bool IsInteractionEffectEnabled
     {
-        get => GetValue(IsWaveSpiritEnabledProperty);
-        set => SetValue(IsWaveSpiritEnabledProperty, value);
+        get => GetValue(IsInteractionEffectEnabledProperty);
+        set => SetValue(IsInteractionEffectEnabledProperty, value);
     }
     
     #endregion
@@ -476,9 +476,9 @@ public abstract class AbstractOptionButtonGroup : SelectingItemsControl,
                 BindingMode.OneWay));
             bindings.Add(BindUtils.RelayBind(
                 this,
-                IsWaveSpiritEnabledProperty,
+                IsInteractionEffectEnabledProperty,
                 optionButton,
-                AbstractOptionButton.IsWaveSpiritEnabledProperty,
+                AbstractOptionButton.IsInteractionEffectEnabledProperty,
                 BindingMode.OneWay));
             bindings.Add(BindUtils.RelayBind(
                 this,

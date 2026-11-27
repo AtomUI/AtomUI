@@ -31,7 +31,7 @@ namespace AtomUI.Desktop.Controls;
 public partial class SplitButton : ContentControl,
                            ICommandSource, 
                            ICustomizableSizeTypeAware,
-                           IWaveSpiritAwareControl,
+                           IInteractionEffectAwareControl,
                            ICompactSpaceAware
 {
     #region 公共属性定义
@@ -183,10 +183,10 @@ public partial class SplitButton : ContentControl,
         Flyout.IsPopupPinnedOpenProperty.AddOwner<SplitButton>();
 
     /// <summary>
-    /// Identifies the <see cref="IsWaveSpiritEnabled" /> property.
+    /// Identifies the <see cref="IsInteractionEffectEnabled" /> property.
     /// </summary>
-    public static readonly StyledProperty<bool> IsWaveSpiritEnabledProperty =
-        WaveSpiritAwareControlProperty.IsWaveSpiritEnabledProperty.AddOwner<SplitButton>();
+    public static readonly StyledProperty<bool> IsInteractionEffectEnabledProperty =
+        InteractionEffectAwareControlProperty.IsInteractionEffectEnabledProperty.AddOwner<SplitButton>();
     
     /// <summary>
     /// The motion the flyout plays when it opens. The value is relayed to the flyout; without a local value the
@@ -416,14 +416,14 @@ public partial class SplitButton : ContentControl,
     }
 
     /// <summary>
-    /// Enables the wave animation that both parts play when they are released; it runs only while
+    /// Enables the interaction feedback that both parts play when they are interacted with; it runs only while
     /// <see cref="IsMotionEnabled" /> is <see langword="true" />. The value is forwarded to both buttons, and the
-    /// theme takes it from the <c>EnableWaveSpirit</c> token.
+    /// theme takes it from the <c>EnableInteractionEffect</c> token.
     /// </summary>
-    public bool IsWaveSpiritEnabled
+    public bool IsInteractionEffectEnabled
     {
-        get => GetValue(IsWaveSpiritEnabledProperty);
-        set => SetValue(IsWaveSpiritEnabledProperty, value);
+        get => GetValue(IsInteractionEffectEnabledProperty);
+        set => SetValue(IsInteractionEffectEnabledProperty, value);
     }
 
     /// <summary>
@@ -548,7 +548,6 @@ public partial class SplitButton : ContentControl,
         VerticalAlignmentProperty.OverrideDefaultValue<SplitButton>(VerticalAlignment.Top);
         AffectsMeasure<SplitButton>(SizeTypeProperty);
         AffectsArrange<SplitButton>(IsPrimaryButtonTypeProperty, BorderThicknessProperty, UseLayoutRoundingProperty, UseInsetSeparatorProperty);
-        AffectsRender<SplitButton>(IsPrimaryButtonTypeProperty, IsDangerProperty, SplitSeparatorBrushProperty, UseInsetSeparatorProperty);
     }
 
     public SplitButton()
@@ -1315,23 +1314,6 @@ public partial class SplitButton : ContentControl,
         _isPointerOverSecondaryButton = !visible;
     }
 
-    /// <summary>
-    /// Fills the area of the control with <c>SplitSeparatorBrush</c>, which shows as the seam between the two
-    /// buttons of the primary form. Paints nothing with the inset separator, without
-    /// <see cref="IsPrimaryButtonType" />, without a secondary button or without a separator brush.
-    /// </summary>
-    public override void Render(DrawingContext context)
-    {
-        if (!UseInsetSeparator && IsPrimaryButtonType && _secondaryButton is not null)
-        {
-            var cornerRadius = (float)CornerRadius.TopLeft;
-            if (SplitSeparatorBrush is { } separatorBrush)
-            {
-                context.FillRectangle(separatorBrush, new Rect(0, 0, Bounds.Width, Bounds.Height), cornerRadius);
-            }
-        }
-    }
-    
     void ICompactSpaceAware.NotifyPositionChange(SpaceItemPosition? position)
     {
         IsUsedInCompactSpace     = position != null;

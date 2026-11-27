@@ -1,4 +1,7 @@
+using AtomUI.Animations;
 using Avalonia;
+using Avalonia.Controls;
+using Avalonia.Controls.Primitives;
 
 namespace AtomUI.Controls.Commons;
 
@@ -9,7 +12,7 @@ using AvaloniaCheckBox = Avalonia.Controls.CheckBox;
 /// integration to the Avalonia check box.
 /// </summary>
 public abstract class AbstractCheckBox : AvaloniaCheckBox, 
-                                         IWaveSpiritAwareControl,
+                                         IInteractionEffectAwareControl,
                                          IFormItemAware
 {
     #region 公共属性定义
@@ -21,10 +24,10 @@ public abstract class AbstractCheckBox : AvaloniaCheckBox,
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<AbstractCheckBox>();
 
     /// <summary>
-    /// Identifies the <see cref="IsWaveSpiritEnabled" /> property.
+    /// Identifies the <see cref="IsInteractionEffectEnabled" /> property.
     /// </summary>
-    public static readonly StyledProperty<bool> IsWaveSpiritEnabledProperty =
-        WaveSpiritAwareControlProperty.IsWaveSpiritEnabledProperty.AddOwner<AbstractCheckBox>();
+    public static readonly StyledProperty<bool> IsInteractionEffectEnabledProperty =
+        InteractionEffectAwareControlProperty.IsInteractionEffectEnabledProperty.AddOwner<AbstractCheckBox>();
     
     /// <summary>
     /// Enables the animated transitions of the indicator when the checked state changes. When the value is not set,
@@ -41,17 +44,30 @@ public abstract class AbstractCheckBox : AvaloniaCheckBox,
     /// <see cref="IsMotionEnabled" /> is <see langword="true" /> and the check box is enabled. When the value is not
     /// set, the theme supplies it from the <c>EnableWaveSpirit</c> token.
     /// </summary>
-    public bool IsWaveSpiritEnabled
+    public bool IsInteractionEffectEnabled
     {
-        get => GetValue(IsWaveSpiritEnabledProperty);
-        set => SetValue(IsWaveSpiritEnabledProperty, value);
+        get => GetValue(IsInteractionEffectEnabledProperty);
+        set => SetValue(IsInteractionEffectEnabledProperty, value);
     }
 
     #endregion
 
+    private Control? _feedbackSurface;
+
     static AbstractCheckBox()
     {
         IsCheckedChangedEvent.AddClassHandler<AbstractCheckBox>((checkbox, args) => checkbox.HandleCheckedChanged());
+        ToggleInteractionFeedback.Configure<AbstractCheckBox>(static owner => owner._feedbackSurface ?? owner,
+            static owner => owner.IsChecked == true, quick: true);
+    }
+
+    /// <inheritdoc />
+    protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
+    {
+        ToggleInteractionFeedback.Cancel(this);
+        InteractionEffectHost.CancelFor(_feedbackSurface ?? this);
+        base.OnApplyTemplate(e);
+        _feedbackSurface = e.NameScope.Find<Control>("Indicator");
     }
     
     #region 实现 FormItem 接口

@@ -7,10 +7,6 @@
         <Setter Property="Template">
             <ControlTemplate>
                 <Panel>
-                    <atom:WaveSpiritDecorator Name="PART_WaveSpirit"
-                                              CornerRadius="{TemplateBinding EffectiveCornerRadius}"
-                                              IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
-                                              IsWaveSpiritEnabled="{TemplateBinding IsWaveSpiritEnabled}" />
                     <DockPanel Name="ContentLayout"
                                HorizontalAlignment="Center"
                                VerticalAlignment="Center"
@@ -99,17 +95,14 @@
             </Style>
         </Style>
 
-        <Style Selector="^ /template/ atom|WaveSpiritDecorator#PART_WaveSpirit">
-            <Setter Property="WaveType" Value="RoundRectWave" />
-        </Style>
         <Style Selector="^[ButtonStyle=Solid]">
             <Style Selector="^[IsMotionEnabled=True]">
                 <Setter Property="Transitions">
                     <atom:TokenTransitions>
                         <Transitions>
-                            <atom:SolidColorBrushTransition Property="BorderBrush" atom:TokenTransitions.Duration="MotionDurationMid" />
-                            <atom:SolidColorBrushTransition Property="Background" atom:TokenTransitions.Duration="MotionDurationMid" />
-                            <atom:SolidColorBrushTransition Property="Foreground" atom:TokenTransitions.Duration="MotionDurationMid" />
+                            <atom:SolidColorBrushTransition Property="BorderBrush" atom:TokenTransitions.Duration="StateTransitionDuration" />
+                            <atom:SolidColorBrushTransition Property="Background" atom:TokenTransitions.Duration="StateTransitionDuration" />
+                            <atom:SolidColorBrushTransition Property="Foreground" atom:TokenTransitions.Duration="StateTransitionDuration" />
                         </Transitions>
                     </atom:TokenTransitions>
                 </Setter>
@@ -169,8 +162,8 @@
                 <Setter Property="Transitions">
                     <atom:TokenTransitions>
                         <Transitions>
-                            <atom:SolidColorBrushTransition Property="BorderBrush" atom:TokenTransitions.Duration="MotionDurationMid" />
-                            <atom:SolidColorBrushTransition Property="Foreground" atom:TokenTransitions.Duration="MotionDurationMid" />
+                            <atom:SolidColorBrushTransition Property="BorderBrush" atom:TokenTransitions.Duration="StateTransitionDuration" />
+                            <atom:SolidColorBrushTransition Property="Foreground" atom:TokenTransitions.Duration="StateTransitionDuration" />
                         </Transitions>
                     </atom:TokenTransitions>
                 </Setter>

@@ -1,5 +1,7 @@
+using System.Runtime.CompilerServices;
 using AtomUI.Theme.Schema;
 using Avalonia;
+using Avalonia.Animation.Easings;
 using Avalonia.Controls;
 using Avalonia.Data;
 using Avalonia.Data.Core;
@@ -31,7 +33,13 @@ namespace AtomUI.Theme.Resources;
 /// </remarks>
 internal sealed class TransitionDurationBinding : IPropertyAccessor, ITokenOwnerListener
 {
-    private const int StackDurationCapacity = 8;
+    private const int InlineCapacity = 8;
+
+    [InlineArray(InlineCapacity)]
+    private struct ResolvedValues
+    {
+        private TokenTransitionsFactory.TokenValue _first;
+    }
 
     private static readonly ClrPropertyInfo s_tokenTransitionsProperty = new(
         "TokenTransitions",
@@ -211,31 +219,40 @@ internal sealed class TransitionDurationBinding : IPropertyAccessor, ITokenOwner
     private object Resolve(StyledElement target, ThemeContext? context)
     {
         ResolveCount++;
-        var kinds = _factory.Kinds;
+        var inputs = _factory.Inputs;
         var keys = _ownerKeys is { } ownerKeys && !OwnerTokenBinding.IsKnownUnregistered(context, _owner!.Value)
             ? ownerKeys
             : _factory.GlobalKeys;
-        Span<TimeSpan> durations = kinds.Length <= StackDurationCapacity
-            ? stackalloc TimeSpan[StackDurationCapacity]
-            : new TimeSpan[kinds.Length];
-        durations = durations[..kinds.Length];
+        ResolvedValues storage = default;
+        Span<TokenTransitionsFactory.TokenValue> values = inputs.Length <= InlineCapacity
+            ? storage[..inputs.Length]
+            : new TokenTransitionsFactory.TokenValue[inputs.Length];
 
         var themeVariant = target.ActualThemeVariant;
-        for (var index = 0; index < kinds.Length; index++)
+        for (var index = 0; index < inputs.Length; index++)
         {
             if (!target.TryFindResource(keys[index], themeVariant, out var value))
             {
                 return AvaloniaProperty.UnsetValue;
             }
-            if (value is not TimeSpan duration)
+            var input = inputs[index];
+            if (input.IsEasing && value is Easing or null)
             {
-                throw new InvalidOperationException(
-                    $"Token '{kinds[index]}' declared by TokenTransitions.Duration is not a duration " +
-                    $"(resolved '{value?.GetType().Name ?? "null"}').");
+                values[index] = new(default, (Easing?)value);
             }
-            durations[index] = duration;
+            else if (!input.IsEasing && value is TimeSpan duration)
+            {
+                values[index] = new(duration, null);
+            }
+            else
+            {
+                var channel = input.IsEasing ? "Easing" : "Duration";
+                throw new InvalidOperationException(
+                    $"Token '{input.Kind}' declared by TokenTransitions.{channel} has an incompatible value " +
+                    $"of type '{value?.GetType().Name ?? "null"}'.");
+            }
         }
 
-        return _factory.GetTransitions(durations);
+        return _factory.GetTransitions(values);
     }
 }

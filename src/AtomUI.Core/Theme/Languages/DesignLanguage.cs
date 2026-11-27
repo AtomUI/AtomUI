@@ -1,5 +1,7 @@
 using System.Collections.Frozen;
+using AtomUI.Animations;
 using AtomUI.Theme.DesignTokens;
+using AtomUI.Theme.Schema;
 
 namespace AtomUI.Theme.Languages;
 
@@ -34,6 +36,16 @@ public abstract class DesignLanguage
     /// The language token type; control token rules are found along its base types.
     /// </summary>
     public abstract Type LanguageTokenType { get; }
+
+    /// <summary>
+    /// The default feedback for the variant. Null selects the control's default.
+    /// </summary>
+    public virtual InteractionEffect? GetInteractionEffect(ControlTokenIdentity? owner, in DesignVariant variant) => null;
+
+    /// <summary>
+    /// Optional finite animations for this language's component slots.
+    /// </summary>
+    public virtual MotionScheme? MotionScheme => null;
 
     internal abstract LanguageDesignToken CreateLanguageToken();
 

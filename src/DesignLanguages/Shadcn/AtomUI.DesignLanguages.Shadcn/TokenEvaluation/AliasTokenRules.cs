@@ -70,6 +70,8 @@ internal static class AliasTokenRules
         token.ColorFocusBorder           = token.ColorPrimaryBorder;
         token.WaveAnimationRange         = token.LineWidth * 6;
         token.WaveStartOpacity           = 0.4;
+        token.WaveFadeDuration           = TimeSpan.FromSeconds(2);
+        token.WaveEasing                 = null;
 
         // Control
         // ring-[3px]: the focus ring width of the style.

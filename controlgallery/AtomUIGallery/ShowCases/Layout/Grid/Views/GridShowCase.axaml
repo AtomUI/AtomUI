@@ -8,10 +8,10 @@
     <UserControl.Styles>
         <Style Selector="Border.grid-cell">
             <Setter Property="Height" Value="48" />
-            <Setter Property="Background" Value="#1677FF" />
+            <Setter Property="Background" Value="{atom:SharedTokenResource ColorPrimary}" />
         </Style>
         <Style Selector="Border.grid-cell.alt">
-            <Setter Property="Background" Value="#4096FF" />
+            <Setter Property="Background" Value="{atom:SharedTokenResource ColorPrimaryHover}" />
         </Style>
         <Style Selector="Border.grid-row-surface">
             <Setter Property="Background" Value="{atom:SharedTokenResource ColorFillAlter}" />
@@ -20,10 +20,11 @@
         <Style Selector="TextBlock.grid-cell-text">
             <Setter Property="HorizontalAlignment" Value="Center" />
             <Setter Property="VerticalAlignment" Value="Center" />
-            <Setter Property="Foreground" Value="#0A0A0A" />
+            <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorTextLightSolid}" />
             <Setter Property="FontWeight" Value="SemiBold" />
         </Style>
         <Style Selector="TextBlock.grid-section-title">
+            <Setter Property="Foreground" Value="{atom:SharedTokenResource ColorTextHeading}" />
             <Setter Property="FontWeight" Value="Bold" />
             <Setter Property="Margin" Value="0,8,0,4" />
         </Style>

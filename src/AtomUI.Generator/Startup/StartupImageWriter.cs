@@ -188,13 +188,27 @@ internal static class StartupImageWriter
             .Select(static attribute =>
             {
                 var arguments = attribute.ConstructorArguments;
-                if (arguments.Length == 2 && arguments[0].Value is INamedTypeSymbol owner &&
+                if (arguments.Length is 2 or 3 && arguments[0].Value is INamedTypeSymbol owner &&
                     arguments[1].Value is string name &&
                     owner.GetMembers(name).OfType<IPropertySymbol>().SingleOrDefault(static property =>
                         property.IsStatic && property.DeclaredAccessibility == Accessibility.Public &&
                         property.Type.ToDisplayString() == "AtomUI.Theme.Languages.ControlValuePackage") is { } property)
                 {
-                    return owner.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat) + "." + property.Name;
+                    var ownerName = owner.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
+                    if (arguments.Length == 2 || arguments[2].IsNull)
+                    {
+                        return ownerName + "." + property.Name;
+                    }
+                    if (arguments[2].Value is string resolver &&
+                        owner.GetMembers(resolver).OfType<IMethodSymbol>().Any(static method =>
+                            method.IsStatic && !method.IsGenericMethod && method.Parameters.Length == 0 &&
+                            method.DeclaredAccessibility == Accessibility.Public &&
+                            method.ReturnType.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat)
+                                .TrimEnd('?') == "global::AtomUI.Theme.Languages.ControlValuePackage"))
+                    {
+                        return ownerName + "." + resolver + "()";
+                    }
+                    throw new InvalidDataException("Invalid control value package resolver.");
                 }
                 throw new InvalidDataException("Invalid control value package registration.");
             })

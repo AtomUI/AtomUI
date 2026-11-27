@@ -4,6 +4,8 @@
     xmlns:atom="https://atomui.net"
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:Drawer}" TargetType="atom:Drawer">
+        <Setter Property="OpenMotion" Value="{atom:MotionResource DrawerOpen}" />
+        <Setter Property="CloseMotion" Value="{atom:MotionResource DrawerClose}" />
         <Setter Property="ContentPadding" Value="{atom:DrawerTokenResource ContentPadding}" />
     </ControlTheme>
 </ResourceDictionary>

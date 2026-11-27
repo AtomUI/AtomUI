@@ -60,8 +60,20 @@ public class ThemeGeneratedDescriptorContractTests
             descriptor.GetValue(token).ShouldBe(compiled, descriptor.Name);
             var text = descriptor.Format(compiled);
             text.ShouldBe(InvokeShared(typeof(ThemeTokenValueFormatter), "Format", descriptor.ValueType, compiled), descriptor.Name);
-            Outcome(() => descriptor.Parse(text)).ShouldBe(
-                Outcome(() => InvokeShared(typeof(ThemeTokenValueParser), "Parse", descriptor.ValueType, text)), descriptor.Name);
+            var parsedOutcome = Outcome(() => descriptor.Parse(text));
+            var sharedOutcome = Outcome(() => InvokeShared(typeof(ThemeTokenValueParser), "Parse", descriptor.ValueType, text));
+            if (parsedOutcome is Avalonia.Animation.Easings.Easing parsedEasing &&
+                sharedOutcome is Avalonia.Animation.Easings.Easing sharedEasing)
+            {
+                TokenValueOperations.TryGetEasingKey(parsedEasing, out var parsedKey).ShouldBeTrue(descriptor.Name);
+                TokenValueOperations.TryGetEasingKey(sharedEasing, out var sharedKey).ShouldBeTrue(descriptor.Name);
+                parsedKey.ShouldBe(sharedKey, descriptor.Name);
+                descriptor.Format(parsedEasing).ShouldBe(text, descriptor.Name);
+            }
+            else
+            {
+                parsedOutcome.ShouldBe(sharedOutcome, descriptor.Name);
+            }
             var projected = descriptor.ProjectResourceValue(token);
             if (compiled is Color color)
             {

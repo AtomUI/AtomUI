@@ -105,8 +105,15 @@ public partial class DesignToken : AbstractDesignToken
             MotionDurationMid      = TimeSpan.Zero;
             MotionDurationSlow     = TimeSpan.Zero;
             MotionDurationVerySlow = TimeSpan.Zero;
+            MotionDurationEnter    = TimeSpan.Zero;
+            MotionDurationLeave    = TimeSpan.Zero;
+            StateTransitionDuration     = TimeSpan.Zero;
+            StateTransitionDurationFast = TimeSpan.Zero;
+            StateTransitionDurationSlow = TimeSpan.Zero;
+            StateTransitionDurationPress = TimeSpan.Zero;
+            WaveFadeDuration = TimeSpan.Zero;
         }
-        if (!EnableWaveSpirit)
+        if (!EnableInteractionEffect)
         {
             WaveAnimationRange = 0;
             WaveStartOpacity   = 0;

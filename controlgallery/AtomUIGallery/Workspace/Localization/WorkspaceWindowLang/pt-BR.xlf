@@ -139,10 +139,10 @@
         <target state="translated">Ativar Resize</target>
       </segment>
     </unit>
-    <unit id="MenuItemEnableWaveSpirit">
+    <unit id="MenuItemEnableInteractionEffect">
       <segment>
-        <source>Enable WaveSpirit</source>
-        <target state="translated">Ativar WaveSpirit</target>
+        <source>Enable interaction feedback</source>
+        <target state="translated">Ativar feedback de interação</target>
       </segment>
     </unit>
     <unit id="MenuItemFollowSystem">

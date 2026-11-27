@@ -69,7 +69,7 @@ Public API / ItemsSource / Command / Event
 
 - 内容与数据：`CheckedItems`、`ItemSpacing`、`ItemTemplate`、`ItemsSource`。
 - 选择与集合：`CheckedMarkBrush`、`CheckedMarkRenderTransform`。
-- 交互与状态：`IsMotionEnabled`、`IsWaveSpiritEnabled`、`State`。
+- 交互与状态：`IsMotionEnabled`、`IsInteractionEffectEnabled`、`State`。
 - 视觉与布局：`LineSpacing`、`Orientation`、`TristateMarkBrush`、`TristateMarkSize`。
 
 维护要求：

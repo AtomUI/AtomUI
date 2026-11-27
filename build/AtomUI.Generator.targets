@@ -4,4 +4,44 @@
     <Import Project="$(MSBuildThisFileDirectory)AtomUI.ThemeAssets.targets" Condition="'$(AtomUIGeneratorTargetsImported)' != 'true'" />
     <Import Project="$(MSBuildThisFileDirectory)AtomUI.CompiledThemes.targets" Condition="'$(AtomUIGeneratorTargetsImported)' != 'true'" />
     <PropertyGroup><AtomUIGeneratorTargetsImported>true</AtomUIGeneratorTargetsImported></PropertyGroup>
+
+    <Target Name="AtomUIPrepareScopedThemeRuntime"
+            BeforeTargets="ResolveLockFileCopyLocalFiles"
+            DependsOnTargets="ResolvePackageAssets"
+            Condition="'$(AtomUIEnableScopedControlThemes)' == 'true' and '$(DesignTimeBuild)' != 'true' and ('$(OutputType)' == 'Exe' or '$(OutputType)' == 'WinExe')">
+        <ItemGroup>
+            <_AtomUIScopedThemeInput Include="@(RuntimeCopyLocalItems)"
+                                    Condition="'%(RuntimeCopyLocalItems.Filename)%(RuntimeCopyLocalItems.Extension)' == 'Avalonia.Base.dll'" />
+        </ItemGroup>
+        <Error Code="ATOMUITHEME001" Condition="'$(_AtomUIRegistrationFrameworkFamily)' != 'OfficialTypeMap' or '@(_AtomUIScopedThemeInput->Count())' != '1'"
+               Text="Scoped control themes require .NET 10 or later with exactly one Avalonia.Base.dll runtime asset from Avalonia 12.2.0." />
+        <PropertyGroup>
+            <_AtomUIScopedThemeBackend Condition="'$(AtomUIConditionalBridgeAssembly)' != ''">$(AtomUIConditionalBridgeAssembly)</_AtomUIScopedThemeBackend>
+            <_AtomUIScopedThemeBackend Condition="'$(_AtomUIScopedThemeBackend)' == ''">$(MSBuildThisFileDirectory)../tools/typemap/AtomUI.TypeMap.Linker.dll</_AtomUIScopedThemeBackend>
+            <_AtomUIScopedThemeOutput>$([System.IO.Path]::GetFullPath('$(IntermediateOutputPath)atomui-scoped-theme/Avalonia.Base.dll'))</_AtomUIScopedThemeOutput>
+        </PropertyGroup>
+        <Error Code="ATOMUITHEME001" Condition="!Exists('$(_AtomUIScopedThemeBackend)')"
+               Text="The AtomUI build tool for scoped control themes was not found at '$(_AtomUIScopedThemeBackend)'." />
+        <!-- Replacing the resolved runtime asset keeps the package reference assembly and the SDK's
+             copy, trimming, and NativeAOT publish paths consistent. -->
+        <Exec Command="&quot;$(DOTNET_HOST_PATH)&quot; &quot;$(_AtomUIScopedThemeBackend)&quot; scoped-theme &quot;@(_AtomUIScopedThemeInput)&quot; &quot;$(_AtomUIScopedThemeOutput)&quot;" />
+        <ItemGroup>
+            <RuntimeCopyLocalItems Remove="@(_AtomUIScopedThemeInput)" />
+            <RuntimeCopyLocalItems Include="@(_AtomUIScopedThemeInput->'$(_AtomUIScopedThemeOutput)')" />
+            <FileWrites Include="$(_AtomUIScopedThemeOutput)" />
+            <RuntimeHostConfigurationOption Include="AtomUI.ScopedControlThemes" Value="true" />
+        </ItemGroup>
+    </Target>
+
+    <Target Name="AtomUISelectScopedThemeRuntimeForOutput"
+            BeforeTargets="_CopyFilesMarkedCopyLocal;_ComputeResolvedCopyLocalPublishAssets"
+            Condition="'$(_AtomUIScopedThemeOutput)' != ''">
+        <!-- Project output references can also discover Avalonia.Base beside a referenced library.
+             Copy and publish must use the same runtime asset that the package resolver selected. -->
+        <ItemGroup>
+            <ReferenceCopyLocalPaths Remove="@(ReferenceCopyLocalPaths)"
+                                     Condition="'%(ReferenceCopyLocalPaths.Filename)%(ReferenceCopyLocalPaths.Extension)' == 'Avalonia.Base.dll'" />
+            <ReferenceCopyLocalPaths Include="@(_AtomUIScopedThemeInput->'$(_AtomUIScopedThemeOutput)')" />
+        </ItemGroup>
+    </Target>
 </Project>

@@ -14,22 +14,37 @@ using Avalonia.VisualTree;
 
 namespace AtomUI.Controls;
 
-internal class SwitchKnob : TemplatedControl
+/// <summary>
+/// Renders the sliding knob and optional loading indicator inside a toggle switch template.
+/// </summary>
+public class SwitchKnob : TemplatedControl
 {
     #region 公共属性定义
-    
-    public static readonly StyledProperty<bool> IsCheckedStateProperty = 
+
+    /// <summary>
+    /// Identifies the <see cref="IsCheckedState" /> property.
+    /// </summary>
+    public static readonly StyledProperty<bool> IsCheckedStateProperty =
         AvaloniaProperty.Register<SwitchKnob, bool>(nameof(IsCheckedState));
-    
-    public static readonly StyledProperty<BoxShadow?> KnobBoxShadowProperty = 
+
+    /// <summary>
+    /// Identifies the <see cref="KnobBoxShadow" /> property.
+    /// </summary>
+    public static readonly StyledProperty<BoxShadow?> KnobBoxShadowProperty =
         AvaloniaProperty.Register<SwitchKnob, BoxShadow?>(nameof(KnobBoxShadow));
-    
+
+    /// <summary>
+    /// Indicates whether the owning switch is currently checked, controlling loading indicator coloring.
+    /// </summary>
     public bool IsCheckedState
     {
         get => GetValue(IsCheckedStateProperty);
         set => SetValue(IsCheckedStateProperty, value);
     }
 
+    /// <summary>
+    /// Shadow rendered beneath the knob surface, or <see langword="null" /> for no shadow.
+    /// </summary>
     public BoxShadow? KnobBoxShadow
     {
         get => GetValue(KnobBoxShadowProperty);
@@ -195,6 +210,9 @@ internal class SwitchKnob : TemplatedControl
         UseLayoutRounding = false;
     }
 
+    /// <summary>
+    /// Starts rendering the loading spinner on the knob.
+    /// </summary>
     public void NotifyStartLoading()
     {
         if (_isLoading)
@@ -211,6 +229,9 @@ internal class SwitchKnob : TemplatedControl
         }
     }
 
+    /// <summary>
+    /// Stops rendering the loading spinner on the knob.
+    /// </summary>
     public void NotifyStopLoading()
     {
         if (!_isLoading)
@@ -224,6 +245,7 @@ internal class SwitchKnob : TemplatedControl
         RemoveLoadingGate();
     }
 
+    /// <inheritdoc />
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
@@ -234,6 +256,7 @@ internal class SwitchKnob : TemplatedControl
         }
     }
 
+    /// <inheritdoc />
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
         ReleaseLoadingPaintTokenSubscription();
@@ -241,6 +264,7 @@ internal class SwitchKnob : TemplatedControl
         RemoveLoadingGate();
     }
 
+    /// <inheritdoc />
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
@@ -282,11 +306,13 @@ internal class SwitchKnob : TemplatedControl
         }
     }
 
+    /// <inheritdoc />
     protected override Size MeasureOverride(Size availableSize)
     {
         return KnobSize;
     }
 
+    /// <inheritdoc />
     public sealed override void Render(DrawingContext context)
     {
         var renderWidth = KnobSize.Width + KnobWidthExtension;

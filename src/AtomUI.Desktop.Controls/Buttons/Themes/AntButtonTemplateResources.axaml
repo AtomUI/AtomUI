@@ -1,0 +1,136 @@
+<ResourceDictionary xmlns="https://github.com/avaloniaui"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:atom="https://atomui.net"
+                    xmlns:antdicons="https://atomui.net/icons/antdesign">
+    <ControlTemplate x:Key="AtomUI.Button.Template" TargetType="atom:Button">
+        <Panel>
+            <Border Name="ShadowsFrame"
+                    CornerRadius="{TemplateBinding EffectiveCornerRadius}" />
+            <atom:DashedBorder Name="Frame"
+                               Height="{TemplateBinding Height}"
+                               Padding="{TemplateBinding Padding}"
+                               BorderThickness="{TemplateBinding EffectiveBorderThickness}"
+                               BorderBrush="{TemplateBinding BorderBrush}"
+                               BackgroundSizing="{TemplateBinding BackgroundSizing}"
+                               CornerRadius="{TemplateBinding EffectiveCornerRadius}"
+                               Background="{TemplateBinding Background}" />
+            <Border Padding="{TemplateBinding Padding}">
+                <DockPanel Name="PART_RootLayout"
+                           LastChildFill="True"
+                           HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                           VerticalAlignment="{TemplateBinding VerticalContentAlignment}">
+                    <ContentPresenter
+                        Name="PART_LoadingIcon"
+                        Classes.semantic-icon="True"
+                        Width="{TemplateBinding IconWidth}"
+                        Height="{TemplateBinding IconHeight}"
+                        Foreground="{TemplateBinding Foreground}"
+                        DockPanel.Dock="Left" />
+
+                    <atom:IconPresenter
+                        Name="PART_ButtonIcon"
+                        Classes.semantic-icon="True"
+                        Width="{TemplateBinding IconWidth}"
+                        Height="{TemplateBinding IconHeight}"
+                        Icon="{TemplateBinding Icon}"
+                        IconBrush="{TemplateBinding Foreground}"
+                        IsVisible="{TemplateBinding EffectiveIconVisible}" />
+                    <ContentPresenter
+                        Name="PART_ContentPresenter"
+                        Classes.semantic-content="True"
+                        Content="{TemplateBinding Content}"
+                        ContentTemplate="{TemplateBinding ContentTemplate}"
+                        IsVisible="{TemplateBinding Content, Converter={x:Static ObjectConverters.IsNotNull}}" />
+                </DockPanel>
+            </Border>
+        </Panel>
+    </ControlTemplate>
+
+    <ControlTemplate x:Key="AtomUI.Button.DashedTemplate" TargetType="atom:Button">
+        <Panel>
+            <Border Name="ShadowsFrame"
+                    CornerRadius="{TemplateBinding EffectiveCornerRadius}"
+                    Background="{TemplateBinding Background}" />
+            <atom:DashedBorder Name="Frame"
+                               Height="{TemplateBinding Height}"
+                               Padding="{TemplateBinding Padding}"
+                               BorderThickness="{TemplateBinding EffectiveBorderThickness}"
+                               BorderBrush="{TemplateBinding BorderBrush}"
+                               BackgroundSizing="{TemplateBinding BackgroundSizing}"
+                               CornerRadius="{TemplateBinding EffectiveCornerRadius}"
+                               Background="{TemplateBinding Background}"
+                               StrokeDashArray="{x:Static atom:ButtonTheme.DashedStyle}">
+                <DockPanel Name="PART_RootLayout"
+                           LastChildFill="True"
+                           HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                           VerticalAlignment="{TemplateBinding VerticalContentAlignment}">
+                    <ContentPresenter
+                        Name="PART_LoadingIcon"
+                        Classes.semantic-icon="True"
+                        Width="{TemplateBinding IconWidth}"
+                        Height="{TemplateBinding IconHeight}"
+                        Foreground="{TemplateBinding Foreground}"
+                        DockPanel.Dock="Left" />
+
+                    <atom:IconPresenter
+                        Name="PART_ButtonIcon"
+                        Classes.semantic-icon="True"
+                        Width="{TemplateBinding IconWidth}"
+                        Height="{TemplateBinding IconHeight}"
+                        Icon="{TemplateBinding Icon}"
+                        IconBrush="{TemplateBinding Foreground}"
+                        IsVisible="{TemplateBinding EffectiveIconVisible}" />
+                    <ContentPresenter
+                        Name="PART_ContentPresenter"
+                        Classes.semantic-content="True"
+                        Content="{TemplateBinding Content}"
+                        ContentTemplate="{TemplateBinding ContentTemplate}" />
+                </DockPanel>
+            </atom:DashedBorder>
+        </Panel>
+    </ControlTemplate>
+
+    <ControlTemplate x:Key="AtomUI.Button.DashedVariantTemplate" TargetType="atom:Button">
+        <Panel>
+            <Border Name="ShadowsFrame"
+                    CornerRadius="{TemplateBinding EffectiveCornerRadius}"
+                    Background="{TemplateBinding Background}" />
+            <atom:DashedBorder Name="Frame"
+                               Height="{TemplateBinding Height}"
+                               Padding="{TemplateBinding Padding}"
+                               BorderThickness="{TemplateBinding EffectiveBorderThickness}"
+                               BorderBrush="{TemplateBinding BorderBrush}"
+                               BackgroundSizing="{TemplateBinding BackgroundSizing}"
+                               CornerRadius="{TemplateBinding EffectiveCornerRadius}"
+                               Background="{TemplateBinding Background}"
+                               StrokeDashArray="{x:Static atom:ButtonTheme.DashedStyle}">
+                <DockPanel Name="PART_RootLayout"
+                           LastChildFill="True"
+                           HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                           VerticalAlignment="{TemplateBinding VerticalContentAlignment}">
+                    <ContentPresenter
+                        Name="PART_LoadingIcon"
+                        Classes.semantic-icon="True"
+                        Width="{TemplateBinding IconWidth}"
+                        Height="{TemplateBinding IconHeight}"
+                        Foreground="{TemplateBinding Foreground}"
+                        DockPanel.Dock="Left" />
+
+                    <atom:IconPresenter
+                        Name="PART_ButtonIcon"
+                        Classes.semantic-icon="True"
+                        Width="{TemplateBinding IconWidth}"
+                        Height="{TemplateBinding IconHeight}"
+                        Icon="{TemplateBinding Icon}"
+                        IconBrush="{TemplateBinding Foreground}"
+                        IsVisible="{TemplateBinding EffectiveIconVisible}" />
+                    <ContentPresenter
+                        Name="PART_ContentPresenter"
+                        Classes.semantic-content="True"
+                        Content="{TemplateBinding Content}"
+                        ContentTemplate="{TemplateBinding ContentTemplate}" />
+                </DockPanel>
+            </atom:DashedBorder>
+        </Panel>
+    </ControlTemplate>
+</ResourceDictionary>

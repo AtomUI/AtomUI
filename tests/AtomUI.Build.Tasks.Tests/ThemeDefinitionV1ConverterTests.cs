@@ -57,13 +57,13 @@ public class ThemeDefinitionV1ConverterTests
     {
         var result = Convert(
             ("Nova.theme.xml", V1("Nova", "Nova", "<Algorithm Catalog='Shadcn' Id='Nova'/>",
-                "<Tokens><Token Name='ColorPrimary' Value='#171717'/><Token Name='EnableWaveSpirit' Value='false'/></Tokens>")),
+                "<Tokens><Token Name='ColorPrimary' Value='#171717'/><Token Name='EnableInteractionEffect' Value='false'/></Tokens>")),
             ("Nova.Dark.theme.xml", V1("Nova.Dark", "Nova Dark", "<Algorithm Catalog='Shadcn' Id='Nova.Dark'/>",
-                "<Tokens><Token Name='ColorPrimary' Value='#E5E5E5'/><Token Name='EnableWaveSpirit' Value='false'/></Tokens>")),
+                "<Tokens><Token Name='ColorPrimary' Value='#E5E5E5'/><Token Name='EnableInteractionEffect' Value='false'/></Tokens>")),
             ("Nova.Compact.theme.xml", V1("Nova.Compact", "Nova Compact", "<Algorithm Catalog='Shadcn' Id='Nova'/><Algorithm Id='Compact'/>",
-                "<Tokens><Token Name='ColorPrimary' Value='#171717'/><Token Name='EnableWaveSpirit' Value='false'/></Tokens>")),
+                "<Tokens><Token Name='ColorPrimary' Value='#171717'/><Token Name='EnableInteractionEffect' Value='false'/></Tokens>")),
             ("Nova.DarkCompact.theme.xml", V1("Nova.DarkCompact", "Nova Dark Compact", "<Algorithm Catalog='Shadcn' Id='Nova.Dark'/><Algorithm Id='Compact'/>",
-                "<Tokens><Token Name='ColorPrimary' Value='#E5E5E5'/><Token Name='EnableWaveSpirit' Value='false'/></Tokens>")));
+                "<Tokens><Token Name='ColorPrimary' Value='#E5E5E5'/><Token Name='EnableInteractionEffect' Value='false'/></Tokens>")));
 
         result.Files.ShouldHaveSingleItem().FileName.ShouldBe("Nova.theme.xml");
         result.MergedFileNames.ShouldBe(["Nova.Dark.theme.xml", "Nova.Compact.theme.xml", "Nova.DarkCompact.theme.xml"], ignoreOrder: true);
@@ -72,7 +72,7 @@ public class ThemeDefinitionV1ConverterTests
         theme.Attribute("Appearance").ShouldBeNull("a merged theme follows every variant");
         theme.Attribute("Density").ShouldBeNull();
         theme.Element(V2 + "Tokens")!.Elements(V2 + "Token").Select(static token => token.Attribute("Name")!.Value)
-             .ShouldBe(["EnableWaveSpirit"]);
+             .ShouldBe(["EnableInteractionEffect"]);
         var sections = theme.Elements(V2 + "When").ToArray();
         sections.Length.ShouldBe(4);
         sections.Single(section => section.Attribute("Appearance")!.Value == "Dark" && section.Attribute("Density")!.Value == "Compact")

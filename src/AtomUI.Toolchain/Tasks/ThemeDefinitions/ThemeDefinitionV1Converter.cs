@@ -46,7 +46,7 @@ internal static class ThemeDefinitionV1Converter
         "BorderRadius", "SizeUnit", "SizeStep", "SizePopupArrow", "ControlHeight", "ZIndexBase", "ZIndexPopupBase",
         "OpacityImage", "MotionUnit", "MotionBase", "MotionEaseOutCirc", "MotionEaseInOutCirc", "MotionEaseOut",
         "MotionEaseInOut", "MotionEaseOutBack", "MotionEaseInBack", "MotionEaseInQuint", "MotionEaseOutQuint",
-        "EnableMotion", "EnableWaveSpirit", "Wireframe"
+        "EnableMotion", "EnableInteractionEffect", "Wireframe"
     };
 
     private sealed record Source(

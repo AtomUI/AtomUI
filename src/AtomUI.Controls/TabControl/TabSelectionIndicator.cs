@@ -110,7 +110,7 @@ internal sealed class TabSelectionIndicator(SelectingItemsControl owner)
     }
 
     internal void Update(Dock placement, TabIndicatorMode mode, double fixedLength, bool animateLength,
-        bool centerSelection, bool isMotionEnabled)
+        bool centerSelection, bool isMotionEnabled, IndicatorMotionMode motionMode)
     {
         if (_indicator is null && _scroll is null)
         {
@@ -157,9 +157,10 @@ internal sealed class TabSelectionIndicator(SelectingItemsControl owner)
                 var builder = new TransformOperations.Builder(1);
                 builder.AppendTranslate(vertical ? 0 : bounds.Start, vertical ? bounds.Start : 0);
                 indicator.SetCurrentValue(Visual.RenderTransformProperty, builder.Build());
-                if (_hasIndicatorBounds && selectionChanged && allowMotion && !itemsChanged)
+                if (_hasIndicatorBounds && selectionChanged && allowMotion && !itemsChanged &&
+                    motionMode != IndicatorMotionMode.None)
                 {
-                    AnimateIndicator(indicator, previous, bounds, vertical, animateLength);
+                    AnimateIndicator(indicator, previous, bounds, vertical, animateLength, motionMode);
                 }
                 _lastIndicator = bounds;
                 _hasIndicatorBounds = true;
@@ -226,7 +227,8 @@ internal sealed class TabSelectionIndicator(SelectingItemsControl owner)
         return vertical ? new Vector(scroll.Offset.X, offset) : new Vector(offset, scroll.Offset.Y);
     }
 
-    private void AnimateIndicator(Border indicator, IndicatorBounds previous, IndicatorBounds target, bool vertical, bool animateLength)
+    private void AnimateIndicator(Border indicator, IndicatorBounds previous, IndicatorBounds target, bool vertical,
+                                  bool animateLength, IndicatorMotionMode motionMode)
     {
         if (ElementComposition.GetElementVisual(indicator) is not { } visual)
         {
@@ -243,26 +245,48 @@ internal sealed class TabSelectionIndicator(SelectingItemsControl owner)
         _originalScale = visual.Scale;
         _originalTranslation = visual.Translation;
         var delta = previous.Start - target.Start;
+        var stretch = motionMode == IndicatorMotionMode.Stretch && delta != 0 && previous.Length > 0 && target.Length > 0;
+        var join = stretch ? StretchBounds(previous, target) : default;
         if (delta != 0)
         {
             var animation = visual.Compositor.CreateVector3DKeyFrameAnimation();
             animation.Duration = duration;
-            animation.InsertKeyFrame(0, _originalTranslation + (vertical ? new Vector3D(0, delta, 0) : new Vector3D(delta, 0, 0)));
+            animation.InsertKeyFrame(0, Translate(delta));
+            if (stretch)
+            {
+                animation.InsertKeyFrame(0.5f, Translate(join.Start - target.Start));
+            }
             animation.InsertKeyFrame(1, _originalTranslation, EaseOut);
             visual.StartAnimation(TranslationChannel, animation);
         }
-        if (animateLength && previous.Length > 0 && target.Length > 0 && previous.Length != target.Length)
+        if (stretch || (animateLength && previous.Length > 0 && target.Length > 0 && previous.Length != target.Length))
         {
-            var ratio = previous.Length / target.Length;
             var animation = visual.Compositor.CreateVector3DKeyFrameAnimation();
             animation.Duration = duration;
-            var initialScale = vertical
-                ? new Vector3D(_originalScale.X, _originalScale.Y * ratio, _originalScale.Z)
-                : new Vector3D(_originalScale.X * ratio, _originalScale.Y, _originalScale.Z);
-            animation.InsertKeyFrame(0, initialScale);
+            animation.InsertKeyFrame(0, Scale(previous.Length / target.Length));
+            if (stretch)
+            {
+                animation.InsertKeyFrame(0.5f, Scale(join.Length / target.Length));
+            }
             animation.InsertKeyFrame(1, _originalScale, EaseOut);
             visual.StartAnimation(ScaleChannel, animation);
         }
+
+        Vector3D Translate(double offset) => _originalTranslation +
+            (vertical ? new Vector3D(0, offset, 0) : new Vector3D(offset, 0, 0));
+
+        Vector3D Scale(double ratio) => vertical
+            ? new Vector3D(_originalScale.X, _originalScale.Y * ratio, _originalScale.Z)
+            : new Vector3D(_originalScale.X * ratio, _originalScale.Y, _originalScale.Z);
+    }
+
+    private static IndicatorBounds StretchBounds(IndicatorBounds previous, IndicatorBounds target)
+    {
+        var forward = target.Start > previous.Start;
+        var start = previous.Start + (target.Start - previous.Start) * (forward ? 0.35 : 0.65);
+        var far = previous.Start + previous.Length;
+        var end = far + (target.Start + target.Length - far) * (forward ? 0.65 : 0.35);
+        return new IndicatorBounds(start, Math.Max(0, end - start));
     }
 
     private void StopIndicatorMotion()

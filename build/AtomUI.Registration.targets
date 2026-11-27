@@ -61,6 +61,12 @@
             <RuntimeHostConfigurationOption Remove="AtomUI.Registration.Trimmed" />
             <RuntimeHostConfigurationOption Include="AtomUI.Registration.Trimmed" Value="true" Trim="true" />
         </ItemGroup>
+        <ItemGroup>
+            <RuntimeHostConfigurationOption Remove="AtomUI.Registration.NativeValueRules" />
+            <RuntimeHostConfigurationOption Include="AtomUI.Registration.NativeValueRules" Value="false" Trim="true">
+                <Value Condition="'$(PublishAot)' == 'true' and '$(_AtomUIRegistrationFrameworkFamily)' == 'OfficialTypeMap' and '$(_AtomUIMonoTypeMapPlatform)' == ''">true</Value>
+            </RuntimeHostConfigurationOption>
+        </ItemGroup>
     </Target>
 
     <!-- AtomUISetRegistrationPublishMode (before PrepareForILLink) has already resolved the Mono backend decision. -->

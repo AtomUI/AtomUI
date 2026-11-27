@@ -4,8 +4,8 @@
     xmlns:atom="https://atomui.net"
     x:ClassModifier="internal">
     <ControlTheme x:Key="{x:Type atom:ToolTip}" TargetType="atom:ToolTip" x:DataType="atom:ToolTip">
-        <Setter Property="OpenMotion" Value="{x:Static atom:PopupMotionDefaults.TooltipOpen}" />
-        <Setter Property="CloseMotion" Value="{x:Static atom:PopupMotionDefaults.TooltipClose}" />
+        <Setter Property="OpenMotion" Value="{atom:MotionResource TooltipOpen}" />
+        <Setter Property="CloseMotion" Value="{atom:MotionResource TooltipClose}" />
         <Setter Property="ToolTipShadows" Value="{atom:ToolTipTokenResource ToolTipShadows}" />
         <Setter Property="Template">
             <ControlTemplate>

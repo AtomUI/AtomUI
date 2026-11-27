@@ -1,3 +1,4 @@
+using AtomUI.Animations;
 using AtomUI.Controls;
 using AtomUI.Theme;
 using Avalonia;
@@ -429,7 +430,7 @@ public class StepsItem : AbstractStepsItem
 
         if (invoke)
         {
-            InvokeFromPointer();
+            InvokeFromPointer(e);
         }
     }
 
@@ -493,35 +494,27 @@ public class StepsItem : AbstractStepsItem
         SetCurrentValue(FocusableProperty, CanInvoke);
     }
 
-    private void InvokeFromPointer()
+    private void InvokeFromPointer(PointerReleasedEventArgs args)
     {
         if (!CanInvoke)
         {
             return;
         }
 
-        PlayActivationWave();
         Owner?.RequestCurrentChange(this);
+        if (_indicator is { } indicator)
+        {
+            indicator.PlayInteractionEffect(InteractionEffectInputSource.Pointer, args.GetPosition(indicator));
+        }
     }
 
     private void InvokeFromKeyboard()
     {
         if (CanInvoke)
         {
-            PlayActivationWave();
             Owner?.RequestCurrentChange(this);
+            _indicator?.PlayInteractionEffect(InteractionEffectInputSource.Keyboard, null);
         }
-    }
-
-    private void PlayActivationWave()
-    {
-        var indicator = _indicator;
-        if (indicator is null)
-        {
-            return;
-        }
-
-        Dispatcher.UIThread.Post(indicator.PlayWave);
     }
 
     private void UpdateProgressState()

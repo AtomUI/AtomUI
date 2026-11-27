@@ -19,9 +19,9 @@
             <Setter Property="Transitions">
                 <atom:TokenTransitions>
                     <Transitions>
-                        <atom:SolidColorBrushTransition Property="TrackGrooveBrush" atom:TokenTransitions.Duration="MotionDurationMid" />
-                        <atom:SolidColorBrushTransition Property="TrackBarBrush" atom:TokenTransitions.Duration="MotionDurationMid" />
-                        <atom:SolidColorBrushTransition Property="MarkBorderBrush" atom:TokenTransitions.Duration="MotionDurationMid" />
+                        <atom:SolidColorBrushTransition Property="TrackGrooveBrush" atom:TokenTransitions.Duration="StateTransitionDuration" />
+                        <atom:SolidColorBrushTransition Property="TrackBarBrush" atom:TokenTransitions.Duration="StateTransitionDuration" />
+                        <atom:SolidColorBrushTransition Property="MarkBorderBrush" atom:TokenTransitions.Duration="StateTransitionDuration" />
                     </Transitions>
                 </atom:TokenTransitions>
             </Setter>

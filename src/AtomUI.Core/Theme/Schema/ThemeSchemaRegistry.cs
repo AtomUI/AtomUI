@@ -2,6 +2,7 @@ using System.Collections.Frozen;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Runtime.CompilerServices;
+using AtomUI.Controls;
 using AtomUI.Theme.DesignTokens;
 using AtomUI.Theme.Resources;
 using AtomUI.Registration;
@@ -19,6 +20,7 @@ internal sealed class ThemeSchemaRegistry
         _tokenRulesByKey;
     // One table per language, indexed by control slot, built on the language's first use.
     private readonly ConditionalWeakTable<DesignLanguageDescriptor, ControlTokenRuleDescriptor?[]> _tokenRuleTables = new();
+    private Dictionary<(Type Control, Type Language), ControlBehaviorDescriptor>? _controlBehaviors;
     // Constructor-only: written by the constructors.
     private ThemeSchemaRevision _revision;
     private readonly FrozenDictionary<object, int> _controlResourceSlotsByKey;
@@ -506,6 +508,59 @@ internal sealed class ThemeSchemaRegistry
         return _languagesById.TryGetValue(id, out descriptor);
     }
 
+    internal void SetControlBehaviors(IReadOnlyList<ControlBehaviorDescriptor>? registrations,
+                                      ThemeSchemaRegistry? parent = null)
+    {
+        if (registrations is not { Count: > 0 } && parent?._controlBehaviors is null)
+        {
+            return;
+        }
+        var behaviors = parent?._controlBehaviors is { } previous
+            ? new Dictionary<(Type, Type), ControlBehaviorDescriptor>(previous)
+            : new Dictionary<(Type, Type), ControlBehaviorDescriptor>();
+        if (registrations is not null)
+        {
+            foreach (var registration in registrations)
+            {
+                var key = (registration.ControlType, registration.LanguageTokenType);
+                if (!behaviors.TryAdd(key, registration) && !ReferenceEquals(behaviors[key], registration))
+                {
+                    throw new ThemeSchemaException($"Multiple behaviors were registered for '{key.ControlType}' under '{key.LanguageTokenType}'.");
+                }
+            }
+        }
+        _controlBehaviors = behaviors;
+        var fingerprint = new SchemaFingerprintBuilder();
+        fingerprint.Add(_revision.Value);
+        fingerprint.Add(behaviors.Count);
+        foreach (var behavior in behaviors.Values.OrderBy(static item => item.ControlType.AssemblyQualifiedName, StringComparer.Ordinal)
+                     .ThenBy(static item => item.LanguageTokenType.AssemblyQualifiedName, StringComparer.Ordinal))
+        {
+            fingerprint.Add(behavior.ControlType.AssemblyQualifiedName!);
+            fingerprint.Add(behavior.LanguageTokenType.AssemblyQualifiedName!);
+            fingerprint.Add(behavior.BehaviorType.AssemblyQualifiedName!);
+            fingerprint.Add(behavior.BehaviorType.Module.ModuleVersionId.ToString("N"));
+        }
+        _revision = new ThemeSchemaRevision(fingerprint.Value);
+    }
+
+    internal ControlBehaviorDescriptor? FindControlBehavior(Type control, Type languageTokenType)
+    {
+        if (_controlBehaviors is not { } behaviors)
+        {
+            return null;
+        }
+        for (var type = languageTokenType; type is not null && typeof(LanguageDesignToken).IsAssignableFrom(type);
+             type = type.BaseType)
+        {
+            if (behaviors.TryGetValue((control, type), out var behavior))
+            {
+                return behavior;
+            }
+        }
+        return null;
+    }
+
     /// <summary>
     /// The rule of the control in <paramref name="controlSlot" /> under <paramref name="language" />: the first one
     /// registered along the language token type's base types, from the most specific to
@@ -579,7 +634,7 @@ internal sealed class ThemeSchemaRegistry
                 if (FindControlTokenRule(language.LanguageTokenType, identity) is { } found)
                 {
                     // The value package must have been built against the loaded control package's token schema.
-                    TokenSchemaDigests.Validate(found.ValuePackage, found.TokenType.Assembly);
+                    found.ValidateTokenSchema();
                 }
                 else
                 {
@@ -866,20 +921,12 @@ internal sealed class ThemeSchemaRegistry
         {
             return Array.Empty<ControlTokenRuleDescriptor>();
         }
-        var array = rules.ToArray();
-        foreach (var descriptor in array)
-        {
-            if (descriptor is null)
-            {
-                throw new ArgumentException("Control rule descriptors cannot contain null.", nameof(rules));
-            }
-        }
-        Array.Sort(array, static (left, right) =>
-        {
-            var result = string.CompareOrdinal(left.LanguageTokenType.FullName, right.LanguageTokenType.FullName);
-            return result != 0 ? result : ControlIdentityKeyComparer.Instance.Compare(left.Control, right.Control);
-        });
-        return array;
+        // Project the type names once before sorting. NativeAOT can rebuild a name each time FullName is read.
+        return rules.Select(static descriptor => descriptor ??
+                throw new ArgumentException("Control rule descriptors cannot contain null.", nameof(rules)))
+            .OrderBy(static descriptor => descriptor.LanguageTokenType.FullName, StringComparer.Ordinal)
+            .ThenBy(static descriptor => descriptor.Control, ControlIdentityKeyComparer.Instance)
+            .ToArray();
     }
 
     private static FrozenDictionary<(Type LanguageTokenType, ControlTokenIdentity Control), ControlTokenRuleDescriptor>

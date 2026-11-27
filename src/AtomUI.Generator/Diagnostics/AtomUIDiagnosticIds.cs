@@ -65,6 +65,7 @@ internal static class AtomUIDiagnosticIds
     public const string TokenRuleReadsUnwrittenToken = "ATOMUIGEN051";
     public const string ValuePackageMissesTokenRule = "ATOMUIGEN052";
     public const string PackageDependencyDirection = "ATOMUIGEN053";
+    public const string InvalidControlBehaviorContribution = "ATOMUIGEN056";
     public const string LocalizationInvalidLanguageData = "ATOMUILOC001";
     public const string LocalizationDuplicateLanguageData = "ATOMUILOC002";
     public const string LocalizationInvalidCatalog = "ATOMUILOC003";

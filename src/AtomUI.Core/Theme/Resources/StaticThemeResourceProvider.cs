@@ -43,6 +43,12 @@ internal sealed class StaticThemeResourceProvider : IResourceProvider
     private ResourceTable ActiveTable => ReadUpdate?.IsCandidateRead == true ? _stagedTable! : _table;
     public bool HasResources => ActiveTable.Resources.Length != 0;
 
+    internal bool HasKnownKey(object key) => ActiveTable.HasKnownKey(key);
+
+    internal IEnumerable<string> KnownNames => ActiveTable.KnownNames;
+
+    internal IEnumerable<Type> KnownTypes => ActiveTable.KnownTypes;
+
     public bool TryGetResource(object key, ThemeVariant? theme, out object? value)
     {
         var found = ActiveTable.TryGetResource(key, theme, out value, ReadUpdate);
@@ -184,24 +190,51 @@ internal sealed class StaticThemeResourceProvider : IResourceProvider
             Resources = resources;
             for (var index = resources.Length - 1; index >= 0; index--)
             {
-                if (resources[index] is not DeferredControlThemeResourceProvider { ResourceKeys: { } keys })
+                if (resources[index] is DeferredControlThemeResourceProvider deferred)
                 {
-                    _unknown.Add(index);
+                    if (deferred.ResourceKeys is { } keys)
+                    {
+                        IndexKeys(index, keys);
+                    }
+                    else
+                    {
+                        _unknown.Add(index);
+                    }
                     continue;
                 }
-                foreach (var key in keys)
+
+                if (resources[index] is IResourceDictionary dictionary &&
+                    dictionary.MergedDictionaries.Count == 0 &&
+                    dictionary.ThemeDictionaries.Count == 0)
                 {
-                    if (!_candidates.TryGetValue(key, out var matches))
-                    {
-                        matches = [];
-                        _candidates.Add(key, matches);
-                    }
-                    matches.Add(index);
+                    IndexKeys(index, dictionary.Keys);
+                    continue;
                 }
+
+                _unknown.Add(index);
+            }
+        }
+
+        private void IndexKeys(int index, IEnumerable<object> keys)
+        {
+            foreach (var key in keys)
+            {
+                if (!_candidates.TryGetValue(key, out var matches))
+                {
+                    matches = [];
+                    _candidates.Add(key, matches);
+                }
+                matches.Add(index);
             }
         }
 
         internal IResourceProvider[] Resources { get; }
+
+        internal bool HasKnownKey(object key) => _candidates.ContainsKey(key);
+
+        internal IEnumerable<string> KnownNames => _candidates.Keys.OfType<string>();
+
+        internal IEnumerable<Type> KnownTypes => _candidates.Keys.OfType<Type>();
 
         internal bool TryGetResource(object key, ThemeVariant? theme, out object? value, ThemeManager.PackageUpdate? update = null)
         {

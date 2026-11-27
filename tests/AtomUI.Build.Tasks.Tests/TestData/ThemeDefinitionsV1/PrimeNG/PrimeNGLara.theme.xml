@@ -9,7 +9,7 @@
     <Token Name="ColorSuccess" Value="#22C55E" />
     <Token Name="ColorWarning" Value="#F97316" />
     <Token Name="ColorInfo" Value="#0EA5E9" />
-    <Token Name="EnableWaveSpirit" Value="false" />
+    <Token Name="EnableInteractionEffect" Value="false" />
     <Token Name="BorderRadius" Value="6" />
     <Token Name="ControlHeight" Value="39" />
   </Tokens>

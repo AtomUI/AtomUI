@@ -80,6 +80,8 @@ internal static class AliasTokenRules
         token.ColorFocusBorder           = token.ColorPrimaryBorder;
         token.WaveAnimationRange         = token.LineWidth * 6;
         token.WaveStartOpacity           = 0.4;
+        token.WaveFadeDuration           = TimeSpan.FromSeconds(2);
+        token.WaveEasing                 = null;
 
         // Control
         // The PrimeNG field glow width, read by the input shadows below.

@@ -8,10 +8,6 @@
         <Setter Property="Template">
             <ControlTemplate>
                 <Panel>
-                    <atom:WaveSpiritDecorator Name="{x:Static atom:WaveSpiritDecorator.WaveSpiritPart}"
-                                              CornerRadius="{TemplateBinding CornerRadius}"
-                                              IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
-                                              IsWaveSpiritEnabled="{TemplateBinding IsWaveSpiritEnabled}"/>
                     <atom:PixelAlignedBorder Name="Frame"
                                              BorderThickness="{TemplateBinding BorderThickness}"
                                              BorderBrush="{TemplateBinding BorderBrush}"
@@ -45,16 +41,13 @@
             <Setter Property="Transitions">
                 <atom:TokenTransitions>
                     <Transitions>
-                        <atom:SolidColorBrushTransition Property="Background" atom:TokenTransitions.Duration="MotionDurationMid" />
-                        <atom:SolidColorBrushTransition Property="BorderBrush" atom:TokenTransitions.Duration="MotionDurationMid" />
-                        <atom:SolidColorBrushTransition Property="TristateMarkBrush" atom:TokenTransitions.Duration="MotionDurationMid" />
-                        <TransformOperationsTransition Property="CheckedMarkRenderTransform" atom:TokenTransitions.Duration="MotionDurationMid" Easing="BackEaseOut" />
+                        <atom:SolidColorBrushTransition Property="Background" atom:TokenTransitions.Duration="StateTransitionDuration" />
+                        <atom:SolidColorBrushTransition Property="BorderBrush" atom:TokenTransitions.Duration="StateTransitionDuration" />
+                        <atom:SolidColorBrushTransition Property="TristateMarkBrush" atom:TokenTransitions.Duration="StateTransitionDuration" />
+                        <TransformOperationsTransition Property="CheckedMarkRenderTransform" atom:TokenTransitions.Duration="StateTransitionDuration" Easing="BackEaseOut" atom:TokenTransitions.Easing="StateTransitionEasingOverride" />
                     </Transitions>
                 </atom:TokenTransitions>
             </Setter>
-        </Style>
-        <Style Selector="^ /template/ atom|WaveSpiritDecorator#PART_WaveSpirit">
-            <Setter Property="WaveType" Value="RoundRectWave"/>
         </Style>
         
         <Setter Property="CheckedMarkRenderTransform" Value="scale(0.1)"/>

@@ -33,7 +33,9 @@ TreeView 内部实现较多，按功能拆分 partial 文件。拆分边界服�
 - `src/AtomUI.Desktop.Controls/TreeView/TreeViewItemHeader.cs`：header 视觉状态、pointer 状态、switcher mode、filter highlight runs 和 template part 订阅。
 - `src/AtomUI.Desktop.Controls/TreeView/NodeSwitcherButton.cs`：switcher 当前图标选择、默认图标和 rotation 动效；点击时调用 `TreeViewItem` 的展开请求入口。
 - `src/AtomUI.Desktop.Controls/TreeView/TreeItemNode.cs`、`ITreeItemNode.cs`：轻量数据节点模型、节点契约和父子关系维护。绑定型节点模型属于同一节点数据职责边界，必须保持独立类型，不改造 `TreeItemNode`。
-- `src/AtomUI.Desktop.Controls/TreeView/DefaultTreeViewInteractionHandler.cs`：pointer、context menu、radio group、checked changed 和 floating tree light dismiss。
+- `src/AtomUI.Desktop.Controls/TreeView/TreeView.Interaction.cs`：树节点的激活、上下文菜单、单选分组和勾选提交，浮层树在实际需要时接入外部关闭事件。
+- `src/AtomUI.Desktop.Controls/TreeView/TreeViewBehavior.cs`：供应用与设计语言贡献的节点标题激活策略。
+- `src/AtomUI.Desktop.Controls/TreeView/TreeViewItemDecoration.cs`：由默认主题模板提供的整行背景和节点连线。
 - `src/AtomUI.Desktop.Controls/TreeView/TreeViewToken.cs`：TreeView Token 定义。
 - `src/AtomUI.Desktop.Controls/TreeView/Themes/`：TreeView、TreeViewItem、TreeViewItemHeader、NodeSwitcherButton 主题和模板常量。
 

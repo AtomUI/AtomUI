@@ -65,8 +65,8 @@ internal class RadioIndicator : TemplatedControl, IFocusOutlineShapeProvider
     internal static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<RadioIndicator>();
 
-    internal static readonly StyledProperty<bool> IsWaveSpiritEnabledProperty =
-        WaveSpiritAwareControlProperty.IsWaveSpiritEnabledProperty.AddOwner<RadioIndicator>();
+    internal static readonly StyledProperty<bool> IsInteractionEffectEnabledProperty =
+        InteractionEffectAwareControlProperty.IsInteractionEffectEnabledProperty.AddOwner<RadioIndicator>();
 
     /// <summary>
     /// The Token resource keys of the three sizes of the indicator: the size of the radio, the size of the dot and
@@ -92,21 +92,19 @@ internal class RadioIndicator : TemplatedControl, IFocusOutlineShapeProvider
     }
 
     /// <summary>
-    /// Lets the indicator play the wave when it becomes checked; the wave needs this value and
+    /// Lets the indicator play interaction feedback when its checked state changes; feedback needs this value and
     /// <see cref="IsMotionEnabled" /> to be <see langword="true" />. The theme of the radio button passes its own
-    /// switch down to the indicator, and the theme of the indicator passes the value on to its template.
+    /// switch down to the indicator.
     /// </summary>
-    internal bool IsWaveSpiritEnabled
+    internal bool IsInteractionEffectEnabled
     {
-        get => GetValue(IsWaveSpiritEnabledProperty);
-        set => SetValue(IsWaveSpiritEnabledProperty, value);
+        get => GetValue(IsInteractionEffectEnabledProperty);
+        set => SetValue(IsInteractionEffectEnabledProperty, value);
     }
     
     #endregion
 
     private IPen? _cachedPen;
-    private WaveSpiritDecorator? _waveSpiritDecorator;
-    private DispatcherOperation? _pendingWave;
     private OwnerTokenSet? _geometryTokens;
     private (double RadioSize, double DotSize, double DotPadding) _geometry;
     
@@ -132,8 +130,6 @@ internal class RadioIndicator : TemplatedControl, IFocusOutlineShapeProvider
 
     protected override void OnTemplateChanged(AvaloniaPropertyChangedEventArgs e)
     {
-        _pendingWave?.Abort();
-        _pendingWave = null;
         _transitionInitialization?.Reset();
         base.OnTemplateChanged(e);
     }
@@ -142,8 +138,6 @@ internal class RadioIndicator : TemplatedControl, IFocusOutlineShapeProvider
     {
         _geometryTokens?.Dispose();
         _geometryTokens = null;
-        _pendingWave?.Abort();
-        _pendingWave = null;
         _transitionInitialization.Reset();
         base.OnDetachedFromVisualTree(e);
     }
@@ -170,21 +164,7 @@ internal class RadioIndicator : TemplatedControl, IFocusOutlineShapeProvider
         {
             UpdatePseudoClasses();
 
-            if (change.Property == IsCheckedProperty)
-            {
-                _pendingWave?.Abort();
-                _pendingWave = null;
-            }
 
-            if (change.Property == IsCheckedProperty &&
-                _transitionInitialization.IsReady &&
-                IsMotionEnabled &&
-                IsWaveSpiritEnabled &&
-                !PseudoClasses.Contains(StdPseudoClass.Disabled) &&
-                PseudoClasses.Contains(StdPseudoClass.Checked))
-            {
-                _pendingWave = Dispatcher.InvokeAsync(PlayWaveSpirit);
-            }
         }
 
         if (this.IsAttachedToVisualTree())
@@ -250,27 +230,6 @@ internal class RadioIndicator : TemplatedControl, IFocusOutlineShapeProvider
         PseudoClasses.Set(StdPseudoClass.UnChecked, (IsChecked.HasValue && !IsChecked.Value) || !IsChecked.HasValue);
     }
 
-    private void PlayWaveSpirit()
-    {
-        _pendingWave = null;
-        if (!_transitionInitialization.IsReady || !IsMotionEnabled || !IsWaveSpiritEnabled ||
-            !IsEnabled || IsChecked != true || _waveSpiritDecorator is null)
-        {
-            return;
-        }
-
-        var waveBrush = WaveSpiritDecorator.ResolveWaveSpiritBrush(BorderBrush, Background);
-        if (waveBrush is not null)
-        {
-            _waveSpiritDecorator.WaveBrush = waveBrush;
-        }
-        else
-        {
-            _waveSpiritDecorator.ClearValue(WaveSpiritDecorator.WaveBrushProperty);
-        }
-
-        _waveSpiritDecorator.Play();
-    }
 
     private double CalculateDotSize(bool isEnabled, bool isChecked)
     {
@@ -319,7 +278,6 @@ internal class RadioIndicator : TemplatedControl, IFocusOutlineShapeProvider
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
-        _waveSpiritDecorator = e.NameScope.Find<WaveSpiritDecorator>(WaveSpiritDecorator.WaveSpiritPart);
         _transitionInitialization.CompleteInitialization();
     }
 

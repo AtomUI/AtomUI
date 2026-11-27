@@ -8,53 +8,56 @@
               x:Class="AtomUI.Desktop.Controls.Themes.TreeViewItemTheme">
     <Setter Property="Template">
         <ControlTemplate TargetType="atom:TreeViewItem">
-            <StackPanel Orientation="Vertical">
-                <atom:TreeViewItemHeader Name="Header"
-                                         Classes.semantic-scope-header="True"
-                                         Icon="{TemplateBinding Icon}"
-                                         IsShowIcon="{TemplateBinding IsShowIcon}"
-                                         IsShowLeafIcon="{TemplateBinding IsShowLeafIcon}"
-                                         IsShowLine="{TemplateBinding IsShowLine}"
-                                         IsSwitcherRotation="{TemplateBinding IsSwitcherRotation}"
-                                         SwitcherExpandIcon="{TemplateBinding SwitcherExpandIcon}"
-                                         SwitcherCollapseIcon="{TemplateBinding SwitcherCollapseIcon}"
-                                         SwitcherRotationIcon="{TemplateBinding SwitcherRotationIcon}"
-                                         SwitcherLoadingIcon="{TemplateBinding SwitcherLoadingIcon}"
-                                         SwitcherLeafIcon="{TemplateBinding SwitcherLeafIcon}"
-                                         GroupName="{TemplateBinding GroupName}"
-                                         Content="{TemplateBinding Header}"
-                                         ContentTemplate="{TemplateBinding HeaderTemplate}"
-                                         NodeHoverMode="{TemplateBinding NodeHoverMode}"
-                                         Level="{TemplateBinding Level}"
-                                         IsExpanded="{TemplateBinding IsExpanded, Mode=TwoWay}"
-                                         IsChecked="{TemplateBinding IsChecked, Mode=TwoWay}"
-                                         IsLeaf="{TemplateBinding IsLeaf}"
-                                         IsLoading="{TemplateBinding IsLoading}"
-                                         IsEnabled="{TemplateBinding IsEnabled}"
-                                         IsSelected="{TemplateBinding IsSelected}"
-                                         IsDragging="{TemplateBinding IsDragging}"
-                                         IsKeyboardActive="{TemplateBinding IsKeyboardActive}"
-                                         IsKeyboardFocusOutlineVisible="{TemplateBinding IsKeyboardFocusOutlineVisible}"
-                                         IsDragOver="{TemplateBinding IsDragOver}"
-                                         ToggleType="{TemplateBinding ToggleType}"
-                                         IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
-                                         BorderThickness="{TemplateBinding BorderThickness}"
-                                         IsIndicatorEnabled="{TemplateBinding IsIndicatorEnabled}"
-                                         IsFilterMatch="{TemplateBinding IsFilterMatch}"
-                                         FilterHighlightWords="{TemplateBinding FilterHighlightWords}"
-                                         FilterStrategy="{TemplateBinding FilterStrategy}"
-                                         FilterHighlightForeground="{TemplateBinding FilterHighlightForeground}"
-                                         IsSelectable="{TemplateBinding IsSelectable}"
-                                         Focusable="False"/>
-                <atom:ContentViewport
-                    Name="PART_ChildrenViewport"
-                    ClipToBounds="True"
-                    IsVisible="False">
-                    <ItemsPresenter Name="ItemsPresenter"
-                                    Focusable="False"
-                                    ItemsPanel="{TemplateBinding ItemsPanel}" />
-                </atom:ContentViewport>
-            </StackPanel>
+            <Panel>
+                <atom:TreeViewItemDecoration Name="PART_Decoration" IsHitTestVisible="False" />
+                <StackPanel Orientation="Vertical">
+                    <atom:TreeViewItemHeader Name="Header"
+                                             Classes.semantic-scope-header="True"
+                                             Icon="{TemplateBinding Icon}"
+                                             IsShowIcon="{TemplateBinding IsShowIcon}"
+                                             IsShowLeafIcon="{TemplateBinding IsShowLeafIcon}"
+                                             IsShowLine="{TemplateBinding IsShowLine}"
+                                             IsSwitcherRotation="{TemplateBinding IsSwitcherRotation}"
+                                             SwitcherExpandIcon="{TemplateBinding SwitcherExpandIcon}"
+                                             SwitcherCollapseIcon="{TemplateBinding SwitcherCollapseIcon}"
+                                             SwitcherRotationIcon="{TemplateBinding SwitcherRotationIcon}"
+                                             SwitcherLoadingIcon="{TemplateBinding SwitcherLoadingIcon}"
+                                             SwitcherLeafIcon="{TemplateBinding SwitcherLeafIcon}"
+                                             GroupName="{TemplateBinding GroupName}"
+                                             Content="{TemplateBinding Header}"
+                                             ContentTemplate="{TemplateBinding HeaderTemplate}"
+                                             NodeHoverMode="{TemplateBinding NodeHoverMode}"
+                                             Level="{TemplateBinding Level}"
+                                             IsExpanded="{TemplateBinding IsExpanded, Mode=TwoWay}"
+                                             IsChecked="{TemplateBinding IsChecked, Mode=TwoWay}"
+                                             IsLeaf="{TemplateBinding IsLeaf}"
+                                             IsLoading="{TemplateBinding IsLoading}"
+                                             IsEnabled="{TemplateBinding IsEnabled}"
+                                             IsSelected="{TemplateBinding IsSelected}"
+                                             IsDragging="{TemplateBinding IsDragging}"
+                                             IsKeyboardActive="{TemplateBinding IsKeyboardActive}"
+                                             IsKeyboardFocusOutlineVisible="{TemplateBinding IsKeyboardFocusOutlineVisible}"
+                                             IsDragOver="{TemplateBinding IsDragOver}"
+                                             ToggleType="{TemplateBinding ToggleType}"
+                                             IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
+                                             BorderThickness="{TemplateBinding BorderThickness}"
+                                             IsIndicatorEnabled="{TemplateBinding IsIndicatorEnabled}"
+                                             IsFilterMatch="{TemplateBinding IsFilterMatch}"
+                                             FilterHighlightWords="{TemplateBinding FilterHighlightWords}"
+                                             FilterStrategy="{TemplateBinding FilterStrategy}"
+                                             FilterHighlightForeground="{TemplateBinding FilterHighlightForeground}"
+                                             IsSelectable="{TemplateBinding IsSelectable}"
+                                             Focusable="False"/>
+                    <atom:ContentViewport
+                        Name="PART_ChildrenViewport"
+                        ClipToBounds="True"
+                        IsVisible="False">
+                        <ItemsPresenter Name="ItemsPresenter"
+                                        Focusable="False"
+                                        ItemsPanel="{TemplateBinding ItemsPanel}" />
+                    </atom:ContentViewport>
+                </StackPanel>
+            </Panel>
         </ControlTemplate>
     </Setter>
 

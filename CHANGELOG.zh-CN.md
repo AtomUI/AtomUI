@@ -11,6 +11,7 @@ AtomUI 的重要变更记录在此文件中。
 - 破坏性变更
   - `FlexPanel.Direction` 和 `DirectionProperty` 现在使用 `Avalonia.Controls.FlexDirection`。将 C# 和 AXAML 中显式引用的 `AtomUI.Controls.FlexDirection` 替换为新类型，然后重新编译受影响的程序集。`Direction="Row"` 等 AXAML 字面量仍然有效。
   - AtomUI FlexPanel 的子项配置改用 Avalonia 的 `Flex` 附加属性，`AlignItems` 属性改用 `FlexAlignItems`。C# 代码改用 `Avalonia.Controls` 中的 `Flex`、`FlexBasis`、`FlexBasisKind` 和 `FlexAlignItems`。以 Avalonia 为默认 AXAML 命名空间时，将 `atom:Flex.*` 改写为 `Flex.*`，然后重新编译受影响的程序集。
+  - 交互反馈统一使用 `IInteractionEffectAwareControl`、`IsInteractionEffectEnabled` 和 `EnableInteractionEffect`。请重新编译依赖程序集，并更新 AXAML 和已保存的主题配置。[迁移指南](docs/releases/unreleased-multi-language-api-changes.zh-CN.md)
 
 ## 6.3.0
 

@@ -92,9 +92,9 @@
                 <Setter Property="Transitions">
                     <atom:TokenTransitions>
                         <Transitions>
-                            <atom:SolidColorBrushTransition Property="Background" atom:TokenTransitions.Duration="MotionDurationSlow"/>
-                            <atom:SolidColorBrushTransition Property="Foreground" atom:TokenTransitions.Duration="MotionDurationMid" />
-                            <atom:FramePacedTransformOperationsTransition Property="MenuIndicatorRenderTransform" atom:TokenTransitions.Duration="MotionDurationMid" />
+                            <atom:SolidColorBrushTransition Property="Background" atom:TokenTransitions.Duration="StateTransitionDurationSlow"/>
+                            <atom:SolidColorBrushTransition Property="Foreground" atom:TokenTransitions.Duration="StateTransitionDuration" />
+                            <atom:FramePacedTransformOperationsTransition Property="MenuIndicatorRenderTransform" atom:TokenTransitions.Duration="StateTransitionDuration" />
                         </Transitions>
                     </atom:TokenTransitions>
                 </Setter>

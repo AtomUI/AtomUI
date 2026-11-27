@@ -66,14 +66,14 @@
                 <atom:TokenTransitions>
                     <Transitions>
                         <DoubleTransition Property="Width"
-                                          atom:TokenTransitions.Duration="MotionDurationSlow"
-                                          Easing="0.645,0.045,0.355,1" />
+                                          atom:TokenTransitions.Duration="StateTransitionDurationSlow"
+                                          atom:TokenTransitions.Easing="MotionEaseInOut" />
                         <DoubleTransition Property="Opacity"
-                                          atom:TokenTransitions.Duration="MotionDurationFast"
-                                          Easing="0.645,0.045,0.355,1" />
+                                          atom:TokenTransitions.Duration="StateTransitionDurationFast"
+                                          atom:TokenTransitions.Easing="MotionEaseInOut" />
                         <TransformOperationsTransition Property="RenderTransform"
-                                                       atom:TokenTransitions.Duration="MotionDurationFast"
-                                                       Easing="0.645,0.045,0.355,1" />
+                                                       atom:TokenTransitions.Duration="StateTransitionDurationFast"
+                                                       atom:TokenTransitions.Easing="MotionEaseInOut" />
                     </Transitions>
                 </atom:TokenTransitions>
             </Setter>

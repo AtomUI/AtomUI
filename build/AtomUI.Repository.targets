@@ -119,6 +119,14 @@
         <Error Condition="!Exists('%(AtomUIGeneratorToolAsset.Identity)')"
                Text="Prepared AtomUI.Toolchain asset is missing at '%(AtomUIGeneratorToolAsset.Identity)'. Prepare the toolchain with BuildToolchain before packing with --no-build." />
     </Target>
+    <Target Name="AtomUIPrepareRepositoryScopedThemeTools"
+            BeforeTargets="AtomUIPrepareScopedThemeRuntime"
+            Condition="'$(NoBuild)' != 'true' and '$(MSBuildProjectName)' != 'AtomUI.Toolchain' and '$(AtomUIEnableScopedControlThemes)' == 'true' and '$(DesignTimeBuild)' != 'true' and ('$(OutputType)' == 'Exe' or '$(OutputType)' == 'WinExe') and '$(_AtomUIRegistrationFrameworkFamily)' == 'OfficialTypeMap'">
+        <MSBuild Projects="$(AtomUIToolchainProject)" Targets="BuildManagedToolchain"
+                 RemoveProperties="NoBuild;NoRestore;$(AtomUIToolchainGlobalPropertiesToRemove)"
+                 Properties="Configuration=$(Configuration);AtomUIToolchainProfile=Tasks;AtomUIToolchainBackendProfiles=ILLink10" />
+    </Target>
+
     <!-- Source checkout publishing prepares the same toolchain that packages ship. This hook
          is absent from NuGet consumers and is never reached by an ordinary product Build. -->
     <Target Name="AtomUIPrepareRepositoryPublishTools"

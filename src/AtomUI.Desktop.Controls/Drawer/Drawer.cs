@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Reactive.Disposables;
+using AtomUI.Animations;
 using AtomUI.Controls;
 using AtomUI.Controls.Primitives;
 using AtomUI.Data;
@@ -156,6 +157,18 @@ public partial class Drawer : Control,
     /// </summary>
     public static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<Drawer>();
+
+    /// <summary>
+    /// Identifies the <see cref="OpenMotion" /> property.
+    /// </summary>
+    public static readonly StyledProperty<AbstractMotion?> OpenMotionProperty =
+        AvaloniaProperty.Register<Drawer, AbstractMotion?>(nameof(OpenMotion));
+
+    /// <summary>
+    /// Identifies the <see cref="CloseMotion" /> property.
+    /// </summary>
+    public static readonly StyledProperty<AbstractMotion?> CloseMotionProperty =
+        AvaloniaProperty.Register<Drawer, AbstractMotion?>(nameof(CloseMotion));
     
     /// <summary>
     /// The body content shown below the header. XAML children of the drawer become this value.
@@ -383,6 +396,24 @@ public partial class Drawer : Control,
     {
         get => GetValue(IsMotionEnabledProperty);
         set => SetValue(IsMotionEnabledProperty, value);
+    }
+
+    /// <summary>
+    /// The opening motion. An explicit null disables this direction.
+    /// </summary>
+    public AbstractMotion? OpenMotion
+    {
+        get => GetValue(OpenMotionProperty);
+        set => SetValue(OpenMotionProperty, value);
+    }
+
+    /// <summary>
+    /// The closing motion. An explicit null disables this direction.
+    /// </summary>
+    public AbstractMotion? CloseMotion
+    {
+        get => GetValue(CloseMotionProperty);
+        set => SetValue(CloseMotionProperty, value);
     }
 
     #endregion

@@ -4,8 +4,8 @@
     xmlns:atom="https://atomui.net"
     x:ClassModifier="internal">
     <ControlTheme x:Key="TopLevelMenuItemTheme" TargetType="atom:MenuItem">
-        <Setter Property="OpenMotion" Value="{x:Static atom:PopupMotionDefaults.HorizontalMenuOpen}" />
-        <Setter Property="CloseMotion" Value="{x:Static atom:PopupMotionDefaults.HorizontalMenuClose}" />
+        <Setter Property="OpenMotion" Value="{atom:MotionResource HorizontalMenuOpen}" />
+        <Setter Property="CloseMotion" Value="{atom:MotionResource HorizontalMenuClose}" />
         <Setter Property="Template">
             <ControlTemplate>
                 <Panel>
@@ -172,8 +172,9 @@
                 <Setter Property="Transitions">
                     <atom:TokenTransitions>
                         <Transitions>
-                            <atom:SolidColorBrushTransition Property="Background" atom:TokenTransitions.Duration="MotionDurationMid" />
-                            <atom:SolidColorBrushTransition Property="Foreground" atom:TokenTransitions.Duration="MotionDurationMid" />
+                            <atom:SolidColorBrushTransition Property="Background" atom:TokenTransitions.Duration="StateTransitionDurationSlow" Easing="0.25,0.1,0.25,1" atom:TokenTransitions.Easing="StateTransitionEasingOverride" />
+                            <atom:SolidColorBrushTransition Property="BorderBrush" atom:TokenTransitions.Duration="StateTransitionDurationSlow" Easing="0.25,0.1,0.25,1" atom:TokenTransitions.Easing="StateTransitionEasingOverride" />
+                            <atom:SolidColorBrushTransition Property="Foreground" atom:TokenTransitions.Duration="StateTransitionDuration" />
                         </Transitions>
                     </atom:TokenTransitions>
                 </Setter>

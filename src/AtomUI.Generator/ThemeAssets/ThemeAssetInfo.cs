@@ -11,7 +11,6 @@ internal sealed class ThemeAssetInfo
         string assetPath,
         SourceText source,
         string fileName,
-        IReadOnlyList<ThemeAssetSemanticThemeInfo> semanticThemes,
         bool isResourceDictionary,
         string? resourceClassName,
         string? controlThemeClassName,
@@ -21,7 +20,6 @@ internal sealed class ThemeAssetInfo
         AssetPath = assetPath;
         Source = source;
         FileName = fileName;
-        SemanticThemes = semanticThemes;
         IsResourceDictionary = isResourceDictionary;
         ResourceClassName = resourceClassName;
         ControlThemeClassName = controlThemeClassName;
@@ -33,7 +31,7 @@ internal sealed class ThemeAssetInfo
     internal string AssetPath { get; }
     internal SourceText Source { get; }
     internal string FileName { get; }
-    internal IReadOnlyList<ThemeAssetSemanticThemeInfo> SemanticThemes { get; }
+    internal IReadOnlyList<ThemeAssetSemanticThemeInfo> SemanticThemes { get; set; } = Array.Empty<ThemeAssetSemanticThemeInfo>();
     internal bool IsResourceDictionary { get; }
     internal string? ControlThemeClassName { get; }
     internal string? ControlThemeTargetTypeName { get; }
@@ -45,6 +43,10 @@ internal sealed class ThemeAssetInfo
         string.Equals(FileName, ControlThemeTargetTypeName + "Theme", StringComparison.Ordinal);
     internal bool HasGeneratedResourceWrapper => IsResourceDictionary || IsDefaultTypedControlTheme;
 
+    internal static ThemeAssetInfo FromSemanticFacts(string path, IReadOnlyList<ThemeAssetSemanticThemeInfo> themes) =>
+        new ThemeAssetInfo(path, path, SourceText.From(string.Empty), System.IO.Path.GetFileNameWithoutExtension(path),
+            false, null, null, null) { SemanticThemes = themes };
+
     internal static ThemeAssetInfo Create(
         AdditionalText text, string? projectDirectory, string? link,
         CancellationToken cancellationToken, out XElement? documentRoot)
@@ -53,8 +55,6 @@ internal sealed class ThemeAssetInfo
         var source = text.GetText(cancellationToken) ?? SourceText.From(string.Empty);
         var assetPath = NormalizeAssetPath(text.Path, projectDirectory, link);
         var fileName = System.IO.Path.GetFileNameWithoutExtension(assetPath);
-        IReadOnlyList<ThemeAssetSemanticThemeInfo> semanticThemes =
-            Array.Empty<ThemeAssetSemanticThemeInfo>();
         var isResourceDictionary = false;
         string? resourceClassName = null;
         string? controlThemeClassName = null;
@@ -86,10 +86,6 @@ internal sealed class ThemeAssetInfo
                             string.Equals(attribute.Name.LocalName, "TargetType", StringComparison.Ordinal))
                         ?.Value);
             }
-            if (root is not null)
-            {
-                semanticThemes = SemanticThemeAssetParser.Parse(root);
-            }
         }
         catch
         {
@@ -101,7 +97,6 @@ internal sealed class ThemeAssetInfo
             assetPath,
             source,
             fileName,
-            semanticThemes,
             isResourceDictionary,
             resourceClassName,
             controlThemeClassName,
@@ -206,7 +201,7 @@ internal sealed class ThemeAssetInfo
 
 internal sealed class ThemeAssetTargetTypeReference
 {
-    private ThemeAssetTargetTypeReference(
+    internal ThemeAssetTargetTypeReference(
         string value,
         IReadOnlyDictionary<string, string> namespaces)
     {

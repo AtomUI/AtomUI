@@ -39,7 +39,7 @@ internal sealed class MotionPlayback
     }
 
     internal static Task<MotionResult> PlayAsync(AbstractMotion motion, Control target, TimeSpan? duration,
-        CancellationToken token)
+        CancellationToken token, TimeSpan? durationFallback = null)
     {
         if (token.IsCancellationRequested)
         {
@@ -56,7 +56,7 @@ internal sealed class MotionPlayback
         var initial = previousPresentation is { HasTransform: true }
             ? previousPresentation.Values with { Opacity = target.Opacity }
             : MotionValues.Baseline(target.Opacity);
-        var plan = motion.Prepare(target, initial, duration);
+        var plan = motion.Prepare(target, initial, duration, durationFallback);
         States.TryGetValue(target, out state);
         if (state?.RequestId > requestId)
         {
@@ -112,6 +112,12 @@ internal sealed class MotionPlayback
         return result.Outcome == MotionOutcome.Completed && result.RequestId != 0 &&
             target.IsAttachedToVisualTree() && States.TryGetValue(target, out var state) && state.RequestId == result.RequestId;
     }
+
+    internal static bool HasPresentation(Control target) =>
+        States.TryGetValue(target, out var state) && (state.Active is not null || state.Terminal is not null);
+
+    internal static long CurrentRequestId(Control target) =>
+        States.TryGetValue(target, out var state) ? state.RequestId : 0;
 
     internal static void CompleteCurrent(Control target)
     {

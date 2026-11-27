@@ -26,6 +26,10 @@ public abstract class AbstractMotion
     /// </remarks>
     public TimeSpan? Duration { get; set; }
     /// <summary>
+    /// The scoped duration to use when <see cref="Duration" /> is unset.
+    /// </summary>
+    public SharedTokenKind? DurationToken { get; set; }
+    /// <summary>
     /// How long the motion waits before it starts. During the wait the target shows the start value when
     /// <see cref="AbstractMotion.FillMode" /> holds the start, and is left untouched otherwise.
     /// </summary>
@@ -44,6 +48,10 @@ public abstract class AbstractMotion
     /// played.
     /// </remarks>
     public Easing? Easing { get; set; }
+    /// <summary>
+    /// The scoped easing to use when <see cref="Easing" /> is unset.
+    /// </summary>
+    public SharedTokenKind? EasingToken { get; set; }
     /// <summary>
     /// The pivot of scale and rotation, as a point in the bounds of the target. <see langword="null" /> keeps the
     /// origin that the motion assigns to <see cref="MotionBuilder.Origin" />, which is the center of the target unless
@@ -154,18 +162,21 @@ public abstract class AbstractMotion
     /// </remarks>
     protected abstract void Build(MotionBuilder builder, in MotionContext context);
 
-    internal Task<MotionResult> PlayAsync(Control target, TimeSpan duration, CancellationToken cancellationToken)
+    internal Task<MotionResult> PlayWithFallbackAsync(Control target, TimeSpan durationFallback, CancellationToken cancellationToken)
     {
         Dispatcher.UIThread.VerifyAccess();
-        return MotionPlayback.PlayAsync(this, target, duration, cancellationToken);
+        return MotionPlayback.PlayAsync(this, target, null, cancellationToken, durationFallback);
     }
 
-    internal MotionPlan Prepare(Control target, MotionValues initialValues, TimeSpan? durationOverride)
+    internal MotionPlan Prepare(Control target, MotionValues initialValues, TimeSpan? durationOverride,
+        TimeSpan? durationFallback = null)
     {
         var defaultDuration = TokenResourceUtils.FindTokenResource(target, SharedTokenKind.MotionDurationMid) is TimeSpan tokenDuration
             ? tokenDuration : TimeSpan.FromMilliseconds(200);
-        var requestedDuration = durationOverride ?? Motion.GetDurationOverride(target);
-        var duration = requestedDuration ?? Duration ?? defaultDuration;
+        var preparation = new MotionPreparation(target);
+        var requestedDuration = durationOverride ?? Motion.GetDurationOverride(target) ?? Duration ??
+            preparation.ReadToken(DurationToken) as TimeSpan? ?? durationFallback;
+        var duration = requestedDuration ?? defaultDuration;
         var disabled = !Motion.IsAnimationEnabled(target);
         if (disabled)
         {
@@ -174,20 +185,24 @@ public abstract class AbstractMotion
         var scaling = TopLevel.GetTopLevel(target)?.RenderScaling ?? 1;
         var opacity = target.GetBaseValue(Visual.OpacityProperty);
         var baseOpacity = opacity.HasValue ? opacity.Value : Visual.OpacityProperty.GetDefaultValue(target);
-        var context = new MotionContext(target.Bounds.Size, scaling, duration, Delay, Easing ?? DefaultEasing,
-            initialValues, baseOpacity, defaultDuration, requestedDuration.HasValue || Duration.HasValue || disabled,
-            new MotionPreparation(target), layoutDirection: Motion.GetLayoutDirection(target));
+        var context = new MotionContext(target.Bounds.Size, scaling, duration, Delay, ResolveEasing(preparation),
+            initialValues, baseOpacity, defaultDuration, requestedDuration.HasValue || disabled,
+            preparation, layoutDirection: Motion.GetLayoutDirection(target));
         return PrepareDefinition(context);
     }
 
     internal MotionPlan PrepareChild(in MotionContext parent, MotionValues initialValues,
         IReadOnlyDictionary<AvaloniaProperty, object?>? initialProperties = null)
     {
-        var context = new MotionContext(parent.TargetSize, parent.RenderScaling, Duration ?? parent.DefaultDuration,
-            Delay, Easing ?? DefaultEasing, initialValues, parent.BaseOpacity, parent.DefaultDuration,
-            Duration.HasValue, parent.Preparation, initialProperties, parent.LayoutDirection);
+        var duration = Duration ?? parent.Preparation.ReadToken(DurationToken) as TimeSpan?;
+        var context = new MotionContext(parent.TargetSize, parent.RenderScaling, duration ?? parent.DefaultDuration,
+            Delay, ResolveEasing(parent.Preparation), initialValues, parent.BaseOpacity, parent.DefaultDuration,
+            duration.HasValue, parent.Preparation, initialProperties, parent.LayoutDirection);
         return PrepareDefinition(context);
     }
+
+    private Easing ResolveEasing(MotionPreparation preparation) =>
+        Easing ?? preparation.ReadToken(EasingToken) as Easing ?? DefaultEasing;
 
     private MotionPlan PrepareDefinition(in MotionContext context)
     {

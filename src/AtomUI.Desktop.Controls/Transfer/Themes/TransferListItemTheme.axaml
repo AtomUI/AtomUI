@@ -25,7 +25,7 @@
                             DockPanel.Dock="Left"
                             VerticalAlignment="Center"
                             IsChecked="{TemplateBinding IsSelected}"
-                            IsWaveSpiritEnabled="False"
+                            IsInteractionEffectEnabled="False"
                             IsVisible="{TemplateBinding IsCheckable}"/>
                         <atom:TransferRemoveItemButton
                             Name="RemoveButton"

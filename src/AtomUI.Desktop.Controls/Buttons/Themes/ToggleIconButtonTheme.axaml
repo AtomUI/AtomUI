@@ -56,9 +56,9 @@
             <Setter Property="Transitions">
                 <atom:TokenTransitions>
                     <Transitions>
-                        <atom:SolidColorBrushTransition Property="Background" atom:TokenTransitions.Duration="MotionDurationMid" />
-                        <atom:SolidColorBrushTransition Property="IconBrush" atom:TokenTransitions.Duration="MotionDurationMid" />
-                        <TransformOperationsTransition Property="RenderTransform" atom:TokenTransitions.Duration="MotionDurationMid" />
+                        <atom:SolidColorBrushTransition Property="Background" atom:TokenTransitions.Duration="StateTransitionDuration" />
+                        <atom:SolidColorBrushTransition Property="IconBrush" atom:TokenTransitions.Duration="StateTransitionDuration" />
+                        <TransformOperationsTransition Property="RenderTransform" atom:TokenTransitions.Duration="StateTransitionDuration" />
                     </Transitions>
                 </atom:TokenTransitions>
             </Setter>

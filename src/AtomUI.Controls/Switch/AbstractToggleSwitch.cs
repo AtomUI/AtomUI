@@ -40,11 +40,12 @@ namespace AtomUI.Controls;
 ///     </para>
 /// </remarks>
 [TemplatePart("PART_SwitchKnob", typeof(SwitchKnob))]
+[TemplatePart("PART_Track", typeof(Control))]
 public abstract class AbstractToggleSwitch : ToggleButton,
                                              IFocusOutlineShapeProvider,
                                              ICustomizableSizeTypeAware,
                                              ICustomHitTest,
-                                             IWaveSpiritAwareControl,
+                                             IInteractionEffectAwareControl,
                                              IFormItemAware,
                                              ITransitionInitializationOwner
 {
@@ -112,10 +113,10 @@ public abstract class AbstractToggleSwitch : ToggleButton,
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<AbstractToggleSwitch>();
 
     /// <summary>
-    /// Identifies the <see cref="IsWaveSpiritEnabled" /> property.
+    /// Identifies the <see cref="IsInteractionEffectEnabled" /> property.
     /// </summary>
-    public static readonly StyledProperty<bool> IsWaveSpiritEnabledProperty =
-        WaveSpiritAwareControlProperty.IsWaveSpiritEnabledProperty.AddOwner<AbstractToggleSwitch>();
+    public static readonly StyledProperty<bool> IsInteractionEffectEnabledProperty =
+        InteractionEffectAwareControlProperty.IsInteractionEffectEnabledProperty.AddOwner<AbstractToggleSwitch>();
 
     /// <summary>
     /// Identifies the <see cref="TrackHeight" /> property.
@@ -285,16 +286,16 @@ public abstract class AbstractToggleSwitch : ToggleButton,
     }
 
     /// <summary>
-    /// Gets or sets whether a click wave spreads from the groove when the checked state changes.
+    /// Gets or sets whether interaction feedback plays from the groove when the checked state changes.
     /// </summary>
     /// <remarks>
-    /// The wave plays only while <see cref="IsMotionEnabled" /> is also <see langword="true" />.
-    /// The theme sets the value from the <c>EnableWaveSpirit</c> token.
+    /// Feedback plays only while <see cref="IsMotionEnabled" /> is also <see langword="true" />.
+    /// The theme sets the value from the <c>EnableInteractionEffect</c> token.
     /// </remarks>
-    public bool IsWaveSpiritEnabled
+    public bool IsInteractionEffectEnabled
     {
-        get => GetValue(IsWaveSpiritEnabledProperty);
-        set => SetValue(IsWaveSpiritEnabledProperty, value);
+        get => GetValue(IsInteractionEffectEnabledProperty);
+        set => SetValue(IsInteractionEffectEnabledProperty, value);
     }
 
     /// <summary>
@@ -537,18 +538,16 @@ public abstract class AbstractToggleSwitch : ToggleButton,
     
     private Rect _knobTarget;
     private SwitchKnob? _switchKnob;
+    private Control? _track;
     private CompositeDisposable? _onBindingDisposables;
     private CompositeDisposable? _offBindingDisposables;
-    private WaveSpiritDecorator? _waveSpiritDecorator;
     private Canvas? _mainLayout;
     private IDisposable? _loadingCursorValue;
     private double _onContentInkOffsetY;
     private double _offContentInkOffsetY;
-    private DispatcherOperation? _pendingWave;
     private EventHandler? _formValueChanged;
     
     private readonly TransitionInitializationSession _transitionInitialization;
-    private IPen? _grooveBorderPen;
 
     static AbstractToggleSwitch()
     {
@@ -564,7 +563,8 @@ public abstract class AbstractToggleSwitch : ToggleButton,
             KnobSizeProperty,
             InnerMinMarginProperty,
             InnerMaxMarginProperty);
-        AffectsRender<AbstractToggleSwitch>(GrooveBackgroundProperty, GrooveBorderBrushProperty, GrooveBorderThicknessProperty);
+        ToggleInteractionFeedback.Configure<AbstractToggleSwitch>(static owner => owner, static owner => !owner.IsLoading,
+            canStart: static owner => !owner.IsLoading);
         IsCheckedProperty.Changed.AddClassHandler<AbstractToggleSwitch>((toggleSwitch, args) => toggleSwitch.NotifyFormValueChanged(args.NewValue as bool?));
     }
 
@@ -603,11 +603,11 @@ public abstract class AbstractToggleSwitch : ToggleButton,
     /// </summary>
     protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
     {
+        ToggleInteractionFeedback.Cancel(this);
+        InteractionEffectHost.CancelFor(this);
         _contentMarginTokens?.Dispose();
         _contentMarginTokens = null;
         _transitionInitialization.Reset();
-        _pendingWave?.Abort();
-        _pendingWave = null;
         base.OnDetachedFromVisualTree(e);
     }
 
@@ -629,11 +629,12 @@ public abstract class AbstractToggleSwitch : ToggleButton,
     /// </remarks>
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
+        ToggleInteractionFeedback.Cancel(this);
+        InteractionEffectHost.CancelFor(this);
         _transitionInitialization.Reset();
-        _pendingWave?.Abort();
-        _pendingWave = null;
         base.OnApplyTemplate(e);
         var scope = e.NameScope;
+        _track = scope.Find<Control>("PART_Track");
         _switchKnob = scope.Find<SwitchKnob>("PART_SwitchKnob");
         if (_switchKnob is not null)
         {
@@ -653,7 +654,6 @@ public abstract class AbstractToggleSwitch : ToggleButton,
 
         _onContentPresenter  = scope.Find<ContentPresenter>("PART_OnContentPresenter");
         _offContentPresenter = scope.Find<ContentPresenter>("PART_OffContentPresenter");
-        _waveSpiritDecorator = scope.Find<WaveSpiritDecorator>("PART_WaveSpirit");
         _mainLayout          = scope.Find<Canvas>("PART_MainContainer");
         HandleLoadingState(IsLoading);
     }
@@ -685,21 +685,6 @@ public abstract class AbstractToggleSwitch : ToggleButton,
             if (change.Property == IsCheckedProperty)
             {
                 CalculateElementsOffset(GrooveRect().Size);
-                if (_transitionInitialization.IsReady && IsMotionEnabled && IsWaveSpiritEnabled)
-                {
-                    var waveSpirit = _waveSpiritDecorator;
-                    _pendingWave?.Abort();
-                    _pendingWave = Dispatcher.InvokeAsync(() =>
-                    {
-                        _pendingWave = null;
-                        if (_transitionInitialization.IsReady && IsMotionEnabled && IsWaveSpiritEnabled &&
-                            ReferenceEquals(waveSpirit, _waveSpiritDecorator))
-                        {
-                            ConfigureWaveSpiritBrush();
-                            waveSpirit?.Play();
-                        }
-                    });
-                }
             }
         }
         else if (change.Property == KnobSizeProperty)
@@ -774,6 +759,11 @@ public abstract class AbstractToggleSwitch : ToggleButton,
             ? Math.Max(Width, TrackMinWidth)
             : Math.Max(switchWidth, TrackMinWidth);
         var targetSize = new Size(switchWidth, switchHeight);
+        if (_mainLayout is null)
+        {
+            base.MeasureOverride(targetSize);
+        }
+        _track?.Measure(targetSize);
         if (_switchKnob is not null)
         {
             _switchKnob.Measure(KnobSize);
@@ -796,6 +786,11 @@ public abstract class AbstractToggleSwitch : ToggleButton,
         // and the groove must use this final geometry, not the target size that the measure pass computed before those
         // constraints were applied.
         CalculateElementsOffset(finalSize);
+        if (_mainLayout is null)
+        {
+            base.ArrangeOverride(finalSize);
+        }
+        _track?.Arrange(new Rect(finalSize));
         _mainLayout?.Arrange(new Rect(finalSize));
         // A template that an application already uses may still provide a plain Canvas, whose layout the library
         // ControlTheme cannot take over declaratively. Only on this compatibility path does the switch arrange the
@@ -816,7 +811,6 @@ public abstract class AbstractToggleSwitch : ToggleButton,
         _switchKnob?.Arrange(new Rect(KnobSize));
 
 
-        _waveSpiritDecorator?.Arrange(new Rect(finalSize));
         CompleteTransitionInitializationMode(finalSize);
         
         return finalSize;
@@ -826,24 +820,6 @@ public abstract class AbstractToggleSwitch : ToggleButton,
     CornerRadius IFocusOutlineShapeProvider.FocusOutlineCornerRadius =>
         new CornerRadius(Math.Min(Bounds.Width, Bounds.Height) / 2);
 
-    /// <summary>
-    /// Paints the groove as a pill over the whole control, with the outline inside it when a border brush and a
-    /// positive border thickness are set.
-    /// </summary>
-    public sealed override void Render(DrawingContext context)
-    {
-        var rect      = new Rect(new Point(0, 0), Bounds.Size);
-        var thickness = GrooveBorderThickness;
-        if (thickness <= 0 || GrooveBorderBrush is null)
-        {
-            context.DrawPilledRect(GrooveBackground, null, rect);
-            return;
-        }
-
-        // The outline is stroked on a rect deflated by half its width, so it stays inside the groove.
-        PenUtils.TryModifyOrCreate(ref _grooveBorderPen, GrooveBorderBrush, thickness);
-        context.DrawPilledRect(GrooveBackground, _grooveBorderPen, rect.Deflate(thickness / 2));
-    }
 
     /// <summary>
     /// Returns whether a point lies inside the groove of the switch.
@@ -1048,23 +1024,6 @@ public abstract class AbstractToggleSwitch : ToggleButton,
         }
     }
 
-    private void ConfigureWaveSpiritBrush()
-    {
-        if (_waveSpiritDecorator is null)
-        {
-            return;
-        }
-
-        var waveBrush = WaveSpiritDecorator.ResolveWaveSpiritBrush(null, GrooveBackground);
-        if (waveBrush is not null)
-        {
-            _waveSpiritDecorator.WaveBrush = waveBrush;
-        }
-        else
-        {
-            _waveSpiritDecorator.ClearValue(WaveSpiritDecorator.WaveBrushProperty);
-        }
-    }
 
     private void UpdateContentMarginTokenSubscription()
     {

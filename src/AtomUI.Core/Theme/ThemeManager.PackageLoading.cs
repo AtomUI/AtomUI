@@ -62,6 +62,7 @@ internal partial class ThemeManager
             ? _startupRegistry.ControlTokenRules
             : _startupRegistry.ControlTokenRules.Concat(builder.TokenRules.Where(rule => !_startupRegistry.ControlTokenRules.Contains(rule))).ToArray();
         var registry = new ThemeSchemaRegistry(GeneratedThemeSchema.GetGlobalTokens(), index, languages, rules);
+        registry.SetControlBehaviors(builder.ControlBehaviors, _startupRegistry);
         if (builder.TokenRules.Count != 0)
         {
             registry.ValidateAppendedTokenRules(_startupRegistry);
@@ -269,6 +270,7 @@ internal partial class ThemeManager
 
         internal void Publish()
         {
+            _manager.SyncManagedScopedThemeStyles();
             // Root token provider publishes exactly one resources event. Observer failures are
             // diagnostics after commit and cannot turn a successful append into a failed operation.
             _manager.RootContext.Publish();

@@ -33,7 +33,7 @@ internal static partial class Program
             new PerfScenario("RadioButton.NoWave", _ => new AtomRadioButton
             {
                 Content             = "NoWave",
-                IsWaveSpiritEnabled = false
+                IsInteractionEffectEnabled = false
             }),
             new PerfScenario("RadioButtonGroup.Static4.Text", _ => CreateTextRadioButtonGroup()),
             new PerfScenario("RadioButtonGroup.Static4.IconContent", _ => CreateIconRadioButtonGroup()),

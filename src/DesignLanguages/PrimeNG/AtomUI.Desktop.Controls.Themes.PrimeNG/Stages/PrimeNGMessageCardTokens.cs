@@ -16,7 +16,7 @@ internal static class PrimeNGMessageCardTokens
 {
     internal static PrimeNGStatusColors EvaluateGlobal(in TokenEvaluationContext<PrimeNGToken> context, DesignToken controlGlobal)
     {
-        PrimeNGMotion.Restore(context, controlGlobal, mid: PrimeNGMotion.Toast);
+        controlGlobal.MotionDurationMid = PrimeNGMotion.Toast;
         var statuses = PrimeNGMessageSeverity.ApplyForCard(context, controlGlobal);
         // PrimeUIX message.border.radius is the md step of border.radius.
         controlGlobal.BorderRadiusLG = controlGlobal.BorderRadius;

@@ -158,6 +158,26 @@ internal sealed class SemanticControlDeclaration
         return new SemanticControlDeclaration(ControlType, parts, Location);
     }
 
+    internal static SemanticControlDeclaration CreateForThemeTarget(INamedTypeSymbol target, Location location,
+                                                                   CancellationToken cancellationToken)
+    {
+        var parts = new Dictionary<string, SemanticPartDeclaration>(StringComparer.Ordinal);
+        for (var type = target; type is not null; type = type.BaseType)
+        {
+            foreach (var attribute in type.GetAttributes().Where(static attribute =>
+                         attribute.AttributeClass?.ToDisplayString() == TargetMarkConstants.SemanticPartAttribute))
+            {
+                var part = CreatePart(attribute, location, cancellationToken);
+                if (part.Customization == SelectorCustomization && !parts.ContainsKey(part.Path) &&
+                    SemanticPartContractValidator.TryNormalizeSelectorRoute(part, out var route))
+                {
+                    parts.Add(part.Path, part.WithSelectorRoute(route));
+                }
+            }
+        }
+        return new SemanticControlDeclaration(target, parts.Values.ToArray(), location);
+    }
+
     private static SemanticPartDeclaration CreatePart(
         AttributeData attribute,
         Location fallbackLocation,

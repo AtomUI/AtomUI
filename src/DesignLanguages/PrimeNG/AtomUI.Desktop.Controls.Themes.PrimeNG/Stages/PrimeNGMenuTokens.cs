@@ -93,7 +93,7 @@ internal static class PrimeNGContextMenuTokens
 {
     internal static void EvaluateGlobal(in TokenEvaluationContext<PrimeNGToken> context, DesignToken controlGlobal)
     {
-        PrimeNGMotion.Restore(context, controlGlobal, mid: PrimeNGMotion.AnchoredOverlay);
+        controlGlobal.MotionDurationMid = PrimeNGMotion.AnchoredOverlay;
     }
     internal static void EvaluateOwn(in TokenEvaluationContext<PrimeNGToken> context, DesignToken effectiveGlobal, ContextMenuToken token)
     {

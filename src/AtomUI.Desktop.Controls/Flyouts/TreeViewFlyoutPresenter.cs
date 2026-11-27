@@ -86,12 +86,13 @@ public class TreeViewFlyoutPresenter : FloatableTreeView, IShadowMaskInfoProvide
 
     #endregion
     
+    /// <inheritdoc />
+    private protected override bool CloseOnNonClientPointer => true;
+
     /// <summary>
-    /// Creates a presenter with <c>DefaultTreeViewInteractionHandler</c> as the interaction handler, in floating
-    /// tree view mode.
+    /// Creates a presenter in floating tree view mode.
     /// </summary>
     public TreeViewFlyoutPresenter()
-        : base(new DefaultTreeViewInteractionHandler(true))
     {
     }
 

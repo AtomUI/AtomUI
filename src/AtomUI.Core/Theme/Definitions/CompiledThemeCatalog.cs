@@ -81,6 +81,23 @@ internal sealed class CompiledThemeCatalog
             }
             entries.Add(entry.Info.Id, entry with { Definition = rebound });
         }
+        var ordered = OrderedDefinitions.Select(entry => entries[entry.Info.Id]).ToList();
+        if (registry.Languages.Count != previous.Languages.Count)
+        {
+            var appendedDefaults = new List<CompiledThemeDefinition>();
+            var allDefaults = new Dictionary<string, CompiledThemeDefinition>(StringComparer.Ordinal);
+            AddLanguageDefaults(registry, allDefaults, appendedDefaults);
+            foreach (var entry in appendedDefaults)
+            {
+                if (entries.TryAdd(entry.Info.Id, entry))
+                {
+                    ordered.Add(entry);
+                }
+            }
+        }
+        var languages = registry.Languages.Count == previous.Languages.Count
+            ? Languages
+            : DescribeLanguages(registry);
         var slices = _resolverSlices.Select(slice => slice with
         {
             // Slices must keep each definition's original Info: entries carry the demoted (published) Info, and
@@ -88,8 +105,7 @@ internal sealed class CompiledThemeCatalog
             Definitions = slice.Definitions
                 .Select(entry => entry with { Definition = entries[entry.Info.Id].Definition }).ToArray()
         }).ToArray();
-        return new CompiledThemeCatalog(entries, OrderedDefinitions.Select(entry => entries[entry.Info.Id]).ToArray(),
-            Languages, slices, _defaultThemes);
+        return new CompiledThemeCatalog(entries, ordered, languages, slices, _defaultThemes);
     }
 
     internal CompiledThemeDefinition Get(string id)

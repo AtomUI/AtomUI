@@ -42,7 +42,7 @@ CheckBox 的公共契约由 public/protected 类型成员、Avalonia 属性、�
 | --- | --- | --- |
 | 内容与数据 | `CheckedItems`、`ItemSpacing`、`ItemTemplate`、`ItemsSource` | 定义控件展示内容、输入数据、模板或业务对象入口。 |
 | 选择与集合 | `CheckedMarkBrush`、`CheckedMarkRenderTransform` | 维护选择、展开、过滤、分页、分组或集合状态。 |
-| 交互与状态 | `IsMotionEnabled`、`IsWaveSpiritEnabled`、`State` | 表达用户可观察状态、可用性、清除、加载或反馈语义。 |
+| 交互与状态 | `IsMotionEnabled`、`IsInteractionEffectEnabled`、`State` | 表达用户可观察状态、可用性、清除、加载或反馈语义。 |
 | 视觉与布局 | `LineSpacing`、`Orientation`、`TristateMarkBrush`、`TristateMarkSize` | 影响尺寸、位置、颜色、形状、密度和模板视觉变量。 |
 
 稳定事件包括 `CheckedChanged`。事件触发顺序属于兼容契约，不能因内部状态重排而改变。

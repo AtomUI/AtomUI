@@ -375,19 +375,35 @@ internal class DrawerContainer : ContentControl
                 // The sliding panel and the mask repaint the window content they pass over on every frame; composite
                 // a cached copy of that content instead while the presentation plays.
                 using var contentCache = TopLevel.GetTopLevel(this) is Window window ? window.AcquireContentCache(this) : null;
-                Task<MotionResult> surfacePlayback;
+                Task<MotionResult>? surfacePlayback = null;
                 Task<MotionResult>? maskPlayback = null;
                 var preparation = _entryPreparation;
                 _entryPreparation = null;
                 try
                 {
-                    surfacePlayback = new DrawerPanelMotion(Placement, opening)
-                        .PlayAsync(surface, MotionDuration, CancellationToken.None);
+                    var slot = opening ? MotionSlot.DrawerOpen : MotionSlot.DrawerClose;
+                    var property = opening ? global::AtomUI.Desktop.Controls.Drawer.OpenMotionProperty :
+                        global::AtomUI.Desktop.Controls.Drawer.CloseMotionProperty;
+                    var direction = Placement switch
+                    {
+                        DrawerPlacement.Left => PlacementMode.Left,
+                        DrawerPlacement.Top => PlacementMode.Top,
+                        DrawerPlacement.Bottom => PlacementMode.Bottom,
+                        _ => PlacementMode.Right
+                    };
+                    var geometry = new PlacementMotionContext(direction, false, false, surface.FlowDirection,
+                        new Rect(surface.Bounds.Size), default, false, surface.CornerRadius.TopLeft);
+                    surfacePlayback = ComponentMotionSelection.Play(ComponentMotionSelection.Resolve(drawer, property, slot),
+                        surface, geometry, MotionDuration);
                     if (mask is not null && IsShowMask && IsCurrentPresentation(version, surface, drawer, opening))
                     {
-                        AbstractMotion maskMotion = opening ? new FadeInMotion() : new FadeOutMotion();
-                        maskMotion.Easing = MotionCurves.Ease;
-                        maskPlayback = maskMotion.PlayAsync(mask, MotionDuration, CancellationToken.None);
+                        var maskSlot = opening ? MotionSlot.OverlayMaskOpen : MotionSlot.OverlayMaskClose;
+                        if (!ScopedMotionSelection.TryResolve(drawer, maskSlot, out var maskMotion))
+                        {
+                            maskMotion = DefaultComponentMotions.Create(maskSlot)!;
+                            maskMotion.Easing = MotionCurves.Ease;
+                        }
+                        maskPlayback = ComponentMotionSelection.Play(maskMotion, mask, default, MotionDuration);
                     }
                 }
                 finally
@@ -396,17 +412,17 @@ internal class DrawerContainer : ContentControl
                 }
                 if (maskPlayback is not null)
                 {
-                    await Task.WhenAll(surfacePlayback, maskPlayback);
+                    await (surfacePlayback is null ? (Task)maskPlayback : Task.WhenAll(surfacePlayback, maskPlayback));
                 }
-                var surfaceResult = await surfacePlayback;
+                var surfaceResult = surfacePlayback is not null ? await surfacePlayback : (MotionResult?)null;
                 var maskResult = maskPlayback is not null ? await maskPlayback : (MotionResult?)null;
                 if (!IsCurrentPresentation(version, surface, drawer, opening) ||
-                    !CanComplete(surface, surfaceResult) ||
+                    (surfaceResult is { } motionResult && !CanComplete(surface, motionResult)) ||
                     (maskResult is { } result && !CanComplete(mask!, result)))
                 {
                     return;
                 }
-                if (surfaceResult.Outcome == MotionOutcome.NotReady || maskResult?.Outcome == MotionOutcome.NotReady)
+                if (surfaceResult?.Outcome == MotionOutcome.NotReady || maskResult?.Outcome == MotionOutcome.NotReady)
                 {
                     ResetPresentation();
                 }

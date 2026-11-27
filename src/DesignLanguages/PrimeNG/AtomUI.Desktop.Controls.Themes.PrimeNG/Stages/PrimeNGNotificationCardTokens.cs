@@ -21,7 +21,7 @@ internal static class PrimeNGNotificationCardTokens
 {
     internal static PrimeNGStatusColors EvaluateGlobal(in TokenEvaluationContext<PrimeNGToken> context, DesignToken controlGlobal)
     {
-        PrimeNGMotion.Restore(context, controlGlobal, mid: PrimeNGMotion.Toast);
+        controlGlobal.MotionDurationMid = PrimeNGMotion.Toast;
         var statuses = PrimeNGMessageSeverity.ApplyForCard(context, controlGlobal);
         // PrimeUIX toast: the md step of border.radius, summary.font.size 0.875rem, close.icon.size 0.875rem; the close
         // button is a circle (close.button.border.radius 50%).

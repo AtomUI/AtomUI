@@ -139,10 +139,10 @@
         <target state="translated">開啓窗口設置大小</target>
       </segment>
     </unit>
-    <unit id="MenuItemEnableWaveSpirit">
+    <unit id="MenuItemEnableInteractionEffect">
       <segment>
-        <source>Enable WaveSpirit</source>
-        <target state="translated">開啓波浪動畫</target>
+        <source>Enable interaction feedback</source>
+        <target state="translated">開啟互動回饋</target>
       </segment>
     </unit>
     <unit id="MenuItemFollowSystem">

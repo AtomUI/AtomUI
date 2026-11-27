@@ -6,6 +6,6 @@
   <Tokens>
     <Token Name="ColorPrimary" Value="#171717" />
     <Token Name="ColorNeutral" Value="#737373" />
-    <Token Name="EnableWaveSpirit" Value="false" />
+    <Token Name="EnableInteractionEffect" Value="false" />
   </Tokens>
 </Theme>

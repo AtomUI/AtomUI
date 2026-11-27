@@ -79,6 +79,21 @@ public abstract class AbstractSegmented : SelectingItemsControl,
     }
 
     /// <summary>
+    /// Identifies the <see cref="IndicatorMotionMode" /> property.
+    /// </summary>
+    public static readonly StyledProperty<IndicatorMotionMode> IndicatorMotionModeProperty =
+        AvaloniaProperty.Register<AbstractSegmented, IndicatorMotionMode>(nameof(IndicatorMotionMode), IndicatorMotionMode.Slide);
+
+    /// <summary>
+    /// The geometric movement of the selected thumb.
+    /// </summary>
+    public IndicatorMotionMode IndicatorMotionMode
+    {
+        get => GetValue(IndicatorMotionModeProperty);
+        set => SetValue(IndicatorMotionModeProperty, value);
+    }
+
+    /// <summary>
     /// Direction in which the items are lined up, <see cref="Avalonia.Layout.Orientation.Horizontal" /> by default.
     /// In a vertical layout every item spans the width of the control.
     /// </summary>
@@ -214,6 +229,8 @@ public abstract class AbstractSegmented : SelectingItemsControl,
     private EventHandler? _formValueChanged;
     private bool _isThumbVisible;
     private bool _isThumbMotionActive;
+    private Point _stretchStart;
+    private Point _stretchEnd;
     private DispatcherTimer? _thumbMotionTimer;
 
     // A thumb transition starts on the render frame after the properties are committed. The timer adds one frame,
@@ -233,6 +250,7 @@ public abstract class AbstractSegmented : SelectingItemsControl,
             CornerRadiusProperty,
             PaddingProperty,
             SelectedThumbCornerRadiusProperty,
+            IndicatorMotionModeProperty,
             SelectedThumbBgProperty,
             SelectedThumbBoxShadowsProperty,
             SelectedThumbSizeProperty, 
@@ -474,7 +492,7 @@ public abstract class AbstractSegmented : SelectingItemsControl,
         context.DrawRectangle(Background, null, new RoundedRect(trackBounds, trackRadius));
         if (_isThumbVisible)
         {
-            var thumb = ConstrainThumb(new Rect(SelectedThumbPos, SelectedThumbSize), Bounds.Size);
+            var thumb = ConstrainThumb(GetThumbPresentation(), Bounds.Size);
             if (thumb.Width > 0 && thumb.Height > 0)
             {
                 var radius = SizeType == CustomizableSizeType.Custom &&
@@ -489,6 +507,30 @@ public abstract class AbstractSegmented : SelectingItemsControl,
                     new RoundedRect(thumb, thumbRadius), paint.Shadows);
             }
         }
+    }
+
+    private Rect GetThumbPresentation()
+    {
+        var current = new Rect(SelectedThumbPos, SelectedThumbSize);
+        if (IndicatorMotionMode != IndicatorMotionMode.Stretch)
+        {
+            return current;
+        }
+        var horizontal = Orientation == Orientation.Horizontal;
+        var distance = horizontal ? _stretchEnd.X - _stretchStart.X : _stretchEnd.Y - _stretchStart.Y;
+        if (distance == 0)
+        {
+            return current;
+        }
+        var travelled = horizontal ? current.X - _stretchStart.X : current.Y - _stretchStart.Y;
+        var fraction = Math.Clamp(travelled / distance, 0, 1);
+        var length = horizontal ? current.Width : current.Height;
+        var extension = Math.Min(length * 0.35, Math.Abs(distance) * 0.3) * 4 * fraction * (1 - fraction);
+        // The leading edge starts ahead of the trailing edge, then both converge at the target.
+        var near = distance < 0 ? extension * 0.75 : extension * 0.25;
+        return horizontal
+            ? new Rect(current.X - near, current.Y, current.Width + extension, current.Height)
+            : new Rect(current.X, current.Y - near, current.Width, current.Height + extension);
     }
 
     #region 实现 FormItem 接口
@@ -613,7 +655,7 @@ public abstract class AbstractSegmented : SelectingItemsControl,
 
         // The thumb flies only when the selection changes while the thumb is already visible; its first appearance
         // and every layout follow-up jump to the target.
-        var canAnimate = animate &&
+        var canAnimate = animate && IndicatorMotionMode != IndicatorMotionMode.None &&
                          _transitionInitialization.IsReady &&
                          _isThumbVisible &&
                          (targetPos != SelectedThumbPos || targetSize != SelectedThumbSize);
@@ -622,6 +664,8 @@ public abstract class AbstractSegmented : SelectingItemsControl,
             ? new TransitionSuppressionScope(this)
             : null;
 
+        _stretchEnd = targetPos;
+        _stretchStart = canAnimate ? SelectedThumbPos : targetPos;
         SelectedThumbPos  = targetPos;
         SelectedThumbSize = targetSize;
 

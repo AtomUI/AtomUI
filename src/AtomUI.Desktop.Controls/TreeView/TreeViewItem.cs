@@ -525,7 +525,6 @@ public partial class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeItemNod
     
     internal TreeView? OwnerTreeView { get; set; }
 
-    private ITreeViewInteractionHandler? TreeViewInteractionHandler => OwnerTreeView?.InteractionHandler;
     
     #endregion
     
@@ -533,13 +532,12 @@ public partial class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeItemNod
     private static readonly AbstractMotion DefaultCloseMotion = new CollapseMotion(Direction.Top, easing: new CubicEaseIn());
     private ContentViewport? _childrenViewport;
     private long _childrenRequestVersion;
-    private readonly BorderRenderHelper _borderRenderHelper;
     private TreeViewItemHeader? _header;
+    private TreeViewItemDecoration? _decoration;
+    internal TreeViewItemHeader? HeaderForDecoration => _header;
+    internal bool AreChildrenVisibleForDecoration => _childrenViewport?.IsVisible == true;
     internal bool AsyncLoaded;
     private FilterContextBackup? _filterContextBackup;
-    private Pen? _treeNodeLinePen;
-    private IBrush? _treeNodeLinePenBrush;
-    private double _treeNodeLinePenWidth;
     private CompositeDisposable? _treeItemNodeBindingDisposables;
     // Plain ITreeItemNode data has no change notification, so the container writes its interactive state
     // back to it. A virtualizing panel prepares recycled containers from the node data again, which then
@@ -556,16 +554,6 @@ public partial class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeItemNod
 
     static TreeViewItem()
     {
-        AffectsRender<TreeViewItem>(
-            IsShowLineProperty,
-            IsShowLeafIconProperty,
-            IsDraggingProperty,
-            IsDragOverProperty,
-            BorderBrushProperty,
-            BorderThicknessProperty,
-            UseLayoutRoundingProperty,
-            NodeHoverModeProperty,
-            BackgroundProperty);
         IsSelectedProperty.OverrideMetadata<TreeViewItem>(
             new StyledPropertyMetadata<bool>(coerce: CoerceIsSelected));
         SelectingItemsControl.IsSelectedChangedEvent.AddClassHandler<TreeViewItem>(
@@ -574,7 +562,6 @@ public partial class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeItemNod
 
     public TreeViewItem()
     {
-        _borderRenderHelper     =  new BorderRenderHelper();
         Items.CollectionChanged += HandleCollectionChanged;
     }
 
@@ -785,6 +772,16 @@ public partial class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeItemNod
             base.OnPropertyChanged(change);
         }
 
+        if (change.Property == IsShowLineProperty || change.Property == IsShowLeafIconProperty ||
+            change.Property == IsDraggingProperty || change.Property == IsDragOverProperty ||
+            change.Property == BorderBrushProperty || change.Property == BorderThicknessProperty ||
+            change.Property == UseLayoutRoundingProperty || change.Property == NodeHoverModeProperty ||
+            change.Property == BackgroundProperty || change.Property == IsExpandedProperty ||
+            change.Property == IsLeafProperty)
+        {
+            _decoration?.InvalidateVisual();
+        }
+
         if (_stateWriteBackTreeItemNode is { } stateWriteBackTreeItemNode)
         {
             SyncTreeItemNodeFromContainer(stateWriteBackTreeItemNode, change.Property);
@@ -868,8 +865,10 @@ public partial class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeItemNod
         // OwnerTreeView is assigned during runtime container preparation. The one-request
         // ExpandAll/initialization flag has no equivalent ControlTheme binding source.
         // Configure the request once; Motion owns the clock and the target lifecycle.
-        Motion.SetEnter(viewport, owner.OpenMotion ?? DefaultOpenMotion);
-        Motion.SetLeave(viewport, owner.CloseMotion ?? DefaultCloseMotion);
+        Motion.SetEnter(viewport, ComponentMotionSelection.TryResolve(owner, TreeView.OpenMotionProperty,
+            MotionSlot.InlineExpand, out var opening) ? opening : DefaultOpenMotion);
+        Motion.SetLeave(viewport, ComponentMotionSelection.TryResolve(owner, TreeView.CloseMotionProperty,
+            MotionSlot.InlineCollapse, out var closing) ? closing : DefaultCloseMotion);
         Motion.SetDurationOverride(viewport, owner.MotionDuration);
         var animate = IsMotionEnabled && !owner.IsExpandAllProcess && !forceDisabledMotion;
         Motion.SetIsEnabled(viewport, animate);
@@ -911,7 +910,7 @@ public partial class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeItemNod
 
     private void HandleGroupNameChanged(AvaloniaPropertyChangedEventArgs change)
     {
-        (TreeViewInteractionHandler as DefaultTreeViewInteractionHandler)?.OnGroupOrTypeChanged(this, change.GetOldValue<string>());
+        OwnerTreeView?.OnGroupOrTypeChanged(this, change.GetOldValue<string>());
     }
     
     private void HandleToggleTypeChanged(AvaloniaPropertyChangedEventArgs change)
@@ -920,7 +919,7 @@ public partial class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeItemNod
         PseudoClasses.Set(TreeViewPseudoClass.NodeToggleTypeRadio, newValue == ItemToggleType.Radio);
         PseudoClasses.Set(TreeViewPseudoClass.NodeToggleTypeCheckBox, newValue == ItemToggleType.CheckBox);
 
-        (TreeViewInteractionHandler as DefaultTreeViewInteractionHandler)?.OnGroupOrTypeChanged(this, GroupName);
+        OwnerTreeView?.OnGroupOrTypeChanged(this, GroupName);
     }
     
     private void HandleIsCheckedChanged(AvaloniaPropertyChangedEventArgs change)
@@ -937,7 +936,7 @@ public partial class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeItemNod
             return;
         }
 
-        (TreeViewInteractionHandler as DefaultTreeViewInteractionHandler)?.OnCheckedChanged(this);
+        OwnerTreeView?.OnCheckedChanged(this);
     }
 
     /// <summary>
@@ -951,6 +950,7 @@ public partial class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeItemNod
         ++_childrenRequestVersion;
         base.OnApplyTemplate(e);
         OwnerTreeView?.ApplyInitialExpansion(this);
+        _decoration = e.NameScope.Find<TreeViewItemDecoration>("PART_Decoration");
         _header = e.NameScope.Find<TreeViewItemHeader>("Header");
         _childrenViewport = e.NameScope.Find<ContentViewport>("PART_ChildrenViewport");
 
@@ -1006,103 +1006,6 @@ public partial class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeItemNod
         }
 
         return true;
-    }
-
-    /// <summary>
-    /// Paints, in addition to the template, the background across the whole header line in
-    /// <see cref="TreeItemHoverMode.WholeLine" /> hover mode, and the guide lines of the tree while
-    /// <see cref="IsShowLine" /> is <see langword="true" />.
-    /// </summary>
-    public override void Render(DrawingContext context)
-    {
-        if (NodeHoverMode == TreeItemHoverMode.WholeLine && _header != null)
-        {
-            using var state = context.PushTransform(Matrix.CreateTranslation(_header.Bounds.X, 0));
-            _borderRenderHelper.Render(context,
-                _header.Bounds.Size,
-                new Thickness(),
-                CornerRadius,
-                BackgroundSizing.InnerBorderEdge,
-                Background,
-                null);
-        }
-   
-        if (IsShowLine)
-        {
-            RenderTreeNodeLine(context);
-        }
-    }
-
-    private void RenderTreeNodeLine(DrawingContext context)
-    {
-        if (_header is null)
-        {
-            return;
-        }
-
-        var penWidth = BorderUtils.BuildRenderScaleAwareThickness(this, BorderThickness.Top);
-        var linePen  = GetTreeNodeLinePen(penWidth);
-        using var state = context.PushRenderOptions(new RenderOptions
-        {
-            EdgeMode = EdgeMode.Aliased
-        });
-        
-        var isLastChild = false;
-        if (Parent is ItemsControl parentTreeItem)
-        {
-            if (parentTreeItem.ContainerFromIndex(parentTreeItem.ItemCount - 1) == this)
-            {
-                isLastChild = true;
-            }
-        }
-
-        var switcherButtonRect = _header.SwitcherButtonRect(this);
-        
-        if (!IsLeaf && !isLastChild && _childrenViewport?.IsVisible == true)
-        {
-            var switcherMiddleBottom = new Point(switcherButtonRect.X + switcherButtonRect.Width / 2, switcherButtonRect.Bottom);
-            var blockStartPoint = new Point(switcherMiddleBottom.X, switcherMiddleBottom.Y);
-            var blockEndPoint   = new Point(blockStartPoint.X, DesiredSize.Height);
-            context.DrawLine(linePen, blockStartPoint, blockEndPoint);
-        }
-
-        // Guide lines of a leaf node. They are drawn only while IsShowLeafIcon is off.
-        if (!IsShowLeafIcon && IsLeaf)
-        {
-            {
-                // Vertical line through the switcher column, cut short for the last child.
-                var childStartPoint = new Point(switcherButtonRect.X + switcherButtonRect.Width / 2, switcherButtonRect.Top);
-                var childEndPoint = new Point(switcherButtonRect.X + switcherButtonRect.Width / 2, isLastChild ? switcherButtonRect.Bottom : switcherButtonRect.Top + DesiredSize.Height);
-                if (isLastChild)
-                {
-                    childEndPoint = childEndPoint.WithY(childEndPoint.Y / 2);
-                }
-
-                context.DrawLine(linePen, childStartPoint.WithY(0), childEndPoint);
-            }
-
-            {
-                // Horizontal connector from the middle of the switcher to its right edge.
-                var childStartPoint =  new Point(switcherButtonRect.X + switcherButtonRect.Width / 2 - penWidth / 2, switcherButtonRect.Top +  switcherButtonRect.Height / 2 - penWidth / 2);
-                var childEndPoint = new Point(switcherButtonRect.Right, switcherButtonRect.Top +  switcherButtonRect.Height / 2 - penWidth / 2);
-
-                context.DrawLine(linePen, childStartPoint, childEndPoint);
-            }
-        }
-    }
-
-    private Pen GetTreeNodeLinePen(double penWidth)
-    {
-        if (_treeNodeLinePen is null ||
-            !ReferenceEquals(_treeNodeLinePenBrush, BorderBrush) ||
-            !MathUtils.AreClose(_treeNodeLinePenWidth, penWidth))
-        {
-            _treeNodeLinePenBrush = BorderBrush;
-            _treeNodeLinePenWidth = penWidth;
-            _treeNodeLinePen      = new Pen(BorderBrush, penWidth);
-        }
-
-        return _treeNodeLinePen!;
     }
 
     internal Rect GetDragBounds(bool includeChildren = false)
@@ -1165,7 +1068,7 @@ public partial class TreeViewItem : AvaloniaTreeItem, IRadioButton, ITreeItemNod
     protected override void OnPointerReleased(PointerReleasedEventArgs e)
     {
         base.OnPointerReleased(e);
-        if (PointInHeaderBounds(e))
+        if ((OwnerTreeView is null || OwnerTreeView.InteractionHandler is not null) && PointInHeaderBounds(e))
         {
             NotifyHeaderClick();
         }

@@ -143,13 +143,13 @@
                 <Setter Property="Transitions">
                     <atom:TokenTransitions>
                         <Transitions>
-                            <atom:SolidColorBrushTransition Property="BorderBrush" atom:TokenTransitions.Duration="MotionDurationMid" />
-                            <atom:SolidColorBrushTransition Property="Background" atom:TokenTransitions.Duration="MotionDurationMid" />
-                            <atom:BoxShadowsTransition Property="BoxShadow" atom:TokenTransitions.Duration="MotionDurationMid" />
-                            <DoubleTransition Property="HandleOpacity" atom:TokenTransitions.Duration="MotionDurationMid" />
-                            <DoubleTransition Property="HandleOffset" atom:TokenTransitions.Duration="MotionDurationMid" />
-                            <DoubleTransition Property="ContentLeftShift" atom:TokenTransitions.Duration="MotionDurationMid" />
-                            <DoubleTransition Property="ContentRightShift" atom:TokenTransitions.Duration="MotionDurationMid" />
+                            <atom:SolidColorBrushTransition Property="BorderBrush" atom:TokenTransitions.Duration="StateTransitionDuration" />
+                            <atom:SolidColorBrushTransition Property="Background" atom:TokenTransitions.Duration="StateTransitionDuration" />
+                            <atom:BoxShadowsTransition Property="BoxShadow" atom:TokenTransitions.Duration="StateTransitionDuration" />
+                            <DoubleTransition Property="HandleOpacity" atom:TokenTransitions.Duration="StateTransitionDuration" />
+                            <DoubleTransition Property="HandleOffset" atom:TokenTransitions.Duration="StateTransitionDuration" />
+                            <DoubleTransition Property="ContentLeftShift" atom:TokenTransitions.Duration="StateTransitionDuration" />
+                            <DoubleTransition Property="ContentRightShift" atom:TokenTransitions.Duration="StateTransitionDuration" />
                         </Transitions>
                     </atom:TokenTransitions>
                 </Setter>

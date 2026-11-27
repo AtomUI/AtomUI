@@ -21,7 +21,6 @@ internal static class LanguageTokenRules
     public static void DefineSeeds(DesignToken seed, ShadcnToken languageSeed)
     {
         seed.ColorPrimary        = DefaultPrimarySeed;
-        seed.EnableWaveSpirit    = false;
         languageSeed.BaseColor   = ShadcnBaseColors.DefaultSeed;
     }
 

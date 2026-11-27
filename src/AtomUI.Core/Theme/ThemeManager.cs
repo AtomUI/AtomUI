@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using AtomUI.Animations;
+using AtomUI.Controls;
 using AtomUI.Registration;
 using AtomUI.Generated.AtomUICore;
 using AtomUI.Theme.Compilation;
@@ -284,6 +285,7 @@ internal partial class ThemeManager : Styles, IThemeManager, IDisposable
             _rootContextStyle = new Style(selector => selector.OfType<TopLevel>());
             _rootContextStyle.Setters.Add(new Setter(ThemeScope.ContextProperty, RootContext));
             application.Styles.Add(_rootContextStyle);
+            InitializeScopedControlThemes(application);
             _applicationInitialized = true;
             SubscribeSystemAppearance(application);
         }
@@ -984,6 +986,7 @@ internal partial class ThemeManager : Styles, IThemeManager, IDisposable
         transaction.PreparedRootContext = _rootContext ??
                                           new ThemeContext(this, snapshot, 0);
         transaction.PreparedResourceProvider = transaction.PreparedRootContext.ResourceProvider;
+        transaction.CompositionHolds = ThemeCompositionProtection.Prepare(this, _rootContext, snapshot, transaction.PreparedScopes);
     }
 
     private void CommitCore(ThemeTransaction transaction)
@@ -1015,6 +1018,14 @@ internal partial class ThemeManager : Styles, IThemeManager, IDisposable
         var avaloniaVariant = snapshot.Appearance == ThemeAppearance.Dark
             ? Avalonia.Styling.ThemeVariant.Dark
             : Avalonia.Styling.ThemeVariant.Light;
+
+        if (transaction.CompositionHolds is { } compositionHolds)
+        {
+            foreach (var hold in compositionHolds)
+            {
+                ThemePublishBoundary.Dispatch(hold.Apply, this, diagnostics, "CompositionPresentation");
+            }
+        }
 
         ThemePublishBoundary.Dispatch(
             () =>
@@ -1284,6 +1295,7 @@ internal partial class ThemeManager : Styles, IThemeManager, IDisposable
 
         DisposeBoundary(_scopeGraph.DisposeAll);
         DisposeBoundary(() => _startupPackageIndex?.Release());
+        DisposeScopedControlThemes(application);
         if (_rootContextStyle is { } rootContextStyle && application is not null)
         {
             DisposeBoundary(() => application.Styles.Remove(rootContextStyle));
@@ -1665,6 +1677,7 @@ internal partial class ThemeManager : Styles, IThemeManager, IDisposable
         var noOp = preparation.Snapshots.All(static staged =>
             SnapshotsEquivalent(staged.Context.Snapshot, staged.Snapshot));
         IDisposable? motionSettle = null;
+        IReadOnlyList<ThemeCompositionProtection.Prepared>? compositionHolds = null;
         try
         {
             lock (_transactionGate)
@@ -1690,6 +1703,7 @@ internal partial class ThemeManager : Styles, IThemeManager, IDisposable
                 }
 
                 motionSettle = BeginCommitMotionSettle();
+                compositionHolds = ThemeCompositionProtection.Prepare(this, null, null, preparation.Snapshots);
                 foreach (var staged in preparation.Snapshots)
                 {
                     staged.Context.Commit(staged.Snapshot);
@@ -1697,7 +1711,7 @@ internal partial class ThemeManager : Styles, IThemeManager, IDisposable
                 }
             }
 
-            return PublishScopeConfig(preparation, request, transitionId);
+            return PublishScopeConfig(preparation, request, transitionId, compositionHolds);
         }
         finally
         {
@@ -1708,9 +1722,17 @@ internal partial class ThemeManager : Styles, IThemeManager, IDisposable
     private ThemeScopeUpdateResult PublishScopeConfig(
         ScopePreparation preparation,
         ThemeRequest request,
-        long transitionId)
+        long transitionId,
+        IReadOnlyList<ThemeCompositionProtection.Prepared>? compositionHolds)
     {
         var publishDiagnostics = new List<ThemeDiagnostic>();
+        if (compositionHolds is not null)
+        {
+            foreach (var hold in compositionHolds)
+            {
+                ThemePublishBoundary.Dispatch(hold.Apply, this, publishDiagnostics, "CompositionPresentation");
+            }
+        }
         foreach (var staged in preparation.Snapshots)
         {
             if (_scopeGraph.TryGetNode(staged.Stamp.RegistrationId, out var stagedNode) &&
@@ -2160,14 +2182,20 @@ internal partial class ThemeManager : Styles, IThemeManager, IDisposable
         return _staticResourceProvider!.PrepareTable(resources);
     }
 
+    private IReadOnlyList<ControlBehaviorDescriptor>? _startupBehaviors;
+
+    internal void SetStartupBehaviors(IReadOnlyList<ControlBehaviorDescriptor>? behaviors) => _startupBehaviors = behaviors;
+
     private ThemeSchemaRegistry CreateStartupRegistry()
     {
         if (_startupPackageIndex is { } index)
         {
-            return new ThemeSchemaRegistry(GeneratedThemeSchema.GetGlobalTokens(), index, _registryLanguages,
+            var startupRegistry = new ThemeSchemaRegistry(GeneratedThemeSchema.GetGlobalTokens(), index, _registryLanguages,
                 _registryTokenRules);
+            startupRegistry.SetControlBehaviors(_startupBehaviors);
+            return startupRegistry;
         }
-        return _packageSchemaFingerprints is { } packageFingerprints
+        var registry = _packageSchemaFingerprints is { } packageFingerprints
             ? new ThemeSchemaRegistry(
                 GeneratedThemeSchema.GetGlobalTokens(),
                 _controlTokenDescriptors,
@@ -2182,6 +2210,8 @@ internal partial class ThemeManager : Styles, IThemeManager, IDisposable
                 _registryLanguages,
                 _controlThemeAssetDescriptors,
                 _registryTokenRules);
+        registry.SetControlBehaviors(_startupBehaviors);
+        return registry;
     }
 
     private SemanticPartRegistry CreateSemanticRegistry(ThemeSchemaRegistry registry)

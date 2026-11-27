@@ -15,6 +15,10 @@ internal sealed class ThemeTokenResourceProvider : ResourceProvider
 
     private static readonly object s_implicitGlobalToken = new();
 
+    [ThreadStatic]
+    private static object? t_frameworkTokenProbe;
+    private static readonly object s_frameworkToken = new();
+
     private ThemeSnapshot? _snapshot;
     private readonly ThemeContext? _context;
 
@@ -56,9 +60,31 @@ internal sealed class ThemeTokenResourceProvider : ResourceProvider
         }
     }
 
+    internal static bool TryFindApplicationResource(StyledElement target, object key, ThemeVariant variant, out object? value)
+    {
+        var previous = t_frameworkTokenProbe;
+        t_frameworkTokenProbe = key;
+        try
+        {
+            return target.TryFindResource(key, variant, out value) && !ReferenceEquals(value, s_frameworkToken);
+        }
+        finally
+        {
+            t_frameworkTokenProbe = previous;
+        }
+    }
+
+    internal bool ContainsToken(object key) => key is ControlTokenResourceKey or ControlOwnTokenResourceKey ||
+        Snapshot.GlobalResources.ContainsKey(key) || Snapshot.Registry.TryGetControlResourceSlot(key, out _);
+
 
     public override bool TryGetResource(object key, ThemeVariant? theme, out object? value)
     {
+        if (t_frameworkTokenProbe is { } probe && Equals(key, probe) && ContainsToken(key))
+        {
+            value = s_frameworkToken;
+            return true;
+        }
         var snapshot = Snapshot;
         // Every resource lookup passes here; read the thread-static probe once and compare only while one is active.
         var explicitTokenKey = s_explicitTokenKey;

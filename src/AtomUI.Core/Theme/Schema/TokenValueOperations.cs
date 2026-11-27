@@ -71,6 +71,30 @@ internal static class TokenValueOperations
         }
     }
 
+    internal static bool TryGetEasingKey(Easing? easing, out EasingKey key)
+    {
+        var type = easing?.GetType();
+        key = new EasingKey(type);
+        if (easing is null || IsStatelessEasing(type!))
+        {
+            return true;
+        }
+        if (type == typeof(SplineEasing) && easing is SplineEasing spline)
+        {
+            key = new(type, spline.X1, spline.Y1, spline.X2, spline.Y2);
+            return true;
+        }
+        if (type == typeof(SpringEasing) && easing is SpringEasing spring)
+        {
+            key = new(type, spring.Mass, spring.Stiffness, spring.Damping, spring.InitialVelocity);
+            return true;
+        }
+        return false;
+    }
+
+    internal readonly record struct EasingKey(Type? Type, double First = 0, double Second = 0,
+                                             double Third = 0, double Fourth = 0);
+
     private static bool IsStatelessEasing(Type type) =>
         type == typeof(LinearEasing) ||
         type == typeof(BackEaseIn) || type == typeof(BackEaseOut) || type == typeof(BackEaseInOut) ||

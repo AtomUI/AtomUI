@@ -134,11 +134,13 @@ public class ControlTokenRuleAnalysisTests
         digest.ShouldContain("[assembly: global::AtomUI.Theme.Schema.TokenSchemaDigestAttribute(\"");
         var value = digest[(digest.IndexOf('"') + 1)..digest.LastIndexOf('"')];
         value.Length.ShouldBe(64);
+        GetGeneratedSource(controls, IdentitiesFile).ShouldContain($".TokenSchemaDigest => \"{value}\";");
 
         var package = RunValuePackage(ToolTip("target.Own.Padding = 4; target.Own.Margin = 2;") + Popover("target.Own.ArrowSize = 8;"));
 
-        GetGeneratedSource(package.Compilation, TokenRuleRegistrationFile)
-            .ShouldContain($"[assembly: global::AtomUI.Theme.Schema.CoversTokenSchemaAttribute(\"Acme.Controls\", \"{value}\")]");
+        var registration = GetGeneratedSource(package.Compilation, TokenRuleRegistrationFile);
+        registration.ShouldContain($"[assembly: global::AtomUI.Theme.Schema.CoversTokenSchemaAttribute(\"Acme.Controls\", \"{value}\")]");
+        registration.ShouldContain($">(\"{value}\"),");
     }
 
     [Fact]

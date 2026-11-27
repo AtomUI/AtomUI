@@ -1,6 +1,5 @@
 using AtomUI.DesignLanguages.PrimeNG;
 using AtomUI.Theme.Languages;
-using AtomUI.Theme.DesignTokens;
 
 namespace AtomUI.Desktop.Controls.Themes.PrimeNG;
 
@@ -32,24 +31,4 @@ internal static class PrimeNGMotion
     internal static bool HasInstantTransitions(in TokenEvaluationContext<PrimeNGToken> context) =>
         context.Language.HasInstantTransitions(context.Variant);
 
-    /// <summary>
-    /// Restores the scope's <c>MotionDurationMid</c> and / or <c>MotionDurationSlow</c> (whichever the owner's
-    /// animation reads) under a preset with instant state transitions, unless motion is turned off.
-    /// </summary>
-    internal static void Restore(in TokenEvaluationContext<PrimeNGToken> context, DesignToken controlGlobal,
-                                 TimeSpan? mid = null, TimeSpan? slow = null)
-    {
-        if (!controlGlobal.EnableMotion || !HasInstantTransitions(context))
-        {
-            return;
-        }
-        if (mid is { } m)
-        {
-            controlGlobal.MotionDurationMid = m;
-        }
-        if (slow is { } s)
-        {
-            controlGlobal.MotionDurationSlow = s;
-        }
-    }
 }

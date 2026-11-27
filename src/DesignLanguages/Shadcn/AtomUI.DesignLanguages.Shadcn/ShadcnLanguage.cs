@@ -27,6 +27,23 @@ public sealed class ShadcnLanguage : DesignLanguage<ShadcnToken>
     public override string Id => "Shadcn";
 
     /// <summary>
+    /// The motion scheme for Shadcn transitions and component animations.
+    /// </summary>
+    public override AtomUI.Animations.MotionScheme MotionScheme => Motions.Default;
+
+    private static class Motions
+    {
+        internal static readonly ShadcnMotionScheme Default = new();
+    }
+
+    /// <summary>
+    /// Returns the default interaction effect for Shadcn controls.
+    /// </summary>
+    public override AtomUI.Animations.InteractionEffect GetInteractionEffect(AtomUI.Theme.Schema.ControlTokenIdentity? owner,
+        in DesignVariant variant) =>
+        AtomUI.Animations.InteractionEffect.None;
+
+    /// <summary>
     /// The axes of the language and their defaults: the styles with the default style, the densities, the desktop
     /// idiom, and the seeds an end user may adjust: <c>ColorPrimary</c> and
     /// <see cref="ShadcnToken.BaseColor" />.

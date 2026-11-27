@@ -429,7 +429,47 @@ internal sealed class EasingTokenValueConverter : ITokenValueConverter
 
     public object Convert(string value)
     {
-        return TokenValueParserHelper.Parse(value, Easing.Parse, nameof(Easing));
+        return TokenValueParserHelper.Parse(value, ParseEasing, nameof(Easing));
+    }
+
+    private static Easing ParseEasing(string value)
+    {
+        var text = value.AsSpan().Trim();
+        var spring = text.StartsWith("Spring(", StringComparison.OrdinalIgnoreCase);
+        if (!spring && !text.StartsWith("Spline(", StringComparison.OrdinalIgnoreCase))
+        {
+            return Easing.Parse(value);
+        }
+
+        Span<Range> arguments = stackalloc Range[5];
+        if (text[^1] != ')' || text[7..^1].Split(arguments, ',', StringSplitOptions.TrimEntries) != 4)
+        {
+            throw new FormatException("Expected four easing parameters.");
+        }
+
+        var body = text[7..^1];
+        Span<double> parameters = stackalloc double[4];
+        for (var index = 0; index < parameters.Length; index++)
+        {
+            if (!double.TryParse(body[arguments[index]], NumberStyles.Float, CultureInfo.InvariantCulture, out var number) ||
+                !double.IsFinite(number))
+            {
+                throw new FormatException("Easing parameters must be finite numbers.");
+            }
+            parameters[index] = number;
+        }
+
+        if (!spring)
+        {
+            return new SplineEasing(parameters[0], parameters[1], parameters[2], parameters[3]);
+        }
+
+        if (parameters[0] <= 0 || parameters[1] <= 0 || parameters[2] < 0)
+        {
+            throw new FormatException("Spring mass and stiffness must be positive and damping must be nonnegative.");
+        }
+
+        return new SpringEasing(parameters[0], parameters[1], parameters[2], parameters[3]);
     }
 }
 

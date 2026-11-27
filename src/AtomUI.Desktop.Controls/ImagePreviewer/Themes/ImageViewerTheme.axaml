@@ -109,9 +109,9 @@
             <Setter Property="Transitions">
                 <atom:TokenTransitions>
                     <Transitions>
-                        <TransformOperationsTransition Property="ImageRenderTransform" atom:TokenTransitions.Duration="MotionDurationMid" />
-                        <DoubleTransition Property="ImageTranslateX" atom:TokenTransitions.Duration="MotionDurationFast" />
-                        <DoubleTransition Property="ImageTranslateY" atom:TokenTransitions.Duration="MotionDurationFast" />
+                        <TransformOperationsTransition Property="ImageRenderTransform" atom:TokenTransitions.Duration="StateTransitionDuration" />
+                        <DoubleTransition Property="ImageTranslateX" atom:TokenTransitions.Duration="StateTransitionDurationFast" />
+                        <DoubleTransition Property="ImageTranslateY" atom:TokenTransitions.Duration="StateTransitionDurationFast" />
                     </Transitions>
                 </atom:TokenTransitions>
             </Setter>

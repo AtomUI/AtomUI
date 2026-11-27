@@ -7,6 +7,9 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <ApplicationIcon>../AtomUIGallery/Assets/AtomUIGallery.ico</ApplicationIcon>
+        <!-- Enable scoped control themes by default for Desktop Gallery while isolating its adapted Avalonia.Base.dll from sibling hosts. -->
+        <AtomUIEnableScopedControlThemes Condition="'$(AtomUIEnableScopedControlThemes)' == ''">true</AtomUIEnableScopedControlThemes>
+        <OutputPath Condition="'$(AtomUIEnableScopedControlThemes)' == 'true'">$(OutputPathWithoutFramework)/$(MSBuildProjectName)</OutputPath>
     </PropertyGroup>
 
     <PropertyGroup Condition="'$(Configuration)' == 'Release'">

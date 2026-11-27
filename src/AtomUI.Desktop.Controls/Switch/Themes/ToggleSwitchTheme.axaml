@@ -7,9 +7,10 @@
         <Setter Property="Template">
             <ControlTemplate>
                 <Panel>
-                    <atom:WaveSpiritDecorator Name="PART_WaveSpirit"
-                                              IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
-                                              IsWaveSpiritEnabled="{TemplateBinding IsWaveSpiritEnabled}"/>
+                    <atom:SwitchTrack Name="PART_Track" IsHitTestVisible="False"
+                                      Background="{TemplateBinding GrooveBackground}"
+                                      BorderBrush="{TemplateBinding GrooveBorderBrush}"
+                                      BorderThickness="{TemplateBinding GrooveBorderThickness}" />
                     <atom:ToggleSwitchContentPanel Name="PART_MainContainer"
                                                    ClipToBounds="True"
                                                    OnContentOffset="{TemplateBinding OnContentOffset}"
@@ -46,12 +47,9 @@
             <Setter Property="Foreground" Value="{atom:ToggleSwitchTokenResource UncheckedContentColor}" />
         </Style>
         <Setter Property="IsMotionEnabled" Value="{atom:ToggleSwitchTokenResource EnableMotion}" />
-        <Setter Property="IsWaveSpiritEnabled"
-                Value="{atom:ToggleSwitchTokenResource EnableWaveSpirit}" />
+        <Setter Property="IsInteractionEffectEnabled"
+                Value="{atom:ToggleSwitchTokenResource EnableInteractionEffect}" />
         
-        <Style Selector="^ /template/ atom|WaveSpiritDecorator#PART_WaveSpirit">
-            <Setter Property="WaveType" Value="PillWave"/>
-        </Style>
 
         <Setter Property="TrackPadding" Value="{atom:ToggleSwitchTokenResource TrackPadding}" />
         <Setter Property="EnableHandlePressStretch" Value="{atom:ToggleSwitchTokenResource EnableHandlePressStretch}" />
@@ -65,8 +63,8 @@
                         <DoubleTransition Property="KnobWidthExtension" atom:TokenTransitions.Duration="MotionDurationMid"/>
                         <PointTransition Property="OnContentOffset" atom:TokenTransitions.Duration="MotionDurationMid"/>
                         <PointTransition Property="OffContentOffset" atom:TokenTransitions.Duration="MotionDurationMid"/>
-                        <atom:SolidColorBrushTransition Property="GrooveBackground" atom:TokenTransitions.Duration="MotionDurationMid"/>
-                        <DoubleTransition Property="Opacity" atom:TokenTransitions.Duration="MotionDurationMid"/>
+                        <atom:SolidColorBrushTransition Property="GrooveBackground" atom:TokenTransitions.Duration="StateTransitionDuration"/>
+                        <DoubleTransition Property="Opacity" atom:TokenTransitions.Duration="StateTransitionDuration"/>
                     </Transitions>
                 </atom:TokenTransitions>
             </Setter>

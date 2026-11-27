@@ -5,18 +5,13 @@
               xmlns:documents="using:Avalonia.Controls.Documents"
               x:Class="AtomUI.Desktop.Controls.Themes.DropdownButtonBaseTheme"
               TargetType="atom:DropdownButton">
-    <Setter Property="OpenMotion" Value="{x:Static atom:PopupMotionDefaults.DropdownOpen}" />
-    <Setter Property="CloseMotion" Value="{x:Static atom:PopupMotionDefaults.DropdownClose}" />
+    <Setter Property="OpenMotion" Value="{atom:MotionResource DropdownOpen}" />
+    <Setter Property="CloseMotion" Value="{atom:MotionResource DropdownClose}" />
     <Style Selector="^:is(atom|Button)">
         <Style Selector="^[ButtonType=Default], ^[ButtonType=Link], ^[ButtonType=Primary], ^[ButtonType=Text]">
             <Setter Property="Template">
                 <ControlTemplate>
                     <Panel>
-                        <atom:WaveSpiritDecorator Name="PART_WaveSpirit"
-                                                  CornerRadius="{TemplateBinding EffectiveCornerRadius}"
-                                                  IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
-                                                  IsWaveSpiritEnabled="{TemplateBinding IsWaveSpiritEnabled}"
-                                                  WaveType="{TemplateBinding WaveSpiritType}" />
                         <Border Name="ShadowsFrame"
                                 CornerRadius="{TemplateBinding EffectiveCornerRadius}" />
                         <atom:DashedBorder Name="Frame"
@@ -64,11 +59,6 @@
             <Setter Property="Template">
                 <ControlTemplate>
                     <Panel>
-                        <atom:WaveSpiritDecorator Name="PART_WaveSpirit"
-                                                  CornerRadius="{TemplateBinding EffectiveCornerRadius}"
-                                                  IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
-                                                  IsWaveSpiritEnabled="{TemplateBinding IsWaveSpiritEnabled}"
-                                                  WaveType="{TemplateBinding WaveSpiritType}" />
                         <Border Name="ShadowsFrame"
                                 CornerRadius="{TemplateBinding EffectiveCornerRadius}"
                                 Background="{TemplateBinding Background}" />
@@ -116,11 +106,6 @@
             <Setter Property="Template">
                 <ControlTemplate>
                     <Panel>
-                        <atom:WaveSpiritDecorator Name="PART_WaveSpirit"
-                                                  CornerRadius="{TemplateBinding EffectiveCornerRadius}"
-                                                  IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
-                                                  IsWaveSpiritEnabled="{TemplateBinding IsWaveSpiritEnabled}"
-                                                  WaveType="{TemplateBinding WaveSpiritType}" />
                         <Border Name="ShadowsFrame"
                                 CornerRadius="{TemplateBinding EffectiveCornerRadius}"
                                 Background="{TemplateBinding Background}" />
@@ -171,11 +156,11 @@
                 <atom:TokenTransitions>
                     <Transitions>
                         <atom:SolidColorBrushTransition Property="Background"
-                                                        atom:TokenTransitions.Duration="MotionDurationMid" />
+                                                        atom:TokenTransitions.Duration="StateTransitionDuration" />
                         <atom:SolidColorBrushTransition Property="Foreground"
-                                                        atom:TokenTransitions.Duration="MotionDurationMid" />
+                                                        atom:TokenTransitions.Duration="StateTransitionDuration" />
                         <atom:SolidColorBrushTransition Property="BorderBrush"
-                                                        atom:TokenTransitions.Duration="MotionDurationMid" />
+                                                        atom:TokenTransitions.Duration="StateTransitionDuration" />
                     </Transitions>
                 </atom:TokenTransitions>
             </Setter>
@@ -187,8 +172,8 @@
         <Setter Property="VerticalContentAlignment" Value="Center" />
         <Setter Property="BorderThickness" Value="{atom:DropdownButtonTokenResource BorderThickness}" />
         <Setter Property="IsMotionEnabled" Value="{atom:DropdownButtonTokenResource EnableMotion}" />
-        <Setter Property="IsWaveSpiritEnabled"
-                Value="{atom:DropdownButtonTokenResource EnableWaveSpirit}" />
+        <Setter Property="IsInteractionEffectEnabled"
+                Value="{atom:DropdownButtonTokenResource EnableInteractionEffect}" />
         <Setter Property="Cursor" Value="Hand" />
         <Setter Property="ClipToBounds" Value="False" />
 

@@ -1,5 +1,6 @@
 ﻿using AtomUI.Theme.DesignTokens;
 using Avalonia;
+using Avalonia.Animation.Easings;
 
 namespace AtomUI.Theme.Derivation;
 
@@ -73,10 +74,24 @@ public static class CalculatorUtils
         var radiusInfo = CalculateRadius(borderRadius);
 
         // motion
-        designToken.MotionDurationFast     = TimeSpan.FromMilliseconds(motionBase + motionUnit);
-        designToken.MotionDurationMid      = TimeSpan.FromMilliseconds(motionBase + motionUnit * 2);
-        designToken.MotionDurationSlow     = TimeSpan.FromMilliseconds(motionBase + motionUnit * 3);
-        designToken.MotionDurationVerySlow = TimeSpan.FromMilliseconds(motionBase + motionUnit * 8);
+        designToken.MotionDurationFast            = TimeSpan.FromMilliseconds(motionBase + motionUnit);
+        designToken.MotionDurationMid             = TimeSpan.FromMilliseconds(motionBase + motionUnit * 2);
+        designToken.MotionDurationSlow            = TimeSpan.FromMilliseconds(motionBase + motionUnit * 3);
+        designToken.MotionDurationVerySlow        = TimeSpan.FromMilliseconds(motionBase + motionUnit * 4);
+        designToken.MotionDurationEnter           = designToken.MotionDurationMid;
+        designToken.MotionDurationLeave           = designToken.MotionDurationMid;
+        designToken.MotionEasingEnter             = null;
+        designToken.MotionEasingLeave             = null;
+        designToken.MotionEaseOut                 = new SplineEasing(0.215, 0.61, 0.355, 1);
+        designToken.MotionEaseIn                  = new SplineEasing(0.55, 0.055, 0.675, 0.19);
+        designToken.MotionEaseInOut               = new SplineEasing(0.645, 0.045, 0.355, 1);
+        designToken.MotionEaseEmphasized          = new SplineEasing(0.12, 0.4, 0.29, 1.46);
+        designToken.StateTransitionDuration       = designToken.MotionDurationMid;
+        designToken.StateTransitionDurationFast   = designToken.MotionDurationFast;
+        designToken.StateTransitionDurationSlow   = designToken.MotionDurationSlow;
+        designToken.StateTransitionDurationPress  = TimeSpan.FromMilliseconds(150);
+        designToken.StateTransitionEasing         = new SplineEasing(0.645, 0.045, 0.355, 1);
+        designToken.StateTransitionEasingOverride = null;
         
         // line
         designToken.LineWidthBold = lineWidth + 1;

@@ -10,6 +10,10 @@ namespace AtomUI.Animations;
 /// </summary>
 public class ZoomInMotion : AbstractMotion
 {
+    /// <summary>
+    /// The scale before the target enters.
+    /// </summary>
+    public double FromScale { get; set; } = 0.2;
     public ZoomInMotion()
     {
     }
@@ -46,7 +50,7 @@ public class ZoomInMotion : AbstractMotion
     protected override void Build(MotionBuilder builder, in MotionContext context)
     {
         builder.Origin = new RelativePoint(0.5, 0.5, RelativeUnit.Relative);
-        builder.Scale.From(0.2).To(1);
+        builder.Scale.From(FromScale).To(1);
         builder.Opacity.From(0).To(1);
     }
 }
@@ -57,6 +61,10 @@ public class ZoomInMotion : AbstractMotion
 /// </summary>
 public class ZoomOutMotion : AbstractMotion
 {
+    /// <summary>
+    /// The scale at the end of the exit.
+    /// </summary>
+    public double ToScale { get; set; } = 0.2;
     public ZoomOutMotion()
     {
     }
@@ -93,7 +101,7 @@ public class ZoomOutMotion : AbstractMotion
     protected override void Build(MotionBuilder builder, in MotionContext context)
     {
         builder.Origin = new RelativePoint(0.5, 0.5, RelativeUnit.Relative);
-        builder.Scale.From(1).To(0.2);
+        builder.Scale.From(1).To(ToScale);
         builder.Opacity.FromCurrent().To(0);
     }
 }

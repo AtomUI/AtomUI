@@ -30,6 +30,7 @@ internal sealed class ThemeContext
     }
 
     internal ThemeManager Manager { get; }
+    internal bool IsCompositionSnapshot { get; init; }
     internal long RegistrationId { get; }
     internal ThemeSnapshot Snapshot => Manager.PackageReadUpdate?.GetContextSnapshot(this) ?? Volatile.Read(ref _snapshot);
     internal ThemeAppearance Appearance => Snapshot.Appearance;

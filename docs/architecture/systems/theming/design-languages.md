@@ -323,6 +323,8 @@ await themeManager.ApplyAsync(ThemeSelection
    `Controls without a token rule in an enabled design language: '<control>' under '<language>' (install and enable '<assembly>.Themes.<language>')`。
 2. **Token Schema 摘要**：控件包生成 `[assembly: TokenSchemaDigest]`，取值包为它覆盖的每个控件包生成
    `[assembly: CoversTokenSchema(assemblyName, digest)]`；两者不一致（应用升级了控件包而取值包是旧的）即失败，消息写出两个包名与两个摘要。
+   生成的取值登记携带构建时读到的摘要，提交时通过实际加载的 Token 类型读取控件包的摘要。缺少其中任一生成入口时，
+   仍从程序集声明读取两侧摘要，以支持既有包和手写登记。
 3. **初始选择**：语言已启用，风格、明暗、密度在语言声明的范围内（选择解析的规则 1）。
 4. **描述符自洽**：语言 Token 只用 `Seed` / `Language` 阶段且不与全局 Token 同名、可调种子是种子、推导不重复；默认风格不在
    声明的风格里时，`DesignLanguageDescriptor` 构造即失败。

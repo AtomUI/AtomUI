@@ -4,8 +4,8 @@
               x:Class="AtomUI.Desktop.Controls.Themes.AbstractAutoCompleteTheme"
               TargetType="atom:AbstractAutoComplete"
               x:ClassModifier="internal">
-    <Setter Property="OpenMotion" Value="{x:Static atom:PopupMotionDefaults.SelectOpen}" />
-    <Setter Property="CloseMotion" Value="{x:Static atom:PopupMotionDefaults.SelectClose}" />
+    <Setter Property="OpenMotion" Value="{atom:MotionResource SelectOpen}" />
+    <Setter Property="CloseMotion" Value="{atom:MotionResource SelectClose}" />
 
     <Style Selector="^:is(atom|AbstractAutoComplete)">
         <Setter Property="IsMotionEnabled" Value="{atom:OwnerTokenResource EnableMotion}" />

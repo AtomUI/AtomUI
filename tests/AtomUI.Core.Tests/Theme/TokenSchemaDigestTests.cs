@@ -1,3 +1,5 @@
+using AtomUI.Theme.DesignTokens;
+using AtomUI.Theme.Languages;
 using AtomUI.Theme.Schema;
 using Shouldly;
 using Xunit;
@@ -35,5 +37,32 @@ public class TokenSchemaDigestTests
     {
         Should.NotThrow(() => TokenSchemaDigests.Validate(typeof(TokenSchemaDigestTests).Assembly,
             typeof(TokenSchemaDigestTests).Assembly));
+    }
+
+    /// <summary>
+    /// Verifies generated control token rules validate their build-time schema digest against the loaded control assembly.
+    /// </summary>
+    [Fact]
+    public void Generated_Rules_Compare_The_Build_Digest_With_The_Loaded_Token_Digest()
+    {
+        var matching = ControlTokenRuleDescriptor.Create<ProbeLanguageToken, DigestToken, DigestRule>("loaded");
+        var stale = ControlTokenRuleDescriptor.Create<ProbeLanguageToken, DigestToken, DigestRule>("recorded");
+
+        Should.NotThrow(matching.ValidateTokenSchema);
+        var failure = Should.Throw<ThemeSchemaException>(stale.ValidateTokenSchema);
+        failure.Message.ShouldContain("'recorded'");
+        failure.Message.ShouldContain("'loaded'");
+    }
+
+    private sealed class DigestToken : AbstractControlDesignToken, IControlToken
+    {
+        public static ControlTokenIdentity ControlIdentity { get; } = new("Test", "Digest");
+        static string IControlToken.TokenSchemaDigest => "loaded";
+    }
+
+    private sealed class DigestRule : IControlTokenRule<ProbeLanguageToken, DigestToken>
+    {
+        public void Apply(in TokenEvaluationContext<ProbeLanguageToken> context, ControlTokenTarget<DigestToken> target) =>
+            throw new InvalidOperationException("Schema validation must not run the rule.");
     }
 }

@@ -36,24 +36,24 @@ internal static partial class Program
         {
             Content = "Unchecked"
         };
-        using var uncheckedRealized = RealizeControl(uncheckedRadio);
+        using var uncheckedRealized = RealizeFeedbackControl(uncheckedRadio);
         Expect(FindVisualByTypeName(uncheckedRadio, "RadioIndicator", "Indicator") != null,
             "RadioButton should create RadioIndicator.",
             failures);
-        Expect(FindVisualByTypeName(uncheckedRadio, "WaveSpiritDecorator", "PART_WaveSpirit") == null,
+        Expect(FindInteractionAdornment(uncheckedRadio) == null,
             "Unchecked RadioButton should not create wave decorator before interaction.",
             failures);
 
         ClickControl(uncheckedRealized.Window, uncheckedRadio, failures, "RadioButton");
         RefreshLayout(uncheckedRealized.Window);
-        var runtimeWave = FindVisualByTypeName(uncheckedRadio, "WaveSpiritDecorator", "PART_WaveSpirit");
+        var runtimeWave = FindInteractionAdornment(uncheckedRadio);
         Expect(runtimeWave != null,
             "RadioButton should create wave decorator when a checked interaction needs it.",
             failures);
 
-        uncheckedRadio.SetCurrentValue(AtomRadioButton.IsWaveSpiritEnabledProperty, false);
+        uncheckedRadio.SetCurrentValue(AtomRadioButton.IsInteractionEffectEnabledProperty, false);
         RefreshLayout(uncheckedRealized.Window);
-        Expect(FindVisualByTypeName(uncheckedRadio, "WaveSpiritDecorator", "PART_WaveSpirit") == null,
+        Expect(FindInteractionAdornment(uncheckedRadio) == null,
             "RadioButton should remove wave decorator when wave is disabled.",
             failures);
         Expect(runtimeWave?.GetVisualParent() == null,
@@ -64,17 +64,17 @@ internal static partial class Program
         {
             Content = "Motion"
         };
-        using var motionRealized = RealizeControl(motionRadio);
+        using var motionRealized = RealizeFeedbackControl(motionRadio);
         ClickControl(motionRealized.Window, motionRadio, failures, "RadioButton motion");
         RefreshLayout(motionRealized.Window);
-        var motionWave = FindVisualByTypeName(motionRadio, "WaveSpiritDecorator", "PART_WaveSpirit");
+        var motionWave = FindInteractionAdornment(motionRadio);
         Expect(motionWave != null,
             "RadioButton should create wave decorator before motion is disabled.",
             failures);
 
         motionRadio.SetCurrentValue(AtomRadioButton.IsMotionEnabledProperty, false);
         RefreshLayout(motionRealized.Window);
-        Expect(FindVisualByTypeName(motionRadio, "WaveSpiritDecorator", "PART_WaveSpirit") == null,
+        Expect(FindInteractionAdornment(motionRadio) == null,
             "RadioButton should remove wave decorator when motion is disabled.",
             failures);
         Expect(motionWave?.GetVisualParent() == null,
@@ -86,8 +86,8 @@ internal static partial class Program
             Content   = "Checked",
             IsChecked = true
         };
-        using var checkedRealized = RealizeControl(checkedRadio);
-        Expect(FindVisualByTypeName(checkedRadio, "WaveSpiritDecorator", "PART_WaveSpirit") == null,
+        using var checkedRealized = RealizeFeedbackControl(checkedRadio);
+        Expect(FindInteractionAdornment(checkedRadio) == null,
             "Initially checked RadioButton should not create wave decorator without interaction.",
             failures);
 
@@ -97,10 +97,10 @@ internal static partial class Program
             Content = "Detached"
         };
         detachedPanel.Children.Add(detachedRadio);
-        using var detachedRealized = RealizeControl(detachedPanel);
+        using var detachedRealized = RealizeFeedbackControl(detachedPanel);
         ClickControl(detachedRealized.Window, detachedRadio, failures, "detached RadioButton");
         RefreshLayout(detachedRealized.Window);
-        var detachedWave = FindVisualByTypeName(detachedRadio, "WaveSpiritDecorator", "PART_WaveSpirit");
+        var detachedWave = FindInteractionAdornment(detachedRadio);
         Expect(detachedWave != null,
             "RadioButton should create a wave decorator before detach verification.",
             failures);
@@ -112,7 +112,7 @@ internal static partial class Program
         detachedRadio.SetCurrentValue(AtomRadioButton.IsCheckedProperty, false);
         detachedRadio.SetCurrentValue(AtomRadioButton.IsCheckedProperty, true);
         RefreshLayout(detachedRealized.Window);
-        Expect(FindVisualByTypeName(detachedRadio, "WaveSpiritDecorator", "PART_WaveSpirit") == null,
+        Expect(FindInteractionAdornment(detachedRadio) == null,
             "Detached RadioButton should not recreate wave decorator when checked state changes.",
             failures);
     }

@@ -63,7 +63,7 @@ Slider 通过 `AtomUI.Controls.AbstractSlider` 继承 Avalonia `RangeBase` 的�
 | `ValueFormatTemplate` | `string` | Tooltip 文本格式，默认 `{0:0}`。 |
 | `IsIncluded` | `bool` | 是否绘制活动轨道和 mark 激活态。 |
 | `IsMotionEnabled` | `bool` | 是否启用轨道、thumb 和 mark 动效。 |
-| `IsWaveSpiritEnabled` | `bool` | 是否启用 wave spirit 能力。 |
+| `IsInteractionEffectEnabled` | `bool` | 是否启用 wave spirit 能力。 |
 
 Range 模式使用示例：
 

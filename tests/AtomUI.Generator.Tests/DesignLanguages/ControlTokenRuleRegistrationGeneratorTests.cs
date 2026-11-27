@@ -104,6 +104,7 @@ public class ControlTokenRuleRegistrationGeneratorTests
                 public interface IControlToken
                 {
                     static abstract AtomUI.Theme.Schema.ControlTokenIdentity ControlIdentity { get; }
+                    static virtual string? TokenSchemaDigest => null;
                 }
             """, "", StringComparison.Ordinal)
             .Replace(", AtomUI.Theme.DesignTokens.IControlToken", "", StringComparison.Ordinal);
@@ -215,7 +216,7 @@ public class ControlTokenRuleRegistrationGeneratorTests
         registration.ShouldContain("namespace AtomUI.Generated.AcmeShadcnValues;");
         CountOf(registration, CreatePrefix).ShouldBe(1);
         registration.ShouldContain(
-            CreatePrefix + "global::Acme.Shadcn.ShadcnToken, global::Acme.Controls.ToolTipToken, global::Acme.Shadcn.Values.ToolTipTokenRule>(),");
+            CreatePrefix + "global::Acme.Shadcn.ShadcnToken, global::Acme.Controls.ToolTipToken, global::Acme.Shadcn.Values.ToolTipTokenRule>(");
         // A value package declares no tokens of its own.
         HasGeneratedSource(package, IdentitiesFile).ShouldBeFalse();
         HasGeneratedSource(package, LanguageRegistrationFile).ShouldBeFalse();
@@ -427,7 +428,7 @@ public class ControlTokenRuleRegistrationGeneratorTests
             "'Acme.Shadcn.Values.ToolTipTokenRule' and 'Acme.Shadcn.Values.AnotherToolTipTokenRule' both register a token rule for 'Acme.Controls.ToolTipToken' under 'Acme.Shadcn.ShadcnToken'.");
         var registration = GetGeneratedSource(package, TokenRuleRegistrationFile);
         CountOf(registration, CreatePrefix).ShouldBe(1);
-        registration.ShouldContain("global::Acme.Shadcn.Values.AnotherToolTipTokenRule>()");
+        registration.ShouldContain("global::Acme.Shadcn.Values.AnotherToolTipTokenRule>(");
         registration.ShouldNotContain("Acme.Shadcn.Values.ToolTipTokenRule>");
         Errors(package).ShouldBeEmpty();
     }

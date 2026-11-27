@@ -29,6 +29,20 @@ worker 的 Avalonia 托管依赖随工具资产白名单发布，不进入应用
 
 ## 源码职责
 
+### 控件主题首次装载
+
+当前验证入口面向使用官方 Avalonia 12.2.0 的 `net10.0` 应用。应用显式设置
+`AtomUIEnableScopedControlThemes=true` 后，由包内 Toolchain 核对原始 `Avalonia.Base.dll` 的 SHA-256，
+在该应用的中间输出目录生成适配副本。MSBuild 在解析运行时资产时替换这一项。JIT 的复制输出和 NativeAOT
+的 ILC 输入由此共用同一身份的适配实现。适配副本使用原有程序集名称和 CLR 公钥标记以解析 Avalonia
+内部引用，由 AtomUI 构建工具生成。包管理器仍还原原版 Avalonia，编译继续使用原来的引用程序集。输入不匹配时
+报告 `ATOMUITHEME001`。应用未开启时沿用正常的 SDK 解析路径。
+
+应用开启后，Core 依据当前注册包已有的类型键导出选出参与者，无需控件实现接入接口。Avalonia 仍负责原生样式结算、隐式主题缓存和失效。Core 仅在命中框架资源位置时按控件的已提交作用域选择语言资产。正式 NuGet 的 JIT 和 NativeAOT 验收覆盖按钮家族；启用范围和启动性能记录随实施计划维护。
+[控件主题装载规范](../../engineering/development/multi-language-control-contracts.md#51-在第一次消费时选定实现) · [实施与验收](../../superpowers/plans/2026-11-27-theme-first-load-refactor.md)
+
+### 工具工程目录
+
 以下路径均相对于 `src/AtomUI.Toolchain/`：
 
 | 目录 | 职责 |

@@ -28,7 +28,7 @@ ToggleSwitch 的设计语言来自胶囊轨道、滑动把手和可选内容的�
 | 输入密度 | 控件在表单、设置面板和工具栏中的尺寸等级。 | `SizeType=Middle/Small/Custom/Large`。 |
 | 内容语义 | 开关内部可显示文字或图标。 | `OnContent`、`OffContent`、对应模板。 |
 | 操作反馈 | 控件可处于加载、禁用、hover、pressed 和 checked 状态。 | `IsLoading`、`:disabled`、`:pointerover`、`:pressed`、`IsChecked`。 |
-| 动效语义 | 切换时把手、内容和背景平滑过渡。 | `IsMotionEnabled`、`IsWaveSpiritEnabled`。 |
+| 动效语义 | 切换时把手、内容和背景平滑过渡。 | `IsMotionEnabled`、`IsInteractionEffectEnabled`。 |
 
 `IsLoading=true` 表示开关动作正在处理。此时控件保持当前 `IsChecked` 状态，禁止继续切换，并在把手内显示加载指示。
 
@@ -45,13 +45,13 @@ ToggleSwitch 的公共契约由 Avalonia `ToggleButton` 状态和 AtomUI 扩展�
 | `SizeType` | `CustomizableSizeType` | 尺寸密度，支持 `Middle`、`Small`、`Large` 和 `Custom`。 |
 | `IsLoading` | `bool` | 是否显示加载态并禁止切换。 |
 | `IsMotionEnabled` | `bool` | 是否启用把手、内容偏移、背景和透明度动效。 |
-| `IsWaveSpiritEnabled` | `bool` | checked 状态变化时是否播放 wave spirit。 |
+| `IsInteractionEffectEnabled` | `bool` | 是否在有效用户激活时显示瞬态反馈。 |
 
 稳定 template part：
 
 | Template Part | 类型 | 职责 |
 | --- | --- | --- |
-| `PART_WaveSpirit` | `WaveSpiritDecorator` | checked 变化时播放胶囊波纹。 |
+| `PART_Track` | `Control` | 可选的轨道呈现部件，由模板指定外观。 |
 | `PART_MainContainer` | `Canvas` 的内部派生类型 | 承载内容 presenter，传播内容尺寸变化并提供裁剪边界；把手位于画布之外。 |
 | `PART_OnContentPresenter` | `ContentPresenter` | checked 状态下内容承载。 |
 | `PART_OffContentPresenter` | `ContentPresenter` | unchecked 状态下内容承载。 |
@@ -63,7 +63,7 @@ ToggleSwitch 的公共契约由 Avalonia `ToggleButton` 状态和 AtomUI 扩展�
 | --- | --- |
 | `ICustomizableSizeTypeAware` | 接入支持 `Custom` 的尺寸模型。 |
 | `ICustomHitTest` | 只在有效轨道区域命中，loading 和 disabled 时不可命中。 |
-| `IWaveSpiritAwareControl` | 接入 WaveSpirit 开关。 |
+| `IInteractionEffectAwareControl` | 接入 WaveSpirit 开关。 |
 | `IFormItemAware` | Form 以 `IsChecked` 作为表单值。 |
 
 ## 4. 行为与状态模型
@@ -129,7 +129,7 @@ ToggleSwitch 属于 Data Entry 控件，常用于设置项、表单布尔项和�
 
 - Avalonia `ToggleButton`：提供 checked、pressed、keyboard 和点击切换基础行为。
 - `SwitchKnob`：承载把手绘制、加载指示和加载动画。
-- `WaveSpiritDecorator`：承载 checked 变化时的胶囊 wave。
+- `SwitchTrack` 绘制默认胶囊轨道。交互反馈由所选效果按需挂接。
 - `PathIcon` / `Icon`：作为 `OnContent` 或 `OffContent` 时由控件同步图标尺寸和前景色。
 - `IFormItemAware`：允许 Form 读取、设置、清空开关值。
 
@@ -140,7 +140,7 @@ ToggleSwitch 属于 Data Entry 控件，常用于设置项、表单布尔项和�
 - 不修改 `ToggleButton.IsChecked` 的 checked、unchecked、null 和绑定语义。
 - `IsLoading=true` 时不得触发新的切换。
 - loading 状态必须在 detach 时停止动画并释放 cancellation token。
-- `PART_SwitchKnob`、`PART_OnContentPresenter`、`PART_OffContentPresenter`、`PART_WaveSpirit` 和 `PART_MainContainer` 名称不变。
+- 自定义模板可选择轨道呈现，继续使用 `PART_SwitchKnob`、`PART_OnContentPresenter`、`PART_OffContentPresenter` 和 `PART_MainContainer` 的布局协作入口。
 - `SizeType=Custom` 默认与 Middle 分支一致，不新增未授权的专属 Token 组。
 - `OnContent` / `OffContent` 为 `PathIcon` 或 `Icon` 时，图标尺寸和前景色必须随控件状态更新。
 - Form value 始终是 `IsChecked`，不把 loading、content 或视觉状态作为表单值。

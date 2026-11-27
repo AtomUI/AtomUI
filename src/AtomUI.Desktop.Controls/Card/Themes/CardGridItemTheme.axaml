@@ -61,7 +61,7 @@
                 <Setter Property="Transitions">
                     <atom:TokenTransitions>
                         <Transitions>
-                            <DoubleTransition Property="Opacity" atom:TokenTransitions.Duration="MotionDurationFast" />
+                            <DoubleTransition Property="Opacity" atom:TokenTransitions.Duration="StateTransitionDurationFast" />
                         </Transitions>
                     </atom:TokenTransitions>
                 </Setter>
@@ -72,7 +72,7 @@
             <Setter Property="Transitions">
                 <atom:TokenTransitions>
                     <Transitions>
-                        <atom:BoxShadowsTransition Property="BoxShadow" atom:TokenTransitions.Duration="MotionDurationFast" />
+                        <atom:BoxShadowsTransition Property="BoxShadow" atom:TokenTransitions.Duration="StateTransitionDurationFast" />
                     </Transitions>
                 </atom:TokenTransitions>
             </Setter>

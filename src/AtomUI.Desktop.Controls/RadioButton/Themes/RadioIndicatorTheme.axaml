@@ -8,26 +8,20 @@
         <Setter Property="Template">
             <ControlTemplate>
                 <Panel>
-                    <atom:WaveSpiritDecorator Name="{x:Static atom:WaveSpiritDecorator.WaveSpiritPart}"
-                                              IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
-                                              IsWaveSpiritEnabled="{TemplateBinding IsWaveSpiritEnabled}"/>
                 </Panel>
             </ControlTemplate>
         </Setter>
 
         <Setter Property="ClipToBounds" Value="False"/>
         <Setter Property="BorderThickness" Value="{atom:RadioButtonTokenResource BorderThickness}"/>
-        <Style Selector="^ /template/ atom|WaveSpiritDecorator#PART_WaveSpirit">
-            <Setter Property="WaveType" Value="CircleWave"/>
-        </Style>
 
         <Style Selector="^[IsMotionEnabled=True]">
             <Setter Property="Transitions">
                 <atom:TokenTransitions>
                     <Transitions>
-                        <atom:SolidColorBrushTransition Property="BorderBrush" atom:TokenTransitions.Duration="MotionDurationMid" />
-                        <DoubleTransition Property="RadioDotEffectSize" atom:TokenTransitions.Duration="MotionDurationMid" />
-                        <atom:SolidColorBrushTransition Property="Background" atom:TokenTransitions.Duration="MotionDurationFast" />
+                        <atom:SolidColorBrushTransition Property="BorderBrush" atom:TokenTransitions.Duration="StateTransitionDuration" />
+                        <DoubleTransition Property="RadioDotEffectSize" atom:TokenTransitions.Duration="StateTransitionDuration" />
+                        <atom:SolidColorBrushTransition Property="Background" atom:TokenTransitions.Duration="StateTransitionDurationFast" />
                     </Transitions>
                 </atom:TokenTransitions>
             </Setter>

@@ -96,6 +96,7 @@ internal sealed class ThemeTransaction
     internal IReadOnlyList<ThemeScopeStagedSnapshot> PreparedScopes { get; set; } =
         Array.Empty<ThemeScopeStagedSnapshot>();
     internal bool AddsResourceProvider { get; set; }
+    internal IReadOnlyList<ThemeCompositionProtection.Prepared>? CompositionHolds { get; set; }
     internal Task<ThemeTransitionResult> Completion => _completion.Task;
 
     internal void Complete(ThemeTransitionResult result)

@@ -6,8 +6,8 @@
               TargetType="atom:MenuItem"
               x:DataType="atom:MenuItem"
               x:ClassModifier="internal">
-    <Setter Property="OpenMotion" Value="{x:Static atom:PopupMotionDefaults.MenuOpen}" />
-    <Setter Property="CloseMotion" Value="{x:Static atom:PopupMotionDefaults.MenuClose}" />
+    <Setter Property="OpenMotion" Value="{atom:MotionResource SubMenuOpen}" />
+    <Setter Property="CloseMotion" Value="{atom:MotionResource SubMenuClose}" />
     <Setter Property="Template">
         <ControlTemplate TargetType="atom:MenuItem">
             <Panel>
@@ -130,11 +130,11 @@
 
         <Style Selector="^ /template/ atom|CheckBox#PART_ToggleCheckbox">
             <Setter Property="IsVisible" Value="False" />
-            <Setter Property="IsWaveSpiritEnabled" Value="False" />
+            <Setter Property="IsInteractionEffectEnabled" Value="False" />
         </Style>
         <Style Selector="^ /template/ atom|RadioButton#PART_ToggleRadio">
             <Setter Property="IsVisible" Value="False" />
-            <Setter Property="IsWaveSpiritEnabled" Value="False" />
+            <Setter Property="IsInteractionEffectEnabled" Value="False" />
         </Style>
 
         <Style Selector="^[ToggleType=None]">
@@ -228,8 +228,8 @@
             <Setter Property="Transitions">
                 <atom:TokenTransitions>
                     <Transitions>
-                        <atom:SolidColorBrushTransition Property="Background" atom:TokenTransitions.Duration="MotionDurationMid" />
-                        <atom:SolidColorBrushTransition Property="Foreground" atom:TokenTransitions.Duration="MotionDurationMid" />
+                        <atom:SolidColorBrushTransition Property="Background" atom:TokenTransitions.Duration="StateTransitionDuration" />
+                        <atom:SolidColorBrushTransition Property="Foreground" atom:TokenTransitions.Duration="StateTransitionDuration" />
                     </Transitions>
                 </atom:TokenTransitions>
             </Setter>

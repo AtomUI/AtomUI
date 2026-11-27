@@ -185,5 +185,5 @@ public partial class DesignToken
     /// <c>WaveStartOpacity</c> to 0.
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Seed)]
-    public partial bool EnableWaveSpirit { get; set; } = true;
+    public partial bool EnableInteractionEffect { get; set; } = true;
 }

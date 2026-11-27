@@ -694,6 +694,31 @@ public partial class TypeMapIntegrationTests
         source.ShouldNotContain("Provider");
     }
 
+    /// <summary>
+    /// Verifies bootstrap generation emits value TypeMaps for value packages that ship no control theme assets.
+    /// </summary>
+    [Fact]
+    public void Bootstrap_Declares_Value_Maps_From_A_Package_Without_Control_Assets()
+    {
+        var values = Compilation("""
+            [assembly: AtomUI.Registration.ControlValueMap(typeof(Demo.LanguageMap))]
+            [assembly: AtomUI.Registration.ControlValueMap(typeof(Demo.RuleMap))]
+            namespace Demo;
+            public sealed class LanguageMap { }
+            public sealed class RuleMap { }
+            """, [], "ValuePackage");
+        var consumer = Compilation("public sealed class Consumer { }", [], "Consumer")
+            .AddReferences(values.ToMetadataReference());
+
+        var result = CSharpGeneratorDriver.Create(new ControlPackageBootstrapGenerator())
+            .RunGenerators(consumer, TestContext.Current.CancellationToken).GetRunResult();
+
+        result.Diagnostics.ShouldBeEmpty();
+        var source = Source(result, "GeneratedControlPackageBootstrap.g.cs");
+        source.ShouldContain("TypeMapAssemblyTarget<global::Demo.LanguageMap>(\"ValuePackage, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null\")");
+        source.ShouldContain("TypeMapAssemblyTarget<global::Demo.RuleMap>(\"ValuePackage, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null\")");
+    }
+
     [Fact]
     public void Irrelevant_Source_Edit_Does_Not_Reemit_Registration_Or_Token_Output()
     {

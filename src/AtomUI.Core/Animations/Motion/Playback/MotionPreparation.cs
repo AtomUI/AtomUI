@@ -1,5 +1,8 @@
+using AtomUI.Theme;
+using AtomUI.Theme.Resources;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Styling;
 
 namespace AtomUI.Animations;
 
@@ -12,6 +15,23 @@ internal sealed class MotionPreparation
     internal MotionPreparation(Control target)
     {
         _target = target;
+    }
+
+    internal object? ReadToken(SharedTokenKind? kind)
+    {
+        return _target is { } target && kind is { } declared ? ReadToken(target, declared) : null;
+    }
+
+    internal static object? ReadToken(Control target, SharedTokenKind declared)
+    {
+        var owner = target.GetValue(ThemeScope.TokenOwnerProperty);
+        var variant = target.ActualThemeVariant;
+        if (owner is { } identity && target.TryFindResource(OwnerTokenBinding.GetResourceKey(identity, declared),
+                                                           variant, out var value))
+        {
+            return value;
+        }
+        return target.TryFindResource(declared, variant, out value) ? value : null;
     }
 
     internal T ReadProperty<T>(StyledProperty<T> property)

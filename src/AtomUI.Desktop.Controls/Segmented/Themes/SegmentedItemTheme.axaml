@@ -85,12 +85,12 @@
                 <atom:TokenTransitions>
                     <Transitions>
                         <atom:SolidColorBrushTransition Property="Background"
-                                                        atom:TokenTransitions.Duration="MotionDurationMid" />
+                                                        atom:TokenTransitions.Duration="StateTransitionDuration" />
                         <!-- The text color follows the selected value immediately and softens the switch (the antd item
                         color transition).
                         -->
                         <atom:SolidColorBrushTransition Property="Foreground"
-                                                        atom:TokenTransitions.Duration="MotionDurationMid" />
+                                                        atom:TokenTransitions.Duration="StateTransitionDuration" />
                     </Transitions>
                 </atom:TokenTransitions>
             </Setter>
@@ -99,7 +99,7 @@
                     <atom:TokenTransitions>
                         <Transitions>
                             <atom:SolidColorBrushTransition Property="IconBrush"
-                                                            atom:TokenTransitions.Duration="MotionDurationMid" />
+                                                            atom:TokenTransitions.Duration="StateTransitionDuration" />
                         </Transitions>
                     </atom:TokenTransitions>
                 </Setter>

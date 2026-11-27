@@ -83,10 +83,10 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<Popup>();
 
     /// <summary>
-    /// Identifies the <see cref="IsWaveSpiritEnabled" /> property.
+    /// Identifies the <see cref="IsInteractionEffectEnabled" /> property.
     /// </summary>
-    public static readonly StyledProperty<bool> IsWaveSpiritEnabledProperty =
-        WaveSpiritAwareControlProperty.IsWaveSpiritEnabledProperty.AddOwner<Popup>();
+    public static readonly StyledProperty<bool> IsInteractionEffectEnabledProperty =
+        InteractionEffectAwareControlProperty.IsInteractionEffectEnabledProperty.AddOwner<Popup>();
 
     /// <summary>
     /// Identifies the <see cref="OpenMotion" /> property.
@@ -206,14 +206,14 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
     }
 
     /// <summary>
-    /// Switches the wave spirit effect. <see cref="Popup" /> has no wave spirit of its own and does not read this
-    /// value; it only exposes the property. The default is <see langword="false" /> and the Popup theme sets no
+    /// Switches interaction feedback. <see cref="Popup" /> has no interaction effect of its own and does not read
+    /// this value; it only exposes the property. The default is <see langword="false" /> and the Popup theme sets no
     /// value.
     /// </summary>
-    public bool IsWaveSpiritEnabled
+    public bool IsInteractionEffectEnabled
     {
-        get => GetValue(IsWaveSpiritEnabledProperty);
-        set => SetValue(IsWaveSpiritEnabledProperty, value);
+        get => GetValue(IsInteractionEffectEnabledProperty);
+        set => SetValue(IsInteractionEffectEnabledProperty, value);
     }
 
     /// <summary>
@@ -856,7 +856,7 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
         CustomPlacementCallback?.Invoke(placement, shadowThickness, marginToAnchor, isUseOverlayHost, false, false);
     }
 
-    internal PopupMotionGeometry GetMotionGeometry()
+    internal PlacementMotionContext GetMotionGeometry()
     {
         var placement = RequestedPlacement ?? Placement;
         var bounds = default(Rect);
@@ -882,9 +882,9 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
                 hasAlignment = true;
             }
         }
-        return new PopupMotionGeometry(placement, IsHorizontalFlipped, IsVerticalFlipped,
+        return new PlacementMotionContext(placement, IsHorizontalFlipped, IsVerticalFlipped,
             FlowDirection, bounds, anchorBounds, hasAlignment, radius,
-            (TemplatedParent as MenuItem)?.SemanticLevel,
+            TemplatedParent is MenuItem { SemanticLevel: MenuSemanticLevel.None },
             TemplatedParent is NavMenuItem { Mode: NavMenuMode.Horizontal, IsTopLevel: true });
     }
 
@@ -1025,7 +1025,7 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
         }
 
         if (!IsUsingOverlayLayer &&
-            OpenMotion is { Origin: null } and IPopupMotion { RequiresPositionedAnchorForEntry: true } && CanPlayMotion &&
+            OpenMotion is { Origin: null } and IPlacementAwareMotion { RequiresPositionedAnchorForEntry: true } && CanPlayMotion &&
             PopupUtils.IsCanonicalAnchorPlacementMode(RequestedPlacement ?? Placement) &&
             TopLevel.GetTopLevel(target) is PopupRoot root && root.IsWaylandPopupPositionPending())
         {
@@ -1107,7 +1107,7 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
                 {
                     playbackMotion = ResolvePlaybackMotion(latestMotion);
                 }
-                playback = playbackMotion.PlayAsync(target, MotionDuration, CancellationToken.None);
+                playback = PlayPopupMotion(playbackMotion, target);
             }
             finally
             {
@@ -1334,7 +1334,7 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
             {
                 playbackMotion = ResolvePlaybackMotion(latestMotion);
             }
-            var result = await playbackMotion.PlayAsync(target, MotionDuration, CancellationToken.None);
+            var result = await PlayPopupMotion(playbackMotion, target);
             if (!IsCurrentMotion(version, target) || _closeMotionState != PopupCloseState.Playing)
             {
                 return;
@@ -1372,7 +1372,7 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
 
     private AbstractMotion ResolvePlaybackMotion(AbstractMotion motion)
     {
-        if (motion is not IPopupMotion popupMotion)
+        if (motion is not IPlacementAwareMotion popupMotion)
         {
             _activeDefaultOrigin = null;
             return motion;
@@ -1385,9 +1385,12 @@ public class Popup : AvaloniaPopup, IMotionAwareControl
         return resolved;
     }
 
+    private Task<MotionResult> PlayPopupMotion(AbstractMotion motion, Control target) =>
+        motion.PlayWithFallbackAsync(target, MotionDuration, CancellationToken.None);
+
     private void PrepareMotionMargin(long version, Control target, AbstractMotion definition, AbstractMotion playbackMotion)
     {
-        if (definition is not IPopupMotion ||
+        if (definition is not IPlacementAwareMotion ||
             playbackMotion is not (ZoomBigInMotion or ZoomBigOutMotion) ||
             TopLevel.GetTopLevel(target) is not PopupRoot root)
         {

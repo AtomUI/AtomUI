@@ -70,8 +70,8 @@ internal class CheckBoxIndicator : TemplatedControl
     internal static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<CheckBoxIndicator>();
 
-    internal static readonly StyledProperty<bool> IsWaveSpiritEnabledProperty =
-        WaveSpiritAwareControlProperty.IsWaveSpiritEnabledProperty.AddOwner<CheckBoxIndicator>();
+    internal static readonly StyledProperty<bool> IsInteractionEffectEnabledProperty =
+        InteractionEffectAwareControlProperty.IsInteractionEffectEnabledProperty.AddOwner<CheckBoxIndicator>();
 
     /// <summary>
     /// Motion switch of the click wave: the wave is played when <see cref="State" /> changes to checked only while
@@ -86,19 +86,17 @@ internal class CheckBoxIndicator : TemplatedControl
     }
 
     /// <summary>
-    /// Switch of the click wave of the indicator; <see cref="IsMotionEnabled" /> states when it plays. The theme of
-    /// the check box binds it to its own <c>IsWaveSpiritEnabled</c>, and the theme of the indicator passes it to the
-    /// wave decorator of the template.
+    /// Switch of the interaction feedback of the indicator; <see cref="IsMotionEnabled" /> states when it plays.
+    /// The theme of the check box binds it to its own <c>IsInteractionEffectEnabled</c>.
     /// </summary>
-    internal bool IsWaveSpiritEnabled
+    internal bool IsInteractionEffectEnabled
     {
-        get => GetValue(IsWaveSpiritEnabledProperty);
-        set => SetValue(IsWaveSpiritEnabledProperty, value);
+        get => GetValue(IsInteractionEffectEnabledProperty);
+        set => SetValue(IsInteractionEffectEnabledProperty, value);
     }
 
     #endregion
     
-    private WaveSpiritDecorator? _waveSpiritDecorator;
 
     static CheckBoxIndicator()
     {
@@ -116,25 +114,6 @@ internal class CheckBoxIndicator : TemplatedControl
         PseudoClasses.Set(StdPseudoClass.Indeterminate, State == CheckBoxIndicatorState.Indeterminate);
     }
 
-    private void PlayWaveSpirit()
-    {
-        if (_waveSpiritDecorator is null)
-        {
-            return;
-        }
-
-        var waveBrush = WaveSpiritDecorator.ResolveWaveSpiritBrush(BorderBrush, Background);
-        if (waveBrush is not null)
-        {
-            _waveSpiritDecorator.WaveBrush = waveBrush;
-        }
-        else
-        {
-            _waveSpiritDecorator.ClearValue(WaveSpiritDecorator.WaveBrushProperty);
-        }
-
-        _waveSpiritDecorator.Play();
-    }
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
@@ -144,23 +123,8 @@ internal class CheckBoxIndicator : TemplatedControl
             change.Property == IsEnabledProperty)
         {
             UpdatePseudoClasses();
-            if (change.Property == StateProperty &&
-                IsWaveSpiritEnabled &&
-                IsEnabled &&
-                IsMotionEnabled &&
-                IsLoaded &&
-                PseudoClasses.Contains(StdPseudoClass.Checked))
-            {
-                Dispatcher.Post(PlayWaveSpirit);
-            }
         }
     }
 
-    protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
-    {
-        base.OnApplyTemplate(e);
-
-        _waveSpiritDecorator = e.NameScope.Find<WaveSpiritDecorator>(WaveSpiritDecorator.WaveSpiritPart);
-    }
 
 }

@@ -518,7 +518,7 @@ public partial class TreeView
             return;
         }
 
-        (InteractionHandler as DefaultTreeViewInteractionHandler)?.OnCheckedChanged(treeViewItem);
+        OnCheckedChanged(treeViewItem);
     }
 
     private void ConfigureDefaultExpandedPaths()

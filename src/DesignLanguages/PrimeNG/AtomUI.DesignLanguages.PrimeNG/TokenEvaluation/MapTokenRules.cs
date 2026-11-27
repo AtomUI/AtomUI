@@ -60,9 +60,10 @@ internal static class MapTokenRules
         {
             // The state-color transitions; VerySlow drives value animations (progress, count-up), which PrimeNG
             // keeps in every preset (progressbar: width 1s).
-            token.MotionDurationFast = transition;
-            token.MotionDurationMid  = transition;
-            token.MotionDurationSlow = transition;
+            token.StateTransitionDurationFast  = transition;
+            token.StateTransitionDuration      = transition;
+            token.StateTransitionDurationSlow  = transition;
+            token.StateTransitionDurationPress = transition;
         }
         WriteSizes(in seeds, token, preset.Sizes);
 
@@ -70,6 +71,8 @@ internal static class MapTokenRules
         {
             new PrimeNGBaseCompactCalculator().Evaluate(in antSeeds, true, token);
         }
+        token.MotionDurationEnter = TimeSpan.FromMilliseconds(300);
+        token.MotionDurationLeave = TimeSpan.FromMilliseconds(300);
     }
 
     private static void WriteColors(in PrimeNGSeeds seed, DesignToken map, PrimeNGAppearanceRules rules, PrimeNGNoirRule noir)

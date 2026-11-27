@@ -112,6 +112,27 @@ public sealed class ControlPackageDefinition
     public IAtomUIBuilder Ensure(IAtomUIBuilder builder, Action<ControlPackageOptions>? configure = null) =>
         RegisterCore(builder, configure, true);
 
+    internal void Ensure(ThemeManagerBuilder themeBuilder)
+    {
+        ArgumentNullException.ThrowIfNull(themeBuilder);
+        var state = themeBuilder.ControlRegistrationState;
+        if (state.IsStaged(Id))
+        {
+            return;
+        }
+        try
+        {
+            state.Enter(Id);
+            themeBuilder.AddPackageDeclaration(new EnabledControlPackage(this, new ControlPackageOptions()));
+            state.Stage(Id);
+        }
+        catch (Exception error)
+        {
+            state.Fail(error);
+            throw;
+        }
+    }
+
     private IAtomUIBuilder RegisterCore(IAtomUIBuilder builder, Action<ControlPackageOptions>? configure, bool ensure)
     {
         ArgumentNullException.ThrowIfNull(builder);

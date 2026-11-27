@@ -14,7 +14,8 @@ internal static class PrimeNGDialogTokens
 {
     internal static void EvaluateGlobal(in TokenEvaluationContext<PrimeNGToken> context, DesignToken controlGlobal)
     {
-        PrimeNGMotion.Restore(context, controlGlobal, mid: PrimeNGMotion.Dialog, slow: PrimeNGMotion.Dialog);
+        controlGlobal.MotionDurationMid = PrimeNGMotion.Dialog;
+        controlGlobal.MotionDurationSlow = PrimeNGMotion.Dialog;
         PrimeNGModalStage.ApplyGlobal(context, controlGlobal);
     }
     internal static void EvaluateOwn(in TokenEvaluationContext<PrimeNGToken> context, DesignToken effectiveGlobal, DialogToken token)
@@ -74,7 +75,8 @@ internal static class PrimeNGMessageBoxTokens
 {
     internal static void EvaluateGlobal(in TokenEvaluationContext<PrimeNGToken> context, DesignToken controlGlobal)
     {
-        PrimeNGMotion.Restore(context, controlGlobal, mid: PrimeNGMotion.Dialog, slow: PrimeNGMotion.Dialog);
+        controlGlobal.MotionDurationMid = PrimeNGMotion.Dialog;
+        controlGlobal.MotionDurationSlow = PrimeNGMotion.Dialog;
         PrimeNGModalStage.ApplyGlobal(context, controlGlobal);
     }
     internal static void EvaluateOwn(in TokenEvaluationContext<PrimeNGToken> context, DesignToken effectiveGlobal, MessageBoxToken token)
@@ -105,7 +107,7 @@ internal static class PrimeNGDrawerTokens
 {
     internal static void EvaluateGlobal(in TokenEvaluationContext<PrimeNGToken> context, DesignToken controlGlobal)
     {
-        PrimeNGMotion.Restore(context, controlGlobal, slow: PrimeNGMotion.Drawer);
+        controlGlobal.MotionDurationSlow = PrimeNGMotion.Drawer;
         // drawer.title.font.size 1.125rem (Lara 1.25rem).
         controlGlobal.FontSizeLG = context.Variant.Style == PrimeNGLanguage.Lara ? 20 : 18;
         // Nora drawer.title.font.weight 700.

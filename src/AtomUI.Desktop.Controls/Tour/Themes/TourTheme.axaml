@@ -64,11 +64,11 @@
                 <atom:TokenTransitions>
                     <Transitions>
                         <atom:RectTransition Property="TargetRegion"
-                                             atom:TokenTransitions.Duration="MotionDurationMid"
-                                             Easing="CubicEaseOut" />
+                                             atom:TokenTransitions.Duration="StateTransitionDuration"
+                                             Easing="CubicEaseOut" atom:TokenTransitions.Easing="StateTransitionEasingOverride" />
                         <DoubleTransition Property="TargetRegionCornerRadius"
-                                          atom:TokenTransitions.Duration="MotionDurationMid"
-                                          Easing="CubicEaseOut" />
+                                          atom:TokenTransitions.Duration="StateTransitionDuration"
+                                          Easing="CubicEaseOut" atom:TokenTransitions.Easing="StateTransitionEasingOverride" />
                     </Transitions>
                 </atom:TokenTransitions>
             </Setter>

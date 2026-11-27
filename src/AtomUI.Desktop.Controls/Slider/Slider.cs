@@ -110,10 +110,10 @@ public partial class Slider : AbstractSlider,
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<Slider>();
 
     /// <summary>
-    /// Identifies the <see cref="IsWaveSpiritEnabled" /> property.
+    /// Identifies the <see cref="IsInteractionEffectEnabled" /> property.
     /// </summary>
-    public static readonly StyledProperty<bool> IsWaveSpiritEnabledProperty =
-        WaveSpiritAwareControlProperty.IsWaveSpiritEnabledProperty.AddOwner<Slider>();
+    public static readonly StyledProperty<bool> IsInteractionEffectEnabledProperty =
+        InteractionEffectAwareControlProperty.IsInteractionEffectEnabledProperty.AddOwner<Slider>();
 
     /// <summary>
     /// Direction in which the track is laid out: horizontal by default. A vertical slider fills the height of its
@@ -249,14 +249,14 @@ public partial class Slider : AbstractSlider,
     }
 
     /// <summary>
-    /// Whether the wave spirit effect is enabled. This is the <c>IsWaveSpiritEnabled</c> styled property that
-    /// <c>WaveSpiritAwareControlProperty</c> defines, owned by the slider as well. The templates of the slider, of
-    /// its track and of its thumbs do not read the value.
+    /// Whether interaction feedback is enabled. This is the <c>IsInteractionEffectEnabled</c> styled property that
+    /// <c>InteractionEffectAwareControlProperty</c> defines, owned by the slider as well. The templates of the
+    /// slider, of its track and of its thumbs do not read the value.
     /// </summary>
-    public bool IsWaveSpiritEnabled
+    public bool IsInteractionEffectEnabled
     {
-        get => GetValue(IsWaveSpiritEnabledProperty);
-        set => SetValue(IsWaveSpiritEnabledProperty, value);
+        get => GetValue(IsInteractionEffectEnabledProperty);
+        set => SetValue(IsInteractionEffectEnabledProperty, value);
     }
 
     #endregion

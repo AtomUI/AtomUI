@@ -369,7 +369,7 @@ internal sealed class SemanticPartContractValidator
         return true;
     }
 
-    private static bool TryNormalizeSelectorRoute(
+    internal static bool TryNormalizeSelectorRoute(
         SemanticPartDeclaration part,
         out string selectorRoute)
     {

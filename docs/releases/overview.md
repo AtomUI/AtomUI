@@ -3,6 +3,11 @@
 本目录按版本维护公共 API 变化和迁移示例。正式发布摘要继续由仓库根目录的 `CHANGELOG.md` 与
 `CHANGELOG.zh-CN.md` 维护。
 
+## Unreleased
+
+- [Multi-language migration guide](unreleased-multi-language-api-changes.md)
+- [多设计语言迁移指南](unreleased-multi-language-api-changes.zh-CN.md)
+
 ## 6.3.0
 
 - [Migration guide](6.3.0-api-changes.md)

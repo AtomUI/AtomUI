@@ -53,7 +53,7 @@ Button 的公共 API 是控件最重要的稳定契约。公共属性、事件�
 - `ButtonShape`: `Default`、`Circle`、`Round`、`Rectangular`。`Rectangular` 对按钮、焦点轮廓和点击波纹使用直角。
 - `IsDanger`、`IsGhost`、`IsLoading`。
 - `SizeType`、`Icon`、`IconPlacement`、`IconWidth`、`IconHeight`。
-- `IsMotionEnabled`、`IsWaveSpiritEnabled`。
+- `IsMotionEnabled`、`IsInteractionEffectEnabled`。
 
 Root 表面定制 API：
 
@@ -113,7 +113,6 @@ Template part 与主题入口：
 
 | 节点 | 职责 |
 | --- | --- |
-| `PART_WaveSpirit` | 承载点击 wave 反馈。 |
 | `ShadowsFrame` | 承载按钮阴影。 |
 | `Frame` | 承载主体背景、边框、圆角和尺寸基底；`Background` / `BorderBrush` 直接 `TemplateBinding` owner 属性，是 root 定制的落点。 |
 | `PART_RootLayout` | 排列 loading icon、icon 和 content，并根据 `IconPlacement` 调整用户 icon 位置。 |
@@ -130,7 +129,7 @@ Button 支持以下 Semantic Part：
 | `content` | `.semantic-content` | `Single` | 用户内容展示与排版区域。 |
 
 完整的 Selector、`ContractType`、存在条件、逐 Part 定制说明、状态矩阵和排除边界见
-[Button Semantic Part 契约](semantic-part.md)。`PART_WaveSpirit`、`ShadowsFrame`、`Frame` 和
+[Button Semantic Part 契约](semantic-part.md)。`ShadowsFrame`、`Frame` 和
 `PART_RootLayout` 属于 Button Composition Model，不是公开 Semantic Part。
 
 **普通内容内边距。** `ContentPadding` 可通过实例值、绑定或样式设置，由普通内容状态的默认样式应用到 `Padding`。
@@ -162,7 +161,6 @@ Button 的 effective state 由 C# 层归一，AXAML 主题只消费已经归一�
 - `EffectiveColor`、`EffectiveVariant`。
 - `EffectiveIsDanger`、`EffectiveIsGhost`、`EffectiveIsBordered`。
 - `EffectiveBorderThickness`、`EffectiveCornerRadius`。
-- `WaveSpiritType`。
 - icon-only、loading 相关伪类。
 
 ## 5. 视觉与主题模型
@@ -219,10 +217,8 @@ Button 与 CompactSpace、FormItem、Wave 和宿主注册协同。`Color + Varia
   的 `MinHeight`；用户设置的 `Height`、`MinHeight`、`Padding`、`FontSize`、`CornerRadius`、`IconWidth`、
   `IconHeight` 等现有属性必须按 Avalonia 原生优先级生效。
 - CompactSpace 下的有效圆角、有效边框和 z-index 行为不变。
-- wave 播放条件不变；播放前必须从 Button 当前最终视觉属性解析 wave brush，依次检查有效实色
-  `BorderBrush` 和 `Background`，使 Theme 状态、Semantic root Style 与普通用户 Style 使用同一视觉事实源。
-- 透明、纯白或非实色的最终 Brush 不作为 wave 颜色；无有效颜色时清除 Button 写入的 wave brush，使
-  `WaveSpiritDecorator` 回到主题默认值。
+- 默认反馈使用当前最终视觉属性，依次从有效实色 `BorderBrush`、`Background` 和作用域主色取值。应用可用 `InteractionEffect.Effect` 替换效果。
+- `LoadingIndicatorTemplate` 定义按钮进入加载状态时创建的指示器。
 - root 表面定制语义保持不变：用户在 Button 上设置的本地 `Background` / `BorderBrush` 直接由模板 `Frame`
   渲染并冻结该属性槽在 hover / pressed / disabled 的状态变色，清除后恢复主题状态机；不得重新引入平行
   定制属性或模板内定制覆层。

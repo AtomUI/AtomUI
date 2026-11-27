@@ -45,6 +45,8 @@ internal static class GlobalTokenRules
         {
             new ShadcnCompactCalculator().Evaluate(in bases, true, token);
         }
+        token.MotionDurationEnter = TimeSpan.FromMilliseconds(150);
+        token.MotionDurationLeave = TimeSpan.FromMilliseconds(100);
     }
 
     private static void WriteColors(DesignToken token, ShadcnToken language)

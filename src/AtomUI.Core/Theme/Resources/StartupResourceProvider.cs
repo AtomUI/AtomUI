@@ -84,6 +84,13 @@ internal sealed class StartupResourceProvider : IResourceProvider
         return false;
     }
 
+    internal bool HasNamedExport(string key) => ActiveIndex.KnownNames.ContainsKey(key);
+
+    internal IEnumerable<string> KnownNames => ActiveIndex.KnownNames.Keys;
+
+    internal bool HasTypedThemeExport(Type type) => ActiveIndex.TypedThemeExports.Contains(
+        StartupPackageIndex.ResourceKey(type)!);
+
     internal int MaterializeAssets()
     {
         foreach (var asset in _resources.Index.Assets)
@@ -205,9 +212,18 @@ internal sealed class StartupResourceProvider : IResourceProvider
         internal ResourceIndex(StartupPackageIndex index)
         {
             Index = index;
+            TypedThemeExports = new HashSet<string>(StringComparer.Ordinal);
             for (var ordinal = index.Assets.Count - 1; ordinal >= 0; ordinal--)
             {
-                if (index.Assets[ordinal].Data.ResourceKeys is not { } keys)
+                var asset = index.Assets[ordinal].Data;
+                foreach (var export in asset.Exports)
+                {
+                    if (export.StartsWith("t:", StringComparison.Ordinal))
+                    {
+                        TypedThemeExports.Add(export);
+                    }
+                }
+                if (asset.ResourceKeys is not { } keys)
                 {
                     Unknown.Add(ordinal);
                     continue;
@@ -237,6 +253,7 @@ internal sealed class StartupResourceProvider : IResourceProvider
             matches.Add(ordinal);
         }
         internal StartupPackageIndex Index { get; }
+        internal HashSet<string> TypedThemeExports { get; }
         internal Dictionary<string, List<int>> Known { get; } = new(StringComparer.Ordinal);
         internal Dictionary<string, List<int>> KnownNames { get; } = new(StringComparer.Ordinal);
         internal List<int> Unknown { get; } = [];

@@ -1,3 +1,4 @@
+using AtomUI.Controls;
 using AtomUI.Registration;
 using AtomUI.Theme.Configuration;
 using AtomUI.Theme.Definitions;
@@ -16,6 +17,8 @@ internal sealed class ThemeManagerBuilder : IThemeManagerBuilder
     private readonly List<EnabledControlPackage> _packageDeclarations = [];
     private readonly List<DesignLanguageDescriptor> _languages = [];
     private readonly List<ControlTokenRuleDescriptor> _tokenRules = [];
+    private List<Action<IThemeManagerBuilder>>? _deferredTokenRules;
+    private List<ControlBehaviorDescriptor>? _controlBehaviors;
     private readonly Dictionary<Type, string> _defaultThemes = [];
     private readonly Dictionary<(string ControlAssembly, Type LanguageTokenType), (Type Language, ControlValuePackage Package)>
         _valueSelections = [];
@@ -57,6 +60,9 @@ internal sealed class ThemeManagerBuilder : IThemeManagerBuilder
     internal IReadOnlyList<EnabledControlPackage> PackageDeclarations => _packageDeclarations;
     internal IReadOnlyList<DesignLanguageDescriptor> Languages => _languages;
     internal IReadOnlyList<ControlTokenRuleDescriptor> TokenRules => _tokenRules;
+    internal IReadOnlyList<ControlBehaviorDescriptor>? ControlBehaviors => _controlBehaviors;
+    internal bool HasControlContributions => _tokenRules.Count != 0 || _deferredTokenRules is { Count: > 0 } ||
+                                             _controlBehaviors is { Count: > 0 };
     internal StartupImage? StartupImage => _startupImage;
     internal void AddPackageDeclaration(EnabledControlPackage declaration)
     {
@@ -134,6 +140,20 @@ internal sealed class ThemeManagerBuilder : IThemeManagerBuilder
             }
         }
         return this;
+    }
+
+    public void AddControlBehavior(ControlBehaviorDescriptor behavior)
+    {
+        ArgumentNullException.ThrowIfNull(behavior);
+        ControlRegistrationState.ThrowIfUnavailable();
+        (_controlBehaviors ??= []).Add(behavior);
+    }
+
+    public void AddDeferredControlTokenRules(Action<IThemeManagerBuilder> register)
+    {
+        ArgumentNullException.ThrowIfNull(register);
+        ControlRegistrationState.ThrowIfUnavailable();
+        (_deferredTokenRules ??= []).Add(register);
     }
 
     public void AddControlPackage(ControlPackageRegistration package)
@@ -219,6 +239,7 @@ internal sealed class ThemeManagerBuilder : IThemeManagerBuilder
                 package.PackageCommitOrdinal = previous.PackageCommitOrdinal;
                 _controlPackages[index] = package;
             }
+            CompleteDeferredTokenRules();
         }
         catch (Exception exception)
         {
@@ -389,6 +410,7 @@ internal sealed class ThemeManagerBuilder : IThemeManagerBuilder
         {
             CompletePendingRegistrations();
             RegisterLinkedValues();
+            CompleteDeferredTokenRules();
             ControlRegistrationState.Freeze();
             return BuildCore();
         }
@@ -397,6 +419,18 @@ internal sealed class ThemeManagerBuilder : IThemeManagerBuilder
             ControlRegistrationState.Fail(exception);
             DiscardPendingRegistrations();
             throw;
+        }
+    }
+
+    private void CompleteDeferredTokenRules()
+    {
+        while (_deferredTokenRules is { } registrations)
+        {
+            _deferredTokenRules = null;
+            foreach (var register in registrations)
+            {
+                register(this);
+            }
         }
     }
 
@@ -467,6 +501,7 @@ internal sealed class ThemeManagerBuilder : IThemeManagerBuilder
 
     internal void DiscardPendingRegistrations()
     {
+        _deferredTokenRules = null;
         foreach (var package in _controlPackages)
         {
             package.CompleteRegistration = null;
@@ -577,6 +612,7 @@ internal sealed class ThemeManagerBuilder : IThemeManagerBuilder
         var themeDefinitionResolvers = CreateThemeDefinitionRegistrations();
         var themeManager = new ThemeManager { FontFamily = FontFamily };
         themeManager.SetLanguages(_languages.ToArray(), _tokenRules.ToArray());
+        themeManager.SetStartupBehaviors(_controlBehaviors);
         themeManager.ConfigureStartup(InitialRequest, ResolveInitialSelection(), FollowSystemLightRequest,
             FollowSystemDarkRequest, ResolveDefaultThemes());
         themeManager.ConfigureThemeDefinitions(themeDefinitionResolvers, ApplicationId!,

@@ -313,6 +313,7 @@ public abstract partial class AbstractTextInput
     private void UpdatePreeditState()
     {
         SetAndRaise(IsComposingProperty, ref _isComposing, !string.IsNullOrEmpty(_textPresenter?.PreeditText));
+        AtomUI.Theme.ThemeCompositionProtection.Track(this, _isComposing);
         ConfigurePlaceholderTextVisibility();
     }
 

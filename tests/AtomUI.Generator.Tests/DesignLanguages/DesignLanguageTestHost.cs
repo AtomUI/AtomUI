@@ -74,6 +74,7 @@ internal static class DesignLanguageTestHost
             public interface IControlToken
             {
                 static abstract AtomUI.Theme.Schema.ControlTokenIdentity ControlIdentity { get; }
+                static virtual string? TokenSchemaDigest => null;
             }
         }
 
@@ -162,6 +163,11 @@ internal static class DesignLanguageTestHost
             public sealed class ControlTokenRuleDescriptor
             {
                 public static ControlTokenRuleDescriptor Create<TLanguageToken, TToken, TRule>()
+                    where TLanguageToken : AtomUI.Theme.DesignTokens.LanguageDesignToken
+                    where TToken : AtomUI.Theme.DesignTokens.AbstractControlDesignToken, AtomUI.Theme.DesignTokens.IControlToken
+                    where TRule : class, AtomUI.Theme.Languages.IControlTokenRule<TLanguageToken, TToken>, new() => null!;
+
+                public static ControlTokenRuleDescriptor Create<TLanguageToken, TToken, TRule>(string expectedTokenSchemaDigest)
                     where TLanguageToken : AtomUI.Theme.DesignTokens.LanguageDesignToken
                     where TToken : AtomUI.Theme.DesignTokens.AbstractControlDesignToken, AtomUI.Theme.DesignTokens.IControlToken
                     where TRule : class, AtomUI.Theme.Languages.IControlTokenRule<TLanguageToken, TToken>, new() => null!;

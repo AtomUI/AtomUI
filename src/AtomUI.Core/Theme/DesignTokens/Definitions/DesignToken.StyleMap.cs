@@ -1,4 +1,5 @@
 ﻿using Avalonia;
+using Avalonia.Animation.Easings;
 
 namespace AtomUI.Theme.DesignTokens;
 
@@ -82,4 +83,88 @@ public partial class DesignToken
     /// </summary>
     [DesignTokenKind(DesignTokenKind.Map)]
     public partial TimeSpan MotionDurationVerySlow { get; set; }
+
+    /// <summary>
+    /// Duration for the standard property transition of a control.
+    /// </summary>
+    [DesignTokenKind(DesignTokenKind.Map)]
+    public partial TimeSpan StateTransitionDuration { get; set; }
+
+    /// <summary>
+    /// Duration for a short property transition of a control.
+    /// </summary>
+    [DesignTokenKind(DesignTokenKind.Map)]
+    public partial TimeSpan StateTransitionDurationFast { get; set; }
+
+    /// <summary>
+    /// Duration for an extended property transition of a control.
+    /// </summary>
+    [DesignTokenKind(DesignTokenKind.Map)]
+    public partial TimeSpan StateTransitionDurationSlow { get; set; }
+
+    /// <summary>
+    /// Easing used by ordinary state transition channels.
+    /// </summary>
+    [DesignTokenKind(DesignTokenKind.Map)]
+    public partial Easing StateTransitionEasing { get; set; } = new SplineEasing(0.645, 0.045, 0.355, 1);
+
+    /// <summary>
+    /// Standard ease-out curve for entering elements and decelerating transitions.
+    /// </summary>
+    [DesignTokenKind(DesignTokenKind.Map)]
+    public partial Easing MotionEaseOut { get; set; } = new SplineEasing(0.215, 0.61, 0.355, 1);
+
+    /// <summary>
+    /// Standard ease-in curve for exiting elements and accelerating transitions.
+    /// </summary>
+    [DesignTokenKind(DesignTokenKind.Map)]
+    public partial Easing MotionEaseIn { get; set; } = new SplineEasing(0.55, 0.055, 0.675, 0.19);
+
+    /// <summary>
+    /// Standard ease-in-out curve for symmetric position and size transitions.
+    /// </summary>
+    [DesignTokenKind(DesignTokenKind.Map)]
+    public partial Easing MotionEaseInOut { get; set; } = new SplineEasing(0.645, 0.045, 0.355, 1);
+
+    /// <summary>
+    /// Emphasized easing curve with slight overshoot for prominent popup and indicator motions.
+    /// </summary>
+    [DesignTokenKind(DesignTokenKind.Map)]
+    public partial Easing MotionEaseEmphasized { get; set; } = new SplineEasing(0.12, 0.4, 0.29, 1.46);
+
+    /// <summary>
+    /// Default duration for component entry motions with an independent timing.
+    /// </summary>
+    [DesignTokenKind(DesignTokenKind.Map)]
+    public partial TimeSpan MotionDurationEnter { get; set; }
+
+    /// <summary>
+    /// Default duration for component exit motions with an independent timing.
+    /// </summary>
+    [DesignTokenKind(DesignTokenKind.Map)]
+    public partial TimeSpan MotionDurationLeave { get; set; }
+
+    /// <summary>
+    /// Optional curve override for a component entry motion.
+    /// </summary>
+    [DesignTokenKind(DesignTokenKind.Map)]
+    public partial Easing? MotionEasingEnter { get; set; }
+
+    /// <summary>
+    /// Optional curve override for a component exit motion.
+    /// </summary>
+    [DesignTokenKind(DesignTokenKind.Map)]
+    public partial Easing? MotionEasingLeave { get; set; }
+
+    /// <summary>
+    /// Optional curve override for channels with a specialized transition default.
+    /// </summary>
+    [DesignTokenKind(DesignTokenKind.Map)]
+    public partial Easing? StateTransitionEasingOverride { get; set; }
+
+    /// <summary>
+    /// Duration of the button press displacement transition.
+    /// </summary>
+    [DesignTokenKind(DesignTokenKind.Map)]
+    public partial TimeSpan StateTransitionDurationPress { get; set; } = TimeSpan.FromMilliseconds(150);
 }

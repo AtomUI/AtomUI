@@ -8,8 +8,8 @@
     <ControlTheme x:Key="{x:Type atom:NavMenuItem}" TargetType="atom:NavMenuItem">
         <!-- NavMenu draws keyboard focus on the keyboard active header itself, also while an item owns focus. -->
         <Setter Property="FocusAdorner" Value="{x:Null}" />
-        <Setter Property="OpenMotion" Value="{x:Static atom:PopupMotionDefaults.NavMenuOpen}" />
-        <Setter Property="CloseMotion" Value="{x:Static atom:PopupMotionDefaults.NavMenuClose}" />
+        <Setter Property="OpenMotion" Value="{atom:MotionResource NavigationMenuOpen}" />
+        <Setter Property="CloseMotion" Value="{atom:MotionResource NavigationMenuClose}" />
         <Setter Property="ItemsPanel">
             <ItemsPanelTemplate>
                 <StackPanel Orientation="Vertical"

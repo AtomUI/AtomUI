@@ -134,8 +134,8 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
         ControlOutlineWidth = (int)SharedTokenKind.ControlOutlineWidth,
         ControlPaddingHorizontal = (int)SharedTokenKind.ControlPaddingHorizontal,
         ControlPaddingHorizontalSM = (int)SharedTokenKind.ControlPaddingHorizontalSM,
+        EnableInteractionEffect = (int)SharedTokenKind.EnableInteractionEffect,
         EnableMotion = (int)SharedTokenKind.EnableMotion,
-        EnableWaveSpirit = (int)SharedTokenKind.EnableWaveSpirit,
         FocusVisualBorderThickness = (int)SharedTokenKind.FocusVisualBorderThickness,
         FontFamily = (int)SharedTokenKind.FontFamily,
         FontHeight = (int)SharedTokenKind.FontHeight,
@@ -180,10 +180,18 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
         MarginXXL = (int)SharedTokenKind.MarginXXL,
         MarginXXS = (int)SharedTokenKind.MarginXXS,
         MotionBase = (int)SharedTokenKind.MotionBase,
+        MotionDurationEnter = (int)SharedTokenKind.MotionDurationEnter,
         MotionDurationFast = (int)SharedTokenKind.MotionDurationFast,
+        MotionDurationLeave = (int)SharedTokenKind.MotionDurationLeave,
         MotionDurationMid = (int)SharedTokenKind.MotionDurationMid,
         MotionDurationSlow = (int)SharedTokenKind.MotionDurationSlow,
         MotionDurationVerySlow = (int)SharedTokenKind.MotionDurationVerySlow,
+        MotionEaseEmphasized = (int)SharedTokenKind.MotionEaseEmphasized,
+        MotionEaseIn = (int)SharedTokenKind.MotionEaseIn,
+        MotionEaseInOut = (int)SharedTokenKind.MotionEaseInOut,
+        MotionEaseOut = (int)SharedTokenKind.MotionEaseOut,
+        MotionEasingEnter = (int)SharedTokenKind.MotionEasingEnter,
+        MotionEasingLeave = (int)SharedTokenKind.MotionEasingLeave,
         MotionUnit = (int)SharedTokenKind.MotionUnit,
         OpacityImage = (int)SharedTokenKind.OpacityImage,
         OpacityLoading = (int)SharedTokenKind.OpacityLoading,
@@ -251,6 +259,12 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
         SpacingXS = (int)SharedTokenKind.SpacingXS,
         SpacingXXL = (int)SharedTokenKind.SpacingXXL,
         SpacingXXS = (int)SharedTokenKind.SpacingXXS,
+        StateTransitionDuration = (int)SharedTokenKind.StateTransitionDuration,
+        StateTransitionDurationFast = (int)SharedTokenKind.StateTransitionDurationFast,
+        StateTransitionDurationPress = (int)SharedTokenKind.StateTransitionDurationPress,
+        StateTransitionDurationSlow = (int)SharedTokenKind.StateTransitionDurationSlow,
+        StateTransitionEasing = (int)SharedTokenKind.StateTransitionEasing,
+        StateTransitionEasingOverride = (int)SharedTokenKind.StateTransitionEasingOverride,
         UniformlyMargin = (int)SharedTokenKind.UniformlyMargin,
         UniformlyMarginLG = (int)SharedTokenKind.UniformlyMarginLG,
         UniformlyMarginMD = (int)SharedTokenKind.UniformlyMarginMD,
@@ -267,6 +281,8 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
         UniformlyPaddingXS = (int)SharedTokenKind.UniformlyPaddingXS,
         UniformlyPaddingXXS = (int)SharedTokenKind.UniformlyPaddingXXS,
         WaveAnimationRange = (int)SharedTokenKind.WaveAnimationRange,
+        WaveEasing = (int)SharedTokenKind.WaveEasing,
+        WaveFadeDuration = (int)SharedTokenKind.WaveFadeDuration,
         WaveStartOpacity = (int)SharedTokenKind.WaveStartOpacity,
         ZIndexBase = (int)SharedTokenKind.ZIndexBase,
         ZIndexPopupBase = (int)SharedTokenKind.ZIndexPopupBase,
@@ -295,7 +311,7 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
             var slot = (int)kind;
             if (slot >= 0)
             {
-                if ((uint)slot >= 258u)
+                if ((uint)slot >= 274u)
                 {
                     throw new global::System.ArgumentOutOfRangeException(nameof(kind));
                 }
@@ -434,8 +450,8 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
         ControlOutlineWidth = (int)SharedTokenKind.ControlOutlineWidth,
         ControlPaddingHorizontal = (int)SharedTokenKind.ControlPaddingHorizontal,
         ControlPaddingHorizontalSM = (int)SharedTokenKind.ControlPaddingHorizontalSM,
+        EnableInteractionEffect = (int)SharedTokenKind.EnableInteractionEffect,
         EnableMotion = (int)SharedTokenKind.EnableMotion,
-        EnableWaveSpirit = (int)SharedTokenKind.EnableWaveSpirit,
         FocusVisualBorderThickness = (int)SharedTokenKind.FocusVisualBorderThickness,
         FontFamily = (int)SharedTokenKind.FontFamily,
         FontHeight = (int)SharedTokenKind.FontHeight,
@@ -480,10 +496,18 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
         MarginXXL = (int)SharedTokenKind.MarginXXL,
         MarginXXS = (int)SharedTokenKind.MarginXXS,
         MotionBase = (int)SharedTokenKind.MotionBase,
+        MotionDurationEnter = (int)SharedTokenKind.MotionDurationEnter,
         MotionDurationFast = (int)SharedTokenKind.MotionDurationFast,
+        MotionDurationLeave = (int)SharedTokenKind.MotionDurationLeave,
         MotionDurationMid = (int)SharedTokenKind.MotionDurationMid,
         MotionDurationSlow = (int)SharedTokenKind.MotionDurationSlow,
         MotionDurationVerySlow = (int)SharedTokenKind.MotionDurationVerySlow,
+        MotionEaseEmphasized = (int)SharedTokenKind.MotionEaseEmphasized,
+        MotionEaseIn = (int)SharedTokenKind.MotionEaseIn,
+        MotionEaseInOut = (int)SharedTokenKind.MotionEaseInOut,
+        MotionEaseOut = (int)SharedTokenKind.MotionEaseOut,
+        MotionEasingEnter = (int)SharedTokenKind.MotionEasingEnter,
+        MotionEasingLeave = (int)SharedTokenKind.MotionEasingLeave,
         MotionUnit = (int)SharedTokenKind.MotionUnit,
         OpacityImage = (int)SharedTokenKind.OpacityImage,
         OpacityLoading = (int)SharedTokenKind.OpacityLoading,
@@ -551,6 +575,12 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
         SpacingXS = (int)SharedTokenKind.SpacingXS,
         SpacingXXL = (int)SharedTokenKind.SpacingXXL,
         SpacingXXS = (int)SharedTokenKind.SpacingXXS,
+        StateTransitionDuration = (int)SharedTokenKind.StateTransitionDuration,
+        StateTransitionDurationFast = (int)SharedTokenKind.StateTransitionDurationFast,
+        StateTransitionDurationPress = (int)SharedTokenKind.StateTransitionDurationPress,
+        StateTransitionDurationSlow = (int)SharedTokenKind.StateTransitionDurationSlow,
+        StateTransitionEasing = (int)SharedTokenKind.StateTransitionEasing,
+        StateTransitionEasingOverride = (int)SharedTokenKind.StateTransitionEasingOverride,
         UniformlyMargin = (int)SharedTokenKind.UniformlyMargin,
         UniformlyMarginLG = (int)SharedTokenKind.UniformlyMarginLG,
         UniformlyMarginMD = (int)SharedTokenKind.UniformlyMarginMD,
@@ -567,6 +597,8 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
         UniformlyPaddingXS = (int)SharedTokenKind.UniformlyPaddingXS,
         UniformlyPaddingXXS = (int)SharedTokenKind.UniformlyPaddingXXS,
         WaveAnimationRange = (int)SharedTokenKind.WaveAnimationRange,
+        WaveEasing = (int)SharedTokenKind.WaveEasing,
+        WaveFadeDuration = (int)SharedTokenKind.WaveFadeDuration,
         WaveStartOpacity = (int)SharedTokenKind.WaveStartOpacity,
         ZIndexBase = (int)SharedTokenKind.ZIndexBase,
         ZIndexPopupBase = (int)SharedTokenKind.ZIndexPopupBase,
@@ -593,7 +625,7 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
             var slot = (int)kind;
             if (slot >= 0)
             {
-                if ((uint)slot >= 258u)
+                if ((uint)slot >= 274u)
                 {
                     throw new global::System.ArgumentOutOfRangeException(nameof(kind));
                 }
@@ -728,8 +760,8 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
         ControlOutlineWidth = (int)SharedTokenKind.ControlOutlineWidth,
         ControlPaddingHorizontal = (int)SharedTokenKind.ControlPaddingHorizontal,
         ControlPaddingHorizontalSM = (int)SharedTokenKind.ControlPaddingHorizontalSM,
+        EnableInteractionEffect = (int)SharedTokenKind.EnableInteractionEffect,
         EnableMotion = (int)SharedTokenKind.EnableMotion,
-        EnableWaveSpirit = (int)SharedTokenKind.EnableWaveSpirit,
         FocusVisualBorderThickness = (int)SharedTokenKind.FocusVisualBorderThickness,
         FontFamily = (int)SharedTokenKind.FontFamily,
         FontHeight = (int)SharedTokenKind.FontHeight,
@@ -774,10 +806,18 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
         MarginXXL = (int)SharedTokenKind.MarginXXL,
         MarginXXS = (int)SharedTokenKind.MarginXXS,
         MotionBase = (int)SharedTokenKind.MotionBase,
+        MotionDurationEnter = (int)SharedTokenKind.MotionDurationEnter,
         MotionDurationFast = (int)SharedTokenKind.MotionDurationFast,
+        MotionDurationLeave = (int)SharedTokenKind.MotionDurationLeave,
         MotionDurationMid = (int)SharedTokenKind.MotionDurationMid,
         MotionDurationSlow = (int)SharedTokenKind.MotionDurationSlow,
         MotionDurationVerySlow = (int)SharedTokenKind.MotionDurationVerySlow,
+        MotionEaseEmphasized = (int)SharedTokenKind.MotionEaseEmphasized,
+        MotionEaseIn = (int)SharedTokenKind.MotionEaseIn,
+        MotionEaseInOut = (int)SharedTokenKind.MotionEaseInOut,
+        MotionEaseOut = (int)SharedTokenKind.MotionEaseOut,
+        MotionEasingEnter = (int)SharedTokenKind.MotionEasingEnter,
+        MotionEasingLeave = (int)SharedTokenKind.MotionEasingLeave,
         MotionUnit = (int)SharedTokenKind.MotionUnit,
         OpacityImage = (int)SharedTokenKind.OpacityImage,
         OpacityLoading = (int)SharedTokenKind.OpacityLoading,
@@ -845,6 +885,12 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
         SpacingXS = (int)SharedTokenKind.SpacingXS,
         SpacingXXL = (int)SharedTokenKind.SpacingXXL,
         SpacingXXS = (int)SharedTokenKind.SpacingXXS,
+        StateTransitionDuration = (int)SharedTokenKind.StateTransitionDuration,
+        StateTransitionDurationFast = (int)SharedTokenKind.StateTransitionDurationFast,
+        StateTransitionDurationPress = (int)SharedTokenKind.StateTransitionDurationPress,
+        StateTransitionDurationSlow = (int)SharedTokenKind.StateTransitionDurationSlow,
+        StateTransitionEasing = (int)SharedTokenKind.StateTransitionEasing,
+        StateTransitionEasingOverride = (int)SharedTokenKind.StateTransitionEasingOverride,
         UniformlyMargin = (int)SharedTokenKind.UniformlyMargin,
         UniformlyMarginLG = (int)SharedTokenKind.UniformlyMarginLG,
         UniformlyMarginMD = (int)SharedTokenKind.UniformlyMarginMD,
@@ -861,6 +907,8 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
         UniformlyPaddingXS = (int)SharedTokenKind.UniformlyPaddingXS,
         UniformlyPaddingXXS = (int)SharedTokenKind.UniformlyPaddingXXS,
         WaveAnimationRange = (int)SharedTokenKind.WaveAnimationRange,
+        WaveEasing = (int)SharedTokenKind.WaveEasing,
+        WaveFadeDuration = (int)SharedTokenKind.WaveFadeDuration,
         WaveStartOpacity = (int)SharedTokenKind.WaveStartOpacity,
         ZIndexBase = (int)SharedTokenKind.ZIndexBase,
         ZIndexPopupBase = (int)SharedTokenKind.ZIndexPopupBase,
@@ -887,7 +935,7 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
             var slot = (int)kind;
             if (slot >= 0)
             {
-                if ((uint)slot >= 258u)
+                if ((uint)slot >= 274u)
                 {
                     throw new global::System.ArgumentOutOfRangeException(nameof(kind));
                 }
@@ -1045,8 +1093,8 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
         ControlOutlineWidth = (int)SharedTokenKind.ControlOutlineWidth,
         ControlPaddingHorizontal = (int)SharedTokenKind.ControlPaddingHorizontal,
         ControlPaddingHorizontalSM = (int)SharedTokenKind.ControlPaddingHorizontalSM,
+        EnableInteractionEffect = (int)SharedTokenKind.EnableInteractionEffect,
         EnableMotion = (int)SharedTokenKind.EnableMotion,
-        EnableWaveSpirit = (int)SharedTokenKind.EnableWaveSpirit,
         FocusVisualBorderThickness = (int)SharedTokenKind.FocusVisualBorderThickness,
         FontFamily = (int)SharedTokenKind.FontFamily,
         FontHeight = (int)SharedTokenKind.FontHeight,
@@ -1091,10 +1139,18 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
         MarginXXL = (int)SharedTokenKind.MarginXXL,
         MarginXXS = (int)SharedTokenKind.MarginXXS,
         MotionBase = (int)SharedTokenKind.MotionBase,
+        MotionDurationEnter = (int)SharedTokenKind.MotionDurationEnter,
         MotionDurationFast = (int)SharedTokenKind.MotionDurationFast,
+        MotionDurationLeave = (int)SharedTokenKind.MotionDurationLeave,
         MotionDurationMid = (int)SharedTokenKind.MotionDurationMid,
         MotionDurationSlow = (int)SharedTokenKind.MotionDurationSlow,
         MotionDurationVerySlow = (int)SharedTokenKind.MotionDurationVerySlow,
+        MotionEaseEmphasized = (int)SharedTokenKind.MotionEaseEmphasized,
+        MotionEaseIn = (int)SharedTokenKind.MotionEaseIn,
+        MotionEaseInOut = (int)SharedTokenKind.MotionEaseInOut,
+        MotionEaseOut = (int)SharedTokenKind.MotionEaseOut,
+        MotionEasingEnter = (int)SharedTokenKind.MotionEasingEnter,
+        MotionEasingLeave = (int)SharedTokenKind.MotionEasingLeave,
         MotionUnit = (int)SharedTokenKind.MotionUnit,
         OpacityImage = (int)SharedTokenKind.OpacityImage,
         OpacityLoading = (int)SharedTokenKind.OpacityLoading,
@@ -1162,6 +1218,12 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
         SpacingXS = (int)SharedTokenKind.SpacingXS,
         SpacingXXL = (int)SharedTokenKind.SpacingXXL,
         SpacingXXS = (int)SharedTokenKind.SpacingXXS,
+        StateTransitionDuration = (int)SharedTokenKind.StateTransitionDuration,
+        StateTransitionDurationFast = (int)SharedTokenKind.StateTransitionDurationFast,
+        StateTransitionDurationPress = (int)SharedTokenKind.StateTransitionDurationPress,
+        StateTransitionDurationSlow = (int)SharedTokenKind.StateTransitionDurationSlow,
+        StateTransitionEasing = (int)SharedTokenKind.StateTransitionEasing,
+        StateTransitionEasingOverride = (int)SharedTokenKind.StateTransitionEasingOverride,
         UniformlyMargin = (int)SharedTokenKind.UniformlyMargin,
         UniformlyMarginLG = (int)SharedTokenKind.UniformlyMarginLG,
         UniformlyMarginMD = (int)SharedTokenKind.UniformlyMarginMD,
@@ -1178,6 +1240,8 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
         UniformlyPaddingXS = (int)SharedTokenKind.UniformlyPaddingXS,
         UniformlyPaddingXXS = (int)SharedTokenKind.UniformlyPaddingXXS,
         WaveAnimationRange = (int)SharedTokenKind.WaveAnimationRange,
+        WaveEasing = (int)SharedTokenKind.WaveEasing,
+        WaveFadeDuration = (int)SharedTokenKind.WaveFadeDuration,
         WaveStartOpacity = (int)SharedTokenKind.WaveStartOpacity,
         ZIndexBase = (int)SharedTokenKind.ZIndexBase,
         ZIndexPopupBase = (int)SharedTokenKind.ZIndexPopupBase,
@@ -1223,7 +1287,7 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
             var slot = (int)kind;
             if (slot >= 0)
             {
-                if ((uint)slot >= 258u)
+                if ((uint)slot >= 274u)
                 {
                     throw new global::System.ArgumentOutOfRangeException(nameof(kind));
                 }
@@ -1362,8 +1426,8 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
         ControlOutlineWidth = (int)SharedTokenKind.ControlOutlineWidth,
         ControlPaddingHorizontal = (int)SharedTokenKind.ControlPaddingHorizontal,
         ControlPaddingHorizontalSM = (int)SharedTokenKind.ControlPaddingHorizontalSM,
+        EnableInteractionEffect = (int)SharedTokenKind.EnableInteractionEffect,
         EnableMotion = (int)SharedTokenKind.EnableMotion,
-        EnableWaveSpirit = (int)SharedTokenKind.EnableWaveSpirit,
         FocusVisualBorderThickness = (int)SharedTokenKind.FocusVisualBorderThickness,
         FontFamily = (int)SharedTokenKind.FontFamily,
         FontHeight = (int)SharedTokenKind.FontHeight,
@@ -1408,10 +1472,18 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
         MarginXXL = (int)SharedTokenKind.MarginXXL,
         MarginXXS = (int)SharedTokenKind.MarginXXS,
         MotionBase = (int)SharedTokenKind.MotionBase,
+        MotionDurationEnter = (int)SharedTokenKind.MotionDurationEnter,
         MotionDurationFast = (int)SharedTokenKind.MotionDurationFast,
+        MotionDurationLeave = (int)SharedTokenKind.MotionDurationLeave,
         MotionDurationMid = (int)SharedTokenKind.MotionDurationMid,
         MotionDurationSlow = (int)SharedTokenKind.MotionDurationSlow,
         MotionDurationVerySlow = (int)SharedTokenKind.MotionDurationVerySlow,
+        MotionEaseEmphasized = (int)SharedTokenKind.MotionEaseEmphasized,
+        MotionEaseIn = (int)SharedTokenKind.MotionEaseIn,
+        MotionEaseInOut = (int)SharedTokenKind.MotionEaseInOut,
+        MotionEaseOut = (int)SharedTokenKind.MotionEaseOut,
+        MotionEasingEnter = (int)SharedTokenKind.MotionEasingEnter,
+        MotionEasingLeave = (int)SharedTokenKind.MotionEasingLeave,
         MotionUnit = (int)SharedTokenKind.MotionUnit,
         OpacityImage = (int)SharedTokenKind.OpacityImage,
         OpacityLoading = (int)SharedTokenKind.OpacityLoading,
@@ -1479,6 +1551,12 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
         SpacingXS = (int)SharedTokenKind.SpacingXS,
         SpacingXXL = (int)SharedTokenKind.SpacingXXL,
         SpacingXXS = (int)SharedTokenKind.SpacingXXS,
+        StateTransitionDuration = (int)SharedTokenKind.StateTransitionDuration,
+        StateTransitionDurationFast = (int)SharedTokenKind.StateTransitionDurationFast,
+        StateTransitionDurationPress = (int)SharedTokenKind.StateTransitionDurationPress,
+        StateTransitionDurationSlow = (int)SharedTokenKind.StateTransitionDurationSlow,
+        StateTransitionEasing = (int)SharedTokenKind.StateTransitionEasing,
+        StateTransitionEasingOverride = (int)SharedTokenKind.StateTransitionEasingOverride,
         UniformlyMargin = (int)SharedTokenKind.UniformlyMargin,
         UniformlyMarginLG = (int)SharedTokenKind.UniformlyMarginLG,
         UniformlyMarginMD = (int)SharedTokenKind.UniformlyMarginMD,
@@ -1495,6 +1573,8 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
         UniformlyPaddingXS = (int)SharedTokenKind.UniformlyPaddingXS,
         UniformlyPaddingXXS = (int)SharedTokenKind.UniformlyPaddingXXS,
         WaveAnimationRange = (int)SharedTokenKind.WaveAnimationRange,
+        WaveEasing = (int)SharedTokenKind.WaveEasing,
+        WaveFadeDuration = (int)SharedTokenKind.WaveFadeDuration,
         WaveStartOpacity = (int)SharedTokenKind.WaveStartOpacity,
         ZIndexBase = (int)SharedTokenKind.ZIndexBase,
         ZIndexPopupBase = (int)SharedTokenKind.ZIndexPopupBase,
@@ -1521,7 +1601,7 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
             var slot = (int)kind;
             if (slot >= 0)
             {
-                if ((uint)slot >= 258u)
+                if ((uint)slot >= 274u)
                 {
                     throw new global::System.ArgumentOutOfRangeException(nameof(kind));
                 }
@@ -1663,8 +1743,8 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
         ControlOutlineWidth = (int)SharedTokenKind.ControlOutlineWidth,
         ControlPaddingHorizontal = (int)SharedTokenKind.ControlPaddingHorizontal,
         ControlPaddingHorizontalSM = (int)SharedTokenKind.ControlPaddingHorizontalSM,
+        EnableInteractionEffect = (int)SharedTokenKind.EnableInteractionEffect,
         EnableMotion = (int)SharedTokenKind.EnableMotion,
-        EnableWaveSpirit = (int)SharedTokenKind.EnableWaveSpirit,
         FocusVisualBorderThickness = (int)SharedTokenKind.FocusVisualBorderThickness,
         FontFamily = (int)SharedTokenKind.FontFamily,
         FontHeight = (int)SharedTokenKind.FontHeight,
@@ -1709,10 +1789,18 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
         MarginXXL = (int)SharedTokenKind.MarginXXL,
         MarginXXS = (int)SharedTokenKind.MarginXXS,
         MotionBase = (int)SharedTokenKind.MotionBase,
+        MotionDurationEnter = (int)SharedTokenKind.MotionDurationEnter,
         MotionDurationFast = (int)SharedTokenKind.MotionDurationFast,
+        MotionDurationLeave = (int)SharedTokenKind.MotionDurationLeave,
         MotionDurationMid = (int)SharedTokenKind.MotionDurationMid,
         MotionDurationSlow = (int)SharedTokenKind.MotionDurationSlow,
         MotionDurationVerySlow = (int)SharedTokenKind.MotionDurationVerySlow,
+        MotionEaseEmphasized = (int)SharedTokenKind.MotionEaseEmphasized,
+        MotionEaseIn = (int)SharedTokenKind.MotionEaseIn,
+        MotionEaseInOut = (int)SharedTokenKind.MotionEaseInOut,
+        MotionEaseOut = (int)SharedTokenKind.MotionEaseOut,
+        MotionEasingEnter = (int)SharedTokenKind.MotionEasingEnter,
+        MotionEasingLeave = (int)SharedTokenKind.MotionEasingLeave,
         MotionUnit = (int)SharedTokenKind.MotionUnit,
         OpacityImage = (int)SharedTokenKind.OpacityImage,
         OpacityLoading = (int)SharedTokenKind.OpacityLoading,
@@ -1780,6 +1868,12 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
         SpacingXS = (int)SharedTokenKind.SpacingXS,
         SpacingXXL = (int)SharedTokenKind.SpacingXXL,
         SpacingXXS = (int)SharedTokenKind.SpacingXXS,
+        StateTransitionDuration = (int)SharedTokenKind.StateTransitionDuration,
+        StateTransitionDurationFast = (int)SharedTokenKind.StateTransitionDurationFast,
+        StateTransitionDurationPress = (int)SharedTokenKind.StateTransitionDurationPress,
+        StateTransitionDurationSlow = (int)SharedTokenKind.StateTransitionDurationSlow,
+        StateTransitionEasing = (int)SharedTokenKind.StateTransitionEasing,
+        StateTransitionEasingOverride = (int)SharedTokenKind.StateTransitionEasingOverride,
         UniformlyMargin = (int)SharedTokenKind.UniformlyMargin,
         UniformlyMarginLG = (int)SharedTokenKind.UniformlyMarginLG,
         UniformlyMarginMD = (int)SharedTokenKind.UniformlyMarginMD,
@@ -1796,6 +1890,8 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
         UniformlyPaddingXS = (int)SharedTokenKind.UniformlyPaddingXS,
         UniformlyPaddingXXS = (int)SharedTokenKind.UniformlyPaddingXXS,
         WaveAnimationRange = (int)SharedTokenKind.WaveAnimationRange,
+        WaveEasing = (int)SharedTokenKind.WaveEasing,
+        WaveFadeDuration = (int)SharedTokenKind.WaveFadeDuration,
         WaveStartOpacity = (int)SharedTokenKind.WaveStartOpacity,
         ZIndexBase = (int)SharedTokenKind.ZIndexBase,
         ZIndexPopupBase = (int)SharedTokenKind.ZIndexPopupBase,
@@ -1825,7 +1921,7 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
             var slot = (int)kind;
             if (slot >= 0)
             {
-                if ((uint)slot >= 258u)
+                if ((uint)slot >= 274u)
                 {
                     throw new global::System.ArgumentOutOfRangeException(nameof(kind));
                 }
@@ -1970,8 +2066,8 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
         ControlOutlineWidth = (int)SharedTokenKind.ControlOutlineWidth,
         ControlPaddingHorizontal = (int)SharedTokenKind.ControlPaddingHorizontal,
         ControlPaddingHorizontalSM = (int)SharedTokenKind.ControlPaddingHorizontalSM,
+        EnableInteractionEffect = (int)SharedTokenKind.EnableInteractionEffect,
         EnableMotion = (int)SharedTokenKind.EnableMotion,
-        EnableWaveSpirit = (int)SharedTokenKind.EnableWaveSpirit,
         FocusVisualBorderThickness = (int)SharedTokenKind.FocusVisualBorderThickness,
         FontFamily = (int)SharedTokenKind.FontFamily,
         FontHeight = (int)SharedTokenKind.FontHeight,
@@ -2016,10 +2112,18 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
         MarginXXL = (int)SharedTokenKind.MarginXXL,
         MarginXXS = (int)SharedTokenKind.MarginXXS,
         MotionBase = (int)SharedTokenKind.MotionBase,
+        MotionDurationEnter = (int)SharedTokenKind.MotionDurationEnter,
         MotionDurationFast = (int)SharedTokenKind.MotionDurationFast,
+        MotionDurationLeave = (int)SharedTokenKind.MotionDurationLeave,
         MotionDurationMid = (int)SharedTokenKind.MotionDurationMid,
         MotionDurationSlow = (int)SharedTokenKind.MotionDurationSlow,
         MotionDurationVerySlow = (int)SharedTokenKind.MotionDurationVerySlow,
+        MotionEaseEmphasized = (int)SharedTokenKind.MotionEaseEmphasized,
+        MotionEaseIn = (int)SharedTokenKind.MotionEaseIn,
+        MotionEaseInOut = (int)SharedTokenKind.MotionEaseInOut,
+        MotionEaseOut = (int)SharedTokenKind.MotionEaseOut,
+        MotionEasingEnter = (int)SharedTokenKind.MotionEasingEnter,
+        MotionEasingLeave = (int)SharedTokenKind.MotionEasingLeave,
         MotionUnit = (int)SharedTokenKind.MotionUnit,
         OpacityImage = (int)SharedTokenKind.OpacityImage,
         OpacityLoading = (int)SharedTokenKind.OpacityLoading,
@@ -2087,6 +2191,12 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
         SpacingXS = (int)SharedTokenKind.SpacingXS,
         SpacingXXL = (int)SharedTokenKind.SpacingXXL,
         SpacingXXS = (int)SharedTokenKind.SpacingXXS,
+        StateTransitionDuration = (int)SharedTokenKind.StateTransitionDuration,
+        StateTransitionDurationFast = (int)SharedTokenKind.StateTransitionDurationFast,
+        StateTransitionDurationPress = (int)SharedTokenKind.StateTransitionDurationPress,
+        StateTransitionDurationSlow = (int)SharedTokenKind.StateTransitionDurationSlow,
+        StateTransitionEasing = (int)SharedTokenKind.StateTransitionEasing,
+        StateTransitionEasingOverride = (int)SharedTokenKind.StateTransitionEasingOverride,
         UniformlyMargin = (int)SharedTokenKind.UniformlyMargin,
         UniformlyMarginLG = (int)SharedTokenKind.UniformlyMarginLG,
         UniformlyMarginMD = (int)SharedTokenKind.UniformlyMarginMD,
@@ -2103,6 +2213,8 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
         UniformlyPaddingXS = (int)SharedTokenKind.UniformlyPaddingXS,
         UniformlyPaddingXXS = (int)SharedTokenKind.UniformlyPaddingXXS,
         WaveAnimationRange = (int)SharedTokenKind.WaveAnimationRange,
+        WaveEasing = (int)SharedTokenKind.WaveEasing,
+        WaveFadeDuration = (int)SharedTokenKind.WaveFadeDuration,
         WaveStartOpacity = (int)SharedTokenKind.WaveStartOpacity,
         ZIndexBase = (int)SharedTokenKind.ZIndexBase,
         ZIndexPopupBase = (int)SharedTokenKind.ZIndexPopupBase,
@@ -2131,7 +2243,7 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
             var slot = (int)kind;
             if (slot >= 0)
             {
-                if ((uint)slot >= 258u)
+                if ((uint)slot >= 274u)
                 {
                     throw new global::System.ArgumentOutOfRangeException(nameof(kind));
                 }
@@ -2270,8 +2382,8 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
         ControlOutlineWidth = (int)SharedTokenKind.ControlOutlineWidth,
         ControlPaddingHorizontal = (int)SharedTokenKind.ControlPaddingHorizontal,
         ControlPaddingHorizontalSM = (int)SharedTokenKind.ControlPaddingHorizontalSM,
+        EnableInteractionEffect = (int)SharedTokenKind.EnableInteractionEffect,
         EnableMotion = (int)SharedTokenKind.EnableMotion,
-        EnableWaveSpirit = (int)SharedTokenKind.EnableWaveSpirit,
         FocusVisualBorderThickness = (int)SharedTokenKind.FocusVisualBorderThickness,
         FontFamily = (int)SharedTokenKind.FontFamily,
         FontHeight = (int)SharedTokenKind.FontHeight,
@@ -2316,10 +2428,18 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
         MarginXXL = (int)SharedTokenKind.MarginXXL,
         MarginXXS = (int)SharedTokenKind.MarginXXS,
         MotionBase = (int)SharedTokenKind.MotionBase,
+        MotionDurationEnter = (int)SharedTokenKind.MotionDurationEnter,
         MotionDurationFast = (int)SharedTokenKind.MotionDurationFast,
+        MotionDurationLeave = (int)SharedTokenKind.MotionDurationLeave,
         MotionDurationMid = (int)SharedTokenKind.MotionDurationMid,
         MotionDurationSlow = (int)SharedTokenKind.MotionDurationSlow,
         MotionDurationVerySlow = (int)SharedTokenKind.MotionDurationVerySlow,
+        MotionEaseEmphasized = (int)SharedTokenKind.MotionEaseEmphasized,
+        MotionEaseIn = (int)SharedTokenKind.MotionEaseIn,
+        MotionEaseInOut = (int)SharedTokenKind.MotionEaseInOut,
+        MotionEaseOut = (int)SharedTokenKind.MotionEaseOut,
+        MotionEasingEnter = (int)SharedTokenKind.MotionEasingEnter,
+        MotionEasingLeave = (int)SharedTokenKind.MotionEasingLeave,
         MotionUnit = (int)SharedTokenKind.MotionUnit,
         OpacityImage = (int)SharedTokenKind.OpacityImage,
         OpacityLoading = (int)SharedTokenKind.OpacityLoading,
@@ -2387,6 +2507,12 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
         SpacingXS = (int)SharedTokenKind.SpacingXS,
         SpacingXXL = (int)SharedTokenKind.SpacingXXL,
         SpacingXXS = (int)SharedTokenKind.SpacingXXS,
+        StateTransitionDuration = (int)SharedTokenKind.StateTransitionDuration,
+        StateTransitionDurationFast = (int)SharedTokenKind.StateTransitionDurationFast,
+        StateTransitionDurationPress = (int)SharedTokenKind.StateTransitionDurationPress,
+        StateTransitionDurationSlow = (int)SharedTokenKind.StateTransitionDurationSlow,
+        StateTransitionEasing = (int)SharedTokenKind.StateTransitionEasing,
+        StateTransitionEasingOverride = (int)SharedTokenKind.StateTransitionEasingOverride,
         UniformlyMargin = (int)SharedTokenKind.UniformlyMargin,
         UniformlyMarginLG = (int)SharedTokenKind.UniformlyMarginLG,
         UniformlyMarginMD = (int)SharedTokenKind.UniformlyMarginMD,
@@ -2403,6 +2529,8 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
         UniformlyPaddingXS = (int)SharedTokenKind.UniformlyPaddingXS,
         UniformlyPaddingXXS = (int)SharedTokenKind.UniformlyPaddingXXS,
         WaveAnimationRange = (int)SharedTokenKind.WaveAnimationRange,
+        WaveEasing = (int)SharedTokenKind.WaveEasing,
+        WaveFadeDuration = (int)SharedTokenKind.WaveFadeDuration,
         WaveStartOpacity = (int)SharedTokenKind.WaveStartOpacity,
         ZIndexBase = (int)SharedTokenKind.ZIndexBase,
         ZIndexPopupBase = (int)SharedTokenKind.ZIndexPopupBase,
@@ -2429,7 +2557,7 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
             var slot = (int)kind;
             if (slot >= 0)
             {
-                if ((uint)slot >= 258u)
+                if ((uint)slot >= 274u)
                 {
                     throw new global::System.ArgumentOutOfRangeException(nameof(kind));
                 }
@@ -2569,8 +2697,8 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
         ControlOutlineWidth = (int)SharedTokenKind.ControlOutlineWidth,
         ControlPaddingHorizontal = (int)SharedTokenKind.ControlPaddingHorizontal,
         ControlPaddingHorizontalSM = (int)SharedTokenKind.ControlPaddingHorizontalSM,
+        EnableInteractionEffect = (int)SharedTokenKind.EnableInteractionEffect,
         EnableMotion = (int)SharedTokenKind.EnableMotion,
-        EnableWaveSpirit = (int)SharedTokenKind.EnableWaveSpirit,
         FocusVisualBorderThickness = (int)SharedTokenKind.FocusVisualBorderThickness,
         FontFamily = (int)SharedTokenKind.FontFamily,
         FontHeight = (int)SharedTokenKind.FontHeight,
@@ -2615,10 +2743,18 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
         MarginXXL = (int)SharedTokenKind.MarginXXL,
         MarginXXS = (int)SharedTokenKind.MarginXXS,
         MotionBase = (int)SharedTokenKind.MotionBase,
+        MotionDurationEnter = (int)SharedTokenKind.MotionDurationEnter,
         MotionDurationFast = (int)SharedTokenKind.MotionDurationFast,
+        MotionDurationLeave = (int)SharedTokenKind.MotionDurationLeave,
         MotionDurationMid = (int)SharedTokenKind.MotionDurationMid,
         MotionDurationSlow = (int)SharedTokenKind.MotionDurationSlow,
         MotionDurationVerySlow = (int)SharedTokenKind.MotionDurationVerySlow,
+        MotionEaseEmphasized = (int)SharedTokenKind.MotionEaseEmphasized,
+        MotionEaseIn = (int)SharedTokenKind.MotionEaseIn,
+        MotionEaseInOut = (int)SharedTokenKind.MotionEaseInOut,
+        MotionEaseOut = (int)SharedTokenKind.MotionEaseOut,
+        MotionEasingEnter = (int)SharedTokenKind.MotionEasingEnter,
+        MotionEasingLeave = (int)SharedTokenKind.MotionEasingLeave,
         MotionUnit = (int)SharedTokenKind.MotionUnit,
         OpacityImage = (int)SharedTokenKind.OpacityImage,
         OpacityLoading = (int)SharedTokenKind.OpacityLoading,
@@ -2686,6 +2822,12 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
         SpacingXS = (int)SharedTokenKind.SpacingXS,
         SpacingXXL = (int)SharedTokenKind.SpacingXXL,
         SpacingXXS = (int)SharedTokenKind.SpacingXXS,
+        StateTransitionDuration = (int)SharedTokenKind.StateTransitionDuration,
+        StateTransitionDurationFast = (int)SharedTokenKind.StateTransitionDurationFast,
+        StateTransitionDurationPress = (int)SharedTokenKind.StateTransitionDurationPress,
+        StateTransitionDurationSlow = (int)SharedTokenKind.StateTransitionDurationSlow,
+        StateTransitionEasing = (int)SharedTokenKind.StateTransitionEasing,
+        StateTransitionEasingOverride = (int)SharedTokenKind.StateTransitionEasingOverride,
         UniformlyMargin = (int)SharedTokenKind.UniformlyMargin,
         UniformlyMarginLG = (int)SharedTokenKind.UniformlyMarginLG,
         UniformlyMarginMD = (int)SharedTokenKind.UniformlyMarginMD,
@@ -2702,6 +2844,8 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
         UniformlyPaddingXS = (int)SharedTokenKind.UniformlyPaddingXS,
         UniformlyPaddingXXS = (int)SharedTokenKind.UniformlyPaddingXXS,
         WaveAnimationRange = (int)SharedTokenKind.WaveAnimationRange,
+        WaveEasing = (int)SharedTokenKind.WaveEasing,
+        WaveFadeDuration = (int)SharedTokenKind.WaveFadeDuration,
         WaveStartOpacity = (int)SharedTokenKind.WaveStartOpacity,
         ZIndexBase = (int)SharedTokenKind.ZIndexBase,
         ZIndexPopupBase = (int)SharedTokenKind.ZIndexPopupBase,
@@ -2729,7 +2873,7 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
             var slot = (int)kind;
             if (slot >= 0)
             {
-                if ((uint)slot >= 258u)
+                if ((uint)slot >= 274u)
                 {
                     throw new global::System.ArgumentOutOfRangeException(nameof(kind));
                 }
@@ -2868,8 +3012,8 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
         ControlOutlineWidth = (int)SharedTokenKind.ControlOutlineWidth,
         ControlPaddingHorizontal = (int)SharedTokenKind.ControlPaddingHorizontal,
         ControlPaddingHorizontalSM = (int)SharedTokenKind.ControlPaddingHorizontalSM,
+        EnableInteractionEffect = (int)SharedTokenKind.EnableInteractionEffect,
         EnableMotion = (int)SharedTokenKind.EnableMotion,
-        EnableWaveSpirit = (int)SharedTokenKind.EnableWaveSpirit,
         FocusVisualBorderThickness = (int)SharedTokenKind.FocusVisualBorderThickness,
         FontFamily = (int)SharedTokenKind.FontFamily,
         FontHeight = (int)SharedTokenKind.FontHeight,
@@ -2914,10 +3058,18 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
         MarginXXL = (int)SharedTokenKind.MarginXXL,
         MarginXXS = (int)SharedTokenKind.MarginXXS,
         MotionBase = (int)SharedTokenKind.MotionBase,
+        MotionDurationEnter = (int)SharedTokenKind.MotionDurationEnter,
         MotionDurationFast = (int)SharedTokenKind.MotionDurationFast,
+        MotionDurationLeave = (int)SharedTokenKind.MotionDurationLeave,
         MotionDurationMid = (int)SharedTokenKind.MotionDurationMid,
         MotionDurationSlow = (int)SharedTokenKind.MotionDurationSlow,
         MotionDurationVerySlow = (int)SharedTokenKind.MotionDurationVerySlow,
+        MotionEaseEmphasized = (int)SharedTokenKind.MotionEaseEmphasized,
+        MotionEaseIn = (int)SharedTokenKind.MotionEaseIn,
+        MotionEaseInOut = (int)SharedTokenKind.MotionEaseInOut,
+        MotionEaseOut = (int)SharedTokenKind.MotionEaseOut,
+        MotionEasingEnter = (int)SharedTokenKind.MotionEasingEnter,
+        MotionEasingLeave = (int)SharedTokenKind.MotionEasingLeave,
         MotionUnit = (int)SharedTokenKind.MotionUnit,
         OpacityImage = (int)SharedTokenKind.OpacityImage,
         OpacityLoading = (int)SharedTokenKind.OpacityLoading,
@@ -2985,6 +3137,12 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
         SpacingXS = (int)SharedTokenKind.SpacingXS,
         SpacingXXL = (int)SharedTokenKind.SpacingXXL,
         SpacingXXS = (int)SharedTokenKind.SpacingXXS,
+        StateTransitionDuration = (int)SharedTokenKind.StateTransitionDuration,
+        StateTransitionDurationFast = (int)SharedTokenKind.StateTransitionDurationFast,
+        StateTransitionDurationPress = (int)SharedTokenKind.StateTransitionDurationPress,
+        StateTransitionDurationSlow = (int)SharedTokenKind.StateTransitionDurationSlow,
+        StateTransitionEasing = (int)SharedTokenKind.StateTransitionEasing,
+        StateTransitionEasingOverride = (int)SharedTokenKind.StateTransitionEasingOverride,
         UniformlyMargin = (int)SharedTokenKind.UniformlyMargin,
         UniformlyMarginLG = (int)SharedTokenKind.UniformlyMarginLG,
         UniformlyMarginMD = (int)SharedTokenKind.UniformlyMarginMD,
@@ -3001,6 +3159,8 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
         UniformlyPaddingXS = (int)SharedTokenKind.UniformlyPaddingXS,
         UniformlyPaddingXXS = (int)SharedTokenKind.UniformlyPaddingXXS,
         WaveAnimationRange = (int)SharedTokenKind.WaveAnimationRange,
+        WaveEasing = (int)SharedTokenKind.WaveEasing,
+        WaveFadeDuration = (int)SharedTokenKind.WaveFadeDuration,
         WaveStartOpacity = (int)SharedTokenKind.WaveStartOpacity,
         ZIndexBase = (int)SharedTokenKind.ZIndexBase,
         ZIndexPopupBase = (int)SharedTokenKind.ZIndexPopupBase,
@@ -3027,7 +3187,7 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
             var slot = (int)kind;
             if (slot >= 0)
             {
-                if ((uint)slot >= 258u)
+                if ((uint)slot >= 274u)
                 {
                     throw new global::System.ArgumentOutOfRangeException(nameof(kind));
                 }
@@ -3175,8 +3335,8 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
         ControlOutlineWidth = (int)SharedTokenKind.ControlOutlineWidth,
         ControlPaddingHorizontal = (int)SharedTokenKind.ControlPaddingHorizontal,
         ControlPaddingHorizontalSM = (int)SharedTokenKind.ControlPaddingHorizontalSM,
+        EnableInteractionEffect = (int)SharedTokenKind.EnableInteractionEffect,
         EnableMotion = (int)SharedTokenKind.EnableMotion,
-        EnableWaveSpirit = (int)SharedTokenKind.EnableWaveSpirit,
         FocusVisualBorderThickness = (int)SharedTokenKind.FocusVisualBorderThickness,
         FontFamily = (int)SharedTokenKind.FontFamily,
         FontHeight = (int)SharedTokenKind.FontHeight,
@@ -3221,10 +3381,18 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
         MarginXXL = (int)SharedTokenKind.MarginXXL,
         MarginXXS = (int)SharedTokenKind.MarginXXS,
         MotionBase = (int)SharedTokenKind.MotionBase,
+        MotionDurationEnter = (int)SharedTokenKind.MotionDurationEnter,
         MotionDurationFast = (int)SharedTokenKind.MotionDurationFast,
+        MotionDurationLeave = (int)SharedTokenKind.MotionDurationLeave,
         MotionDurationMid = (int)SharedTokenKind.MotionDurationMid,
         MotionDurationSlow = (int)SharedTokenKind.MotionDurationSlow,
         MotionDurationVerySlow = (int)SharedTokenKind.MotionDurationVerySlow,
+        MotionEaseEmphasized = (int)SharedTokenKind.MotionEaseEmphasized,
+        MotionEaseIn = (int)SharedTokenKind.MotionEaseIn,
+        MotionEaseInOut = (int)SharedTokenKind.MotionEaseInOut,
+        MotionEaseOut = (int)SharedTokenKind.MotionEaseOut,
+        MotionEasingEnter = (int)SharedTokenKind.MotionEasingEnter,
+        MotionEasingLeave = (int)SharedTokenKind.MotionEasingLeave,
         MotionUnit = (int)SharedTokenKind.MotionUnit,
         OpacityImage = (int)SharedTokenKind.OpacityImage,
         OpacityLoading = (int)SharedTokenKind.OpacityLoading,
@@ -3292,6 +3460,12 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
         SpacingXS = (int)SharedTokenKind.SpacingXS,
         SpacingXXL = (int)SharedTokenKind.SpacingXXL,
         SpacingXXS = (int)SharedTokenKind.SpacingXXS,
+        StateTransitionDuration = (int)SharedTokenKind.StateTransitionDuration,
+        StateTransitionDurationFast = (int)SharedTokenKind.StateTransitionDurationFast,
+        StateTransitionDurationPress = (int)SharedTokenKind.StateTransitionDurationPress,
+        StateTransitionDurationSlow = (int)SharedTokenKind.StateTransitionDurationSlow,
+        StateTransitionEasing = (int)SharedTokenKind.StateTransitionEasing,
+        StateTransitionEasingOverride = (int)SharedTokenKind.StateTransitionEasingOverride,
         UniformlyMargin = (int)SharedTokenKind.UniformlyMargin,
         UniformlyMarginLG = (int)SharedTokenKind.UniformlyMarginLG,
         UniformlyMarginMD = (int)SharedTokenKind.UniformlyMarginMD,
@@ -3308,6 +3482,8 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
         UniformlyPaddingXS = (int)SharedTokenKind.UniformlyPaddingXS,
         UniformlyPaddingXXS = (int)SharedTokenKind.UniformlyPaddingXXS,
         WaveAnimationRange = (int)SharedTokenKind.WaveAnimationRange,
+        WaveEasing = (int)SharedTokenKind.WaveEasing,
+        WaveFadeDuration = (int)SharedTokenKind.WaveFadeDuration,
         WaveStartOpacity = (int)SharedTokenKind.WaveStartOpacity,
         ZIndexBase = (int)SharedTokenKind.ZIndexBase,
         ZIndexPopupBase = (int)SharedTokenKind.ZIndexPopupBase,
@@ -3343,7 +3519,7 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
             var slot = (int)kind;
             if (slot >= 0)
             {
-                if ((uint)slot >= 258u)
+                if ((uint)slot >= 274u)
                 {
                     throw new global::System.ArgumentOutOfRangeException(nameof(kind));
                 }
@@ -3491,8 +3667,8 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
         ControlOutlineWidth = (int)SharedTokenKind.ControlOutlineWidth,
         ControlPaddingHorizontal = (int)SharedTokenKind.ControlPaddingHorizontal,
         ControlPaddingHorizontalSM = (int)SharedTokenKind.ControlPaddingHorizontalSM,
+        EnableInteractionEffect = (int)SharedTokenKind.EnableInteractionEffect,
         EnableMotion = (int)SharedTokenKind.EnableMotion,
-        EnableWaveSpirit = (int)SharedTokenKind.EnableWaveSpirit,
         FocusVisualBorderThickness = (int)SharedTokenKind.FocusVisualBorderThickness,
         FontFamily = (int)SharedTokenKind.FontFamily,
         FontHeight = (int)SharedTokenKind.FontHeight,
@@ -3537,10 +3713,18 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
         MarginXXL = (int)SharedTokenKind.MarginXXL,
         MarginXXS = (int)SharedTokenKind.MarginXXS,
         MotionBase = (int)SharedTokenKind.MotionBase,
+        MotionDurationEnter = (int)SharedTokenKind.MotionDurationEnter,
         MotionDurationFast = (int)SharedTokenKind.MotionDurationFast,
+        MotionDurationLeave = (int)SharedTokenKind.MotionDurationLeave,
         MotionDurationMid = (int)SharedTokenKind.MotionDurationMid,
         MotionDurationSlow = (int)SharedTokenKind.MotionDurationSlow,
         MotionDurationVerySlow = (int)SharedTokenKind.MotionDurationVerySlow,
+        MotionEaseEmphasized = (int)SharedTokenKind.MotionEaseEmphasized,
+        MotionEaseIn = (int)SharedTokenKind.MotionEaseIn,
+        MotionEaseInOut = (int)SharedTokenKind.MotionEaseInOut,
+        MotionEaseOut = (int)SharedTokenKind.MotionEaseOut,
+        MotionEasingEnter = (int)SharedTokenKind.MotionEasingEnter,
+        MotionEasingLeave = (int)SharedTokenKind.MotionEasingLeave,
         MotionUnit = (int)SharedTokenKind.MotionUnit,
         OpacityImage = (int)SharedTokenKind.OpacityImage,
         OpacityLoading = (int)SharedTokenKind.OpacityLoading,
@@ -3608,6 +3792,12 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
         SpacingXS = (int)SharedTokenKind.SpacingXS,
         SpacingXXL = (int)SharedTokenKind.SpacingXXL,
         SpacingXXS = (int)SharedTokenKind.SpacingXXS,
+        StateTransitionDuration = (int)SharedTokenKind.StateTransitionDuration,
+        StateTransitionDurationFast = (int)SharedTokenKind.StateTransitionDurationFast,
+        StateTransitionDurationPress = (int)SharedTokenKind.StateTransitionDurationPress,
+        StateTransitionDurationSlow = (int)SharedTokenKind.StateTransitionDurationSlow,
+        StateTransitionEasing = (int)SharedTokenKind.StateTransitionEasing,
+        StateTransitionEasingOverride = (int)SharedTokenKind.StateTransitionEasingOverride,
         UniformlyMargin = (int)SharedTokenKind.UniformlyMargin,
         UniformlyMarginLG = (int)SharedTokenKind.UniformlyMarginLG,
         UniformlyMarginMD = (int)SharedTokenKind.UniformlyMarginMD,
@@ -3624,6 +3814,8 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
         UniformlyPaddingXS = (int)SharedTokenKind.UniformlyPaddingXS,
         UniformlyPaddingXXS = (int)SharedTokenKind.UniformlyPaddingXXS,
         WaveAnimationRange = (int)SharedTokenKind.WaveAnimationRange,
+        WaveEasing = (int)SharedTokenKind.WaveEasing,
+        WaveFadeDuration = (int)SharedTokenKind.WaveFadeDuration,
         WaveStartOpacity = (int)SharedTokenKind.WaveStartOpacity,
         ZIndexBase = (int)SharedTokenKind.ZIndexBase,
         ZIndexPopupBase = (int)SharedTokenKind.ZIndexPopupBase,
@@ -3655,7 +3847,7 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
             var slot = (int)kind;
             if (slot >= 0)
             {
-                if ((uint)slot >= 258u)
+                if ((uint)slot >= 274u)
                 {
                     throw new global::System.ArgumentOutOfRangeException(nameof(kind));
                 }
@@ -3802,8 +3994,8 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
         ControlOutlineWidth = (int)SharedTokenKind.ControlOutlineWidth,
         ControlPaddingHorizontal = (int)SharedTokenKind.ControlPaddingHorizontal,
         ControlPaddingHorizontalSM = (int)SharedTokenKind.ControlPaddingHorizontalSM,
+        EnableInteractionEffect = (int)SharedTokenKind.EnableInteractionEffect,
         EnableMotion = (int)SharedTokenKind.EnableMotion,
-        EnableWaveSpirit = (int)SharedTokenKind.EnableWaveSpirit,
         FocusVisualBorderThickness = (int)SharedTokenKind.FocusVisualBorderThickness,
         FontFamily = (int)SharedTokenKind.FontFamily,
         FontHeight = (int)SharedTokenKind.FontHeight,
@@ -3848,10 +4040,18 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
         MarginXXL = (int)SharedTokenKind.MarginXXL,
         MarginXXS = (int)SharedTokenKind.MarginXXS,
         MotionBase = (int)SharedTokenKind.MotionBase,
+        MotionDurationEnter = (int)SharedTokenKind.MotionDurationEnter,
         MotionDurationFast = (int)SharedTokenKind.MotionDurationFast,
+        MotionDurationLeave = (int)SharedTokenKind.MotionDurationLeave,
         MotionDurationMid = (int)SharedTokenKind.MotionDurationMid,
         MotionDurationSlow = (int)SharedTokenKind.MotionDurationSlow,
         MotionDurationVerySlow = (int)SharedTokenKind.MotionDurationVerySlow,
+        MotionEaseEmphasized = (int)SharedTokenKind.MotionEaseEmphasized,
+        MotionEaseIn = (int)SharedTokenKind.MotionEaseIn,
+        MotionEaseInOut = (int)SharedTokenKind.MotionEaseInOut,
+        MotionEaseOut = (int)SharedTokenKind.MotionEaseOut,
+        MotionEasingEnter = (int)SharedTokenKind.MotionEasingEnter,
+        MotionEasingLeave = (int)SharedTokenKind.MotionEasingLeave,
         MotionUnit = (int)SharedTokenKind.MotionUnit,
         OpacityImage = (int)SharedTokenKind.OpacityImage,
         OpacityLoading = (int)SharedTokenKind.OpacityLoading,
@@ -3919,6 +4119,12 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
         SpacingXS = (int)SharedTokenKind.SpacingXS,
         SpacingXXL = (int)SharedTokenKind.SpacingXXL,
         SpacingXXS = (int)SharedTokenKind.SpacingXXS,
+        StateTransitionDuration = (int)SharedTokenKind.StateTransitionDuration,
+        StateTransitionDurationFast = (int)SharedTokenKind.StateTransitionDurationFast,
+        StateTransitionDurationPress = (int)SharedTokenKind.StateTransitionDurationPress,
+        StateTransitionDurationSlow = (int)SharedTokenKind.StateTransitionDurationSlow,
+        StateTransitionEasing = (int)SharedTokenKind.StateTransitionEasing,
+        StateTransitionEasingOverride = (int)SharedTokenKind.StateTransitionEasingOverride,
         UniformlyMargin = (int)SharedTokenKind.UniformlyMargin,
         UniformlyMarginLG = (int)SharedTokenKind.UniformlyMarginLG,
         UniformlyMarginMD = (int)SharedTokenKind.UniformlyMarginMD,
@@ -3935,6 +4141,8 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
         UniformlyPaddingXS = (int)SharedTokenKind.UniformlyPaddingXS,
         UniformlyPaddingXXS = (int)SharedTokenKind.UniformlyPaddingXXS,
         WaveAnimationRange = (int)SharedTokenKind.WaveAnimationRange,
+        WaveEasing = (int)SharedTokenKind.WaveEasing,
+        WaveFadeDuration = (int)SharedTokenKind.WaveFadeDuration,
         WaveStartOpacity = (int)SharedTokenKind.WaveStartOpacity,
         ZIndexBase = (int)SharedTokenKind.ZIndexBase,
         ZIndexPopupBase = (int)SharedTokenKind.ZIndexPopupBase,
@@ -3965,7 +4173,7 @@ namespace AtomUI.Toolkits.GalleryBase.Controls.DesignTokens
             var slot = (int)kind;
             if (slot >= 0)
             {
-                if ((uint)slot >= 258u)
+                if ((uint)slot >= 274u)
                 {
                     throw new global::System.ArgumentOutOfRangeException(nameof(kind));
                 }

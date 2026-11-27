@@ -10,6 +10,161 @@ namespace AtomUI.Generator.Tests.SemanticParts;
 
 public class SemanticPartGeneratorTests
 {
+    /// <summary>
+    /// Verifies external language template replacements are validated against referenced control semantic contracts.
+    /// </summary>
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void Validates_An_External_Language_Replacement_Against_The_Referenced_Contract(bool hasContentMarker)
+    {
+        var producer = RunGenerator(ButtonSource, out var producerDiagnostics, ButtonTheme)
+            .WithAssemblyName("SemanticThemeProducer");
+        producerDiagnostics.ShouldBeEmpty();
+
+        var marker = hasContentMarker ? " Classes=\"semantic-content\"" : string.Empty;
+        var theme = new InMemoryAdditionalText("Button/Themes/LanguageButton.axaml", $$"""
+            <ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:atom="using:Demo"
+                                xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+                <ControlTheme x:Key="AtomUI.Theme.External.Demo.Button" TargetType="atom:Button">
+                    <Setter Property="Template">
+                        <ControlTemplate>
+                            <StackPanel>
+                                <Control Classes="semantic-icon" />
+                                <ContentPresenter{{marker}} />
+                            </StackPanel>
+                        </ControlTemplate>
+                    </Setter>
+                </ControlTheme>
+            </ResourceDictionary>
+            """);
+        var diagnostics = RunReferencedThemeGenerator(producer, theme);
+        if (hasContentMarker)
+        {
+            diagnostics.ShouldBeEmpty();
+        }
+        else
+        {
+            diagnostics.ShouldContain(diagnostic => diagnostic.Id == "ATOMUIGEN032" &&
+                diagnostic.GetMessage().Contains("content", StringComparison.Ordinal));
+        }
+    }
+
+    /// <summary>
+    /// Verifies semantic part validation checks both sides of a cross-template route in external language packages.
+    /// </summary>
+    [Theory]
+    [InlineData(true, true)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(false, false)]
+    public void Validates_Both_Sides_Of_An_External_Template_Route(bool replacesOuter, bool valid)
+    {
+        const string source = """
+            using AtomUI.Theme;
+            using Avalonia.Controls;
+            using Avalonia.Controls.Presenters;
+            namespace Demo;
+
+            public class Editor : Control { }
+
+            [SemanticPart("input", SelectorClass = "semantic-input", CrossNestedOwners = true,
+                SelectorRoute = "/template/ .semantic-scope-editor /template/ .semantic-input",
+                ContractType = typeof(ContentPresenter), Since = "6.2.0")]
+            public partial class Shell : Control { }
+            """;
+
+        const string anchor = "<atom:Editor Classes=\"semantic-scope-editor\" />";
+        const string marker = "<ContentPresenter Classes=\"semantic-input\" />";
+        var producer = RunGenerator(source, out var producerDiagnostics,
+            Theme("Shell", anchor), Theme("Editor", marker)).WithAssemblyName("SemanticRouteProducer");
+        producerDiagnostics.ShouldBeEmpty();
+
+        var replacement = replacesOuter ? Theme("Shell", valid ? anchor : "<atom:Editor />", external: true)
+            : Theme("Editor", valid ? marker : "<ContentPresenter />", external: true);
+        var diagnostics = RunReferencedThemeGenerator(producer, replacement);
+
+        if (valid)
+        {
+            diagnostics.ShouldBeEmpty();
+        }
+        else
+        {
+            diagnostics.ShouldContain(diagnostic => diagnostic.Id == "ATOMUIGEN032" &&
+                diagnostic.GetMessage().Contains("semantic-input", StringComparison.Ordinal));
+        }
+
+        static AdditionalText Theme(string type, string node, bool external = false)
+        {
+            var key = external ? $" x:Key=\"AtomUI.Theme.External.Demo.{type}\"" : string.Empty;
+            return new InMemoryAdditionalText($"{type}/Themes/{type}Theme.axaml", $$"""
+                <ControlTheme xmlns="https://github.com/avaloniaui" xmlns:atom="using:Demo"
+                              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" TargetType="atom:{{type}}"{{key}}>
+                    <Setter Property="Template">
+                        <ControlTemplate>{{node}}</ControlTemplate>
+                    </Setter>
+                </ControlTheme>
+                """);
+        }
+    }
+
+    private static ImmutableArray<Diagnostic> RunReferencedThemeGenerator(CSharpCompilation producer, AdditionalText theme)
+    {
+        var syntax = CSharpSyntaxTree.ParseText(string.Empty);
+        var consumer = CSharpCompilation.Create("SemanticThemeConsumer", [syntax],
+            GetPlatformReferences().Add(producer.ToMetadataReference()),
+            new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
+        var driver = CSharpGeneratorDriver.Create([new TokenResourceKeyGenerator().AsSourceGenerator()], [theme],
+            (CSharpParseOptions)syntax.Options, new BuiltinCatalogOptionsProvider(null));
+        driver.RunGeneratorsAndUpdateCompilation(consumer, out _, out var diagnostics, TestContext.Current.CancellationToken);
+        return diagnostics;
+    }
+
+    /// <summary>
+    /// Verifies semantic markers declared inside merged template resource dictionaries are validated.
+    /// </summary>
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void Validates_Semantic_Markers_In_An_Included_Template_Resource(bool hasContentMarker)
+    {
+        var theme = new InMemoryAdditionalText("Button/Themes/ButtonTheme.axaml", """
+            <ControlTheme xmlns="https://github.com/avaloniaui" xmlns:atom="using:Demo" TargetType="atom:Button">
+                <ControlTheme.Resources>
+                    <ResourceDictionary>
+                        <ResourceDictionary.MergedDictionaries>
+                            <ResourceInclude Source="ButtonTemplateResources.axaml" />
+                        </ResourceDictionary.MergedDictionaries>
+                    </ResourceDictionary>
+                </ControlTheme.Resources>
+                <Setter Property="Template" Value="{StaticResource Visual}" />
+            </ControlTheme>
+            """);
+        var marker = hasContentMarker ? " Classes=\"semantic-content\"" : string.Empty;
+        var resources = new InMemoryAdditionalText("Button/Themes/ButtonTemplateResources.axaml", $$"""
+            <ResourceDictionary xmlns="https://github.com/avaloniaui" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+                <ControlTemplate x:Key="Visual">
+                    <StackPanel>
+                        <Control Classes="semantic-icon" />
+                        <ContentPresenter{{marker}} />
+                    </StackPanel>
+                </ControlTemplate>
+            </ResourceDictionary>
+            """);
+
+        RunGenerator(ButtonSource, out var diagnostics, theme, resources);
+
+        if (hasContentMarker)
+        {
+            diagnostics.ShouldBeEmpty();
+        }
+        else
+        {
+            diagnostics.ShouldContain(diagnostic => diagnostic.Id == "ATOMUIGEN032" &&
+                diagnostic.GetMessage().Contains("content", StringComparison.Ordinal));
+        }
+    }
+
     [Theory]
     [InlineData(false)]
     [InlineData(true)]

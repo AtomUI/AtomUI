@@ -167,6 +167,21 @@ public abstract class AbstractTabStrip : Avalonia.Controls.Primitives.TabStrip, 
     }
 
     /// <summary>
+    /// Identifies the <see cref="IndicatorMotionMode" /> property.
+    /// </summary>
+    public static readonly StyledProperty<IndicatorMotionMode> IndicatorMotionModeProperty =
+        AvaloniaProperty.Register<AbstractTabStrip, IndicatorMotionMode>(nameof(IndicatorMotionMode), IndicatorMotionMode.Slide);
+
+    /// <summary>
+    /// The geometric movement of the active indicator.
+    /// </summary>
+    public IndicatorMotionMode IndicatorMotionMode
+    {
+        get => GetValue(IndicatorMotionModeProperty);
+        set => SetValue(IndicatorMotionModeProperty, value);
+    }
+
+    /// <summary>
     /// When <see langword="true" />, the selection indicator also grows or shrinks while it moves to a tab of
     /// another size; when <see langword="false" />, only its position is animated. The default is
     /// <see langword="false" />.
@@ -293,7 +308,7 @@ public abstract class AbstractTabStrip : Avalonia.Controls.Primitives.TabStrip, 
     {
         var size = base.ArrangeOverride(finalSize);
         _tabIndicator?.Update(TabStripPlacement, IndicatorMode, IndicatorFixedLength, IsIndicatorLengthAnimated,
-            IsSelectedItemCentered, IsMotionEnabled);
+            IsSelectedItemCentered, IsMotionEnabled, IndicatorMotionMode);
         return size;
     }
 
@@ -319,7 +334,7 @@ public abstract class AbstractTabStrip : Avalonia.Controls.Primitives.TabStrip, 
             if (_tabIndicator is { } indicator)
             {
                 indicator.Update(TabStripPlacement, IndicatorMode, IndicatorFixedLength, IsIndicatorLengthAnimated,
-                    IsSelectedItemCentered, IsMotionEnabled);
+                    IsSelectedItemCentered, IsMotionEnabled, IndicatorMotionMode);
                 InvalidateArrange();
             }
         }

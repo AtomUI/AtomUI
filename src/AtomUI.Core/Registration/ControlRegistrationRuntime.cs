@@ -30,6 +30,15 @@ public static class ControlRegistrationRuntime
     public static bool IsTrimmed => AppContext.TryGetSwitch(TrimmedSwitchName, out var trimmed) && trimmed;
 
     /// <summary>
+    /// Whether generated value rules use the native TypeMap resolution path.
+    /// </summary>
+#if NET10_0_OR_GREATER
+    [FeatureSwitchDefinition("AtomUI.Registration.NativeValueRules")]
+#endif
+    public static bool UsesNativeValueRules =>
+        AppContext.TryGetSwitch("AtomUI.Registration.NativeValueRules", out var enabled) && enabled;
+
+    /// <summary>
     /// Returns the registration fragment of the proxy type that <paramref name="map" /> stores under
     /// <paramref name="key" />, or <see langword="null" /> when the map has no entry for the key.
     /// </summary>

@@ -16,7 +16,7 @@
                                                 Classes.semantic-icon="True"
                                                 DockPanel.Dock="Left"
                                                 IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
-                                                IsWaveSpiritEnabled="{TemplateBinding IsWaveSpiritEnabled}"
+                                                IsInteractionEffectEnabled="{TemplateBinding IsInteractionEffectEnabled}"
                                                 IsEnabled="{TemplateBinding IsEnabled}"
                                                 State="{TemplateBinding IsChecked, Converter={StaticResource CheckBoxIndicatorStateConverter}}" />
                         <ContentPresenter Name="ContentPresenter"
@@ -36,8 +36,8 @@
         <Setter Property="VerticalAlignment" Value="Top" />
         <Setter Property="Background" Value="Transparent" />
         <Setter Property="Foreground" Value="{atom:CheckBoxTokenResource ColorText}" />
-        <Setter Property="IsWaveSpiritEnabled"
-                Value="{atom:CheckBoxTokenResource EnableWaveSpirit}" />
+        <Setter Property="IsInteractionEffectEnabled"
+                Value="{atom:CheckBoxTokenResource EnableInteractionEffect}" />
         <Setter Property="IsMotionEnabled" Value="{atom:CheckBoxTokenResource EnableMotion}" />
 
         <Style Selector="^ /template/ ContentPresenter#ContentPresenter">

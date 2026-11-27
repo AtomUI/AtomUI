@@ -1,3 +1,5 @@
+using System.ComponentModel;
+using System.Reflection;
 using AtomUI.Theme.DesignTokens;
 using AtomUI.Theme.Languages;
 
@@ -5,22 +7,24 @@ namespace AtomUI.Theme.Schema;
 
 /// <summary>
 /// Registers how one language token type derives one control's view: the pair (<see cref="LanguageTokenType" />,
-/// <see cref="Control" />) and an instance of the rule class. The generated registration of a value package
+/// <see cref="Control" />) and its typed evaluator. The generated registration of a value package
 /// creates one per <see cref="ControlTokenRuleAttribute" /> class.
 /// </summary>
 public sealed class ControlTokenRuleDescriptor
 {
     private readonly Evaluator _evaluator;
+    private readonly string? _expectedTokenSchemaDigest;
 
     private ControlTokenRuleDescriptor(Type languageTokenType, Type tokenType, ControlTokenIdentity control,
-        Evaluator evaluator, System.Reflection.Assembly valuePackage)
+        Evaluator evaluator, Assembly valuePackage, string? expectedTokenSchemaDigest)
     {
-        LanguageTokenType = languageTokenType;
-        TokenType         = tokenType;
-        Control           = control;
-        _evaluator        = evaluator;
-        ValuePackage      = valuePackage;
-        Revision          = valuePackage.ManifestModule.ModuleVersionId;
+        LanguageTokenType          = languageTokenType;
+        TokenType                  = tokenType;
+        Control                    = control;
+        _evaluator                 = evaluator;
+        _expectedTokenSchemaDigest = expectedTokenSchemaDigest;
+        ValuePackage               = valuePackage;
+        Revision                   = valuePackage.ManifestModule.ModuleVersionId;
     }
 
     /// <summary>
@@ -30,6 +34,16 @@ public sealed class ControlTokenRuleDescriptor
     /// <typeparamref name="TToken" /> reports a control identity without a catalog.
     /// </exception>
     public static ControlTokenRuleDescriptor Create<TLanguageToken, TToken, TRule>()
+        where TLanguageToken : LanguageDesignToken
+        where TToken : AbstractControlDesignToken, IControlToken
+        where TRule : class, IControlTokenRule<TLanguageToken, TToken>, new() =>
+        Create<TLanguageToken, TToken, TRule>(null);
+
+    /// <summary>
+    /// Creates a cross-package rule using the control schema digest observed when the rule was compiled.
+    /// </summary>
+    [EditorBrowsable(EditorBrowsableState.Never)]
+    public static ControlTokenRuleDescriptor Create<TLanguageToken, TToken, TRule>(string? expectedTokenSchemaDigest)
         where TLanguageToken : LanguageDesignToken
         where TToken : AbstractControlDesignToken, IControlToken
         where TRule : class, IControlTokenRule<TLanguageToken, TToken>, new()
@@ -42,8 +56,8 @@ public sealed class ControlTokenRuleDescriptor
         }
 
         return new ControlTokenRuleDescriptor(typeof(TLanguageToken), typeof(TToken), control,
-            new Evaluator<TLanguageToken, TToken>(new TRule()),
-            typeof(TRule).Assembly);
+            new Evaluator<TLanguageToken, TToken, TRule>(),
+            typeof(TRule).Assembly, expectedTokenSchemaDigest);
     }
 
     /// <summary>
@@ -69,12 +83,28 @@ public sealed class ControlTokenRuleDescriptor
     /// <summary>
     /// The value package (assembly) that holds the rule.
     /// </summary>
-    internal System.Reflection.Assembly ValuePackage { get; }
+    internal Assembly ValuePackage { get; }
 
     /// <summary>
     /// Identifies this registration in compilation caches.
     /// </summary>
     internal object CompilationIdentity { get; } = new();
+
+    internal void ValidateTokenSchema()
+    {
+        if (_expectedTokenSchemaDigest is { } expected && _evaluator.TokenSchemaDigest is { } actual)
+        {
+            if (!string.Equals(expected, actual, StringComparison.Ordinal))
+            {
+                throw new ThemeSchemaException(TokenSchemaDigests.Describe(
+                    ValuePackage.GetName().Name!, TokenType.Assembly.GetName().Name!, expected, actual)!);
+            }
+            return;
+        }
+
+        // Older or hand-written registrations can still declare their schema evidence on the assemblies.
+        TokenSchemaDigests.Validate(ValuePackage, TokenType.Assembly);
+    }
 
     internal void Apply(in DesignVariant variant, LanguageDesignToken language, AbstractControlDesignToken token,
         DesignToken global) =>
@@ -82,14 +112,21 @@ public sealed class ControlTokenRuleDescriptor
 
     private abstract class Evaluator
     {
+        internal abstract string? TokenSchemaDigest { get; }
+
         internal abstract void Apply(in DesignVariant variant, LanguageDesignToken language,
             AbstractControlDesignToken token, DesignToken global, ControlTokenIdentity control);
     }
 
-    private sealed class Evaluator<TLanguageToken, TToken>(IControlTokenRule<TLanguageToken, TToken> rule) : Evaluator
+    private sealed class Evaluator<TLanguageToken, TToken, TRule> : Evaluator
         where TLanguageToken : LanguageDesignToken
-        where TToken : AbstractControlDesignToken
+        where TToken : AbstractControlDesignToken, IControlToken
+        where TRule : class, IControlTokenRule<TLanguageToken, TToken>, new()
     {
+        private TRule? _rule;
+
+        internal override string? TokenSchemaDigest => TToken.TokenSchemaDigest;
+
         internal override void Apply(in DesignVariant variant, LanguageDesignToken language,
             AbstractControlDesignToken token, DesignToken global, ControlTokenIdentity control)
         {
@@ -100,6 +137,20 @@ public sealed class ControlTokenRuleDescriptor
                     $"not '{language.GetType().Name}' and '{token.GetType().Name}'.");
             }
 
+            // Registration needs only identity and type metadata. Cold controls may never evaluate their rule.
+            var rule = Volatile.Read(ref _rule);
+            if (rule is null)
+            {
+                lock (this)
+                {
+                    rule = _rule;
+                    if (rule is null)
+                    {
+                        rule = new TRule();
+                        Volatile.Write(ref _rule, rule);
+                    }
+                }
+            }
             rule.Apply(new TokenEvaluationContext<TLanguageToken>(variant, typedLanguage),
                 new ControlTokenTarget<TToken>(typed, global));
         }

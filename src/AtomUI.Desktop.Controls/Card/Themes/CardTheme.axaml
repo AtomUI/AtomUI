@@ -173,7 +173,7 @@
                 <Setter Property="Transitions">
                     <atom:TokenTransitions>
                         <Transitions>
-                            <atom:SolidColorBrushTransition Property="BorderBrush" atom:TokenTransitions.Duration="MotionDurationFast" />
+                            <atom:SolidColorBrushTransition Property="BorderBrush" atom:TokenTransitions.Duration="StateTransitionDurationFast" />
                         </Transitions>
                     </atom:TokenTransitions>
                 </Setter>
@@ -190,7 +190,7 @@
             <Setter Property="Transitions">
                 <atom:TokenTransitions>
                     <Transitions>
-                        <atom:BoxShadowsTransition Property="BoxShadow" atom:TokenTransitions.Duration="MotionDurationFast" />
+                        <atom:BoxShadowsTransition Property="BoxShadow" atom:TokenTransitions.Duration="StateTransitionDurationFast" />
                     </Transitions>
                 </atom:TokenTransitions>
             </Setter>

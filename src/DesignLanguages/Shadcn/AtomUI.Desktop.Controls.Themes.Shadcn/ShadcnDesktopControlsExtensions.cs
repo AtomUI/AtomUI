@@ -19,6 +19,7 @@ public static class ShadcnDesktopControlsExtensions
         ArgumentNullException.ThrowIfNull(language);
         language.AddCommonControls();
         GeneratedControlTokenRuleRegistration.Register(language.Theme);
+        PackageMetadata.Definition.Ensure(language.Root);
         return language;
     }
 }

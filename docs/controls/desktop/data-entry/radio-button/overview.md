@@ -44,7 +44,7 @@ RadioButton 的公共契约由 public/protected 类型成员、Avalonia 属性�
 | --- | --- | --- |
 | 内容与数据 | `Content`、`Icon`、`Items`、`ItemsSource`、`ItemTemplate` | 定义选项内容、图标、数据和模板入口。 |
 | 选择与集合 | `IsChecked`、`CheckedItem`、`SelectedIndex`、`SelectedItem` | 维护普通单选组和按钮式单选组的当前值。 |
-| 交互与状态 | `IsEnabled`、`IsMotionEnabled`、`IsWaveSpiritEnabled`、`ButtonStyle` | 表达可用性、动效和 Outline/Solid 状态视觉。 |
+| 交互与状态 | `IsEnabled`、`IsMotionEnabled`、`IsInteractionEffectEnabled`、`ButtonStyle` | 表达可用性、动效和 Outline/Solid 状态视觉。 |
 | 视觉与布局 | `Orientation`、`ItemSpacing`、`LineSpacing`、`SizeType`、`CornerRadius`、`BorderThickness` | 控制普通组排列、按钮组方向、尺寸和组合几何。 |
 
 `RadioButtonGroup.CheckedChanged` 通知普通组当前项变化；`OptionButtonGroup.OptionCheckedChanged` 通知按钮组选项进入 checked 状态。两者不互相代理，继承的选择和输入事件继续遵循 Avalonia 事件语义。

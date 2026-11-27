@@ -88,7 +88,7 @@ public class GalleryWorkspaceViewModelAppearanceTests
                      .WithAppearance(ThemeAppearance.Light)
                      .WithDensity(DesignDensity.Default)
                      .WithToken(nameof(SharedTokenKind.EnableMotion), "true")
-                     .WithToken(nameof(SharedTokenKind.EnableWaveSpirit), "true")
+                     .WithToken(nameof(SharedTokenKind.EnableInteractionEffect), "true")
                      .Build();
         await manager.ApplyThemeAsync(
             new ThemeRequest(

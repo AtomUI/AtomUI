@@ -151,13 +151,15 @@ public class MenuFlyout : Flyout, IScrollAwareControl
     /// Returns the drop-down open motion as the default <see cref="Flyout.OpenMotion" /> of the menu, where other
     /// flyouts start with the popover open motion.
     /// </summary>
-    internal override AbstractMotion GetDefaultOpenMotion() => PopupMotionDefaults.Create(PopupMotionDefaults.DropdownOpen);
+    internal override AbstractMotion GetDefaultOpenMotion() => PopupMotionDefaults.DropdownOpen;
+    internal override MotionSlot OpenMotionSlot => MotionSlot.DropdownOpen;
 
     /// <summary>
     /// Returns the drop-down close motion as the default <see cref="Flyout.CloseMotion" /> of the menu, where other
     /// flyouts start with the popover close motion.
     /// </summary>
-    internal override AbstractMotion GetDefaultCloseMotion() => PopupMotionDefaults.Create(PopupMotionDefaults.DropdownClose);
+    internal override AbstractMotion GetDefaultCloseMotion() => PopupMotionDefaults.DropdownClose;
+    internal override MotionSlot CloseMotionSlot => MotionSlot.DropdownClose;
 
     #endregion
 

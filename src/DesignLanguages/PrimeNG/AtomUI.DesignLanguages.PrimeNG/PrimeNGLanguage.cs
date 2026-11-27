@@ -62,6 +62,23 @@ public sealed class PrimeNGLanguage : DesignLanguage<PrimeNGToken>
     public override string Id => "PrimeNG";
 
     /// <summary>
+    /// The motion scheme for PrimeNG transitions and component animations.
+    /// </summary>
+    public override AtomUI.Animations.MotionScheme MotionScheme => Motions.Default;
+
+    private static class Motions
+    {
+        internal static readonly PrimeNGMotionScheme Default = new();
+    }
+
+    /// <summary>
+    /// Returns the default interaction effect for PrimeNG controls.
+    /// </summary>
+    public override AtomUI.Animations.InteractionEffect GetInteractionEffect(AtomUI.Theme.Schema.ControlTokenIdentity? owner,
+        in DesignVariant variant) =>
+        AtomUI.Animations.InteractionEffect.None;
+
+    /// <summary>
     /// The axes this language offers: the styles <see cref="Aura" />, <see cref="Lara" /> and <see cref="Nora" />,
     /// with <see cref="Aura" /> as the default, the default and the compact density, the desktop idiom, and
     /// <c>ColorPrimary</c> as the only adjustable seed, with the tokens that its derivation produces registered in
@@ -93,7 +110,6 @@ public sealed class PrimeNGLanguage : DesignLanguage<PrimeNGToken>
         seed.ColorSuccess     = Color.FromRgb(0x22, 0xC5, 0x5E);
         seed.ColorWarning     = Color.FromRgb(0xF9, 0x73, 0x16);
         seed.ColorInfo        = Color.FromRgb(0x0E, 0xA5, 0xE9);
-        seed.EnableWaveSpirit = false;
         seed.BorderRadius     = new CornerRadius(kind == PrimeNGPresetKind.Nora ? 2 : 6);
         seed.ControlHeight    = kind == PrimeNGPresetKind.Lara ? 39 : 35;
     }

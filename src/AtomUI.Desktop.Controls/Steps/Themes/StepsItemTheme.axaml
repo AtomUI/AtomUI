@@ -449,7 +449,7 @@
             <Setter Property="Transitions">
                 <atom:TokenTransitions>
                     <Transitions>
-                        <TransformOperationsTransition Property="RenderTransform" atom:TokenTransitions.Duration="MotionDurationMid" Easing="CubicEaseOut" />
+                        <TransformOperationsTransition Property="RenderTransform" atom:TokenTransitions.Duration="StateTransitionDuration" Easing="CubicEaseOut" atom:TokenTransitions.Easing="StateTransitionEasingOverride" />
                     </Transitions>
                 </atom:TokenTransitions>
             </Setter>
@@ -478,7 +478,7 @@
             <Setter Property="Transitions">
                 <atom:TokenTransitions>
                     <Transitions>
-                        <atom:SolidColorBrushTransition Property="Background" atom:TokenTransitions.Duration="MotionDurationMid" />
+                        <atom:SolidColorBrushTransition Property="Background" atom:TokenTransitions.Duration="StateTransitionDuration" />
                     </Transitions>
                 </atom:TokenTransitions>
             </Setter>

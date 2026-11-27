@@ -1,3 +1,4 @@
+using AtomUI.Animations;
 using AtomUI.Controls;
 using AtomUI.Icons.AntDesign;
 using Avalonia;
@@ -65,6 +66,18 @@ public partial class MessageCard : TemplatedControl, IMotionAwareControl, IFeedb
     /// </summary>
     public static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<MessageCard>();
+
+    /// <summary>
+    /// Identifies the <see cref="EnterMotion" /> property.
+    /// </summary>
+    public static readonly StyledProperty<AbstractMotion?> EnterMotionProperty =
+        AvaloniaProperty.Register<MessageCard, AbstractMotion?>(nameof(EnterMotion));
+
+    /// <summary>
+    /// Identifies the <see cref="LeaveMotion" /> property.
+    /// </summary>
+    public static readonly StyledProperty<AbstractMotion?> LeaveMotionProperty =
+        AvaloniaProperty.Register<MessageCard, AbstractMotion?>(nameof(LeaveMotion));
 
     /// <summary>
     /// Defines the <see cref="BoxShadow" /> property. The card frame projects it onto the template's
@@ -149,6 +162,24 @@ public partial class MessageCard : TemplatedControl, IMotionAwareControl, IFeedb
     }
 
     /// <summary>
+    /// The entry motion. An explicit null disables this direction.
+    /// </summary>
+    public AbstractMotion? EnterMotion
+    {
+        get => GetValue(EnterMotionProperty);
+        set => SetValue(EnterMotionProperty, value);
+    }
+
+    /// <summary>
+    /// The exit motion. An explicit null disables this direction.
+    /// </summary>
+    public AbstractMotion? LeaveMotion
+    {
+        get => GetValue(LeaveMotionProperty);
+        set => SetValue(LeaveMotionProperty, value);
+    }
+
+    /// <summary>
     /// Gets or sets the shadow painted on the card frame.
     /// </summary>
     public BoxShadows BoxShadow
@@ -205,7 +236,7 @@ public partial class MessageCard : TemplatedControl, IMotionAwareControl, IFeedb
     
     public MessageCard()
     {
-        _motionCoordinator = new FeedbackCardMotionCoordinator(CompleteCloseMotion);
+        _motionCoordinator = new FeedbackCardMotionCoordinator(CompleteCloseMotion, SelectMotion);
     }
     
     /// <summary>
@@ -361,6 +392,9 @@ public partial class MessageCard : TemplatedControl, IMotionAwareControl, IFeedb
         base.OnAttachedToVisualTree(e);
         ApplyMotionTarget();
     }
+
+    private AbstractMotion? SelectMotion(bool entering) => ComponentMotionSelection.Resolve(this,
+        entering ? EnterMotionProperty : LeaveMotionProperty, entering ? MotionSlot.MessageEnter : MotionSlot.MessageLeave);
 
     private void ApplyMotionTarget()
     {

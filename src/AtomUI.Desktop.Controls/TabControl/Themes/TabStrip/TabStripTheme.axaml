@@ -187,11 +187,11 @@
             </Style>
         </Style>
 
-        <Style Selector="^[IsMotionEnabled=True]">
+        <Style Selector="^[IsMotionEnabled=True][IndicatorMotionMode=Slide]">
             <Setter Property="Transitions">
                 <atom:TokenTransitions>
                     <Transitions>
-                        <TransformOperationsTransition Property="SelectedIndicatorRenderTransform" atom:TokenTransitions.Duration="MotionDurationSlow" Easing="CubicEaseOut" />
+                        <TransformOperationsTransition Property="SelectedIndicatorRenderTransform" atom:TokenTransitions.Duration="StateTransitionDurationSlow" Easing="CubicEaseOut" atom:TokenTransitions.Easing="StateTransitionEasingOverride" />
                     </Transitions>
                 </atom:TokenTransitions>
             </Setter>

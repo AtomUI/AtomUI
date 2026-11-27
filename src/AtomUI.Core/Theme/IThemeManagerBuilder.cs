@@ -1,3 +1,4 @@
+using AtomUI.Controls;
 using AtomUI.Theme.Configuration;
 using AtomUI.Theme.Definitions;
 using AtomUI.Theme.Definitions.Compiled;
@@ -59,6 +60,20 @@ public interface IThemeManagerBuilder
     /// and control are rejected when the theme schema registry is built.
     /// </summary>
     IThemeManagerBuilder AddControlTokenRules(IEnumerable<ControlTokenRuleDescriptor> rules);
+
+    /// <summary>
+    /// Queues generated rule metadata for package preparation rather than configuration.
+    /// </summary>
+    void AddDeferredControlTokenRules(Action<IThemeManagerBuilder> register) => register(this);
+
+    /// <summary>
+    /// Registers a generated implementation for a control and a design language.
+    /// </summary>
+    void AddControlBehavior(ControlBehaviorDescriptor behavior)
+    {
+        throw new NotSupportedException("This builder does not support language behavior contributions.");
+    }
+
     /// <summary>
     /// Registers a control package: its control and semantic part descriptors, its control themes provider and its
     /// theme resources.

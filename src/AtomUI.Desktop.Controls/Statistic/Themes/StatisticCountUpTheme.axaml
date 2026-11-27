@@ -17,7 +17,7 @@
             <Setter Property="Transitions">
                 <atom:TokenTransitions>
                     <Transitions>
-                        <DoubleTransition Property="AnimatingValue" atom:TokenTransitions.Duration="MotionDurationVerySlow" Easing="ExponentialEaseOut" />
+                        <DoubleTransition Property="AnimatingValue" atom:TokenTransitions.Duration="MotionDurationVerySlow" Easing="ExponentialEaseOut" atom:TokenTransitions.Easing="StateTransitionEasingOverride" />
                     </Transitions>
                 </atom:TokenTransitions>
             </Setter>

@@ -80,7 +80,7 @@ Public API / ItemsSource / Command / Event
 
 - 内容与数据：`CheckedItem`、`DotSizeValue`、`ItemSpacing`。
 - 选择与集合：`IsChecked`。
-- 交互与状态：`IsMotionEnabled`、`IsWaveSpiritEnabled`。
+- 交互与状态：`IsMotionEnabled`、`IsInteractionEffectEnabled`。
 - 视觉与布局：`DotPadding`、`LineSpacing`、`Orientation`、`PaddingInline`、`Background`、`BorderBrush`、`BorderThickness`、`RadioDotEffectSize`、`RadioInnerBackground`、`RadioSize`。
 - OptionButtonGroup：`SelectedIndex` / `SelectedItem` 持有按钮组选中值，`Orientation` 持有排列与组合方向，`ButtonStyle` 持有 Outline/Solid 状态视觉。
 

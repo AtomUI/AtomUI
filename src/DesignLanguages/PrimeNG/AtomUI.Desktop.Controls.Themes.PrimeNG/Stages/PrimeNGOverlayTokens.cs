@@ -47,7 +47,7 @@ internal static class PrimeNGFlyoutHostTokens
 {
     internal static void EvaluateGlobal(in TokenEvaluationContext<PrimeNGToken> context, DesignToken controlGlobal)
     {
-        PrimeNGMotion.Restore(context, controlGlobal, mid: PrimeNGMotion.AnchoredOverlay);
+        controlGlobal.MotionDurationMid = PrimeNGMotion.AnchoredOverlay;
     }
     internal static void EvaluateOwn(in TokenEvaluationContext<PrimeNGToken> context, DesignToken effectiveGlobal, FlyoutHostToken token)
     {
@@ -75,7 +75,7 @@ internal static class PrimeNGPopupTokens
 {
     internal static void EvaluateGlobal(in TokenEvaluationContext<PrimeNGToken> context, DesignToken controlGlobal)
     {
-        PrimeNGMotion.Restore(context, controlGlobal, mid: PrimeNGMotion.AnchoredOverlay);
+        controlGlobal.MotionDurationMid = PrimeNGMotion.AnchoredOverlay;
     }
     internal static void EvaluateOwn(in TokenEvaluationContext<PrimeNGToken> context, DesignToken effectiveGlobal, PopupToken token)
     {

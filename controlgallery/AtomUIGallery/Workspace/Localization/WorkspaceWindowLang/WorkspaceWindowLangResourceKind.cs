@@ -21,7 +21,10 @@ public enum WorkspaceWindowLangResourceKind
     MenuItemFollowSystem,
     MenuItemCompactMode,
     MenuItemEnableMotion,
-    MenuItemEnableWaveSpirit,
+    /// <summary>
+    /// Menu label for toggling transient interaction feedback effects.
+    /// </summary>
+    MenuItemEnableInteractionEffect,
     MenuItemDesignLanguage,
     MenuItemBrandColor,
     MenuItemBrandColorReset,

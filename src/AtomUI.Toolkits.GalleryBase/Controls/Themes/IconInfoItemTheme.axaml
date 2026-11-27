@@ -84,7 +84,7 @@
                 <atom:TokenTransitions>
                     <Transitions>
                         <atom:SolidColorBrushTransition Property="Background"
-                                                        atom:TokenTransitions.Duration="MotionDurationMid" />
+                                                        atom:TokenTransitions.Duration="StateTransitionDuration" />
                     </Transitions>
                 </atom:TokenTransitions>
             </Setter>

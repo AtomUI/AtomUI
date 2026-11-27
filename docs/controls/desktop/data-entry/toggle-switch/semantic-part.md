@@ -11,13 +11,13 @@ ToggleSwitch 主控件公开 `root`、`content` 与 `indicator` 三个职责区�
 对应开关内部 on/off 内容区域，由模板中的两个 `ContentPresenter`（`PART_OnContentPresenter` 与
 `PART_OffContentPresenter`）承载。
 
-`AbstractToggleSwitch`、`SwitchKnob` 与 `WaveSpiritDecorator` 均不持有独立 Semantic descriptor：
+`AbstractToggleSwitch`、`SwitchKnob` 与 `SwitchTrack` 均不持有独立 Semantic descriptor：
 
 - 上游 Switch 只提供一个 owner 的 Semantic DOM（`root` / `content` / `indicator`），`AbstractToggleSwitch` 是跨平台共享
   基类，不是对应用公开的独立 owner，因此不为它声明 descriptor。
 - `SwitchKnob` 是 internal 类型，不能作为公共 descriptor owner；其把手职责通过 `ToggleSwitch` 的 `indicator` Part 对外
   公开，并以 `TemplatedControl` 作为最低 ContractType。
-- `WaveSpiritDecorator` 是 checked 变化时的视觉反馈 actor，不是用户可定制的公共区域，不公开 Part。
+- `SwitchTrack` 通过根控件的轨道属性取值。
 
 因此本控件的 Semantic Part 只由 `ToggleSwitch` owner 公开。
 
@@ -39,7 +39,7 @@ ToggleSwitch 主控件公开 `root`、`content` 与 `indicator` 三个职责区�
 | RuntimeCreated | `false` |
 | AtomUI 节点 | ToggleSwitch owner |
 | 职责 | ToggleSwitch root 是开关值、状态、内容与根视觉样式的统一 owner。 |
-| 相关 API | `IsChecked`、`GrooveBackground`、`OnContent`、`OffContent`、`OnContentTemplate`、`OffContentTemplate`、`SizeType`、`IsLoading`、`IsMotionEnabled`、`IsWaveSpiritEnabled`、`TrackHeight`、`TrackMinWidth`、`TrackPadding`、`KnobSize` |
+| 相关 API | `IsChecked`、`GrooveBackground`、`OnContent`、`OffContent`、`OnContentTemplate`、`OffContentTemplate`、`SizeType`、`IsLoading`、`IsMotionEnabled`、`IsInteractionEffectEnabled`、`TrackHeight`、`TrackMinWidth`、`TrackPadding`、`KnobSize` |
 | 相关 Token | ToggleSwitchToken、SharedToken |
 | 稳定性 | stable since 6.2.0 |
 
@@ -97,7 +97,7 @@ ToggleSwitch 主控件公开 `root`、`content` 与 `indicator` 三个职责区�
 
 它负责：
 
-- 承载 `IsChecked`、`OnContent`、`OffContent`、`SizeType`、`IsLoading`、`IsMotionEnabled`、`IsWaveSpiritEnabled` 等公共状态。
+- 承载 `IsChecked`、`OnContent`、`OffContent`、`SizeType`、`IsLoading`、`IsMotionEnabled`、`IsInteractionEffectEnabled` 等公共状态。
 - 承载 `:checked`、`:unchecked`、`:indeterminate`（`IsChecked` 为 `null`）、`:pointerover`、`:pressed`、`:disabled` 等伪类。
 - 提供轨道背景（`GrooveBackground`）、整体前景色（`Foreground`）、对齐、光标和整体透明度等根视觉属性。
 - 承载轨道与把手的几何属性 `TrackHeight`、`TrackMinWidth`、`TrackPadding`、`KnobSize`，对应 antd Switch `ComponentToken`
@@ -110,8 +110,7 @@ ToggleSwitch 主控件公开 `root`、`content` 与 `indicator` 三个职责区�
 覆盖时作用于同一属性。几何属性允许负的 `TrackPadding`：此时把手按 `TrackPadding` 偏移出轨道边界，用于复刻 MUI 一类
 "把手大于轨道、越界外露"的开关形态（见 [§3 Selector 用法](#3-selector-用法) 的示例）。
 
-root 不表示模板中的 `PART_MainContainer`（`Canvas`）、`PART_WaveSpirit` 或任何内部节点；这些节点的名称、数量和层级不
-属于 root 契约。轨道胶囊本身由 owner 的 `Render` 直接绘制，不是独立的模板节点。
+root 表示开关本体。默认模板的 `SwitchTrack` 绑定轨道绘制属性，独立模板可以改用自己的轨道呈现。
 
 ### 2.2 content
 
@@ -257,7 +256,7 @@ ToggleSwitch 实现 `ICustomizableSizeTypeAware`，`SizeType` 支持 `Middle`、
 
 - 轨道胶囊的绘制（owner `Render` 的 `DrawPilledRect`）与 `GrooveBackground` 状态映射。
 - 把手几何尺寸之外的内部状态：loading 指示 arc 的旋转角度、几何与 `SwitchKnob` 内部状态；把手几何尺寸（`KnobSize`）与位置基准（`TrackPadding`）经 root 公开属性定制，把手阴影经 `.semantic-indicator` 的 `Effect` 覆盖。
-- `WaveSpiritDecorator` 的 checked 变化波纹 actor。
+- 激活反馈的临时装饰视觉。
 - 用户 `OnContent` / `OffContent` 模板生成的子树。
 - `PART_*` 名称、internal 类型、状态转换器和 motion phase。
 

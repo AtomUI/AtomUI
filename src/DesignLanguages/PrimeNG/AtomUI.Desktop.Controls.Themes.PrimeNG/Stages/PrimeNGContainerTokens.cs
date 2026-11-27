@@ -19,7 +19,7 @@ internal static class PrimeNGTabStage
     internal static void ApplyGlobal(in TokenEvaluationContext<PrimeNGToken> context, DesignToken controlGlobal)
     {
         // The ink bar slides over 250ms in every preset (tabs: width / inset 250ms); the tab colors stay instant.
-        PrimeNGMotion.Restore(context, controlGlobal, slow: PrimeNGMotion.TabsInkBar);
+        controlGlobal.MotionDurationSlow = PrimeNGMotion.TabsInkBar;
         // tablist.border.color is content.border.color; Lara has none.
         controlGlobal.ColorBorderSecondary = context.Variant.Style == PrimeNGLanguage.Lara
             ? Colors.Transparent
@@ -80,7 +80,7 @@ internal static class PrimeNGCollapseTokens
 {
     internal static void EvaluateGlobal(in TokenEvaluationContext<PrimeNGToken> context, DesignToken controlGlobal)
     {
-        PrimeNGMotion.Restore(context, controlGlobal, slow: PrimeNGMotion.Collapsible);
+        controlGlobal.MotionDurationSlow = PrimeNGMotion.Collapsible;
         controlGlobal.ColorBorder = context.Language.GetContentBorder(context.Variant);
     }
     internal static void EvaluateOwn(in TokenEvaluationContext<PrimeNGToken> context, DesignToken effectiveGlobal, CollapseToken token)
@@ -118,7 +118,7 @@ internal static class PrimeNGExpanderTokens
 {
     internal static void EvaluateGlobal(in TokenEvaluationContext<PrimeNGToken> context, DesignToken controlGlobal)
     {
-        PrimeNGMotion.Restore(context, controlGlobal, slow: PrimeNGMotion.Collapsible);
+        controlGlobal.MotionDurationSlow = PrimeNGMotion.Collapsible;
         controlGlobal.ColorBorder = context.Language.GetContentBorder(context.Variant);
     }
     internal static void EvaluateOwn(in TokenEvaluationContext<PrimeNGToken> context, DesignToken effectiveGlobal, ExpanderToken token)

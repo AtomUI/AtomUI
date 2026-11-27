@@ -6,6 +6,8 @@
     x:ClassModifier="internal">
     <atom:StringToSelectableTextBlockConverter x:Key="StringToSelectableTextBlockConverter" />
     <ControlTheme x:Key="{x:Type atom:NotificationCard}" TargetType="atom:NotificationCard">
+        <Setter Property="EnterMotion" Value="{atom:MotionResource NotificationEnter}" />
+        <Setter Property="LeaveMotion" Value="{atom:MotionResource NotificationLeave}" />
         <Setter Property="Template">
             <ControlTemplate>
                 <!-- Card template: a flow content area on top with icon + title/description, and an optional actions
@@ -94,14 +96,14 @@
             <atom:TokenTransitions>
                 <Transitions>
                     <TransformOperationsTransition Property="RenderTransform"
-                                                   atom:TokenTransitions.Duration="MotionDurationMid"
-                                                   Easing="0.645,0.045,0.355,1" />
+                                                   atom:TokenTransitions.Duration="StateTransitionDuration"
+                                                   atom:TokenTransitions.Easing="MotionEaseInOut" />
                     <DoubleTransition Property="Opacity"
-                                      atom:TokenTransitions.Duration="MotionDurationMid"
-                                      Easing="0.645,0.045,0.355,1" />
+                                      atom:TokenTransitions.Duration="StateTransitionDuration"
+                                      atom:TokenTransitions.Easing="MotionEaseInOut" />
                     <DoubleTransition Property="{x:Static atom:FeedbackStackPanel.StackClipProgressProperty}"
-                                      atom:TokenTransitions.Duration="MotionDurationMid"
-                                      Easing="0.645,0.045,0.355,1" />
+                                      atom:TokenTransitions.Duration="StateTransitionDuration"
+                                      atom:TokenTransitions.Easing="MotionEaseInOut" />
                 </Transitions>
             </atom:TokenTransitions>
         </Setter>

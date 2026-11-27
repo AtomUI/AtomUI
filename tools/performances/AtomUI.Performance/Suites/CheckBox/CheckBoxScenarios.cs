@@ -38,7 +38,7 @@ internal static partial class Program
             new PerfScenario("CheckBox.NoWave", _ => new AtomUI.Desktop.Controls.CheckBox
             {
                 Content             = "NoWave",
-                IsWaveSpiritEnabled = false
+                IsInteractionEffectEnabled = false
             }),
             new PerfScenario("CheckBoxGroup.Static3", _ => CreateStaticCheckBoxGroup()),
             new PerfScenario("CheckBoxGroup.ItemsSource3", _ => CreateItemsSourceCheckBoxGroup()),

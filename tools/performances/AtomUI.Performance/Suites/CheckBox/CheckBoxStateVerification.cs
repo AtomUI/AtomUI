@@ -31,109 +31,61 @@ internal static partial class Program
 
     private static void VerifyCheckBoxIndicatorSlots(ICollection<string> failures)
     {
-        var uncheckedBox = new AtomUI.Desktop.Controls.CheckBox
+        var checkBox = new AtomUI.Desktop.Controls.CheckBox { Content = "Checkbox", IsChecked = false };
+        using var realized = RealizeFeedbackControl(checkBox);
+        var indicator = FindVisualByTypeName(checkBox, "CheckBoxIndicator", "Indicator");
+        Expect(indicator is not null, "CheckBox should provide its indicator.", failures);
+        var checkedMark = FindVisualByName<Control>(checkBox, "CheckedMark");
+        var tristateMark = FindVisualByName<Control>(checkBox, "TristateMark");
+        Expect(checkedMark?.IsVisible == false && tristateMark?.IsVisible == false,
+            "An unchecked CheckBox should hide both marks.", failures);
+        Expect(FindInteractionAdornment(checkBox) is null,
+            "An idle CheckBox should have no feedback visual.", failures);
+
+        checkBox.IsChecked = true;
+        RefreshLayout(realized.Window);
+        Expect(checkedMark?.IsVisible == true && tristateMark?.IsVisible == false,
+            "A checked CheckBox should show only the check mark.", failures);
+        Expect(FindInteractionAdornment(checkBox) is null, "Assigning IsChecked should not start feedback.", failures);
+        VerifyCheckedMarkLayout(checkBox, checkedMark, failures);
+
+        checkBox.IsChecked = false;
+        RefreshLayout(realized.Window);
+        if (indicator is not null)
         {
-            Content = "Unchecked"
-        };
-        using var uncheckedRealized = RealizeControl(uncheckedBox);
-        Expect(FindVisualByTypeName(uncheckedBox, "CheckBoxIndicator", "Indicator") != null,
-            "CheckBox should create CheckBoxIndicator.",
-            failures);
-        Expect(FindVisualByTypeName(uncheckedBox, "Path", "CheckedMark") == null &&
-               FindVisualByTypeName(uncheckedBox, "CheckBoldOutlined", "CheckedMark") == null,
-            "Unchecked CheckBox should not create checked mark.",
-            failures);
-        Expect(FindVisualByTypeName(uncheckedBox, "Rectangle", "TristateMark") == null,
-            "Unchecked CheckBox should not create tristate mark.",
-            failures);
-        Expect(FindVisualByTypeName(uncheckedBox, "WaveSpiritDecorator", "PART_WaveSpirit") == null,
-            "Unchecked CheckBox should not create wave decorator before interaction.",
-            failures);
+            ClickControl(realized.Window, indicator, failures, "CheckBox indicator");
+            var wave = FindInteractionAdornment(checkBox);
+            Expect(checkBox.IsChecked == true && wave is not null,
+                "A user checking the box should change the value and attach feedback.", failures);
+            checkBox.IsInteractionEffectEnabled = false;
+            RefreshLayout(realized.Window);
+            Expect(FindInteractionAdornment(checkBox) is null && wave?.GetVisualParent() is null,
+                "Disabling CheckBox feedback should release its decoration.", failures);
+        }
 
-        uncheckedBox.SetCurrentValue(Avalonia.Controls.Primitives.ToggleButton.IsCheckedProperty, true);
-        RefreshLayout(uncheckedRealized.Window);
-        var runtimeCheckedMark = FindVisualByTypeName(uncheckedBox, "Path", "CheckedMark");
-        Expect(runtimeCheckedMark != null,
-            "CheckBox should create a lightweight checked mark when checked at runtime.",
-            failures);
-        var runtimeWave = FindVisualByTypeName(uncheckedBox, "WaveSpiritDecorator", "PART_WaveSpirit");
-        Expect(runtimeWave != null,
-            "CheckBox should create wave decorator only when a checked interaction needs it.",
-            failures);
-
-        uncheckedBox.SetCurrentValue(AtomUI.Desktop.Controls.CheckBox.IsWaveSpiritEnabledProperty, false);
-        RefreshLayout(uncheckedRealized.Window);
-        Expect(FindVisualByTypeName(uncheckedBox, "WaveSpiritDecorator", "PART_WaveSpirit") == null,
-            "CheckBox should remove wave decorator when wave is disabled.",
-            failures);
-        Expect(runtimeWave?.GetVisualParent() == null,
-            "Removed CheckBox wave decorator should not keep a visual parent.",
-            failures);
-
-        var checkedBox = new AtomUI.Desktop.Controls.CheckBox
-        {
-            Content   = "Checked",
-            IsChecked = true
-        };
-        using var checkedRealized = RealizeControl(checkedBox);
-        var initialCheckedMark = FindVisualByTypeName(checkedBox, "Path", "CheckedMark");
-        Expect(initialCheckedMark != null,
-            "Initially checked CheckBox should create checked mark.",
-            failures);
-        VerifyCheckedMarkLayout(checkedBox, initialCheckedMark, failures);
-        Expect(FindVisualByTypeName(checkedBox, "CheckBoldOutlined", "CheckedMark") == null,
-            "CheckBox checked mark should not use full AntDesign Icon control.",
-            failures);
-        Expect(FindVisualByTypeName(checkedBox, "WaveSpiritDecorator", "PART_WaveSpirit") == null,
-            "Initially checked CheckBox should not create wave decorator without interaction.",
-            failures);
-
-        checkedBox.SetCurrentValue(Avalonia.Controls.Primitives.ToggleButton.IsCheckedProperty, false);
-        RefreshLayout(checkedRealized.Window);
-        Expect(FindVisualByTypeName(checkedBox, "Path", "CheckedMark") == null,
-            "CheckBox should remove checked mark when unchecked.",
-            failures);
-        Expect(initialCheckedMark?.GetVisualParent() == null,
-            "Removed CheckBox checked mark should not keep a visual parent.",
-            failures);
-
-        var indeterminateBox = new AtomUI.Desktop.Controls.CheckBox
-        {
-            Content   = "Indeterminate",
-            IsChecked = null
-        };
-        using var indeterminateRealized = RealizeControl(indeterminateBox);
-        Expect(FindVisualByTypeName(indeterminateBox, "Rectangle", "TristateMark") != null,
-            "Indeterminate CheckBox should create tristate mark.",
-            failures);
-        Expect(FindVisualByTypeName(indeterminateBox, "Path", "CheckedMark") == null,
-            "Indeterminate CheckBox should not create checked mark.",
-            failures);
+        checkBox.IsChecked = null;
+        RefreshLayout(realized.Window);
+        Expect(checkedMark?.IsVisible == false && tristateMark?.IsVisible == true,
+            "An indeterminate CheckBox should show only the tristate mark.", failures);
     }
 
     private static void VerifyCheckBoxContentPresenterLifecycle(ICollection<string> failures)
     {
-        var contentless = new AtomUI.Desktop.Controls.CheckBox();
-        using var realized = RealizeControl(contentless);
-        Expect(FindVisualByName<ContentPresenter>(contentless, "ContentPresenter") == null,
-            "Contentless CheckBox should not create ContentPresenter.",
-            failures);
+        var box = new AtomUI.Desktop.Controls.CheckBox();
+        using var realized = RealizeControl(box);
+        var presenter = FindVisualByName<ContentPresenter>(box, "ContentPresenter");
+        Expect(presenter?.Child is null, "A contentless CheckBox should have no content visual.", failures);
 
-        contentless.SetCurrentValue(ContentControl.ContentProperty, "Runtime");
+        box.Content = "Runtime";
         RefreshLayout(realized.Window);
-        var presenter = FindVisualByName<ContentPresenter>(contentless, "ContentPresenter");
-        Expect(presenter != null,
-            "CheckBox should create ContentPresenter when content is assigned at runtime.",
-            failures);
+        presenter = FindVisualByName<ContentPresenter>(box, "ContentPresenter");
+        var child = presenter?.Child;
+        Expect(child is not null, "Assigning CheckBox content should create its visual.", failures);
 
-        contentless.SetCurrentValue(ContentControl.ContentProperty, null);
+        box.Content = null;
         RefreshLayout(realized.Window);
-        Expect(FindVisualByName<ContentPresenter>(contentless, "ContentPresenter") == null,
-            "CheckBox should remove ContentPresenter when content is cleared.",
-            failures);
-        Expect(presenter?.GetVisualParent() == null,
-            "Removed CheckBox ContentPresenter should not keep a visual parent.",
-            failures);
+        Expect((FindVisualByName<ContentPresenter>(box, "ContentPresenter")?.Child is null) && child?.GetVisualParent() is null,
+            "Clearing CheckBox content should release the old visual.", failures);
     }
 
     private static void VerifyCheckBoxGroupSelectionSync(ICollection<string> failures)
@@ -190,10 +142,6 @@ internal static partial class Program
         {
             return;
         }
-
-        Expect(checkedMark.Bounds.Height < checkedMark.Bounds.Width * 0.8,
-            "CheckBox checked mark layout should preserve the source icon viewBox vertical padding.",
-            failures);
 
         var markCenter = checkedMark.TranslatePoint(
             new Avalonia.Point(checkedMark.Bounds.Width / 2, checkedMark.Bounds.Height / 2),

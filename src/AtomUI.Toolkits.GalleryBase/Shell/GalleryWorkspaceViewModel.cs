@@ -56,7 +56,7 @@ public class GalleryWorkspaceViewModel : ReactiveObject, IScreen, IDisposable
     private bool _isCompact;
     private bool _isMotionEnabled = true;
     private bool _isWaveSpiritEnabled = true;
-    // A theme may declare EnableMotion/EnableWaveSpirit explicitly (the Shadcn styles declare no wave spirit).
+    // A theme may declare EnableMotion/EnableInteractionEffect explicitly (the Shadcn styles declare no wave spirit).
     // Until the user touches the toggles, the declaration wins; an explicit user choice then overrides it.
     private bool _motionTouched;
     private bool _waveSpiritTouched;
@@ -604,7 +604,7 @@ public class GalleryWorkspaceViewModel : ReactiveObject, IScreen, IDisposable
         }
         if (_waveSpiritTouched)
         {
-            selection = selection.WithSeed(nameof(SharedTokenKind.EnableWaveSpirit), _isWaveSpiritEnabled ? "true" : "false");
+            selection = selection.WithSeed(nameof(SharedTokenKind.EnableInteractionEffect), _isWaveSpiritEnabled ? "true" : "false");
         }
 
         var result = await _themeManager.ApplyAsync(selection);
@@ -762,7 +762,7 @@ public class GalleryWorkspaceViewModel : ReactiveObject, IScreen, IDisposable
         }
 
         // Read the applied snapshot, not the request config: a declaration that was not overridden (Shadcn's
-        // EnableWaveSpirit=false) lives in the definition, so only the snapshot tells what actually rendered.
+        // EnableInteractionEffect=false) lives in the definition, so only the snapshot tells what actually rendered.
         ThemeSnapshot? snapshot = null;
         if (_themeManager is ThemeManager concreteManager)
         {
@@ -778,14 +778,14 @@ public class GalleryWorkspaceViewModel : ReactiveObject, IScreen, IDisposable
             _isMotionEnabled = ReadBooleanToken(config, nameof(SharedTokenKind.EnableMotion), true);
         }
         if (snapshot is not null &&
-            snapshot.Registry.TryGetGlobalToken(nameof(SharedTokenKind.EnableWaveSpirit), out var waveToken))
+            snapshot.Registry.TryGetGlobalToken(nameof(SharedTokenKind.EnableInteractionEffect), out var waveToken))
         {
             _isWaveSpiritEnabled = _isMotionEnabled && snapshot.GlobalTokenValues.Get<bool>(waveToken.Slot);
         }
         else
         {
             _isWaveSpiritEnabled = _isMotionEnabled &&
-                                   ReadBooleanToken(config, nameof(SharedTokenKind.EnableWaveSpirit), true);
+                                   ReadBooleanToken(config, nameof(SharedTokenKind.EnableInteractionEffect), true);
         }
     }
 

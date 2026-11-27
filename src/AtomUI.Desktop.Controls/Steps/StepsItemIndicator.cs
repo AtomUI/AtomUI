@@ -1,3 +1,4 @@
+using AtomUI.Animations;
 using AtomUI.Controls;
 using AtomUI.Controls.Primitives;
 using AtomUI.Desktop.Controls.DesignTokens;
@@ -67,13 +68,13 @@ internal class StepsItemIndicator : TemplatedControl
 
     #region 内部属性定义
 
-    internal static readonly StyledProperty<bool> IsWaveSpiritEnabledProperty =
-        WaveSpiritAwareControlProperty.IsWaveSpiritEnabledProperty.AddOwner<StepsItemIndicator>();
+    internal static readonly StyledProperty<bool> IsInteractionEffectEnabledProperty =
+        InteractionEffectAwareControlProperty.IsInteractionEffectEnabledProperty.AddOwner<StepsItemIndicator>();
 
-    internal bool IsWaveSpiritEnabled
+    internal bool IsInteractionEffectEnabled
     {
-        get => GetValue(IsWaveSpiritEnabledProperty);
-        set => SetValue(IsWaveSpiritEnabledProperty, value);
+        get => GetValue(IsInteractionEffectEnabledProperty);
+        set => SetValue(IsInteractionEffectEnabledProperty, value);
     }
 
     internal static readonly DirectProperty<StepsItemIndicator, int> StepNumberProperty =
@@ -225,7 +226,6 @@ internal class StepsItemIndicator : TemplatedControl
 
     #endregion
 
-    private WaveSpiritDecorator? _waveSpiritDecorator;
     private IPen? _progressGroovePen;
     private IPen? _progressPen;
     private static readonly object s_progressGrooveKey = StepsTokenKind.ProgressGrooveColor;
@@ -233,7 +233,6 @@ internal class StepsItemIndicator : TemplatedControl
     private OwnerTokenSet? _progressPaintTokens;
     private (IBrush? Groove, IBrush? Track) _progressPaint;
 
-    internal bool IsWavePlaying => _waveSpiritDecorator?.IsPlaying == true;
 
     static StepsItemIndicator()
     {
@@ -250,20 +249,15 @@ internal class StepsItemIndicator : TemplatedControl
             UseLayoutRoundingProperty);
     }
 
-    internal void PlayWave()
+    internal void PlayInteractionEffect(InteractionEffectInputSource input, Point? origin)
     {
-        if (Type == StepsType.OutlineDot ||
-            !IsEnabled ||
-            !IsMotionEnabled ||
-            !IsWaveSpiritEnabled ||
-            !IsLoaded ||
-            _waveSpiritDecorator is null)
+        if (Type != StepsType.OutlineDot && IsEffectivelyEnabled && IsMotionEnabled && IsInteractionEffectEnabled && IsLoaded)
         {
-            return;
+            InteractionEffectHost.Activate(this, AntDesignWaveEffect.Default, input, origin, CornerRadius,
+                AntDesignWaveEffect.ResolveBrush(BorderBrush, Foreground));
         }
-
-        _waveSpiritDecorator.Play();
     }
+
 
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
@@ -331,13 +325,6 @@ internal class StepsItemIndicator : TemplatedControl
         _ when ReferenceEquals(value, BindingOperations.DoNothing) => previous,
         _ => null
     };
-
-    protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
-    {
-        _waveSpiritDecorator = null;
-        base.OnApplyTemplate(e);
-        _waveSpiritDecorator = e.NameScope.Find<WaveSpiritDecorator>(WaveSpiritDecorator.WaveSpiritPart);
-    }
 
     public override void Render(DrawingContext context)
     {

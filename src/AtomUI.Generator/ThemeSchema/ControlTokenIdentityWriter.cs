@@ -5,14 +5,14 @@ namespace AtomUI.Generator;
 /// <summary>
 /// Emits the <c>IControlToken</c> half of every terminal control token class bound to a control, exactly once per
 /// class: <c>ControlIdentity</c> returns the identity held by the generated <c>&lt;Control&gt;Tokens</c> class.
-/// The member is implemented explicitly, so the public surface of the token class does not change.
+/// The identity and schema digest are implemented explicitly, so the public surface of the token class does not change.
 /// </summary>
 internal static class ControlTokenIdentityWriter
 {
     private const string InterfaceType = "global::AtomUI.Theme.DesignTokens.IControlToken";
     private const string IdentityType = "global::AtomUI.Theme.Schema.ControlTokenIdentity";
 
-    internal static void Write(GenerationOutput context, IReadOnlyList<ControlTokenBinding> bindings)
+    internal static void Write(GenerationOutput context, IReadOnlyList<ControlTokenBinding> bindings, string? schemaDigest)
     {
         var emitted = bindings.Where(static binding => binding.Emit).ToArray();
         if (emitted.Length == 0)
@@ -34,6 +34,11 @@ internal static class ControlTokenIdentityWriter
                 source.AppendLine("    {");
                 source.Append("        static ").Append(IdentityType).Append(' ').Append(InterfaceType)
                       .Append(".ControlIdentity => ").Append(binding.TokensTypeName).AppendLine(".Identity;");
+                if (schemaDigest is not null)
+                {
+                    source.Append("        static string ").Append(InterfaceType)
+                          .Append(".TokenSchemaDigest => ").Append(ThemeBuildContracts.Literal(schemaDigest)).AppendLine(";");
+                }
                 source.AppendLine("    }");
             }
             source.AppendLine("}");

@@ -20,7 +20,7 @@ ComboBox 自身就是职责完整、可独立定制的 public owner：
 因此本契约的区域分组与命名**参考**上游 `Select` 已公开的 `classNames` / `styles` 分组（`prefix` / `suffix` /
 `placeholder` / `input` / `popup` 等词汇），但只发布 ComboBox 自身确实拥有的区域，**不为对齐上游而发明 ComboBox
 不存在的键**。ComboBox 是本仓库唯一的「非 Gate 通过」准入例外，**不得被引用为 Gate 通过的先例**。范围记录见
-[全量改造设计 §2.4](../../../../superpowers/specs/2026-08-12-semantic-part-control-rollout-design.md) 的 2026-09-16 范围变更段。
+[全量改造设计 §2.4](../../../../developments/specs/2026-08-12-semantic-part-control-rollout-design.md) 的 2026-09-16 范围变更段。
 
 ## 1. Semantic Parts
 
@@ -529,4 +529,4 @@ Gallery 语义预览的授权写法与「产品控件负责抑制」的完整说
 
 Gallery 示例见
 `controlgallery/AtomUIGallery/ShowCases/Navigation/ComboBox`。视觉验收步骤与结论见
-`docs/superpowers/specs/` 下的 ComboBox 验收记录（真机截图由用户回传）。
+`docs/developments/specs/` 下的 ComboBox 验收记录（真机截图由用户回传）。

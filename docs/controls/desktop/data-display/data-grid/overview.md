@@ -68,7 +68,7 @@ DataGrid 的公共契约由 public/protected 类型成员、Avalonia 属性、�
 使整行可编辑单元格同时进入编辑，“保存”一次提交、“取消”直接丢弃。值无法转换时保持编辑并显示校验错误；编辑器关闭后的
 Source 失败通过 `EditCommitFailed` 报告。`DataGridLocalSource` 中提供 `setter` 的字段可编辑，未影响当前 Query 的编辑保留
 snapshot，影响 sort/filter/group 的编辑触发失效重载。完整决策见
-[行内编辑设计](../../../../superpowers/specs/2026-10-31-datagrid-inline-editing-design.md)。
+[行内编辑设计](../../../../developments/specs/2026-10-31-datagrid-inline-editing-design.md)。
 
 分页公共契约由 `PageSize`、`IsShowPageSizeSelector`、`PaginationVisibility`、`TopPaginationAlign`、
 `BottomPaginationAlign` 和 `IsHideOnSinglePage` 共同表达。`IsShowPageSizeSelector` 默认为 `true`，转发到顶部和底部

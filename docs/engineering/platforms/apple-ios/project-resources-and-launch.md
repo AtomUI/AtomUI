@@ -125,4 +125,4 @@ UIKit LaunchScreen 和 Avalonia 正式页面都可使用 point 作为布局单�
 6. 使用同型号 Simulator 截图和真机体验复核切换。
 
 页面结构、Safe Area、素材尺寸或设备族变化后必须重新测量。一次校准数据见日期化
-[iOS Gallery 预览验证](../../../superpowers/progress/2026-08-03-apple-ios-gallery-preview-validation.md)。
+[iOS Gallery 预览验证](../../../developments/progress/2026-08-03-apple-ios-gallery-preview-validation.md)。

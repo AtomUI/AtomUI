@@ -3,7 +3,7 @@
 本文拥有主题提交期间动画的处理合同：一次主题提交启动的过渡、关键帧动画和 Motion 播放在启动所在的帧内直接到达终值，
 新主题从第一帧起整体呈现。机制属于[Motion 系统](overview.md)的时钟层，由[主题运行时](../theming/runtime.md#12-事务与发布顺序)
 的提交点开启。源码为 `AtomUI.Core/Animations/MotionSettle.cs`，验证数据见[验证状态](verification.md#2026-11-12主题提交动效收束)，
-过程记录见[开发日志](../../../superpowers/progress/2026-11-12-theme-switch-motion-settle.md)。
+过程记录见[开发日志](../../../developments/progress/2026-11-12-theme-switch-motion-settle.md)。
 
 ## 1. 问题与目标
 

@@ -1,7 +1,7 @@
 # 设计语言架构
 
 本文描述当前设计语言架构，第 12 节记录[应用注册与启动 API](#应用注册与启动-api)。
-原始方案见[设计语言架构方案](../../../superpowers/specs/2026-11-22-design-language-architecture-design.md)，当前实现与原方案的差异见第 14 节。运行时的发布层（快照、作用域、事务、
+原始方案见[设计语言架构方案](../../../developments/specs/2026-11-22-design-language-architecture-design.md)，当前实现与原方案的差异见第 14 节。运行时的发布层（快照、作用域、事务、
 资源查询）见[主题系统架构](runtime.md)，作者视角的写法见[编写设计语言](../../../guides/theming/writing-design-languages.md)，
 应用视角见[设计语言包指南](../../../guides/theming/design-language-packages.md)。
 
@@ -409,7 +409,7 @@ Token 与全局 Token。Ant Design 语言声明 `Desktop` 与 `Mobile`；主仓�
 
 ## 相关文档
 
-- [设计语言架构方案](../../../superpowers/specs/2026-11-22-design-language-architecture-design.md)：完整设计依据与待定点。
+- [设计语言架构方案](../../../developments/specs/2026-11-22-design-language-architecture-design.md)：完整设计依据与待定点。
 - [主题系统架构](runtime.md)：配置合并、编译器、快照、缓存、作用域、事务与资源发布。
 - [编写设计语言](../../../guides/theming/writing-design-languages.md)：语言包与取值包的写法、构建期诊断与契约测试。
 - [设计语言包指南](../../../guides/theming/design-language-packages.md)：应用引用哪些包、如何选择语言与具名主题。

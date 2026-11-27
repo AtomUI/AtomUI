@@ -7,7 +7,7 @@ shadcn/ui 设计语言。
 | shadcn/ui（ui.shadcn.com/create 与 registry） | 2026-11-15 实测的现行版本 |
 | Tailwind CSS 色板 | v4.3.5（`theme.css`，oklch → sRGB 按 CSS Color 4 换算） |
 
-取值以自动生成的取值附录为唯一基准：`docs/superpowers/specs/2026-11-15-shadcn-latest-alignment-data.md`（附录 A
+取值以自动生成的取值附录为唯一基准：`docs/developments/specs/2026-11-15-shadcn-latest-alignment-data.md`（附录 A
 Base Color、附录 B Theme、附录 C 各风格 registry class）。各轴中只有紧凑密度是 AtomUI 扩展，其余（8 种风格、明暗、
 桌面形态）对标官方。
 

@@ -330,7 +330,7 @@ Gallery Release 构建、不挂调试器。
 ### Windows 10 实机验证
 
 2026-10-29 已在 Windows 10 build 19045（2560x1600 @150%，默认 `RedirectionSurface`）上按同一脚本化方法执行，
-记录见 [Windows 10 实机验证快速上手](../../../superpowers/progress/2026-10-29-windows10-resize-and-popup-shadow-quickstart.md)
+记录见 [Windows 10 实机验证快速上手](../../../developments/progress/2026-10-29-windows10-resize-and-popup-shadow-quickstart.md)
 文末“Windows 10 结果”。
 
 - 与旧的合成顺序对比：拖左/上边缘的缺口帧从 35%～42% 降到 0～1%，没有白屏帧。

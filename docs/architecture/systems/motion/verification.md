@@ -7,7 +7,7 @@
 
 ### 2026-11-12：主题提交动效收束
 
-合同见[主题提交动效收束](theme-commit-settle.md)，方法、原始数据与排查过程见[开发日志](../../../superpowers/progress/2026-11-12-theme-switch-motion-settle.md)。
+合同见[主题提交动效收束](theme-commit-settle.md)，方法、原始数据与排查过程见[开发日志](../../../developments/progress/2026-11-12-theme-switch-motion-settle.md)。
 源码基线 `release/6.0` `3a9339ddf` 加本轮未提交改动：`MotionSettle`、`ThemeManager` 三个提交点、`GlobalClockReflection` 观察者读取。
 
 | 合同 | 本轮证据 |
@@ -47,7 +47,7 @@ Gallery Release 原生测量（macOS，Button 页约 1754 个视觉元素，明�
 
 ### 2026-11-03：请求成本与原生采样闭环
 
-初轮遗留问题已完成根因定位和定向修复，方法、命令、完整数值与限制集中在[闭环记录](../../../superpowers/progress/2026-11-03-popup-motion-performance-closure.md)。
+初轮遗留问题已完成根因定位和定向修复，方法、命令、完整数值与限制集中在[闭环记录](../../../developments/progress/2026-11-03-popup-motion-performance-closure.md)。
 
 - 原生提前关闭来自窗口失活/平台失焦后的正常菜单关闭。探针要求前台、无未编排输入；中断时整批拒收、exit 3、AcceptedSamples=0，不重试，不取消产品失焦/hover关闭行为。同一原生场景的单变量失活重放已验证。
 - 准备期消除重复装箱、每请求委托及无消费者几何工作。相同驱动旧实现关闭准备5,456B，当前5,432B；新增开销已消除。9项策略/替代/回收/几何专项通过，400活动tick分配不变、内容新增Measure/Arrange=0。
@@ -79,7 +79,7 @@ DefaultMotionPreset、PopupMotionPreset 和 IsMotionAllowed 已从源码删除�
 | 清理后模块 | Desktop 1,367、Core 1、DataGrid 4、Gallery 10 项全部通过；未运行全量回归 |
 | NativeAOT | osx-arm64 发布及产物验证通过；固定反射成员名字保留。未执行 AOT 版换模板交互；已有 ReactiveUI、DataGrid ReflectionBinding 与本机动态库告警保留 |
 
-详细执行证据集中在[本轮记录](../../../superpowers/progress/2026-11-03-popup-motion-unification.md)。
+详细执行证据集中在[本轮记录](../../../developments/progress/2026-11-03-popup-motion-unification.md)。
 以下为初轮遗留问题记录，已由上条闭环定位并修正：原生回调间隔早期约8.5ms、后续约16.7ms；原始 probe 的间歇提前关闭在前版也复现。
 单进程固定 tick 的 A/A 耗时亦有明显波动，故不将 CPU/耗时差值作为提速百分比，不宣称原生性能基准已稳定。
 这里只确认指定场景的功能、回收、逐 tick 分配及布局成本；没有 Gallery 冷启动/页面加载提速结论。
@@ -103,7 +103,7 @@ macOS 原生真实时钟已验证 InfoFlyout 三轮开/关（200ms且有中间�
 框架 raw 指针与实际 hit-test，事件计数没有额外开关。Tooltip/OverflowTip hover 验证 Fast100ms与中间帧；折叠NavMenu根项hover打开门禁已由同一原生输入RED→GREEN修复。
 原生静态/动画终态独立窗口RGBA比较零差异，中间帧可见缩放/淡入且箭头保留；这不是OS物理鼠标或实际display present证据。
 
-详细命令、原始失败、修复、实际统计与清理以[本轮执行记录](../../../superpowers/progress/2026-11-02-popup-motion-implementation.md)为唯一权威。
+详细命令、原始失败、修复、实际统计与清理以[本轮执行记录](../../../developments/progress/2026-11-02-popup-motion-implementation.md)为唯一权威。
 曾发生的退出SIGABRT不能被探针COMPLETE覆盖：已从Flyout生命周期关闭先终止物理Popup再拆定位绑定修复，同一原生场景最终exit0。
 Windows、Linux X11/Wayland 本轮新动效实机和实际显示器呈现仍未验证，不以macOS或Headless通过代替。
 清理后Desktop受影响范围1554项、最后NavMenu改动定向310项、DataGrid14项通过（范围有重叠，不相加）；
@@ -434,7 +434,7 @@ Desktop.Controls 4119/4128（9 项基线失败不变）、Core 8、Controls 27 �
 OpenMotion/CloseMotion 由主题按样式实例创建独立默认定义；不再发布默认 Motion 对或几何属性，不再反向回传默认值。
 内部准备契约只消费几何/菜单语义值快照，普通用户 Motion 保留原管线。实例隔离、覆盖优先级、hover 交互与强持有定义时的回收专项33项通过；
 macOS 原生 Popup、NativeAOT 发布/启动分别取证。固定 clock 的完整周期分配略降，关闭准备新增88B请求定义；耗时波动不支持速度或FPS结论。
-本轮最终模块、临时测试清理、DataGrid 原输入序列及详细数值见[唯一执行记录](../../../superpowers/progress/2026-11-04-popup-motion-theme-defaults.md)。
+本轮最终模块、临时测试清理、DataGrid 原输入序列及详细数值见[唯一执行记录](../../../developments/progress/2026-11-04-popup-motion-theme-defaults.md)。
 
 
 ### 全组件默认值复审补充
@@ -442,4 +442,4 @@ macOS 原生 Popup、NativeAOT 发布/启动分别取证。固定 clock 的完�
 15个属性入口、16份主题的32个默认Setter及14原型的声明/物化类型均已核对。PopupConfirm独立主题补齐Popover默认；
 外部持有可复用Flyout时，owner退役释放框架上次定位目标和已脱离Border旧合成缓存，普通关闭仍保留重开语义。
 完整审计43项、DataGrid装配2项通过，清理后精确模块86项通过；共享生命周期测试以真实GC替代私有方法存在断言，永久测试数量不增加。
-类型、实例隔离、92,000次缓存读取0B、11种回收情形、原失败/因果验证、AOT及清理见[权威记录](../../../superpowers/progress/2026-11-04-popup-motion-theme-defaults.md#全组件默认值复审)。
+类型、实例隔离、92,000次缓存读取0B、11种回收情形、原失败/因果验证、AOT及清理见[权威记录](../../../developments/progress/2026-11-04-popup-motion-theme-defaults.md#全组件默认值复审)。

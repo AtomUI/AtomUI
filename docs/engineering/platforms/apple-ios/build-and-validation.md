@@ -96,7 +96,7 @@ test -d <app-path>/LaunchScreen.storyboardc
 - 页面、资源或 LaunchScreen 变化后重新部署 Release 再比较。
 
 一次 Debug/Release 观察见
-[2026-08-03 iOS Gallery 预览验证](../../../superpowers/progress/2026-08-03-apple-ios-gallery-preview-validation.md)，它不是长期性能基线。
+[2026-08-03 iOS Gallery 预览验证](../../../developments/progress/2026-08-03-apple-ios-gallery-preview-validation.md)，它不是长期性能基线。
 
 ## 最终验证清单
 

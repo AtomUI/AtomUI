@@ -1,7 +1,7 @@
 # AtomUI.Desktop.Controls.Themes.Shadcn
 
 `AtomUI.Desktop.Controls` 在 shadcn 设计语言下的取值包。对标 shadcn/ui 现行版本（registry 2026-11-15 实测）与
-Tailwind CSS v4.3.5 色板；取值以取值附录为唯一基准：`docs/superpowers/specs/2026-11-15-shadcn-latest-alignment-data.md`
+Tailwind CSS v4.3.5 色板；取值以取值附录为唯一基准：`docs/developments/specs/2026-11-15-shadcn-latest-alignment-data.md`
 （附录 A Base Color、附录 B Theme、附录 C 各风格 registry class）。语言本身（轴、种子、语言 Token、全局映射）见
 `../AtomUI.DesignLanguages.Shadcn/README.md`。
 

@@ -160,9 +160,9 @@ Detailed AI collaboration rules live in [docs/engineering/contributing/agent-gui
 
 ## 研发记录存放规范（本项目生效）
 
-1. **只用 `docs/superpowers/`**：研发方案、实施计划与进度记录放在 `docs/superpowers/` 下（`specs/`、`plans/`、`progress/`）；禁止在 `.superpowers/` 或其他隐藏目录下写入任何内容。
+1. **只用 `docs/developments/`**：研发方案、实施计划与进度记录放在 `docs/developments/` 下（`specs/`、`plans/`、`progress/`）；禁止在 `.superpowers/` 或其他隐藏目录下写入任何内容。
 2. **只存文字记录**：该目录只存放开发日志、任务规划与设计记录（Markdown），用于日后查询做过哪些调整、修复了哪些 bug。截图、录屏、视频、图片、TRX、二进制、构建产物、原始采样数据和日志转储一律禁止放入；视觉证据只写结论与必要的数值，媒体文件留在临时目录并在验证后删除。
-3. **防止膨胀**：执行过程的临时产物（任务说明、评审 diff、评审包等）放在会话临时目录，完成后删除，不进入 `docs/superpowers/`。`.gitignore` 对该目录只放行 `.md`；新增非 Markdown 文件视为违反本约束。
+3. **防止膨胀**：执行过程的临时产物（任务说明、评审 diff、评审包等）放在会话临时目录，完成后删除，不进入 `docs/developments/`。`.gitignore` 对该目录只放行 `.md`；新增非 Markdown 文件视为违反本约束。
 
 ## Common Commands
 

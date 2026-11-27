@@ -696,7 +696,7 @@ appearance 是它所在求值单元的有效明暗，只提供给该 Control 的
 
 v1 的写入记账（`RecordWrite`）、Alias 与控件阶段的多轮重跑与 `Unstable` 判定、每个控件一份完整的全局 Token 副本随算法链
 一起移除；setter 只检查冻结项。新管线的性能要求是：在每一项现有性能验收上不得退化，并以改造前的同一棵树为基线按现有门槛
-比较（见[设计语言架构方案](../../../superpowers/specs/2026-11-22-design-language-architecture-design.md)第 12 章）。
+比较（见[设计语言架构方案](../../../developments/specs/2026-11-22-design-language-architecture-design.md)第 12 章）。
 
 以下数据是**旧算法管线**上的历史实测，只作为新管线对照的基线，不描述当前实现：
 
@@ -706,7 +706,7 @@ v1 的写入记账（`RecordWrite`）、Alias 与控件阶段的多轮重跑与 
 - 带 Alias 与控件阶段的 PrimeNGAura 冷编译约 0.88 毫秒，分配 1,249,256 字节。
 - 资源查询稳态 0 字节 / 次。
 
-旧管线的逐项测量与当时的门槛放宽记录见规格 `docs/superpowers/specs/2026-11-13-theme-algorithm-strategy-design.md` 第 4.11 节。
+旧管线的逐项测量与当时的门槛放宽记录见规格 `docs/developments/specs/2026-11-13-theme-algorithm-strategy-design.md` 第 4.11 节。
 
 ## 8. ThemeSnapshot
 

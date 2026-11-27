@@ -15,7 +15,7 @@
 ButtonSpinner 是 AtomUI 的带步进按钮输入基座，其公开语义区域对应上游 `InputNumber` 已公开并实际消费的
 `root` / `prefix` / `suffix` / `input` / `actions` 键：帧内主内容区映射 `input` 职责，帧内左、右内容槽映射
 `prefix` / `suffix` 职责，步进按钮区映射 `actions`。范围依据与准入记录见
-[改造设计](../../../superpowers/specs/2026-08-12-semantic-part-control-rollout-design.md)。
+[改造设计](../../../developments/specs/2026-08-12-semantic-part-control-rollout-design.md)。
 
 ### 1.1 `root`
 

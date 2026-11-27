@@ -15,7 +15,7 @@ internal static partial class ShadcnAppendix
     {
         var directory = new DirectoryInfo(AppContext.BaseDirectory);
         while (directory is not null &&
-               !File.Exists(Path.Combine(directory.FullName, "docs/superpowers/specs/2026-11-15-shadcn-latest-alignment-data.md")))
+               !File.Exists(Path.Combine(directory.FullName, "docs/developments/specs/2026-11-15-shadcn-latest-alignment-data.md")))
         {
             directory = directory.Parent;
         }
@@ -26,7 +26,7 @@ internal static partial class ShadcnAppendix
         }
 
         return File.ReadAllText(Path.Combine(
-            directory.FullName, "docs/superpowers/specs/2026-11-15-shadcn-latest-alignment-data.md"));
+            directory.FullName, "docs/developments/specs/2026-11-15-shadcn-latest-alignment-data.md"));
     }
 
     /// <summary>

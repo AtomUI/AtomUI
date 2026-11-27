@@ -197,7 +197,7 @@ focus 与 host teardown 继续使用 Avalonia Popup 协议。产品 owner 只提
 
 native popup 的阴影画在窗口自身 surface 中，窗口矩形 = 内容 + 阴影 buffer。阴影与内容保持同一 surface（动效严格同帧），
 只把输入区域收缩到内容形状。被否决的独立阴影窗口方案与各平台调研见
-[窗口型 Popup 阴影与鼠标穿透方案记录](../../../../superpowers/progress/2026-10-29-window-popup-shadow-hit-test-plan.md)。
+[窗口型 Popup 阴影与鼠标穿透方案记录](../../../../developments/progress/2026-10-29-window-popup-shadow-hit-test-plan.md)。
 
 挂接：`Popup.Opened` 时若 Child 的 TopLevel 是 `PopupRoot`（`Host` 与 `IPopupHostProvider` 在 Avalonia 12.1.4 均为 internal，
 用 `TopLevel.GetTopLevel(Child)` 判定，不使用反射），调用 `NativePopupShadowHitTest.TryAttach`；`Closed` 时释放。
@@ -387,7 +387,7 @@ exit/enter 并关闭；映射前置空后不再产生越界事件，浮层保持
   内容区 204 帧无任何变化。
 
 Windows 10 build 19045（150% 缩放，`RedirectionSurface`）复测，记录见
-[Windows 10 实机验证快速上手](../../../../superpowers/progress/2026-10-29-windows10-resize-and-popup-shadow-quickstart.md)：
+[Windows 10 实机验证快速上手](../../../../developments/progress/2026-10-29-windows10-resize-and-popup-shadow-quickstart.md)：
 
 - `WS_EX_LAYERED` 兼容：浮层动效录制中没有纯黑像素，透明圆角与阴影正常。
 - 第一层、第二层结论与 Win11 一致。第二层测试中浮层超出主窗口 119px，靶子收到 ENTER/LEAVE/CLICK。

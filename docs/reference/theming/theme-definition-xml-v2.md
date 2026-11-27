@@ -2,7 +2,7 @@
 
 本文定义 AtomUI 主题定义文件的 v2 标准格式。它是 `ThemeDocumentReader`、`ThemeDefinitionBinder`、编译主题包的
 生成器、主题编辑器、CI 校验器和第三方主题包共同遵守的协议。设计依据见
-[设计语言架构方案](../../superpowers/specs/2026-11-22-design-language-architecture-design.md)第 7 章。
+[设计语言架构方案](../../developments/specs/2026-11-22-design-language-architecture-design.md)第 7 章。
 
 规范配套文件：
 

@@ -6,7 +6,7 @@
 
 ComboBox 公开 13 个 Semantic Part：隐式 `root` 加 12 个非 root 部件（`clear`、`prefix`、`frame`、`content`、`placeholder`、`input`、`suffix`、`indicator`、`popup.root`、`popup.list`、`popup.listItem`、`popup.empty`）。区域分组参考 Ant Design Select 已公开的 Semantic DOM 词汇，只发布 ComboBox 自身确实拥有的区域；完整 Part 表、Selector 用法与定制边界见 [ComboBox Semantic Part 契约](semantic-part.md)。
 
-> **准入定性：** ComboBox 的 Semantic Part 纳入**不是 §2.1 准入 Gate 通过**。上游 6.6.0 没有公开 `ComboBox` owner，原排除判定中「`Select` 的 internal combobox mode 不能作为公开 owner」继续有效；本次依据是用户指令加上 ComboBox 自身即职责完整的独立 public owner。范围记录见[全量改造设计 §2.4](../../../../superpowers/specs/2026-08-12-semantic-part-control-rollout-design.md) 的 2026-09-16 范围变更段。
+> **准入定性：** ComboBox 的 Semantic Part 纳入**不是 §2.1 准入 Gate 通过**。上游 6.6.0 没有公开 `ComboBox` owner，原排除判定中「`Select` 的 internal combobox mode 不能作为公开 owner」继续有效；本次依据是用户指令加上 ComboBox 自身即职责完整的独立 public owner。范围记录见[全量改造设计 §2.4](../../../../developments/specs/2026-08-12-semantic-part-control-rollout-design.md) 的 2026-09-16 范围变更段。
 
 ## 1. 控件定位
 

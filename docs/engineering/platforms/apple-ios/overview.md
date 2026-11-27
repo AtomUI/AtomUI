@@ -47,7 +47,7 @@ Simulator、真机、Release 和 Publication 必须分别记录。某一层通�
 | [Simulator 与真机](simulator-and-device.md) | 发现、安装、启动、锁屏行为、Simulator 和截图证据 |
 | [构建与验证](build-and-validation.md) | Debug/Release、RID、签名参数、bundle、AOT/trim、性能解释和收尾门禁 |
 | [排障](troubleshooting.md) | 以可观察症状为入口的有限诊断序列 |
-| [2026-08-03 iOS Gallery 预览验证](../../../superpowers/progress/2026-08-03-apple-ios-gallery-preview-validation.md) | 一次机器、设备、版本和视觉校准快照 |
+| [2026-08-03 iOS Gallery 预览验证](../../../developments/progress/2026-08-03-apple-ios-gallery-preview-validation.md) | 一次机器、设备、版本和视觉校准快照 |
 
 ## 不覆盖
 

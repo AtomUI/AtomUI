@@ -16,7 +16,7 @@ Expander 是单面板折叠容器，与上游 `Collapse` 的单个面板承担�
 和方向，Content 承载可延迟阅读的内容。上游 `Collapse` 的 Semantic DOM 按 item 组织，而 AtomUI `Expander` 恰好是
 “一个面板”的独立 owner，因此两者按职责一一对应，不需要新的上游 owner。
 
-准入依据按[全量改造设计 §2.1](../../../../superpowers/specs/2026-08-12-semantic-part-control-rollout-design.md)第 4 条
+准入依据按[全量改造设计 §2.1](../../../../developments/specs/2026-08-12-semantic-part-control-rollout-design.md)第 4 条
 “AtomUI 控件与该公开 owner 的产品职责直接对应”判定：上游 owner 数量不是必要条件，职责对应关系才是。Expander 直接消费
 上游 `Collapse` 已公开的五个语义键，Part 名称与 Collapse 保持同构。
 

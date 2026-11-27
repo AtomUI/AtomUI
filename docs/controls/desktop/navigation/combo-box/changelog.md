@@ -60,7 +60,7 @@
 
 - Interaction
   - 选中回填与候选过滤投影分离，离场期间保持当前列表自然高度及滚动；物理关闭后应用最新查询，正常输入、钉住和重开保持实时语义。
-  - 验证范围和临时测试处置见[过滤离场修复记录](../../../../superpowers/plans/2026-11-10-combobox-filter-close.md)。
+  - 验证范围和临时测试处置见[过滤离场修复记录](../../../../developments/plans/2026-11-10-combobox-filter-close.md)。
 
 - Behavior
   - 实现已有 `IsAllowClear` 的清除交互，覆盖选中值、null 项和未匹配编辑文本；保留双向绑定、过滤复位、输入焦点及弹层状态。
@@ -74,7 +74,7 @@
 - Semantic Part
   - 增加 `clear` 与生成的 `ComboBoxClearStyle`，同步 Gallery 声明式预览与契约文档；既有部件 route 和类型不变。
 - Validation
-  - 根因、修复前后证据、验证范围及清理见[修复记录](../../../../superpowers/plans/2026-11-10-combobox-clear.md)。
+  - 根因、修复前后证据、验证范围及清理见[修复记录](../../../../developments/plans/2026-11-10-combobox-clear.md)。
 
 ## 2026-11-08
 
@@ -118,7 +118,7 @@
 - Docs
   - 同步架构、实现、Semantic Part 与 Token 文档，公开 API 由源码和控件文档维护；Gallery 按现行规范只展示示例与 Semantic Parts。
 - Validation
-  - 修复前后证据、实际验证范围与清理结果统一见[空态修复执行记录](../../../../superpowers/progress/2026-11-02-combobox-empty-state.md)，不将 Headless 或 Skia 结果扩大为原生平台验收结论。
+  - 修复前后证据、实际验证范围与清理结果统一见[空态修复执行记录](../../../../developments/progress/2026-11-02-combobox-empty-state.md)，不将 Headless 或 Skia 结果扩大为原生平台验收结论。
 
 ## 2026-10-20
 

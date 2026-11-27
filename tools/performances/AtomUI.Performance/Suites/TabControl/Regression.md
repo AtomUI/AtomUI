@@ -17,7 +17,7 @@ Acceptance gates:
 - after first close, retained popup state is bounded to one empty context, one cached content root, and empty item containers capped by the latest nonempty snapshot while attached;
 - retemplate, template replacement, and detach release the cached root, context session, owner, item snapshots, and subscriptions.
 
-The focused project avoids unrelated stale suites in the broad performance runner. Dated measurements and environment details are recorded in `docs/superpowers/progress/2026-09-15-tab-overflow-review.md`.
+The focused project avoids unrelated stale suites in the broad performance runner. Dated measurements and environment details are recorded in `docs/developments/progress/2026-09-15-tab-overflow-review.md`.
 
 ## Measurement validity
 

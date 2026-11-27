@@ -2,7 +2,7 @@
 
 本文档定义 AtomUI 中跨普通视觉树绘制的 layer、overlay、adorner 的职责边界和使用规则。这里的“层”指会把内容放到普通控件布局流之外的宿主容器或窗口级覆盖区域，不包含普通 `Panel`、`Border.BoxShadow`、模板内部装饰容器等常规视觉结构。
 
-设计依据与决策记录见 [全局视觉层级阶梯设计](../../../superpowers/specs/2026-11-22-window-layer-ladder-design.md)。
+设计依据与决策记录见 [全局视觉层级阶梯设计](../../../developments/specs/2026-11-22-window-layer-ladder-design.md)。
 
 ## 总体原则
 

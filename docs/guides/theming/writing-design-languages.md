@@ -15,7 +15,7 @@ AtomUI 里每一个取值——种子的默认值、全局 Token、每个控件�
 `src/DesignLanguages/AntDesign/AtomUI.DesignLanguages.AntDesign`，取值包 `AtomUI.Controls.Themes.AntDesign`、
 `AtomUI.Desktop.Controls.Themes.AntDesign`、`AtomUI.Desktop.Controls.ColorPicker.Themes.AntDesign`、
 `AtomUI.Desktop.Controls.DataGrid.Themes.AntDesign`。设计依据见
-[设计语言架构方案](../../superpowers/specs/2026-11-22-design-language-architecture-design.md)第 5、6、8、13、14 章；运行时细节以
+[设计语言架构方案](../../developments/specs/2026-11-22-design-language-architecture-design.md)第 5、6、8、13、14 章；运行时细节以
 [主题系统架构](../../architecture/systems/theming/runtime.md)为准，主题文件格式以
 [主题定义 XML v2 规范](../../reference/theming/theme-definition-xml-v2.md)为准。
 

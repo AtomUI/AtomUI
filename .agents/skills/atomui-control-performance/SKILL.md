@@ -428,7 +428,7 @@ If none of the above lights up, the bottleneck may be Gallery-level page setup o
 
 - `cost × frequency ≥ 1 ms / frame budget` OR `≥ 5 % of measured ShowCase time` → optimization candidate, proceed to Decision Tree Step 3.
 - Otherwise: decline, with the numbers in the report.
-- Either way, the conclusion + numbers go into `docs/superpowers/progress/<date>-<control>-performance.md` so the next investigation does not repeat the work.
+- Either way, the conclusion + numbers go into `docs/developments/progress/<date>-<control>-performance.md` so the next investigation does not repeat the work.
 
 ### Outputs of this playbook (mandatory before writing any optimization code)
 
@@ -576,7 +576,7 @@ When a single optimization pattern is being applied across multiple controls, th
   2. Did any one introduce ≥ 2 Gallery-visible bugs that took > 30 minutes to discover?
   3. Did any one expand complexity beyond the Gate 3 thresholds?
 - If 1 fails or 2/3 succeeds, do not roll out to the 5th control. Audit existing 4, decide which to keep / refine / revert.
-- Decisions must be recorded in `docs/superpowers/progress/<date>-<pattern>-rollout-audit.md`.
+- Decisions must be recorded in `docs/developments/progress/<date>-<pattern>-rollout-audit.md`.
 
 ---
 

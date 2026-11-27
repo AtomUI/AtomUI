@@ -2,7 +2,7 @@
 
 本文拥有 ConditionalRecord format 1 的具体编码、成员模板及校验规则。生成端与读取端已在工作树实现；
 这不表示发布 targets、NuGet 分发或全部平台已经验收。整体方案与交付门槛见
-[多目标 AOT 设计](../../superpowers/specs/2026-10-05-aot-dependency-analysis-design/overview.md)。
+[多目标 AOT 设计](../../developments/specs/2026-10-05-aot-dependency-analysis-design/overview.md)。
 已有 .NET 10 [TypeMap ABI](typemap-contract.md)保持独立。
 
 ## 1. 载体与身份

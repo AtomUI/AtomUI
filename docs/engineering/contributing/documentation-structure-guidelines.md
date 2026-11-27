@@ -3,7 +3,7 @@
 本文是 AtomUI 仓库文档结构与文件命名的现行规范。文档分类的责任划分见
 [文档总览](../../overview.md)；本文只定义目录布局、入口文件命名和拆分标准。
 
-本文取代 `docs/superpowers/specs/2026-08-10-documentation-information-architecture-design.md` 中关于入口文件命名的
+本文取代 `docs/developments/specs/2026-08-10-documentation-information-architecture-design.md` 中关于入口文件命名的
 结论。该 spec 作为当时的设计过程记录保留，不再是命名规则的来源。
 
 ## 1. 入口文件命名
@@ -82,9 +82,9 @@ docs/architecture/systems/typography/
 | 使用步骤、接入示例、操作流程 | `guides/` |
 | 版本化格式、协议、公共 API 定义 | `reference/` |
 | 开发规范、工作流、检查清单 | `engineering/` |
-| 方案比较、实施计划、阶段进度 | `superpowers/` |
+| 方案比较、实施计划、阶段进度 | `developments/` |
 
-`superpowers/` 不参与正式文档导航和事实所有权判断。正式文档不得依赖 `superpowers/` 才能成立。
+`developments/` 不参与正式文档导航和事实所有权判断。正式文档不得依赖 `developments/` 才能成立。
 
 ## 5. 链接规范
 

@@ -59,7 +59,7 @@
 - Tests
   - 增加 `Count` 默认值与模板转发、等距相位、非正值回退、实际绘制数量，以及 Gallery 示例和本地化契约测试。
 - Docs
-  - 落地 [BorderBeam 多光束与悬停展示设计规格](../../../../superpowers/specs/2026-09-08-border-beam-multi-beam-hover-design.md)，
+  - 落地 [BorderBeam 多光束与悬停展示设计规格](../../../../developments/specs/2026-09-08-border-beam-multi-beam-hover-design.md)，
     明确 `Count` 使用单 presenter、单动画时钟和等距 phase 的架构边界。
   - 明确悬停展示通过 `IsMotionEnabled` 与 `:pointerover` 样式组合表达，不引入 `ShowOnHover` 公共属性。
   - 修正实现文档的模板接入描述：默认模板使用 `TemplateBinding`，BorderBeam 不在 `OnApplyTemplate` 中持有

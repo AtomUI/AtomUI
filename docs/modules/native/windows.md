@@ -342,4 +342,4 @@ Desktop 使用 `ConditionalWeakTable` 管理逐窗能力，隐藏后再显示不
 
 Windows 11 的实窗验证包含原始全屏置顶 owned window、状态往返、运行时能力切换、重复显示及 NativeAOT。
 Windows 10、多显示器和跨 DPI 切换需要在对应环境复核；本次验证记录见
-[issue 528 修复记录](../../superpowers/progress/2026-11-04-issue528-fullscreen-repair.md)。
+[issue 528 修复记录](../../developments/progress/2026-11-04-issue528-fullscreen-repair.md)。

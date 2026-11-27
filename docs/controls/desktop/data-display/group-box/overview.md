@@ -173,7 +173,7 @@ GroupBox 的边框不是普通完整矩形边框。Header 内容嵌入在边框�
 - [GroupBox Changelog](changelog.md)
 
 本次改造同时移除了此前生成器回退路径产出的占位行 `item` 与 `motion`：GroupBox 没有 item 集合、容器生命周期或动效区域，
-按 [Semantic Part 全量改造设计 §5.1](../../../../superpowers/specs/2026-08-12-semantic-part-control-rollout-design.md)不得为了
+按 [Semantic Part 全量改造设计 §5.1](../../../../developments/specs/2026-08-12-semantic-part-control-rollout-design.md)不得为了
 覆盖率虚构这两类区域。五个区域的真实节点映射与 `PART_Frame`、`PART_HeaderContainer` 的排除依据见
 [GroupBox Semantic Part 契约](semantic-part.md)。
 

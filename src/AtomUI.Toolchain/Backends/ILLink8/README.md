@@ -1,7 +1,7 @@
 # ILLink 8 conditional registration mechanism
 
 This build-only module implements the managed-linker part of the
-[approved design](../../docs/superpowers/specs/2026-10-05-aot-dependency-analysis-design/overview.md).
+[approved design](../../docs/developments/specs/2026-10-05-aot-dependency-analysis-design/overview.md).
 It runs on a .NET 10 or later tool host (major roll-forward) and binds to the SDK-selected official ILLink 8.x engine;
 the ILLink Tasks and engine must come from one servicing release. It does not change the target runtime.
 The module is a packaged build-only tool selected automatically for admitted .NET 8 managed trimming. Target-framework routing and capability admission remain separate.

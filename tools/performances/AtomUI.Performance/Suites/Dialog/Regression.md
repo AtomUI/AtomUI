@@ -34,4 +34,4 @@
 
 ## Notes
 
-Checked automated items were covered by the affected Dialog test classes, including `OverlayDialogPresenterCompositorMotionTests`, `OverlayDialogPresenterTests`, `DialogMotionAnchorTests`, and `DialogLifecycleTests`. The macOS manual item is backed by the 2026-09-26 screen recording analysis in `docs/superpowers/progress/2026-09-26-dialog-compositor-motion-performance.md`. Unchecked platform and custom-template fallback items remain required before claiming those environments or branches are verified.
+Checked automated items were covered by the affected Dialog test classes, including `OverlayDialogPresenterCompositorMotionTests`, `OverlayDialogPresenterTests`, `DialogMotionAnchorTests`, and `DialogLifecycleTests`. The macOS manual item is backed by the 2026-09-26 screen recording analysis in `docs/developments/progress/2026-09-26-dialog-compositor-motion-performance.md`. Unchecked platform and custom-template fallback items remain required before claiming those environments or branches are verified.

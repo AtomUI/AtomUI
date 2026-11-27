@@ -25,7 +25,7 @@ GroupBox 的纳入与既有三个追认项（`Expander`、`TabStrip`、`Menu`）
 
 - 上游设计体系当前稳定发布源码中**不存在**与 GroupBox 职责对应的公开 Semantic DOM owner：其组件目录下没有 fieldset、
   group 或 group-box 类组件，`GroupBox` 标识在组件源码中零命中。因此本次纳入不存在可映射的上游 owner。
-- 原排除判定见[全量改造设计 §2.4](../../../../superpowers/specs/2026-08-12-semantic-part-control-rollout-design.md)，其正向
+- 原排除判定见[全量改造设计 §2.4](../../../../developments/specs/2026-08-12-semantic-part-control-rollout-design.md)，其正向
   触发条件是“新稳定版出现职责直接对应的公开 owner”。该条件**并未发生**；纳入由用户直接指令撤销，判据是 AtomUI 需要
   让 GroupBox 支持 Semantic Part，而不是上游新增 owner。因此沿用 §2.4 的三次撤销记录方式（日期化范围变更），而不是
   声明一次新的上游 Gate 通过。

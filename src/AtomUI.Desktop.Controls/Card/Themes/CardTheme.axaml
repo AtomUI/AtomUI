@@ -19,6 +19,7 @@
                         <atom:PixelAlignedBorder Name="HeaderFrame"
                                                  Classes.semantic-header="True"
                                                  DockPanel.Dock="Top"
+                                                 CornerRadius="{TemplateBinding EffectiveCornerRadius, Converter={StaticResource CornerRadiusFilterConverter}}"
                                                  BorderThickness="{TemplateBinding HeaderBorderThickness}">
                             <DockPanel LastChildFill="True">
                                 <ContentPresenter Name="HeaderExtra"
@@ -72,6 +73,11 @@
         <Setter Property="BorderBrush" Value="{atom:CardTokenResource ColorBorderSecondary}" />
         <Setter Property="BorderThickness" Value="{atom:CardTokenResource BorderThickness}" />
         <Setter Property="Background" Value="{atom:CardTokenResource ColorBgContainer}" />
+
+        <Style Selector="^[IsInnerMode=True]:not(^[EffectiveCornerRadius=0]) /template/ atom|PixelAlignedBorder#Frame,
+                         ^[ContentType=Grid]:not(^[EffectiveCornerRadius=0]) /template/ atom|PixelAlignedBorder#Frame">
+            <Setter Property="ClipContentToCornerRadius" Value="True" />
+        </Style>
 
         <Style Selector="^:headerless">
             <Style Selector="^ /template/ atom|PixelAlignedBorder#HeaderFrame">

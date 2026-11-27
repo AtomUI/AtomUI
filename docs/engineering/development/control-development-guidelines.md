@@ -2,6 +2,8 @@
 
 本文档定义 AtomUI 控件研发时需要遵守或优先参考的工程标准，适用于 `AtomUI.Controls`、`AtomUI.Desktop.Controls`、DataGrid、ColorPicker 以及后续新增控件包。
 
+多设计语言控件的公共属性契约、两级行为体系、多语言动效与交互反馈、模板覆盖及默认 100% Ant Design 对标见[多设计语言控件设计与实现规范](multi-language-control-contracts.md)。
+
 Bug 修复必须遵守[测试价值与生命周期规范](test-value-and-lifecycle.md)，否则不算完成修复。本文要求的失败复现和
 行为验证可以使用已有或临时测试；临时测试验证完成后默认删除，长期契约按准入条件保留最小充分保障，
 不得将每次修复的验证要求解释为必须永久新增测试。

@@ -65,6 +65,7 @@ AbstractMotion 子类及配置 → 本次几何/参数快照 → 统一播放协
 | 文档 | 所有权 |
 | --- | --- |
 | [定义与第三方扩展](definitions-and-extension.md) | 基类、构建、配置、曲线、轨迹、组合与公开接入语义 |
+| [多设计语言动效与替换契约（草案）](design-language-overrides.md) | 语言动效选择、交互反馈会话与装饰租约、运行中切换和外部消费验收 |
 | [内置轨迹与组件规格](built-in-motion.md) | 端点、原点、曲线控制点、时长及组件实际选择 |
 | [弹层组件动效](popup-motion.md) | 组件规格接入、配置 owner、真实定位与原点、主题覆盖及 native/overlay 宿主边界 |
 | [播放与生命周期](playback-and-lifecycle.md) | 请求、结果、取消、替代、FillMode、终态持有和属性所有权 |

@@ -14,6 +14,9 @@
             <Setter Property="Padding" Value="0" />
             <Setter Property="BoxShadow" Value="0 0 10 0 #1A000000" />
         </Style>
+        <Style Selector="Border.splitter-surface[Padding=0] > atom|Splitter">
+            <Setter Property="CornerRadius" Value="{CompiledBinding $parent[Border].CornerRadius}" />
+        </Style>
         <Style Selector="Border.splitter-panel">
             <Setter Property="Background" Value="{atom:SharedTokenResource ColorBgContainer}" />
             <Setter Property="BorderBrush" Value="{atom:SharedTokenResource ColorBorder}" />

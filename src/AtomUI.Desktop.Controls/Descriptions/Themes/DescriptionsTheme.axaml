@@ -41,6 +41,7 @@
                         Value="{atom:DescriptionsTokenResource BorderThickness}" />
                 <Setter Property="CornerRadius" Value="{atom:DescriptionsTokenResource BorderRadiusLG}" />
                 <Setter Property="ClipToBounds" Value="True" />
+                <Setter Property="ClipContentToCornerRadius" Value="True" />
             </Style>
         </Style>
 

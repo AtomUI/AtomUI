@@ -27,6 +27,9 @@
         </Setter>
 
         <Setter Property="ClipToBounds" Value="True" />
+        <Style Selector="^[ClipToBounds=True]:not(^[CornerRadius=0]) /template/ atom|PixelAlignedBorder#Frame">
+            <Setter Property="ClipContentToCornerRadius" Value="True" />
+        </Style>
         <Setter Property="HandleSize" Value="{atom:SplitterTokenResource SplitBarHandleSize}" />
         <Setter Property="LineThickness" Value="{atom:SplitterTokenResource HandleLineThickness}" />
         <Setter Property="LineCornerRadius" Value="{atom:SplitterTokenResource BorderRadiusXS}" />

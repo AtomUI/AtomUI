@@ -23,6 +23,7 @@
 - [代码风格规范](development/code-style-guidelines.md)
 - [代码注释书写规范](development/code-comment-guidelines.md)
 - [Control 研发规范](development/control-development-guidelines.md)
+- [多设计语言控件设计与实现规范](development/multi-language-control-contracts.md)
 - [Control Token 规范](development/control-token-guidelines.md)
 - [设计语言取值包命名实施标准](development/value-package-naming.md)
 - [主题生效测试规范](development/theme-effect-tests.md)规定 Token 扰动对比、临时场景及家族验收。

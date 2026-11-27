@@ -5,6 +5,8 @@
 资源查询）见[主题系统架构](runtime.md)，作者视角的写法见[编写设计语言](../../../guides/theming/writing-design-languages.md)，
 应用视角见[设计语言包指南](../../../guides/theming/design-language-packages.md)。
 
+本文记录已实现的取值包与共享模板架构。控件属性、两级行为、多设计语言动效体系与可替换模板的目标架构见[多设计语言控件设计与实现规范](../../../engineering/development/multi-language-control-contracts.md)。
+
 ## 1. 核心思想
 
 **词汇是契约，设计语言是契约的完整实现。**

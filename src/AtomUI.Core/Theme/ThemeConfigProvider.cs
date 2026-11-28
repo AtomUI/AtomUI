@@ -1,7 +1,11 @@
 using System.Diagnostics;
+using AtomUI.Data;
 using AtomUI.Theme.Configuration;
+using AtomUI.Theme.Resources;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Documents;
+using Avalonia.Data;
 using Avalonia.LogicalTree;
 
 namespace AtomUI.Theme;
@@ -63,11 +67,15 @@ public class ThemeConfigProvider : ThemeVariantScope
 
     private ThemeScopeRegistration? _registration;
     private ThemeContext? _context;
+    private IDisposable? _foregroundBinding;
+    private IDisposable? _fontSizeBinding;
+    private IDisposable? _fontFamilyBinding;
 
     /// <summary>
     /// Calls the base member first, then registers the scope with the theme manager under the theme context it
-    /// inherits from an ancestor, makes the theme resources and theme variant of the scope available to its
-    /// content, and raises <see cref="ThemeChanged" /> or <see cref="ThemeChangeFailed" /> with the result.
+    /// inherits from an ancestor, makes the theme resources, theme variant and inherited text defaults (foreground,
+    /// font size and font family) of the scope available to its content, and raises <see cref="ThemeChanged" /> or
+    /// <see cref="ThemeChangeFailed" /> with the result.
     /// </summary>
     /// <remarks>
     /// An attachment without an inherited theme context throws an
@@ -105,22 +113,58 @@ public class ThemeConfigProvider : ThemeVariantScope
         publishDiagnostics.AddRange(PublishCommittedContext(
             registration.Context,
             notifyResources: false));
+        // ThemeConfigProvider is a non-templated ThemeVariantScope decorator with no ControlTheme, so code
+        // bindings at Style priority are the only way to update inherited TextElement foreground, font size and
+        // font family for nested scopes while still letting local values take precedence.
+        ThemePublishBoundary.Dispatch(
+            () => _foregroundBinding = TokenResourceBinder.CreateGlobalTokenBinding(
+                this,
+                TextElement.ForegroundProperty,
+                SharedTokenKind.ColorText,
+                BindingPriority.Style),
+            this,
+            publishDiagnostics,
+            $"ThemeScope[{registration.RegistrationId}].Foreground");
+        ThemePublishBoundary.Dispatch(
+            () => _fontSizeBinding = TokenResourceBinder.CreateGlobalTokenBinding(
+                this,
+                TextElement.FontSizeProperty,
+                SharedTokenKind.FontSize,
+                BindingPriority.Style),
+            this,
+            publishDiagnostics,
+            $"ThemeScope[{registration.RegistrationId}].FontSize");
+        ThemePublishBoundary.Dispatch(
+            () => _fontFamilyBinding = TokenResourceBinder.CreateGlobalTokenBinding(
+                this,
+                TextElement.FontFamilyProperty,
+                SharedTokenKind.FontFamily,
+                BindingPriority.Style),
+            this,
+            publishDiagnostics,
+            $"ThemeScope[{registration.RegistrationId}].FontFamily");
         DispatchResult(result.WithPublishDiagnostics(publishDiagnostics));
     }
 
     /// <summary>
-    /// Releases the scope's registration before the base member is called: the theme resources are removed from
-    /// <c>Resources</c>, the <c>ThemeScope.ContextProperty</c> value and the theme variant set for the scope are
-    /// cleared, and the registration is disposed. An exception thrown by one of these steps is written to the debug
-    /// trace and does not stop the others.
+    /// Releases the scope's registration before the base member is called: the inherited text default bindings are
+    /// disposed, the theme resources are removed from <c>Resources</c>, the <c>ThemeScope.ContextProperty</c> value
+    /// and the theme variant set for the scope are cleared, and the registration is disposed. An exception thrown by
+    /// one of these steps is written to the debug trace and does not stop the others.
     /// </summary>
     protected override void OnDetachedFromLogicalTree(LogicalTreeAttachmentEventArgs e)
     {
         var registration = _registration;
         var context = _context;
-        _registration = null;
-        _context      = null;
-        ReleaseRegistration(registration, context);
+        var foregroundBinding = _foregroundBinding;
+        var fontSizeBinding = _fontSizeBinding;
+        var fontFamilyBinding = _fontFamilyBinding;
+        _registration      = null;
+        _context           = null;
+        _foregroundBinding = null;
+        _fontSizeBinding   = null;
+        _fontFamilyBinding = null;
+        ReleaseRegistration(registration, context, foregroundBinding, fontSizeBinding, fontFamilyBinding);
         base.OnDetachedFromLogicalTree(e);
     }
 
@@ -196,9 +240,15 @@ public class ThemeConfigProvider : ThemeVariantScope
         }
 
         var registration = _registration;
-        _registration = null;
-        _context = null;
-        ReleaseRegistration(registration, context);
+        var foregroundBinding = _foregroundBinding;
+        var fontSizeBinding = _fontSizeBinding;
+        var fontFamilyBinding = _fontFamilyBinding;
+        _registration      = null;
+        _context           = null;
+        _foregroundBinding = null;
+        _fontSizeBinding   = null;
+        _fontFamilyBinding = null;
+        ReleaseRegistration(registration, context, foregroundBinding, fontSizeBinding, fontFamilyBinding);
     }
 
     internal void DispatchResult(ThemeScopeUpdateResult result)
@@ -236,8 +286,23 @@ public class ThemeConfigProvider : ThemeVariantScope
 
     private void ReleaseRegistration(
         ThemeScopeRegistration? registration,
-        ThemeContext? context)
+        ThemeContext? context,
+        IDisposable? foregroundBinding,
+        IDisposable? fontSizeBinding,
+        IDisposable? fontFamilyBinding)
     {
+        if (foregroundBinding is not null)
+        {
+            CleanupBoundary(foregroundBinding.Dispose);
+        }
+        if (fontSizeBinding is not null)
+        {
+            CleanupBoundary(fontSizeBinding.Dispose);
+        }
+        if (fontFamilyBinding is not null)
+        {
+            CleanupBoundary(fontFamilyBinding.Dispose);
+        }
         if (context is not null)
         {
             CleanupBoundary(() => Resources.MergedDictionaries.Remove(context.ResourceProvider));

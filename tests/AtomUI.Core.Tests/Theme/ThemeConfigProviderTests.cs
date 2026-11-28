@@ -8,6 +8,7 @@ using AtomUI.Theme.Resources;
 using AtomUI.Theme.DesignTokens;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Documents;
 using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.Styling;
@@ -414,6 +415,97 @@ public class ThemeConfigProviderTests
     private static ThemeConfig ConfigWithToken(string name, string value)
     {
         return new ThemeConfigBuilder().WithToken(name, value).Build();
+    }
+
+    /// <summary>
+    /// Verifies that an attached provider binds inherited <see cref="TextElement.ForegroundProperty" /> to its scoped
+    /// <c>ColorText</c> token, preserves local overrides, and releases the binding when detached.
+    /// </summary>
+    [Fact]
+    public void Attached_Provider_Binds_Inherited_TextElement_Foreground_To_Scoped_ColorText_And_Preserves_Local_Override()
+    {
+        var manager = CreateInitializedManager();
+        var childText = new TextBlock { Text = "Scoped" };
+        var provider = new ThemeConfigProvider
+        {
+            Config = new ThemeConfigBuilder()
+                     .WithAppearance(ThemeAppearance.Dark)
+                     .WithToken(nameof(DesignToken.ColorText), "#f1f2f3")
+                     .Build(),
+            Child = childText
+        };
+
+        using var root = Attach(manager, provider);
+
+        var scopedBrush = TextElement.GetForeground(provider).ShouldBeAssignableTo<ISolidColorBrush>().ShouldNotBeNull();
+        scopedBrush.Color.ShouldBe(Color.Parse("#f1f2f3"));
+        (childText.Foreground as ISolidColorBrush)?.Color.ShouldBe(Color.Parse("#f1f2f3"));
+
+        provider.Config = new ThemeConfigBuilder()
+                          .WithAppearance(ThemeAppearance.Light)
+                          .WithToken(nameof(DesignToken.ColorText), "#112233")
+                          .Build();
+        (childText.Foreground as ISolidColorBrush)?.Color.ShouldBe(Color.Parse("#112233"));
+
+        var localOverride = new SolidColorBrush(Colors.Crimson);
+        TextElement.SetForeground(provider, localOverride);
+        TextElement.GetForeground(provider).ShouldBeSameAs(localOverride);
+        childText.Foreground.ShouldBeSameAs(localOverride);
+
+        provider.ClearValue(TextElement.ForegroundProperty);
+        (childText.Foreground as ISolidColorBrush)?.Color.ShouldBe(Color.Parse("#112233"));
+
+        root.Child = null;
+        provider.IsSet(TextElement.ForegroundProperty).ShouldBeFalse();
+    }
+
+    /// <summary>
+    /// Verifies that an attached provider binds inherited <see cref="TextElement.FontSizeProperty" /> and
+    /// <see cref="TextElement.FontFamilyProperty" /> to its scoped tokens, preserves local overrides, and releases
+    /// both bindings when detached.
+    /// </summary>
+    [Fact]
+    public void Attached_Provider_Binds_Inherited_TextElement_FontSize_And_FontFamily_To_Scoped_Tokens_And_Preserves_Local_Overrides()
+    {
+        var manager = CreateInitializedManager();
+        var childText = new TextBlock { Text = "Scoped" };
+        var provider = new ThemeConfigProvider
+        {
+            Config = new ThemeConfigBuilder()
+                     .WithToken(nameof(DesignToken.FontSize), "12")
+                     .WithToken(nameof(DesignToken.FontFamily), "Arial")
+                     .Build(),
+            Child = childText
+        };
+
+        using var root = Attach(manager, provider);
+
+        TextElement.GetFontSize(provider).ShouldBe(12d);
+        childText.FontSize.ShouldBe(12d);
+        TextElement.GetFontFamily(provider).Name.ShouldBe("Arial");
+        childText.FontFamily.Name.ShouldBe("Arial");
+
+        provider.Config = new ThemeConfigBuilder()
+                          .WithToken(nameof(DesignToken.FontSize), "16")
+                          .WithToken(nameof(DesignToken.FontFamily), "Courier New")
+                          .Build();
+        childText.FontSize.ShouldBe(16d);
+        childText.FontFamily.Name.ShouldBe("Courier New");
+
+        TextElement.SetFontSize(provider, 20d);
+        var localFamily = new FontFamily("Georgia");
+        TextElement.SetFontFamily(provider, localFamily);
+        childText.FontSize.ShouldBe(20d);
+        childText.FontFamily.ShouldBeSameAs(localFamily);
+
+        provider.ClearValue(TextElement.FontSizeProperty);
+        provider.ClearValue(TextElement.FontFamilyProperty);
+        childText.FontSize.ShouldBe(16d);
+        childText.FontFamily.Name.ShouldBe("Courier New");
+
+        root.Child = null;
+        provider.IsSet(TextElement.FontSizeProperty).ShouldBeFalse();
+        provider.IsSet(TextElement.FontFamilyProperty).ShouldBeFalse();
     }
 
     private static ThemeTokenResourceProvider GetTokenResourceProvider(ThemeConfigProvider provider)

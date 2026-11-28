@@ -26,6 +26,11 @@ public sealed partial class SeparatorToken : AbstractControlDesignToken
     /// Horizontal space around a vertical separator.
     /// </summary>
     public partial double VerticalMarginInline { get; set; }
+
+    /// <summary>
+    /// Vertical inset above and below the rail of a vertical separator.
+    /// </summary>
+    public partial Thickness VerticalMarginBlock { get; set; }
     
     /// <summary>
     /// Vertical space around a small horizontal separator.

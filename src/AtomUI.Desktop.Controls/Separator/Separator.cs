@@ -6,9 +6,9 @@ using Avalonia.Layout;
 namespace AtomUI.Desktop.Controls;
 
 /// <summary>
-/// A separator that supplies the layout with three separator design tokens when the theme asks for them: the
-/// padding around the title, the default position of the title and the margin of a vertical line. Values set on
-/// the control itself take precedence over the tokens.
+/// A separator that supplies the layout with four separator design tokens when the theme asks for them: the
+/// padding around the title, the default position of the title, the horizontal margin of a vertical line and the
+/// vertical block inset of a vertical line. Values set on the control itself take precedence over the tokens.
 /// </summary>
 public partial class Separator : AbstractSeparator
 {
@@ -16,21 +16,23 @@ public partial class Separator : AbstractSeparator
     [
         SeparatorTokenKind.TextPaddingInline,
         SeparatorTokenKind.OrientationMarginPercent,
-        SeparatorTokenKind.VerticalMarginInline
+        SeparatorTokenKind.VerticalMarginInline,
+        SeparatorTokenKind.VerticalMarginBlock
     ];
 
     /// <summary>
     /// Returns a token set on this control with one slot for each layout token of the theme: the padding around the
     /// title (<c>SeparatorTokenKind.TextPaddingInline</c>), the ratio that places the title
-    /// (<c>SeparatorTokenKind.OrientationMarginPercent</c>) and the margin that widens a vertical separator
-    /// (<c>SeparatorTokenKind.VerticalMarginInline</c>). The set raises <paramref name="changed" /> when a token
+    /// (<c>SeparatorTokenKind.OrientationMarginPercent</c>), the margin that widens a vertical separator
+    /// (<c>SeparatorTokenKind.VerticalMarginInline</c>) and the vertical block inset of a vertical separator
+    /// (<c>SeparatorTokenKind.VerticalMarginBlock</c>). The set raises <paramref name="changed" /> when a token
     /// value changes.
     /// </summary>
     /// <param name="changed">
     /// The callback the set raises when a token value changes.
     /// </param>
     /// <returns>
-    /// A token set with three slots, in the order of the tokens above.
+    /// A token set with four slots, in the order of the tokens above.
     /// </returns>
     /// <remarks>
     /// The base class calls it when the control joins a visual tree and when the theme switches the tokens on or

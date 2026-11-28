@@ -91,6 +91,12 @@ public abstract class AbstractSeparator : AvaloniaSeparator, ICustomizableSizeTy
         CustomizableSizeTypeControlProperty.SizeTypeProperty.AddOwner<AbstractSeparator>();
 
     /// <summary>
+    /// Identifies the <see cref="VerticalMarginBlock" /> property.
+    /// </summary>
+    public static readonly StyledProperty<Thickness> VerticalMarginBlockProperty =
+        AvaloniaProperty.Register<AbstractSeparator, Thickness>(nameof(VerticalMarginBlock));
+
+    /// <summary>
     /// Text that breaks a horizontal separator line into two rails. Set it as the XAML content of the control.
     /// A vertical separator does not lay the title out. <see langword="null" /> or an empty string draws one
     /// continuous line and clears the <c>:has-title</c> pseudo-class.
@@ -134,8 +140,8 @@ public abstract class AbstractSeparator : AvaloniaSeparator, ICustomizableSizeTy
 
     /// <summary>
     /// Direction of the line. <see cref="Avalonia.Layout.Orientation.Horizontal" />, the default, draws it across
-    /// the control; <see cref="Avalonia.Layout.Orientation.Vertical" /> draws it from top to bottom, inset by a
-    /// fifth of the height at each end, and ignores the title.
+    /// the control; <see cref="Avalonia.Layout.Orientation.Vertical" /> draws it from top to bottom and ignores the
+    /// title.
     /// </summary>
     public Orientation Orientation
     {
@@ -200,6 +206,16 @@ public abstract class AbstractSeparator : AvaloniaSeparator, ICustomizableSizeTy
         set => SetValue(SizeTypeProperty, value);
     }
 
+    /// <summary>
+    /// Vertical inset above and below the rail of a vertical separator, in DIPs. When left unset on an unsized,
+    /// non-stretched inline vertical separator whose theme token is zero, the rail uses a symmetric rounded inset.
+    /// </summary>
+    public Thickness VerticalMarginBlock
+    {
+        get => GetValue(VerticalMarginBlockProperty);
+        set => SetValue(VerticalMarginBlockProperty, value);
+    }
+
     #endregion
 
     #region 内部属性定义
@@ -255,13 +271,14 @@ public abstract class AbstractSeparator : AvaloniaSeparator, ICustomizableSizeTy
     private SeparatorRail? _railEnd;
     private double _currentEdgeDistance;
     private OwnerTokenSet? _layoutTokens;
-    private (double TextPadding, double EdgeRatio, double VerticalMargin) _layoutTokensValues;
+    private (double TextPadding, double EdgeRatio, double VerticalMargin, Thickness VerticalMarginBlock) _layoutTokensValues;
 
     /// <summary>
     /// Creates the token set that the layout reads when the theme requests it: the padding around the title,
-    /// the ratio that places the title while <see cref="OrientationMargin" /> is <see cref="double.NaN" />, and
-    /// the margin that widens a vertical separator. Returns <see langword="null" /> by default, which reads no
-    /// tokens. <paramref name="changed" /> is raised when a token value changes.
+    /// the ratio that places the title while <see cref="OrientationMargin" /> is <see cref="double.NaN" />, the
+    /// horizontal margin that widens a vertical separator, and the vertical block inset of a vertical separator.
+    /// Returns <see langword="null" /> by default, which reads no tokens. <paramref name="changed" /> is raised
+    /// when a token value changes.
     /// It is called when the control joins a visual tree and when the request changes while the control is attached.
     /// The control owns the set it returns and disposes it when it is replaced and when the control is detached.
     /// </summary>
@@ -276,6 +293,9 @@ public abstract class AbstractSeparator : AvaloniaSeparator, ICustomizableSizeTy
     private double EffectiveVerticalMargin =>
         IsSet(VerticalMarginInlineProperty) ? VerticalMarginInline : _layoutTokensValues.VerticalMargin;
 
+    private Thickness EffectiveVerticalMarginBlock =>
+        IsSet(VerticalMarginBlockProperty) ? VerticalMarginBlock : _layoutTokensValues.VerticalMarginBlock;
+
     static AbstractSeparator()
     {
         // Shared themes may set the layout properties directly.
@@ -286,7 +306,8 @@ public abstract class AbstractSeparator : AvaloniaSeparator, ICustomizableSizeTy
         AffectsArrange<AbstractSeparator>(TitlePositionProperty,
             OrientationMarginProperty,
             TextPaddingInlineProperty,
-            OrientationMarginPercentProperty);
+            OrientationMarginPercentProperty,
+            VerticalMarginBlockProperty);
     }
 
     /// <summary>
@@ -345,22 +366,56 @@ public abstract class AbstractSeparator : AvaloniaSeparator, ICustomizableSizeTy
 
     private void RefreshLayoutMetrics()
     {
-        var previous = (TextPadding: EffectiveTextPadding, EdgeRatio: EffectiveEdgeRatio, VerticalMargin: EffectiveVerticalMargin);
+        var previous = (
+            TextPadding: EffectiveTextPadding,
+            EdgeRatio: EffectiveEdgeRatio,
+            VerticalMargin: EffectiveVerticalMargin,
+            VerticalMarginBlock: EffectiveVerticalMarginBlock);
         var vertical = Orientation == Orientation.Vertical;
         var titled = !vertical && !string.IsNullOrEmpty(Title);
         _layoutTokensValues = (
             titled ? ReadLayoutToken(0, _layoutTokensValues.TextPadding) : 0,
             titled ? ReadLayoutToken(1, _layoutTokensValues.EdgeRatio) : 0,
-            vertical ? ReadLayoutToken(2, _layoutTokensValues.VerticalMargin) : 0);
+            vertical ? ReadLayoutToken(2, _layoutTokensValues.VerticalMargin) : 0,
+            vertical ? ReadThicknessLayoutToken(3, _layoutTokensValues.VerticalMarginBlock) : default);
 
         if (vertical && !previous.VerticalMargin.Equals(EffectiveVerticalMargin))
         {
             InvalidateMeasure();
         }
+        else if (vertical && !previous.VerticalMarginBlock.Equals(EffectiveVerticalMarginBlock))
+        {
+            InvalidateArrange();
+        }
         else if (titled && (!previous.TextPadding.Equals(EffectiveTextPadding) || !previous.EdgeRatio.Equals(EffectiveEdgeRatio)))
         {
             InvalidateArrange();
         }
+    }
+
+    private Thickness ReadThicknessLayoutToken(int index, Thickness previous)
+    {
+        var value = _layoutTokens?.GetValue(index);
+        if (value is Thickness thickness)
+        {
+            return thickness;
+        }
+        if (ReferenceEquals(value, BindingOperations.DoNothing))
+        {
+            return previous;
+        }
+        if (value is string text)
+        {
+            try
+            {
+                return Thickness.Parse(text);
+            }
+            catch (FormatException)
+            {
+                return default;
+            }
+        }
+        return default;
     }
 
     private double ReadLayoutToken(int index, double previous)
@@ -424,7 +479,7 @@ public abstract class AbstractSeparator : AvaloniaSeparator, ICustomizableSizeTy
         else
         {
             targetWidth  = Math.Max(1, LineWidth) + EffectiveVerticalMargin;
-            targetHeight = FontUtils.ConvertEmToPixel(1, FontSize, TopLevel.GetTopLevel(this)?.RenderScaling ?? 1.0);
+            targetHeight = FontUtils.ConvertEmToPixel(1, FontSize);
             if (!double.IsInfinity(availableSize.Height))
             {
                 targetHeight = Math.Max(availableSize.Height, targetHeight);
@@ -436,8 +491,10 @@ public abstract class AbstractSeparator : AvaloniaSeparator, ICustomizableSizeTy
 
     /// <summary>
     /// Arranges the rails and, on a horizontal separator with a visible title, the title, on top of the base
-    /// arrangement. The rails leave out the title and its padding; a vertical separator insets its rail by a
-    /// fifth of the height at each end. A derived override must call this base member to place them.
+    /// arrangement. The rails leave out the title and its padding; a vertical separator applies
+    /// <see cref="VerticalMarginBlock" /> when it is set or when an explicit height or stretched alignment is
+    /// active, and otherwise centers its rail with a symmetric rounded inset. A derived override must call this
+    /// base member to place them.
     /// </summary>
     protected override Size ArrangeOverride(Size finalSize)
     {
@@ -488,9 +545,24 @@ public abstract class AbstractSeparator : AvaloniaSeparator, ICustomizableSizeTy
         }
         else
         {
-            var inset      = finalSize.Height * 0.2;
-            var railHeight = Math.Max(0, finalSize.Height - inset * 2);
-            _railStart.Arrange(new Rect(0, inset, finalSize.Width, railHeight));
+            var blockMargin = EffectiveVerticalMarginBlock;
+            var useBlockMargin = IsSet(VerticalMarginBlockProperty) ||
+                                 !double.IsNaN(Height) ||
+                                 VerticalAlignment == VerticalAlignment.Stretch ||
+                                 blockMargin != default;
+            if (useBlockMargin)
+            {
+                var top        = Math.Max(0, blockMargin.Top);
+                var bottom     = Math.Max(0, blockMargin.Bottom);
+                var railHeight = Math.Max(0, finalSize.Height - top - bottom);
+                _railStart.Arrange(new Rect(0, top, finalSize.Width, railHeight));
+            }
+            else
+            {
+                var inset      = Math.Round(finalSize.Height * 0.2);
+                var railHeight = Math.Max(0, finalSize.Height - inset * 2);
+                _railStart.Arrange(new Rect(0, inset, finalSize.Width, railHeight));
+            }
             _railEnd.Arrange(new Rect(0, 0, 0, 0));
         }
     }

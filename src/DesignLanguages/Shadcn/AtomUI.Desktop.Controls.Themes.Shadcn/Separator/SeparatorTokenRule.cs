@@ -19,6 +19,7 @@ internal sealed class SeparatorTokenRule : IControlTokenRule<ShadcnToken, Separa
         token.TextPaddingInline              = 1.0;
         token.OrientationMarginPercent       = 0.05;
         token.VerticalMarginInline           = global.UniformlyMarginXS;
+        token.VerticalMarginBlock            = new Thickness(0);
         token.HorizontalMarginBlockSM        = new Thickness(0, global.UniformlyMarginXS);
         token.HorizontalMarginBlock          = new Thickness(0, global.UniformlyMargin);
         token.HorizontalMarginBlockLG        = new Thickness(0, global.UniformlyMarginLG);

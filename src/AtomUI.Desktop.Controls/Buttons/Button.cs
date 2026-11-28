@@ -350,6 +350,63 @@ public partial class Button : AbstractButton,
         set => SetValue(VariantProperty, value);
     }
 
+    /// <summary>
+    /// Identifies the <see cref="EffectiveIconVisible" /> property.
+    /// </summary>
+    public static readonly DirectProperty<Button, bool> EffectiveIconVisibleProperty =
+        AvaloniaProperty.RegisterDirect<Button, bool>(
+            nameof(EffectiveIconVisible),
+            o => o.EffectiveIconVisible);
+
+    /// <summary>
+    /// Identifies the <see cref="EffectiveBorderThickness" /> property.
+    /// </summary>
+    public static readonly StyledProperty<Thickness> EffectiveBorderThicknessProperty =
+        AvaloniaProperty.Register<Button, Thickness>(
+            nameof(EffectiveBorderThickness));
+
+    /// <summary>
+    /// Identifies the <see cref="EffectiveCornerRadius" /> property.
+    /// </summary>
+    public static readonly DirectProperty<Button, CornerRadius> EffectiveCornerRadiusProperty =
+        AvaloniaProperty.RegisterDirect<Button, CornerRadius>(nameof(EffectiveCornerRadius),
+            o => o.EffectiveCornerRadius,
+            (o, v) => o.EffectiveCornerRadius = v);
+
+    private bool _effectiveIconVisible;
+
+    /// <summary>
+    /// Whether the icon slot is shown: an AtomUI <see cref="AtomUI.Controls.Icon" /> is set, the icon is allowed
+    /// and the button is not loading. Templates bind to it instead of a three-way MultiBinding.
+    /// </summary>
+    public bool EffectiveIconVisible
+    {
+        get => _effectiveIconVisible;
+        private set => SetAndRaise(EffectiveIconVisibleProperty, ref _effectiveIconVisible, value);
+    }
+
+    /// <summary>
+    /// Effective border thickness applied by the button template frame after accounting for variant, borderless
+    /// states and compact-space adjustments.
+    /// </summary>
+    public Thickness EffectiveBorderThickness
+    {
+        get => GetValue(EffectiveBorderThicknessProperty);
+        set => SetValue(EffectiveBorderThicknessProperty, value);
+    }
+
+    private CornerRadius _effectiveCornerRadius;
+
+    /// <summary>
+    /// Effective corner radius applied by the button template frame after accounting for button shape,
+    /// compact-space position and any host-imposed radius.
+    /// </summary>
+    public CornerRadius EffectiveCornerRadius
+    {
+        get => _effectiveCornerRadius;
+        internal set => SetAndRaise(EffectiveCornerRadiusProperty, ref _effectiveCornerRadius, value);
+    }
+
     #endregion
 
     #region 内部属性定义
@@ -357,20 +414,11 @@ public partial class Button : AbstractButton,
     internal static readonly StyledProperty<bool> IsIconVisibleProperty =
         AvaloniaProperty.Register<Button, bool>(nameof(IsIconVisible), true);
 
-    internal static readonly DirectProperty<Button, bool> EffectiveIconVisibleProperty =
-        AvaloniaProperty.RegisterDirect<Button, bool>(
-            nameof(EffectiveIconVisible),
-            o => o.EffectiveIconVisible);
-
     internal static readonly StyledProperty<object?> RightExtraContentProperty =
         AvaloniaProperty.Register<Button, object?>(nameof(RightExtraContent));
 
     internal static readonly StyledProperty<IDataTemplate?> RightExtraContentTemplateProperty =
         AvaloniaProperty.Register<Button, IDataTemplate?>(nameof(RightExtraContentTemplate));
-
-    internal static readonly StyledProperty<Thickness> EffectiveBorderThicknessProperty =
-        AvaloniaProperty.Register<Button, Thickness>(
-            nameof(EffectiveBorderThickness));
 
     internal static readonly StyledProperty<bool> EffectiveIsDangerProperty =
         AvaloniaProperty.Register<Button, bool>(nameof(EffectiveIsDanger));
@@ -384,11 +432,6 @@ public partial class Button : AbstractButton,
     internal static readonly DirectProperty<Button, ButtonVariantAppearance> VariantAppearanceProperty =
         AvaloniaProperty.RegisterDirect<Button, ButtonVariantAppearance>(
             nameof(VariantAppearance), button => button.VariantAppearance);
-
-    internal static readonly DirectProperty<Button, CornerRadius> EffectiveCornerRadiusProperty =
-        AvaloniaProperty.RegisterDirect<Button, CornerRadius>(nameof(EffectiveCornerRadius),
-            o => o.EffectiveCornerRadius,
-            (o, v) => o.EffectiveCornerRadius = v);
 
     /// <summary>
     /// Corner radius imposed by a hosting control that splits one visual frame over several Buttons (SplitButton). It
@@ -437,18 +480,6 @@ public partial class Button : AbstractButton,
         set => SetValue(IsIconVisibleProperty, value);
     }
 
-    private bool _effectiveIconVisible;
-
-    /// <summary>
-    /// Whether the icon slot is shown: an AtomUI <see cref="AtomUI.Controls.Icon" /> is set, the icon is allowed
-    /// and the button is not loading. Templates bind to it instead of a three-way MultiBinding.
-    /// </summary>
-    internal bool EffectiveIconVisible
-    {
-        get => _effectiveIconVisible;
-        private set => SetAndRaise(EffectiveIconVisibleProperty, ref _effectiveIconVisible, value);
-    }
-
     internal object? RightExtraContent
     {
         get => GetValue(RightExtraContentProperty);
@@ -459,12 +490,6 @@ public partial class Button : AbstractButton,
     {
         get => GetValue(RightExtraContentTemplateProperty);
         set => SetValue(RightExtraContentTemplateProperty, value);
-    }
-
-    internal Thickness EffectiveBorderThickness
-    {
-        get => GetValue(EffectiveBorderThicknessProperty);
-        set => SetValue(EffectiveBorderThicknessProperty, value);
     }
 
     internal bool EffectiveIsDanger
@@ -501,14 +526,6 @@ public partial class Button : AbstractButton,
                 PseudoClasses.Set(":pressed-border", value.BorderPressed is not null);
             }
         }
-    }
-
-    private CornerRadius _effectiveCornerRadius;
-
-    internal CornerRadius EffectiveCornerRadius
-    {
-        get => _effectiveCornerRadius;
-        set => SetAndRaise(EffectiveCornerRadiusProperty, ref _effectiveCornerRadius, value);
     }
 
     // Round and circle shapes are expressed by the effective radius, not by CornerRadius.

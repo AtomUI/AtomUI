@@ -55,18 +55,42 @@ public partial class CardTabStrip : BaseTabStrip
         remove => RemoveHandler(AddTabRequestEvent, value);
     }
 
+    /// <summary>
+    /// Identifies the <see cref="CardBorderThickness" /> property.
+    /// </summary>
+    public static readonly StyledProperty<Thickness> CardBorderThicknessProperty =
+        AvaloniaProperty.Register<CardTabStrip, Thickness>(nameof(CardBorderThickness));
+
+    /// <summary>
+    /// Identifies the <see cref="EffectiveCardBorderRadius" /> property.
+    /// </summary>
+    public static readonly StyledProperty<CornerRadius> EffectiveCardBorderRadiusProperty =
+        AvaloniaProperty.Register<CardTabStrip, CornerRadius>(nameof(EffectiveCardBorderRadius));
+
+    /// <summary>
+    /// Corner radius applied to card tabs and the add-tab button for the active tab strip placement.
+    /// </summary>
+    public CornerRadius EffectiveCardBorderRadius
+    {
+        get => GetValue(EffectiveCardBorderRadiusProperty);
+        set => SetValue(EffectiveCardBorderRadiusProperty, value);
+    }
+
+    /// <summary>
+    /// Border thickness applied to card tabs and the add-tab button in the card tab strip template.
+    /// </summary>
+    public Thickness CardBorderThickness
+    {
+        get => GetValue(CardBorderThicknessProperty);
+        set => SetValue(CardBorderThicknessProperty, value);
+    }
+
     #endregion
 
     #region 内部属性实现
 
     internal static readonly StyledProperty<bool> UseCardRadiusTokenResourcesProperty =
         AvaloniaProperty.Register<CardTabStrip, bool>(nameof(UseCardRadiusTokenResources));
-
-    internal static readonly StyledProperty<Thickness> CardBorderThicknessProperty =
-        AvaloniaProperty.Register<CardTabStrip, Thickness>(nameof(CardBorderThickness));
-    
-    internal static readonly StyledProperty<CornerRadius> EffectiveCardBorderRadiusProperty =
-        AvaloniaProperty.Register<CardTabStrip, CornerRadius>(nameof(EffectiveCardBorderRadius));
     
     internal static readonly StyledProperty<double> CardSizeProperty =
         AvaloniaProperty.Register<CardTabStrip, double>(nameof(CardSize));
@@ -86,18 +110,6 @@ public partial class CardTabStrip : BaseTabStrip
 
     private OwnerTokenSet? _radiusTokens;
     private CornerRadius CardBorderRadius { get; set; }
-
-    internal CornerRadius EffectiveCardBorderRadius
-    {
-        get => GetValue(EffectiveCardBorderRadiusProperty);
-        set => SetValue(EffectiveCardBorderRadiusProperty, value);
-    }
-
-    internal Thickness CardBorderThickness
-    {
-        get => GetValue(CardBorderThicknessProperty);
-        set => SetValue(CardBorderThicknessProperty, value);
-    }
 
     internal double CardSize
     {

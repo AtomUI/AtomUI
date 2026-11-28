@@ -54,15 +54,39 @@ public partial class CardTabControl : BaseTabControl
         remove => RemoveHandler(AddTabRequestEvent, value);
     }
 
+    /// <summary>
+    /// Identifies the <see cref="EffectiveCardBorderRadius" /> property.
+    /// </summary>
+    public static readonly StyledProperty<CornerRadius> EffectiveCardBorderRadiusProperty =
+        AvaloniaProperty.Register<CardTabControl, CornerRadius>(nameof(EffectiveCardBorderRadius));
+
+    /// <summary>
+    /// Identifies the <see cref="CardBorderThickness" /> property.
+    /// </summary>
+    public static readonly StyledProperty<Thickness> CardBorderThicknessProperty =
+        AvaloniaProperty.Register<CardTabControl, Thickness>(nameof(CardBorderThickness));
+
+    /// <summary>
+    /// Corner radius applied to card tabs and the add-tab button for the active tab strip placement.
+    /// </summary>
+    public CornerRadius EffectiveCardBorderRadius
+    {
+        get => GetValue(EffectiveCardBorderRadiusProperty);
+        set => SetValue(EffectiveCardBorderRadiusProperty, value);
+    }
+
+    /// <summary>
+    /// Border thickness applied to card tabs and the add-tab button in the card tab control template.
+    /// </summary>
+    public Thickness CardBorderThickness
+    {
+        get => GetValue(CardBorderThicknessProperty);
+        set => SetValue(CardBorderThicknessProperty, value);
+    }
+
     #endregion
 
     #region 内部属性实现
-
-    internal static readonly StyledProperty<CornerRadius> EffectiveCardBorderRadiusProperty =
-        AvaloniaProperty.Register<CardTabControl, CornerRadius>(nameof(EffectiveCardBorderRadius));
-
-    internal static readonly StyledProperty<Thickness> CardBorderThicknessProperty =
-        AvaloniaProperty.Register<CardTabControl, Thickness>(nameof(CardBorderThickness));
 
     internal static readonly StyledProperty<double> CardSizeProperty =
         AvaloniaProperty.Register<CardTabControl, double>(nameof(CardSize));
@@ -87,18 +111,6 @@ public partial class CardTabControl : BaseTabControl
     /// </summary>
     private protected override void OnCardRadiusChanged() => HandleTabStripPlacementChanged();
 
-    internal CornerRadius EffectiveCardBorderRadius
-    {
-        get => GetValue(EffectiveCardBorderRadiusProperty);
-        set => SetValue(EffectiveCardBorderRadiusProperty, value);
-    }
-
-    internal Thickness CardBorderThickness
-    {
-        get => GetValue(CardBorderThicknessProperty);
-        set => SetValue(CardBorderThicknessProperty, value);
-    }
-    
     internal double CardSize
     {
         get => GetValue(CardSizeProperty);

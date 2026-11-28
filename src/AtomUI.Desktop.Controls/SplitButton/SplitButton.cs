@@ -447,21 +447,46 @@ public partial class SplitButton : ContentControl,
         set => SetCurrentValue(IsPopupPinnedOpenProperty, value);
     }
 
+    /// <summary>
+    /// Identifies the <see cref="SplitSeparatorBrush" /> property.
+    /// </summary>
+    public static readonly StyledProperty<IBrush?> SplitSeparatorBrushProperty =
+        AvaloniaProperty.Register<SplitButton, IBrush?>(nameof(SplitSeparatorBrush));
+
+    /// <summary>
+    /// Identifies the <see cref="EffectiveButtonType" /> property.
+    /// </summary>
+    public static readonly DirectProperty<SplitButton, ButtonType> EffectiveButtonTypeProperty =
+        AvaloniaProperty.RegisterDirect<SplitButton, ButtonType>(nameof(EffectiveButtonType),
+            o => o.EffectiveButtonType,
+            (o, v) => o.EffectiveButtonType = v);
+
+    /// <summary>
+    /// Brush of the vertical divider between the primary and secondary action buttons of the split button.
+    /// </summary>
+    public IBrush? SplitSeparatorBrush
+    {
+        get => GetValue(SplitSeparatorBrushProperty);
+        set => SetValue(SplitSeparatorBrushProperty, value);
+    }
+
+    private ButtonType _effectiveButtonType;
+
+    /// <summary>
+    /// Effective <see cref="ButtonType" /> forwarded to the child action buttons in the split button template.
+    /// </summary>
+    public ButtonType EffectiveButtonType
+    {
+        get => _effectiveButtonType;
+        internal set => SetAndRaise(EffectiveButtonTypeProperty, ref _effectiveButtonType, value);
+    }
+
     #endregion
 
     #region 内部属性定义
 
-    
-    internal static readonly StyledProperty<IBrush?> SplitSeparatorBrushProperty = 
-        AvaloniaProperty.Register<SplitButton, IBrush?>(nameof (SplitSeparatorBrush));
-
     internal static readonly StyledProperty<bool> UseInsetSeparatorProperty =
         AvaloniaProperty.Register<SplitButton, bool>(nameof(UseInsetSeparator));
-
-    internal static readonly DirectProperty<SplitButton, ButtonType> EffectiveButtonTypeProperty =
-        AvaloniaProperty.RegisterDirect<SplitButton, ButtonType>(nameof(EffectiveButtonType),
-            o => o.EffectiveButtonType,
-            (o, v) => o.EffectiveButtonType = v);
     
     internal static readonly StyledProperty<SpaceItemPosition?> CompactSpaceItemPositionProperty = 
         CompactSpaceAwareControlProperty.CompactSpaceItemPositionProperty.AddOwner<SplitButton>();
@@ -472,21 +497,7 @@ public partial class SplitButton : ContentControl,
     internal static readonly StyledProperty<bool> IsUsedInCompactSpaceProperty =
         CompactSpaceAwareControlProperty.IsUsedInCompactSpaceProperty.AddOwner<SplitButton>();
 
-    internal IBrush? SplitSeparatorBrush
-    {
-        get => GetValue(SplitSeparatorBrushProperty);
-        set => SetValue(SplitSeparatorBrushProperty, value);
-    }
-
     internal bool UseInsetSeparator => GetValue(UseInsetSeparatorProperty);
-
-    private ButtonType _effectiveButtonType;
-
-    internal ButtonType EffectiveButtonType
-    {
-        get => _effectiveButtonType;
-        set => SetAndRaise(EffectiveButtonTypeProperty, ref _effectiveButtonType, value);
-    }
     
     internal SpaceItemPosition? CompactSpaceItemPosition
     {

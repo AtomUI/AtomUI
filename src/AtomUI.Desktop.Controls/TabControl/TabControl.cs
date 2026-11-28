@@ -19,24 +19,34 @@ namespace AtomUI.Desktop.Controls;
 /// </summary>
 public partial class TabControl : BaseTabControl, ITransitionInitializationOwner
 {
+    #region 公共属性定义
+
+    /// <summary>
+    /// Identifies the <see cref="SelectedIndicatorRenderTransform" /> property.
+    /// </summary>
+    public static readonly StyledProperty<ITransform?> SelectedIndicatorRenderTransformProperty =
+        AvaloniaProperty.Register<TabControl, ITransform?>(nameof(SelectedIndicatorRenderTransform));
+
+    /// <summary>
+    /// Transform applied to the selected-tab ink bar to align it with the active tab item.
+    /// </summary>
+    public ITransform? SelectedIndicatorRenderTransform
+    {
+        get => GetValue(SelectedIndicatorRenderTransformProperty);
+        set => SetValue(SelectedIndicatorRenderTransformProperty, value);
+    }
+
+    #endregion
+
     #region 内部属性定义
 
     internal static readonly StyledProperty<double> SelectedIndicatorThicknessProperty =
         AvaloniaProperty.Register<TabControl, double>(nameof(SelectedIndicatorThickness));
     
-    internal static readonly StyledProperty<ITransform?> SelectedIndicatorRenderTransformProperty = 
-        AvaloniaProperty.Register<TabControl, ITransform?>(nameof (SelectedIndicatorRenderTransform));
-    
     internal double SelectedIndicatorThickness
     {
         get => GetValue(SelectedIndicatorThicknessProperty);
         set => SetValue(SelectedIndicatorThicknessProperty, value);
-    }
-    
-    internal ITransform? SelectedIndicatorRenderTransform
-    {
-        get => GetValue(SelectedIndicatorRenderTransformProperty);
-        set => SetValue(SelectedIndicatorRenderTransformProperty, value);
     }
 
     #endregion

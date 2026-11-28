@@ -125,6 +125,21 @@ public partial class TabStripItem : AvaloniaTabStripItem
         internal set => SetAndRaise(TabStripPlacementProperty, ref _tabStripPlacement, value);
     }
 
+    /// <summary>
+    /// Identifies the <see cref="CloseButtonOpacity" /> property.
+    /// </summary>
+    public static readonly StyledProperty<double> CloseButtonOpacityProperty =
+        AvaloniaProperty.Register<TabStripItem, double>(nameof(CloseButtonOpacity));
+
+    /// <summary>
+    /// Opacity applied to the tab close button in the template, driven by auto-hide and pointer-over state.
+    /// </summary>
+    public double CloseButtonOpacity
+    {
+        get => GetValue(CloseButtonOpacityProperty);
+        set => SetValue(CloseButtonOpacityProperty, value);
+    }
+
     #endregion
 
     #region 内部属性定义
@@ -137,10 +152,6 @@ public partial class TabStripItem : AvaloniaTabStripItem
 
     internal static readonly StyledProperty<TabSharp> ShapeProperty =
         AvaloniaProperty.Register<TabStripItem, TabSharp>(nameof(Shape));
-
-
-    internal static readonly StyledProperty<double> CloseButtonOpacityProperty =
-        AvaloniaProperty.Register<TabStripItem, double>(nameof(CloseButtonOpacity));
 
     internal static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<TabStripItem>();
@@ -182,12 +193,6 @@ public partial class TabStripItem : AvaloniaTabStripItem
     {
         get => GetValue(IsMotionEnabledProperty);
         set => SetValue(IsMotionEnabledProperty, value);
-    }
-
-    internal double CloseButtonOpacity
-    {
-        get => GetValue(CloseButtonOpacityProperty);
-        set => SetValue(CloseButtonOpacityProperty, value);
     }
 
     internal bool HasIcon

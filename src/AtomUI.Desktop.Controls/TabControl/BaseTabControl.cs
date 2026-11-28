@@ -542,6 +542,25 @@ public class BaseTabControl : AbstractTabControl, IMotionAwareControl, ITabOverf
         get => GetValue(IsTabAutoHideCloseButtonProperty);
         set => SetValue(IsTabAutoHideCloseButtonProperty, value);
     }
+
+    /// <summary>
+    /// Identifies the <see cref="TabStripMargin" /> property.
+    /// </summary>
+    public static readonly DirectProperty<BaseTabControl, Thickness> TabStripMarginProperty =
+        AvaloniaProperty.RegisterDirect<BaseTabControl, Thickness>(nameof(TabStripMargin),
+            o => o.TabStripMargin,
+            (o, v) => o.TabStripMargin = v);
+
+    private Thickness _tabStripMargin;
+
+    /// <summary>
+    /// Margin applied around the tab strip header container based on <see cref="TabControl.TabStripPlacement" />.
+    /// </summary>
+    public Thickness TabStripMargin
+    {
+        get => _tabStripMargin;
+        internal set => SetAndRaise(TabStripMarginProperty, ref _tabStripMargin, value);
+    }
     #endregion
 
     #region 内部属性实现
@@ -583,11 +602,6 @@ public class BaseTabControl : AbstractTabControl, IMotionAwareControl, ITabOverf
     /// </summary>
     private protected virtual object[]? CardRadiusKeys => null;
 
-    internal static readonly DirectProperty<BaseTabControl, Thickness> TabStripMarginProperty =
-        AvaloniaProperty.RegisterDirect<BaseTabControl, Thickness>(nameof(TabStripMargin),
-            o => o.TabStripMargin,
-            (o, v) => o.TabStripMargin = v);
-    
     internal static readonly DirectProperty<BaseTabControl, Thickness> EffectiveHeaderPaddingProperty =
         AvaloniaProperty.RegisterDirect<BaseTabControl, Thickness>(nameof(EffectiveHeaderPadding),
             o => o.EffectiveHeaderPadding,
@@ -596,14 +610,6 @@ public class BaseTabControl : AbstractTabControl, IMotionAwareControl, ITabOverf
     internal static readonly StyledProperty<bool> IsPopupPinnedOpenProperty =
         Flyout.IsPopupPinnedOpenProperty.AddOwner<BaseTabControl>();
 
-    private Thickness _tabStripMargin;
-
-    internal Thickness TabStripMargin
-    {
-        get => _tabStripMargin;
-        set => SetAndRaise(TabStripMarginProperty, ref _tabStripMargin, value);
-    }
-    
     private Thickness _effectiveHeaderPadding;
 
     internal Thickness EffectiveHeaderPadding

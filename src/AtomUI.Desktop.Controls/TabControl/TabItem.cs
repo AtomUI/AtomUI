@@ -131,6 +131,44 @@ public partial class TabItem : AbstractTabItem, ISelectable
         set => SetValue(IsAutoHideCloseButtonProperty, value);
     }
 
+    /// <summary>
+    /// Identifies the <see cref="CloseButtonOpacity" /> property.
+    /// </summary>
+    public static readonly StyledProperty<double> CloseButtonOpacityProperty =
+        AvaloniaProperty.Register<TabItem, double>(nameof(CloseButtonOpacity));
+
+    /// <summary>
+    /// Identifies the <see cref="LineMaskMargin" /> property.
+    /// </summary>
+    public static readonly DirectProperty<TabItem, Thickness> LineMaskMarginProperty =
+        AvaloniaProperty.RegisterDirect<TabItem, Thickness>(
+            nameof(LineMaskMargin),
+            o => o.LineMaskMargin,
+            (o, v) => o.LineMaskMargin = v);
+
+    /// <summary>
+    /// Opacity applied to the tab close button in the template, driven by <see cref="IsAutoHideCloseButton" /> and
+    /// pointer-over state.
+    /// </summary>
+    public double CloseButtonOpacity
+    {
+        get => GetValue(CloseButtonOpacityProperty);
+        set => SetValue(CloseButtonOpacityProperty, value);
+    }
+
+    // Card only
+    private Thickness _lineMaskMargin;
+
+    /// <summary>
+    /// Margin of the border-masking strip in a card tab template that covers the shared separator line along the
+    /// active tab edge.
+    /// </summary>
+    public Thickness LineMaskMargin
+    {
+        get => _lineMaskMargin;
+        internal set => SetAndRaise(LineMaskMarginProperty, ref _lineMaskMargin, value);
+    }
+
     #endregion
 
     #region 内部属性定义
@@ -147,20 +185,11 @@ public partial class TabItem : AbstractTabItem, ISelectable
     internal static readonly StyledProperty<bool> IsMotionEnabledProperty =
         MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<TabItem>();
 
-    internal static readonly StyledProperty<double> CloseButtonOpacityProperty =
-        AvaloniaProperty.Register<TabItem, double>(nameof(CloseButtonOpacity));
-
     internal static readonly StyledProperty<bool> HasIconProperty =
         AvaloniaProperty.Register<TabItem, bool>(nameof(HasIcon));
 
     internal static readonly StyledProperty<bool> IsIconSlotReservedProperty =
         AvaloniaProperty.Register<TabItem, bool>(nameof(IsIconSlotReserved));
-
-    internal static readonly DirectProperty<TabItem, Thickness> LineMaskMarginProperty =
-        AvaloniaProperty.RegisterDirect<TabItem, Thickness>(
-            nameof(LineMaskMargin),
-            o => o.LineMaskMargin,
-            (o, v) => o.LineMaskMargin = v);
 
     internal SizeType SizeType
     {
@@ -186,12 +215,6 @@ public partial class TabItem : AbstractTabItem, ISelectable
         set => SetValue(IsMotionEnabledProperty, value);
     }
 
-    internal double CloseButtonOpacity
-    {
-        get => GetValue(CloseButtonOpacityProperty);
-        set => SetValue(CloseButtonOpacityProperty, value);
-    }
-
     internal bool HasIcon
     {
         get => GetValue(HasIconProperty);
@@ -202,15 +225,6 @@ public partial class TabItem : AbstractTabItem, ISelectable
     {
         get => GetValue(IsIconSlotReservedProperty);
         set => SetValue(IsIconSlotReservedProperty, value);
-    }
-
-    // Card only
-    private Thickness _lineMaskMargin;
-
-    internal Thickness LineMaskMargin
-    {
-        get => _lineMaskMargin;
-        set => SetAndRaise(LineMaskMarginProperty, ref _lineMaskMargin, value);
     }
     #endregion
 

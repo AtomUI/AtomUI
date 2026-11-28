@@ -123,6 +123,28 @@ public abstract partial class AbstractTextInput : AvaloniaTextBox,
         set => SetValue(IsMotionEnabledProperty, value);
     }
 
+    /// <summary>
+    /// Identifies the <see cref="IsPlaceholderTextVisible" /> property.
+    /// </summary>
+    public static readonly DirectProperty<AbstractTextInput, bool> IsPlaceholderTextVisibleProperty =
+        AvaloniaProperty.RegisterDirect<AbstractTextInput, bool>(
+            nameof(IsPlaceholderTextVisible),
+            o => o.IsPlaceholderTextVisible,
+            (o, value) => o.IsPlaceholderTextVisible = value);
+
+    private bool _isPlaceholderTextVisible = true;
+
+    /// <summary>
+    /// Whether the placeholder text of the theme is visible; the themes bind the visibility of the placeholder to
+    /// it. The control sets it to <see langword="true" /> while the text and the pre-edit text of the input method
+    /// are both empty, and to <see langword="false" /> otherwise. The initial value is <see langword="true" />.
+    /// </summary>
+    public bool IsPlaceholderTextVisible
+    {
+        get => _isPlaceholderTextVisible;
+        private set => SetAndRaise(IsPlaceholderTextVisibleProperty, ref _isPlaceholderTextVisible, value);
+    }
+
     #endregion
 
     #region 内部属性定义
@@ -150,12 +172,6 @@ public abstract partial class AbstractTextInput : AvaloniaTextBox,
             nameof(IsFormFeedbackVisible),
             o => o.IsFormFeedbackVisible,
             (o, value) => o.IsFormFeedbackVisible = value);
-
-    internal static readonly DirectProperty<AbstractTextInput, bool> IsPlaceholderTextVisibleProperty =
-        AvaloniaProperty.RegisterDirect<AbstractTextInput, bool>(
-            nameof(IsPlaceholderTextVisible),
-            o => o.IsPlaceholderTextVisible,
-            (o, value) => o.IsPlaceholderTextVisible = value);
 
     private bool _isEffectiveShowClearButton;
 
@@ -210,19 +226,6 @@ public abstract partial class AbstractTextInput : AvaloniaTextBox,
     {
         get => _isFormFeedbackVisible;
         private set => SetAndRaise(IsFormFeedbackVisibleProperty, ref _isFormFeedbackVisible, value);
-    }
-
-    private bool _isPlaceholderTextVisible = true;
-
-    /// <summary>
-    /// Whether the placeholder text of the theme is visible; the themes bind the visibility of the placeholder to
-    /// it. The control sets it to <see langword="true" /> while the text and the pre-edit text of the input method
-    /// are both empty, and to <see langword="false" /> otherwise. The initial value is <see langword="true" />.
-    /// </summary>
-    internal bool IsPlaceholderTextVisible
-    {
-        get => _isPlaceholderTextVisible;
-        private set => SetAndRaise(IsPlaceholderTextVisibleProperty, ref _isPlaceholderTextVisible, value);
     }
 
     #endregion

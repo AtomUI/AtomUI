@@ -41,7 +41,7 @@ Splitter 的公共契约由根控件 API、面板附加属性、折叠模型、�
 
 | 契约组 | 代表成员 | 维护含义 |
 | --- | --- | --- |
-| 根布局 | `Orientation`、`Children` | 定义面板排列方向和面板集合。 |
+| 根布局 | `Orientation`、`Children` | 定义分割线方向与面板集合：`Orientation` 表示分割线本身的方向，而非子面板排列方向——`Vertical`（默认）画竖向分割线、左右排列面板并横向拖动，`Horizontal` 画横向分割线、上下排列面板并纵向拖动。 |
 | 拖拽反馈 | `IsLazy`、`HandleSize` | 控制拖拽反馈时机和把手命中区域尺寸。 |
 | 折叠入口 | `CollapsePreviousIcon`、`CollapseNextIcon`、`Splitter.Collapsible`、`Splitter.IsCollapsed` | 定义面板是否可折叠、折叠状态以及折叠图标。 |
 | 面板尺寸 | `Splitter.Size`、`Splitter.DefaultSize`、`Splitter.MinSize`、`Splitter.MaxSize` | 定义子面板初始尺寸、默认尺寸和尺寸约束。 |

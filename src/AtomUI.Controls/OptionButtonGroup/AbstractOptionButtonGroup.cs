@@ -6,6 +6,7 @@ using AtomUI.Media;
 using AtomUI.Utils;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Controls.Templates;
 using Avalonia.Data;
@@ -24,6 +25,7 @@ namespace AtomUI.Controls.Commons;
 /// <see cref="AbstractOptionButton" />. The checked option is the one at
 /// <see cref="SelectingItemsControl.SelectedIndex" />.
 /// </summary>
+[TemplatePart("PART_GroupChrome", typeof(OptionButtonGroupChrome))]
 public abstract class AbstractOptionButtonGroup : SelectingItemsControl,
                                                   ICustomizableSizeTypeAware,
                                                   IInteractionEffectAwareControl,
@@ -60,6 +62,20 @@ public abstract class AbstractOptionButtonGroup : SelectingItemsControl,
     /// </summary>
     public static readonly StyledProperty<bool> IsInteractionEffectEnabledProperty =
         InteractionEffectAwareControlProperty.IsInteractionEffectEnabledProperty.AddOwner<AbstractOptionButtonGroup>();
+
+    /// <summary>
+    /// Identifies the <see cref="EffectiveBorderThickness" /> property.
+    /// </summary>
+    public static readonly DirectProperty<AbstractOptionButtonGroup, Thickness> EffectiveBorderThicknessProperty =
+        AvaloniaProperty.RegisterDirect<AbstractOptionButtonGroup, Thickness>(nameof(EffectiveBorderThickness),
+            o => o.EffectiveBorderThickness,
+            (o, v) => o.EffectiveBorderThickness = v);
+
+    /// <summary>
+    /// Identifies the <see cref="SelectedOptionBorderColor" /> property.
+    /// </summary>
+    public static readonly StyledProperty<IBrush?> SelectedOptionBorderColorProperty =
+        AvaloniaProperty.Register<AbstractOptionButtonGroup, IBrush?>(nameof(SelectedOptionBorderColor));
 
     /// <summary>
     /// Size preset of the group and of every option, <see cref="CustomizableSizeType.Middle" /> by default.
@@ -115,6 +131,29 @@ public abstract class AbstractOptionButtonGroup : SelectingItemsControl,
         get => GetValue(IsInteractionEffectEnabledProperty);
         set => SetValue(IsInteractionEffectEnabledProperty, value);
     }
+
+    private Thickness _effectiveBorderThickness;
+
+    /// <summary>
+    /// Border thickness that the theme applies to the outer template frame of the group.
+    /// The default value is zero while <c>PART_GroupChrome</c> paints the joined outer border using
+    /// <see cref="TemplatedControl.BorderThickness" />.
+    /// </summary>
+    public Thickness EffectiveBorderThickness
+    {
+        get => _effectiveBorderThickness;
+        set => SetAndRaise(EffectiveBorderThicknessProperty, ref _effectiveBorderThickness, value);
+    }
+
+    /// <summary>
+    /// Border brush of the highlight border that <c>PART_GroupChrome</c> draws around the selected option in the
+    /// <see cref="OptionButtonStyle.Outline" /> style; <see langword="null" /> draws no border.
+    /// </summary>
+    public IBrush? SelectedOptionBorderColor
+    {
+        get => GetValue(SelectedOptionBorderColorProperty);
+        set => SetValue(SelectedOptionBorderColorProperty, value);
+    }
     
     #endregion
 
@@ -142,37 +181,6 @@ public abstract class AbstractOptionButtonGroup : SelectingItemsControl,
 
     #region 内部属性定义
 
-    internal static readonly DirectProperty<AbstractOptionButtonGroup, Thickness> EffectiveBorderThicknessProperty =
-        AvaloniaProperty.RegisterDirect<AbstractOptionButtonGroup, Thickness>(nameof(EffectiveBorderThickness),
-            o => o.EffectiveBorderThickness,
-            (o, v) => o.EffectiveBorderThickness = v);
-
-    internal static readonly StyledProperty<IBrush?> SelectedOptionBorderColorProperty =
-        AvaloniaProperty.Register<AbstractOptionButtonGroup, IBrush?>(nameof(SelectedOptionBorderColor));
-
-    private Thickness _effectiveBorderThickness;
-
-    /// <summary>
-    /// Border thickness that the theme applies to the frame of the group. The class only stores the value and never
-    /// changes it itself, and no other code assigns it, so the frame never has a border; the group's own rendering
-    /// reads <see cref="TemplatedControl.BorderThickness" /> instead.
-    /// </summary>
-    internal Thickness EffectiveBorderThickness
-    {
-        get => _effectiveBorderThickness;
-        set => SetAndRaise(EffectiveBorderThicknessProperty, ref _effectiveBorderThickness, value);
-    }
-
-    /// <summary>
-    /// Border brush of the background that the group draws behind the selected option. The theme sets it from the
-    /// <c>ColorPrimary</c> token of the group; <see langword="null" /> draws the background without a border.
-    /// </summary>
-    internal IBrush? SelectedOptionBorderColor
-    {
-        get => GetValue(SelectedOptionBorderColorProperty);
-        set => SetValue(SelectedOptionBorderColorProperty, value);
-    }
-
     private static readonly FuncTemplate<Panel?> DefaultPanel =
         new(() => new StackPanel
         {
@@ -183,6 +191,7 @@ public abstract class AbstractOptionButtonGroup : SelectingItemsControl,
 
     private readonly BorderRenderHelper _borderRenderHelper = new();
     private readonly Dictionary<AbstractOptionButton, CompositeDisposable> _optionButtonOwnerStateBindings = new();
+    private OptionButtonGroupChrome? _groupChrome;
     private IPen? _separatorPen;
 
     static AbstractOptionButtonGroup()
@@ -215,11 +224,13 @@ public abstract class AbstractOptionButtonGroup : SelectingItemsControl,
     private void HandleChildIndexChanged(object? sender, EventArgs args)
     {
         UpdateRealizedOptionButtonsState();
+        InvalidateGroupChrome();
     }
 
     private void HandleSelectionChanged(object? sender, SelectionChangedEventArgs args)
     {
         SyncSelectedOptionButton();
+        InvalidateGroupChrome();
     }
 
     private void HandleItemsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs args)
@@ -239,11 +250,36 @@ public abstract class AbstractOptionButtonGroup : SelectingItemsControl,
                 ReleaseDirectOptionButton(oldItem as AbstractOptionButton);
             }
         }
+
+        InvalidateGroupChrome();
     }
 
     /// <summary>
-    /// Gives every realized option button the new orientation when <see cref="Orientation" /> changes.
+    /// Resolves the optional <c>PART_GroupChrome</c> template part and requests an initial chrome paint.
     /// Overrides must call the base method.
+    /// </summary>
+    protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
+    {
+        base.OnApplyTemplate(e);
+        _groupChrome = e.NameScope.Find<OptionButtonGroupChrome>("PART_GroupChrome");
+        InvalidateGroupChrome();
+    }
+
+    /// <summary>
+    /// Arranges the option buttons and invalidates <c>PART_GroupChrome</c> so separators and the selected-option
+    /// outline match the updated option bounds. Overrides must call the base method.
+    /// </summary>
+    protected override Size ArrangeOverride(Size finalSize)
+    {
+        var arranged = base.ArrangeOverride(finalSize);
+        InvalidateGroupChrome();
+        return arranged;
+    }
+
+    /// <summary>
+    /// Gives every realized option button the new orientation when <see cref="Orientation" /> changes and
+    /// invalidates <c>PART_GroupChrome</c> whenever visual group properties change. Overrides must call the base
+    /// method.
     /// </summary>
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
@@ -252,6 +288,27 @@ public abstract class AbstractOptionButtonGroup : SelectingItemsControl,
         {
             UpdateRealizedOptionButtonsState();
         }
+
+        if (change.Property == SelectionModeProperty ||
+            change.Property == OrientationProperty ||
+            change.Property == SelectedOptionBorderColorProperty ||
+            change.Property == ButtonStyleProperty ||
+            change.Property == SelectedIndexProperty ||
+            change.Property == SelectedItemProperty ||
+            change.Property == BackgroundProperty ||
+            change.Property == BorderBrushProperty ||
+            change.Property == BorderThicknessProperty ||
+            change.Property == CornerRadiusProperty ||
+            change.Property == IsEnabledProperty ||
+            change.Property == UseLayoutRoundingProperty)
+        {
+            InvalidateGroupChrome();
+        }
+    }
+
+    internal void InvalidateGroupChrome()
+    {
+        _groupChrome?.InvalidateVisual();
     }
 
     /// <summary>
@@ -380,6 +437,7 @@ public abstract class AbstractOptionButtonGroup : SelectingItemsControl,
         if (container is AbstractOptionButton optionButton)
         {
             UpdateRealizedOptionButtonsState();
+            InvalidateGroupChrome();
             if (index == SelectedIndex && optionButton.IsChecked != true)
             {
                 optionButton.SetCurrentValue(ToggleButton.IsCheckedProperty, true);
@@ -425,6 +483,7 @@ public abstract class AbstractOptionButtonGroup : SelectingItemsControl,
             ReleaseOptionButtonOwnerState(optionButton);
         }
         base.ClearContainerForItemOverride(container);
+        InvalidateGroupChrome();
     }
 
     private void ReleaseDirectOptionButton(AbstractOptionButton? optionButton)
@@ -562,18 +621,12 @@ public abstract class AbstractOptionButtonGroup : SelectingItemsControl,
         }
     }
 
-    /// <summary>
-    /// Paints the background and border of the group, the separators between the options and, in the
-    /// <see cref="OptionButtonStyle.Outline" /> style, the border and fill of the checked option. In the
-    /// <see cref="OptionButtonStyle.Solid" /> style the checked option paints itself and the separators
-    /// next to it are not drawn.
-    /// </summary>
-    public override void Render(DrawingContext context)
+    internal void RenderGroupChrome(DrawingContext context, Control chrome)
     {
         var renderBorderThickness = BorderUtils.BuildRenderScaleAwareThickness(this, BorderThickness);
         var renderSize = Orientation == Orientation.Horizontal
             ? DesiredSize
-            : Bounds.Size;
+            : chrome.Bounds.Size;
         _borderRenderHelper.Render(context,
             renderSize,
             renderBorderThickness,
@@ -582,7 +635,7 @@ public abstract class AbstractOptionButtonGroup : SelectingItemsControl,
             Background,
             BorderBrush);
 
-        if (Bounds.Width <= 0 || Bounds.Height <= 0 || ItemCount <= 0)
+        if (chrome.Bounds.Width <= 0 || chrome.Bounds.Height <= 0 || ItemCount <= 0)
         {
             return;
         }
@@ -591,7 +644,7 @@ public abstract class AbstractOptionButtonGroup : SelectingItemsControl,
         for (var i = 0; i < ItemCount; ++i)
         {
             if (ContainerFromIndex(i) is not AbstractOptionButton optionButton ||
-                !TryGetGroupLocalBounds(optionButton, out var optionBounds))
+                !TryGetChromeLocalBounds(optionButton, chrome, out var optionBounds))
             {
                 continue;
             }
@@ -601,7 +654,7 @@ public abstract class AbstractOptionButtonGroup : SelectingItemsControl,
                 var isAdjacentToSelection = i == selectedIndex || i + 1 == selectedIndex;
                 if (ButtonStyle != OptionButtonStyle.Solid || !isAdjacentToSelection)
                 {
-                    DrawSeparator(context, optionBounds, renderBorderThickness);
+                    DrawSeparator(context, chrome.Bounds.Size, optionBounds, renderBorderThickness);
                 }
             }
 
@@ -620,9 +673,9 @@ public abstract class AbstractOptionButtonGroup : SelectingItemsControl,
         }
     }
 
-    private bool TryGetGroupLocalBounds(Control container, out Rect bounds)
+    private static bool TryGetChromeLocalBounds(Control container, Control chrome, out Rect bounds)
     {
-        if (container.TranslatePoint(default, this) is { } origin)
+        if (container.TranslatePoint(default, chrome) is { } origin)
         {
             bounds = new Rect(origin, container.Bounds.Size);
             return true;
@@ -634,6 +687,7 @@ public abstract class AbstractOptionButtonGroup : SelectingItemsControl,
 
     private void DrawSeparator(
         DrawingContext context,
+        Size chromeSize,
         Rect optionBounds,
         Thickness renderBorderThickness)
     {
@@ -645,14 +699,14 @@ public abstract class AbstractOptionButtonGroup : SelectingItemsControl,
             thickness = renderBorderThickness.Left;
             var offset = optionBounds.Right - thickness / 2;
             startPoint = new Point(offset, 0);
-            endPoint   = new Point(offset, Bounds.Height);
+            endPoint   = new Point(offset, chromeSize.Height);
         }
         else
         {
             thickness = renderBorderThickness.Top;
             var offset = optionBounds.Bottom - thickness / 2;
             startPoint = new Point(0, offset);
-            endPoint   = new Point(Bounds.Width, offset);
+            endPoint   = new Point(chromeSize.Width, offset);
         }
 
         if (MathUtils.IsZero(thickness))

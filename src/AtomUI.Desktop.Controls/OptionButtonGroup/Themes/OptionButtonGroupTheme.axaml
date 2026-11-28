@@ -10,8 +10,12 @@
                                          BorderThickness="{TemplateBinding EffectiveBorderThickness}"
                                          BorderBrush="{TemplateBinding BorderBrush}"
                                          CornerRadius="{TemplateBinding CornerRadius}">
-                    <ItemsPresenter Name="PART_ItemsPresenter"
-                                    ItemsPanel="{TemplateBinding ItemsPanel}" />
+                    <Panel>
+                        <atom:OptionButtonGroupChrome Name="PART_GroupChrome"
+                                                      IsHitTestVisible="False" />
+                        <ItemsPresenter Name="PART_ItemsPresenter"
+                                        ItemsPanel="{TemplateBinding ItemsPanel}" />
+                    </Panel>
                 </atom:PixelAlignedBorder>
             </ControlTemplate>
         </Setter>

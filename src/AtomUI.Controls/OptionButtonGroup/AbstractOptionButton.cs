@@ -5,6 +5,7 @@ using AtomUI.Controls.Utils;
 using AtomUI.Utils;
 using Avalonia;
 using Avalonia.Controls;
+using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
@@ -19,16 +20,57 @@ using AvaloniaRadioButton = Avalonia.Controls.RadioButton;
 
 /// <summary>
 /// Base class of one option of an <see cref="AbstractOptionButtonGroup" />, which must be its parent.
-/// The button paints its own background and border with the corner radius that its position in the
-/// group allows; the group supplies the size, the style, the orientation and the motion settings.
+/// The button presents its background and border through <c>PART_Frame</c> (falling back to root rendering when a
+/// custom template omits <c>PART_Frame</c>) with the corner radius that its position in the group allows; the group
+/// supplies the size, the style, the orientation and the motion settings.
 /// </summary>
+[TemplatePart("PART_Frame", typeof(Control))]
 public abstract class AbstractOptionButton : AvaloniaRadioButton
 {
+    #region 公共属性定义
+
     /// <summary>
     /// Identifies the <see cref="Icon" /> property.
     /// </summary>
     public static readonly StyledProperty<PathIcon?> IconProperty = AvaloniaProperty.Register<AbstractOptionButton, PathIcon?>(nameof (Icon));
-    
+
+    /// <summary>
+    /// Identifies the <see cref="SizeType" /> property.
+    /// </summary>
+    public static readonly StyledProperty<CustomizableSizeType> SizeTypeProperty =
+        CustomizableSizeTypeControlProperty.SizeTypeProperty.AddOwner<AbstractOptionButton>();
+
+    /// <summary>
+    /// Identifies the <see cref="ButtonStyle" /> property.
+    /// </summary>
+    public static readonly StyledProperty<OptionButtonStyle> ButtonStyleProperty =
+        AvaloniaProperty.Register<AbstractOptionButton, OptionButtonStyle>(nameof(ButtonStyle));
+
+    /// <summary>
+    /// Identifies the <see cref="GroupOrientation" /> property.
+    /// </summary>
+    public static readonly DirectProperty<AbstractOptionButton, Orientation> GroupOrientationProperty =
+        AvaloniaProperty.RegisterDirect<AbstractOptionButton, Orientation>(
+            nameof(GroupOrientation),
+            o => o.GroupOrientation,
+            (o, v) => o.GroupOrientation = v,
+            Orientation.Horizontal);
+
+    /// <summary>
+    /// Identifies the <see cref="EffectiveCornerRadius" /> property.
+    /// </summary>
+    public static readonly DirectProperty<AbstractOptionButton, CornerRadius> EffectiveCornerRadiusProperty =
+        AvaloniaProperty.RegisterDirect<AbstractOptionButton, CornerRadius>(
+            nameof(EffectiveCornerRadius),
+            o => o.EffectiveCornerRadius,
+            (o, v) => o.EffectiveCornerRadius = v);
+
+    /// <summary>
+    /// Identifies the <see cref="OutlineCheckedFill" /> property.
+    /// </summary>
+    public static readonly StyledProperty<IBrush?> OutlineCheckedFillProperty =
+        AvaloniaProperty.Register<AbstractOptionButton, IBrush?>(nameof(OutlineCheckedFill));
+
     /// <summary>
     /// Icon shown to the left of the option text, tinted with <see cref="TemplatedControl.Foreground" />.
     /// <see langword="null" />, the default, shows the text only. Set it on the option button, or let an
@@ -39,46 +81,6 @@ public abstract class AbstractOptionButton : AvaloniaRadioButton
         get => GetValue(IconProperty);
         set => SetValue(IconProperty, value);
     }
-    
-    #region 内部属性定义
-
-    internal static readonly StyledProperty<CustomizableSizeType> SizeTypeProperty =
-        CustomizableSizeTypeControlProperty.SizeTypeProperty.AddOwner<AbstractOptionButton>();
-
-    internal static readonly StyledProperty<OptionButtonStyle> ButtonStyleProperty =
-        AvaloniaProperty.Register<AbstractOptionButton, OptionButtonStyle>(nameof(ButtonStyle));
-    
-    internal static readonly DirectProperty<AbstractOptionButton, OptionButtonPositionTrait> GroupPositionTraitProperty =
-        AvaloniaProperty.RegisterDirect<AbstractOptionButton, OptionButtonPositionTrait>(
-            nameof(GroupPositionTrait),
-            o => o.GroupPositionTrait,
-            (o, v) => o.GroupPositionTrait = v,
-            OptionButtonPositionTrait.OnlyOne);
-
-    internal static readonly DirectProperty<AbstractOptionButton, Orientation> GroupOrientationProperty =
-        AvaloniaProperty.RegisterDirect<AbstractOptionButton, Orientation>(
-            nameof(GroupOrientation),
-            o => o.GroupOrientation,
-            (o, v) => o.GroupOrientation = v,
-            Orientation.Horizontal);
-
-    internal static readonly DirectProperty<AbstractOptionButton, CornerRadius> EffectiveCornerRadiusProperty =
-        AvaloniaProperty.RegisterDirect<AbstractOptionButton, CornerRadius>(
-            nameof(EffectiveCornerRadius),
-            o => o.EffectiveCornerRadius,
-            (o, v) => o.EffectiveCornerRadius = v);
-
-    internal static readonly StyledProperty<bool> IsMotionEnabledProperty =
-        MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<AbstractOptionButton>();
-
-    internal static readonly StyledProperty<bool> IsInteractionEffectEnabledProperty =
-        InteractionEffectAwareControlProperty.IsInteractionEffectEnabledProperty.AddOwner<AbstractOptionButton>();
-
-    /// <summary>
-    /// Identifies the <see cref="OutlineCheckedFill" /> property.
-    /// </summary>
-    internal static readonly StyledProperty<IBrush?> OutlineCheckedFillProperty =
-        AvaloniaProperty.Register<AbstractOptionButton, IBrush?>(nameof(OutlineCheckedFill));
 
     /// <summary>
     /// Size step of the option, <c>Middle</c> by default. The group binds it one-way to its own
@@ -87,7 +89,7 @@ public abstract class AbstractOptionButton : AvaloniaRadioButton
     /// step, and in a vertical group the height of the option as well. A change invalidates the measure of the
     /// option.
     /// </summary>
-    internal CustomizableSizeType SizeType
+    public CustomizableSizeType SizeType
     {
         get => GetValue(SizeTypeProperty);
         set => SetValue(SizeTypeProperty, value);
@@ -96,23 +98,80 @@ public abstract class AbstractOptionButton : AvaloniaRadioButton
     /// <summary>
     /// Visual style of the option, <c>Outline</c> by default. The group binds it one-way to its own
     /// <see cref="AbstractOptionButtonGroup.ButtonStyle" />, so the value of the group applies to every option. For
-    /// <c>Solid</c> the theme fills a checked option with its own colors and animates their changes while
-    /// <see cref="IsMotionEnabled" /> is <see langword="true" />; for <c>Outline</c> the group marks the checked
-    /// option with a border of its own and with <see cref="OutlineCheckedFill" />. A change invalidates the measure
-    /// of the option.
+    /// <c>Solid</c> the theme fills a checked option with its own colors and animates their changes while motion is
+    /// enabled; for <c>Outline</c> the group marks the checked option with a border of its own and with
+    /// <see cref="OutlineCheckedFill" />. A change invalidates the measure of the option.
     /// </summary>
-    internal OptionButtonStyle ButtonStyle
+    public OptionButtonStyle ButtonStyle
     {
         get => GetValue(ButtonStyleProperty);
         set => SetValue(ButtonStyleProperty, value);
     }
-    
+
+    private Orientation _groupOrientation;
+
+    /// <summary>
+    /// Orientation of the group the option belongs to, <see cref="Orientation.Horizontal" /> by default; the group
+    /// assigns its own <c>Orientation</c> to every option. Together with position in the group it decides
+    /// which corners keep the radius of <see cref="TemplatedControl.CornerRadius" /> in
+    /// <see cref="EffectiveCornerRadius" />. The theme selects on a vertical group to give the option a fixed height
+    /// and to stretch its content layout.
+    /// </summary>
+    public Orientation GroupOrientation
+    {
+        get => _groupOrientation;
+        internal set => SetAndRaise(GroupOrientationProperty, ref _groupOrientation, value);
+    }
+
+    private CornerRadius _effectiveCornerRadius;
+
+    /// <summary>
+    /// Corner radius the option paints its background and border with: the corners on the outside of the group keep
+    /// the radius of <see cref="TemplatedControl.CornerRadius" /> and the corners that touch a neighbor are square.
+    /// The option rebuilds it when <see cref="TemplatedControl.CornerRadius" />, the group position or
+    /// <see cref="GroupOrientation" /> changes.
+    /// </summary>
+    public CornerRadius EffectiveCornerRadius
+    {
+        get => _effectiveCornerRadius;
+        private set => SetAndRaise(EffectiveCornerRadiusProperty, ref _effectiveCornerRadius, value);
+    }
+
+    /// <summary>
+    /// Fill of the checked option in the <see cref="OptionButtonStyle.Outline" /> style. The option button
+    /// does not paint it: the group chrome draws the fill inside a border of its own over the checked option and
+    /// the separators next to it, and only while the group and the option are enabled. The theme takes the
+    /// value from the <c>ButtonOutlineCheckedBackground</c> token, which is transparent by default;
+    /// <see langword="null" /> paints no fill.
+    /// </summary>
+    public IBrush? OutlineCheckedFill
+    {
+        get => GetValue(OutlineCheckedFillProperty);
+        set => SetValue(OutlineCheckedFillProperty, value);
+    }
+
+    #endregion
+
+    #region 内部属性定义
+
+    internal static readonly DirectProperty<AbstractOptionButton, OptionButtonPositionTrait> GroupPositionTraitProperty =
+        AvaloniaProperty.RegisterDirect<AbstractOptionButton, OptionButtonPositionTrait>(
+            nameof(GroupPositionTrait),
+            o => o.GroupPositionTrait,
+            (o, v) => o.GroupPositionTrait = v,
+            OptionButtonPositionTrait.OnlyOne);
+
+    internal static readonly StyledProperty<bool> IsMotionEnabledProperty =
+        MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<AbstractOptionButton>();
+
+    internal static readonly StyledProperty<bool> IsInteractionEffectEnabledProperty =
+        InteractionEffectAwareControlProperty.IsInteractionEffectEnabledProperty.AddOwner<AbstractOptionButton>();
+
     /// <summary>
     /// Whether the option animates. The group binds it one-way to
     /// <see cref="AbstractOptionButtonGroup.IsMotionEnabled" />, so the value of the group applies to every option.
-    /// While it is <see langword="true" />, a press that ends plays the click wave of <c>PART_WaveSpirit</c> when
-    /// <see cref="IsWaveSpiritEnabled" /> is <see langword="true" /> as well, and the theme of the <c>Solid</c>
-    /// style animates the color changes of the option. The template passes the value to <c>PART_WaveSpirit</c>.
+    /// While it is <see langword="true" />, the theme of the <c>Solid</c> style animates the color changes of the
+    /// option.
     /// </summary>
     internal bool IsMotionEnabled
     {
@@ -132,19 +191,6 @@ public abstract class AbstractOptionButton : AvaloniaRadioButton
         set => SetValue(IsInteractionEffectEnabledProperty, value);
     }
 
-    /// <summary>
-    /// Fill of the checked option in the <see cref="OptionButtonStyle.Outline" /> style. The option button
-    /// does not paint it: the group draws the fill inside a border of its own over the checked option and
-    /// the separators next to it, and only while the group and the option are enabled. The theme takes the
-    /// value from the <c>ButtonOutlineCheckedBackground</c> token, which is transparent by default;
-    /// <see langword="null" /> paints no fill.
-    /// </summary>
-    internal IBrush? OutlineCheckedFill
-    {
-        get => GetValue(OutlineCheckedFillProperty);
-        set => SetValue(OutlineCheckedFillProperty, value);
-    }
-
     private OptionButtonPositionTrait _groupPositionTrait = OptionButtonPositionTrait.OnlyOne;
 
     internal OptionButtonPositionTrait GroupPositionTrait
@@ -153,43 +199,13 @@ public abstract class AbstractOptionButton : AvaloniaRadioButton
         set => SetAndRaise(GroupPositionTraitProperty, ref _groupPositionTrait, value);
     }
 
-    private Orientation _groupOrientation;
-
-    /// <summary>
-    /// Orientation of the group the option belongs to, <see cref="Orientation.Horizontal" /> by default; the group
-    /// assigns its own <c>Orientation</c> to every option. Together with <see cref="GroupPositionTrait" /> it decides
-    /// which corners keep the radius of <see cref="TemplatedControl.CornerRadius" /> in
-    /// <see cref="EffectiveCornerRadius" />. The theme selects on a vertical group to give the option a fixed height
-    /// and to stretch its content layout.
-    /// </summary>
-    internal Orientation GroupOrientation
-    {
-        get => _groupOrientation;
-        set => SetAndRaise(GroupOrientationProperty, ref _groupOrientation, value);
-    }
-
-    private CornerRadius _effectiveCornerRadius;
-
-    /// <summary>
-    /// Corner radius the option paints its background and border with: the corners on the outside of the group keep
-    /// the radius of <see cref="TemplatedControl.CornerRadius" /> and the corners that touch a neighbor are square.
-    /// The option rebuilds it when <see cref="TemplatedControl.CornerRadius" />,
-    /// <see cref="GroupPositionTrait" /> or <see cref="GroupOrientation" /> changes. The template passes it to
-    /// <c>PART_WaveSpirit</c> through its <c>CornerRadius</c>.
-    /// </summary>
-    internal CornerRadius EffectiveCornerRadius
-    {
-        get => _effectiveCornerRadius;
-        private set => SetAndRaise(EffectiveCornerRadiusProperty, ref _effectiveCornerRadius, value);
-    }
-
     internal event EventHandler<OptionButtonPointerEventArgs>? OptionButtonPointerEvent;
 
     #endregion
 
     private readonly BorderRenderHelper _borderRenderHelper;
-
     private readonly TransitionInitializationSession _transitionInitialization;
+    private bool _hasTemplateFrame;
 
     static AbstractOptionButton()
     {
@@ -216,6 +232,7 @@ public abstract class AbstractOptionButton : AvaloniaRadioButton
     /// </summary>
     protected override void OnTemplateChanged(AvaloniaPropertyChangedEventArgs e)
     {
+        _hasTemplateFrame = false;
         _transitionInitialization?.Reset();
         base.OnTemplateChanged(e);
     }
@@ -259,10 +276,11 @@ public abstract class AbstractOptionButton : AvaloniaRadioButton
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
-        if (change.Property == OutlineCheckedFillProperty)
+        if (change.Property == OutlineCheckedFillProperty ||
+            change.Property == IsEnabledProperty)
         {
-            // The group paints the fill.
-            this.FindAncestorOfType<AbstractOptionButtonGroup>()?.InvalidateVisual();
+            // The group chrome paints the outline fill and enabled state of the checked option.
+            this.FindAncestorOfType<AbstractOptionButtonGroup>()?.InvalidateGroupChrome();
         }
 
         if (change.Property == CornerRadiusProperty ||
@@ -362,11 +380,16 @@ public abstract class AbstractOptionButton : AvaloniaRadioButton
     }
 
     /// <summary>
-    /// Paints <c>Background</c> and <c>BorderBrush</c> within <c>EffectiveCornerRadius</c>; no template part
-    /// draws them. Overrides must call the base method.
+    /// Paints <c>Background</c> and <c>BorderBrush</c> within <c>EffectiveCornerRadius</c> as a fallback when the
+    /// applied template does not declare <c>PART_Frame</c>. Overrides must call the base method.
     /// </summary>
     public override void Render(DrawingContext context)
     {
+        if (_hasTemplateFrame)
+        {
+            return;
+        }
+
         _borderRenderHelper.Render(context,
             Bounds.Size,
             BorderUtils.BuildRenderScaleAwareThickness(this, BorderThickness),
@@ -377,12 +400,13 @@ public abstract class AbstractOptionButton : AvaloniaRadioButton
     }
 
     /// <summary>
-    /// Looks up the <c>WaveSpiritDecorator</c> named <c>PART_WaveSpirit</c> that plays the click wave, and
-    /// turns the transitions back on once the button is loaded. Overrides must call the base method.
+    /// Checks whether the template declares <c>PART_Frame</c> and completes transition initialization.
+    /// Overrides must call the base method.
     /// </summary>
     protected override void OnApplyTemplate(TemplateAppliedEventArgs e)
     {
         base.OnApplyTemplate(e);
+        _hasTemplateFrame = e.NameScope.Find<Control>("PART_Frame") is not null;
         _transitionInitialization.CompleteInitialization();
     }
 

@@ -7,6 +7,12 @@
         <Setter Property="Template">
             <ControlTemplate>
                 <Panel>
+                    <atom:PixelAlignedBorder Name="PART_Frame"
+                                             Background="{TemplateBinding Background}"
+                                             BorderBrush="{TemplateBinding BorderBrush}"
+                                             BorderThickness="{TemplateBinding BorderThickness}"
+                                             CornerRadius="{TemplateBinding EffectiveCornerRadius}"
+                                             BackgroundSizing="InnerBorderEdge" />
                     <DockPanel Name="ContentLayout"
                                HorizontalAlignment="Center"
                                VerticalAlignment="Center"
@@ -14,6 +20,7 @@
                                LastChildFill="True">
                         <atom:IconPresenter Name="IconPresenter"
                                             DockPanel.Dock="Left"
+                                            VerticalAlignment="Center"
                                             IconBrush="{TemplateBinding Foreground}"
                                             IsVisible="{TemplateBinding Icon, Converter={x:Static ObjectConverters.IsNotNull}}"
                                             Icon="{TemplateBinding Icon}" />

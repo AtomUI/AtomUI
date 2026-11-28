@@ -43,6 +43,8 @@ internal sealed class ToggleSwitchTokenRule : IControlTokenRule<AntDesignToken, 
         token.TrackBorderColor        = Colors.Transparent;
         token.TrackCheckedBorderColor = Colors.Transparent;
         token.TrackBorderThickness    = 0;
+        token.TrackCornerRadius       = null;
+        token.HandleCornerRadius      = null;
         token.HandleSize      = new Size(handleSize, handleSize);
         token.HandleSizeSM    = new Size(handleSizeSM, handleSizeSM);
         token.EnableHandlePressStretch = true;

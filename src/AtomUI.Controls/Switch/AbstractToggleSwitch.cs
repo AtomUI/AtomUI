@@ -141,6 +141,42 @@ public abstract class AbstractToggleSwitch : ToggleButton,
     /// </summary>
     public static readonly StyledProperty<Size> KnobSizeProperty =
         AvaloniaProperty.Register<AbstractToggleSwitch, Size>(nameof(KnobSize));
+
+    /// <summary>
+    /// Identifies the <see cref="TrackCornerRadius" /> property.
+    /// </summary>
+    public static readonly StyledProperty<CornerRadius?> TrackCornerRadiusProperty =
+        AvaloniaProperty.Register<AbstractToggleSwitch, CornerRadius?>(nameof(TrackCornerRadius));
+
+    /// <summary>
+    /// Identifies the <see cref="HandleCornerRadius" /> property.
+    /// </summary>
+    public static readonly StyledProperty<CornerRadius?> HandleCornerRadiusProperty =
+        AvaloniaProperty.Register<AbstractToggleSwitch, CornerRadius?>(nameof(HandleCornerRadius));
+
+    /// <summary>
+    /// Identifies the <see cref="KnobRenderTransform" /> property.
+    /// </summary>
+    public static readonly StyledProperty<ITransform?> KnobRenderTransformProperty =
+        AvaloniaProperty.Register<AbstractToggleSwitch, ITransform?>(nameof(KnobRenderTransform));
+
+    /// <summary>
+    /// Identifies the <see cref="KnobWidthExtension" /> property.
+    /// </summary>
+    public static readonly StyledProperty<double> KnobWidthExtensionProperty =
+        SwitchKnob.KnobWidthExtensionProperty.AddOwner<AbstractToggleSwitch>();
+
+    /// <summary>
+    /// Identifies the <see cref="OnContentOffset" /> property.
+    /// </summary>
+    public static readonly StyledProperty<Point> OnContentOffsetProperty =
+        AvaloniaProperty.Register<AbstractToggleSwitch, Point>(nameof(OnContentOffset));
+
+    /// <summary>
+    /// Identifies the <see cref="OffContentOffset" /> property.
+    /// </summary>
+    public static readonly StyledProperty<Point> OffContentOffsetProperty =
+        AvaloniaProperty.Register<AbstractToggleSwitch, Point>(nameof(OffContentOffset));
     
     /// <summary>
     /// Gets or sets the brush that fills the groove of the switch.
@@ -352,6 +388,96 @@ public abstract class AbstractToggleSwitch : ToggleButton,
         set => SetValue(KnobSizeProperty, value);
     }
 
+    /// <summary>
+    /// Gets or sets the corner radius of the switch track, or <see langword="null" /> to draw a full capsule pill.
+    /// </summary>
+    public CornerRadius? TrackCornerRadius
+    {
+        get => GetValue(TrackCornerRadiusProperty);
+        set => SetValue(TrackCornerRadiusProperty, value);
+    }
+
+    /// <summary>
+    /// Gets or sets the corner radius of the switch handle, or <see langword="null" /> to draw a circle or capsule pill.
+    /// </summary>
+    public CornerRadius? HandleCornerRadius
+    {
+        get => GetValue(HandleCornerRadiusProperty);
+        set => SetValue(HandleCornerRadiusProperty, value);
+    }
+
+    // The knob target is the base value its transition animates to. SetCurrentValue would write it into the active
+    // animation layer during a transition, and the end of that transition would drop it.
+    /// <summary>
+    /// Gets the transform of the knob: a translation to the top-left corner of the knob rectangle, which lies
+    /// <see cref="TrackPadding" /> from the left edge of the switch while the switch is unchecked, from the
+    /// right edge while it is checked, and from the top edge. The theme binds <c>RenderTransform</c> of
+    /// <c>PART_SwitchKnob</c> to it and animates it while <see cref="IsMotionEnabled" /> is
+    /// <see langword="true" />.
+    /// </summary>
+    /// <remarks>
+    /// Only the control sets the value: when the switch is arranged, when the checked state changes and, for a
+    /// knob of the template, when the pressed state changes. A custom template that leaves the
+    /// <c>RenderTransform</c> of <c>PART_SwitchKnob</c> unset gets the same binding from
+    /// <see cref="OnApplyTemplate" />.
+    /// </remarks>
+    public ITransform? KnobRenderTransform
+    {
+        get => GetValue(KnobRenderTransformProperty);
+        private set => SetValue(KnobRenderTransformProperty, value);
+    }
+
+    /// <summary>
+    /// Gets how much wider in device-independent pixels the knob is drawn than <see cref="KnobSize" />: 30
+    /// percent of the knob width while the switch is pressed and press stretch is enabled, otherwise <c>0</c>.
+    /// The theme binds <c>KnobWidthExtension</c> of <c>PART_SwitchKnob</c> to it and animates it while
+    /// <see cref="IsMotionEnabled" /> is <see langword="true" />.
+    /// </summary>
+    /// <remarks>
+    /// The layout is not affected: the knob is measured and arranged with <see cref="KnobSize" />.
+    /// </remarks>
+    public double KnobWidthExtension
+    {
+        get => GetValue(KnobWidthExtensionProperty);
+        private set => SetValue(KnobWidthExtensionProperty, value);
+    }
+
+    /// <summary>
+    /// Gets or sets the offset in device-independent pixels from the top-left corner of the switch at which the
+    /// <see cref="OnContent" /> is laid out. While the switch is checked, the content starts from the left inner
+    /// margin and is centered vertically; a stretched knob shifts it further left. While the switch is unchecked,
+    /// the content lies left of the groove and is not visible.
+    /// </summary>
+    /// <remarks>
+    /// The control sets the value when the switch is arranged and when the checked or pressed state changes.
+    /// The theme binds <c>OnContentOffset</c> of <c>PART_MainContainer</c> (<c>ToggleSwitchContentPanel</c>) to
+    /// it, which applies it to <c>PART_OnContentPresenter</c>; while <see cref="IsMotionEnabled" /> is
+    /// <see langword="true" /> the theme animates the change.
+    /// </remarks>
+    public Point OnContentOffset
+    {
+        get => GetValue(OnContentOffsetProperty);
+        set => SetValue(OnContentOffsetProperty, value);
+    }
+
+    /// <summary>
+    /// Gets or sets the offset in device-independent pixels from the top-left corner of the switch at which the
+    /// <see cref="OffContent" /> is laid out. While the switch is unchecked, the content starts from the maximum
+    /// inner margin and is centered vertically; a stretched knob shifts it further right. While the switch is
+    /// checked, the content lies right of the groove and is not visible.
+    /// </summary>
+    /// <remarks>
+    /// The control sets the value when the switch is arranged and when the checked or pressed state changes.
+    /// The theme binds <c>OffContentOffset</c> of <c>PART_MainContainer</c> (<c>ToggleSwitchContentPanel</c>)
+    /// to it, which applies it to <c>PART_OffContentPresenter</c>; while <see cref="IsMotionEnabled" /> is
+    /// <see langword="true" /> the theme animates the change.
+    /// </remarks>
+    public Point OffContentOffset
+    {
+        get => GetValue(OffContentOffsetProperty);
+        set => SetValue(OffContentOffsetProperty, value);
+    }
+
     #endregion
 
     #region 内部属性定义
@@ -370,18 +496,6 @@ public abstract class AbstractToggleSwitch : ToggleButton,
 
     internal static readonly StyledProperty<double> IconSizeProperty =
         AvaloniaProperty.Register<AbstractToggleSwitch, double>(nameof(IconSize));
-
-    internal static readonly StyledProperty<ITransform?> KnobRenderTransformProperty =
-        AvaloniaProperty.Register<AbstractToggleSwitch, ITransform?>(nameof(KnobRenderTransform));
-
-    internal static readonly StyledProperty<double> KnobWidthExtensionProperty =
-        SwitchKnob.KnobWidthExtensionProperty.AddOwner<AbstractToggleSwitch>();
-
-    internal static readonly StyledProperty<Point> OnContentOffsetProperty =
-        AvaloniaProperty.Register<AbstractToggleSwitch, Point>(nameof(OnContentOffset));
-
-    internal static readonly StyledProperty<Point> OffContentOffsetProperty = 
-        AvaloniaProperty.Register<AbstractToggleSwitch, Point>(nameof(OffContentOffset));
 
     internal double InnerMaxMargin
     {
@@ -453,81 +567,6 @@ public abstract class AbstractToggleSwitch : ToggleButton,
     {
         get => GetValue(IconSizeProperty);
         set => SetValue(IconSizeProperty, value);
-    }
-
-    // The knob target is the base value its transition animates to. SetCurrentValue would write it into the active
-    // animation layer during a transition, and the end of that transition would drop it.
-    /// <summary>
-    /// Gets the transform of the knob: a translation to the top-left corner of the knob rectangle, which lies
-    /// <see cref="TrackPadding" /> from the left edge of the switch while the switch is unchecked, from the
-    /// right edge while it is checked, and from the top edge. The theme binds <c>RenderTransform</c> of
-    /// <c>PART_SwitchKnob</c> to it and animates it while <see cref="IsMotionEnabled" /> is
-    /// <see langword="true" />.
-    /// </summary>
-    /// <remarks>
-    /// Only the control sets the value: when the switch is arranged, when the checked state changes and, for a
-    /// knob of the template, when the pressed state changes. A custom template that leaves the
-    /// <c>RenderTransform</c> of <c>PART_SwitchKnob</c> unset gets the same binding from
-    /// <see cref="OnApplyTemplate" />.
-    /// </remarks>
-    internal ITransform? KnobRenderTransform
-    {
-        get => GetValue(KnobRenderTransformProperty);
-        private set => SetValue(KnobRenderTransformProperty, value);
-    }
-
-    /// <summary>
-    /// Gets how much wider in device-independent pixels the knob is drawn than <see cref="KnobSize" />: 30
-    /// percent of the knob width while the switch is pressed and <see cref="EnableHandlePressStretch" /> is
-    /// <see langword="true" />, otherwise <c>0</c>. The theme binds <c>KnobWidthExtension</c> of
-    /// <c>PART_SwitchKnob</c> to it and animates it while <see cref="IsMotionEnabled" /> is
-    /// <see langword="true" />.
-    /// </summary>
-    /// <remarks>
-    /// The layout is not affected: the knob is measured and arranged with <see cref="KnobSize" />.
-    /// </remarks>
-    internal double KnobWidthExtension
-    {
-        get => GetValue(KnobWidthExtensionProperty);
-        private set => SetValue(KnobWidthExtensionProperty, value);
-    }
-
-    /// <summary>
-    /// Gets or sets the offset in device-independent pixels from the top-left corner of the switch at which the
-    /// <see cref="OnContent" /> is laid out. While the switch is checked, the content starts
-    /// <see cref="InnerMinMargin" /> from the left edge and is centered vertically; the stretched knob of a
-    /// press shifts it further left. While the switch is unchecked, the content lies left of the groove and is
-    /// not visible.
-    /// </summary>
-    /// <remarks>
-    /// The control sets the value when the switch is arranged and when the checked or pressed state changes.
-    /// The theme binds <c>OnContentOffset</c> of <c>PART_MainContainer</c> (<c>ToggleSwitchContentPanel</c>) to
-    /// it, which applies it to <c>PART_OnContentPresenter</c>; while <see cref="IsMotionEnabled" /> is
-    /// <see langword="true" /> the theme animates the change.
-    /// </remarks>
-    internal Point OnContentOffset
-    {
-        get => GetValue(OnContentOffsetProperty);
-        set => SetValue(OnContentOffsetProperty, value);
-    }
-
-    /// <summary>
-    /// Gets or sets the offset in device-independent pixels from the top-left corner of the switch at which the
-    /// <see cref="OffContent" /> is laid out. While the switch is unchecked, the content starts
-    /// <see cref="InnerMaxMargin" /> from the left edge and is centered vertically; the stretched knob of a
-    /// press shifts it further right. While the switch is checked, the content lies right of the groove and is
-    /// not visible.
-    /// </summary>
-    /// <remarks>
-    /// The control sets the value when the switch is arranged and when the checked or pressed state changes.
-    /// The theme binds <c>OffContentOffset</c> of <c>PART_MainContainer</c> (<c>ToggleSwitchContentPanel</c>)
-    /// to it, which applies it to <c>PART_OffContentPresenter</c>; while <see cref="IsMotionEnabled" /> is
-    /// <see langword="true" /> the theme animates the change.
-    /// </remarks>
-    internal Point OffContentOffset
-    {
-        get => GetValue(OffContentOffsetProperty);
-        set => SetValue(OffContentOffsetProperty, value);
     }
 
     #endregion
@@ -816,9 +855,11 @@ public abstract class AbstractToggleSwitch : ToggleButton,
         return finalSize;
     }
 
-    // The groove is a pill over the whole bounds.
+    // The focus outline follows the explicit track corner radius when set, or defaults to a full capsule pill.
     CornerRadius IFocusOutlineShapeProvider.FocusOutlineCornerRadius =>
-        new CornerRadius(Math.Min(Bounds.Width, Bounds.Height) / 2);
+        TrackCornerRadius is { } trackCornerRadius
+            ? CornerRadiusUtils.ClampToSize(trackCornerRadius, Bounds.Width, Bounds.Height)
+            : new CornerRadius(Math.Min(Bounds.Width, Bounds.Height) / 2);
 
 
     /// <summary>

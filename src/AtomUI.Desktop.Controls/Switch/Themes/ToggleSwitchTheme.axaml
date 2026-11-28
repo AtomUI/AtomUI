@@ -10,7 +10,8 @@
                     <atom:SwitchTrack Name="PART_Track" IsHitTestVisible="False"
                                       Background="{TemplateBinding GrooveBackground}"
                                       BorderBrush="{TemplateBinding GrooveBorderBrush}"
-                                      BorderThickness="{TemplateBinding GrooveBorderThickness}" />
+                                      BorderThickness="{TemplateBinding GrooveBorderThickness}"
+                                      CornerRadius="{TemplateBinding TrackCornerRadius}" />
                     <atom:ToggleSwitchContentPanel Name="PART_MainContainer"
                                                    ClipToBounds="True"
                                                    OnContentOffset="{TemplateBinding OnContentOffset}"
@@ -31,6 +32,7 @@
                                      Classes.semantic-indicator="True"
                                      IsMotionEnabled="{TemplateBinding IsMotionEnabled}"
                                      KnobWidthExtension="{TemplateBinding KnobWidthExtension}"
+                                     KnobCornerRadius="{TemplateBinding HandleCornerRadius}"
                                      RenderTransform="{TemplateBinding KnobRenderTransform}"
                                      RenderTransformOrigin="0%,0%"
                                      IsCheckedState="{TemplateBinding IsChecked}" />
@@ -99,6 +101,8 @@
         <!-- The track outline (none by default: TrackBorderThickness 0) lies inside the track. -->
         <Setter Property="GrooveBorderThickness" Value="{atom:ToggleSwitchTokenResource TrackBorderThickness}" />
         <Setter Property="GrooveBorderBrush" Value="{atom:ToggleSwitchTokenResource TrackBorderColor}" />
+        <Setter Property="TrackCornerRadius" Value="{atom:ToggleSwitchTokenResource TrackCornerRadius}" />
+        <Setter Property="HandleCornerRadius" Value="{atom:ToggleSwitchTokenResource HandleCornerRadius}" />
         <Style Selector="^[IsChecked=True]">
             <Setter Property="GrooveBorderBrush"
                     Value="{atom:ToggleSwitchTokenResource TrackCheckedBorderColor}" />

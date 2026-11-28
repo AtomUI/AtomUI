@@ -30,7 +30,13 @@ public sealed class SwitchTrack : Control
         AvaloniaProperty.Register<SwitchTrack, double>(nameof(BorderThickness));
 
     /// <summary>
-    /// Fill brush of the pill-shaped switch track.
+    /// Identifies the <see cref="CornerRadius" /> property.
+    /// </summary>
+    public static readonly StyledProperty<CornerRadius?> CornerRadiusProperty =
+        AvaloniaProperty.Register<SwitchTrack, CornerRadius?>(nameof(CornerRadius));
+
+    /// <summary>
+    /// Fill brush of the switch track.
     /// </summary>
     public IBrush? Background
     {
@@ -56,18 +62,61 @@ public sealed class SwitchTrack : Control
         set => SetValue(BorderThicknessProperty, value);
     }
 
+    /// <summary>
+    /// Corner radius of the switch track, or <see langword="null" /> to draw a full capsule pill.
+    /// </summary>
+    public CornerRadius? CornerRadius
+    {
+        get => GetValue(CornerRadiusProperty);
+        set => SetValue(CornerRadiusProperty, value);
+    }
+
     private IPen? _pen;
 
     static SwitchTrack()
     {
-        AffectsRender<SwitchTrack>(BackgroundProperty, BorderBrushProperty, BorderThicknessProperty);
+        AffectsRender<SwitchTrack>(BackgroundProperty, BorderBrushProperty, BorderThicknessProperty, CornerRadiusProperty);
     }
 
     /// <inheritdoc />
     public override void Render(DrawingContext context)
     {
         var bounds = new Rect(Bounds.Size);
-        if (BorderThickness <= 0 || BorderBrush is null)
+        if (bounds.Width <= 0 || bounds.Height <= 0)
+        {
+            return;
+        }
+
+        var hasBorder = BorderThickness > 0 && BorderBrush is not null;
+        if (CornerRadius is { } cornerRadius)
+        {
+            if (!hasBorder)
+            {
+                var clampedRadius = CornerRadiusUtils.ClampToSize(cornerRadius, bounds.Width, bounds.Height);
+                context.DrawRectangle(Background, null, new RoundedRect(bounds, clampedRadius));
+                return;
+            }
+
+            var halfStroke = BorderThickness / 2;
+            var strokeRect = bounds.Deflate(halfStroke);
+            if (strokeRect.Width <= 0 || strokeRect.Height <= 0)
+            {
+                return;
+            }
+
+            var clampedOuterRadius = CornerRadiusUtils.ClampToSize(cornerRadius, bounds.Width, bounds.Height);
+            var innerRadius = new CornerRadius(
+                Math.Max(0, clampedOuterRadius.TopLeft - halfStroke),
+                Math.Max(0, clampedOuterRadius.TopRight - halfStroke),
+                Math.Max(0, clampedOuterRadius.BottomRight - halfStroke),
+                Math.Max(0, clampedOuterRadius.BottomLeft - halfStroke));
+            var clampedStrokeRadius = CornerRadiusUtils.ClampToSize(innerRadius, strokeRect.Width, strokeRect.Height);
+            PenUtils.TryModifyOrCreate(ref _pen, BorderBrush, BorderThickness);
+            context.DrawRectangle(Background, _pen, new RoundedRect(strokeRect, clampedStrokeRadius));
+            return;
+        }
+
+        if (!hasBorder)
         {
             context.DrawPilledRect(Background, null, bounds);
             return;

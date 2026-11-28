@@ -4,23 +4,36 @@ using Avalonia.Media;
 
 namespace AtomUI.Controls;
 
-// Content canvas of the toggle switch. It reports the desired size of the contents, so that a change of the
-// content size makes the owner measure again through the template tree. The template provides the offsets.
-// The contents are arranged in fixed slots; transitions only update the render transform.
-internal sealed class ToggleSwitchContentPanel : Canvas
+/// <summary>
+/// Content canvas used inside a toggle switch template to measure on/off content presenters and position them via
+/// render transforms driven by <see cref="OnContentOffset" /> and <see cref="OffContentOffset" />.
+/// </summary>
+public sealed class ToggleSwitchContentPanel : Canvas
 {
+    /// <summary>
+    /// Identifies the <see cref="OnContentOffset" /> property.
+    /// </summary>
     public static readonly StyledProperty<Point> OnContentOffsetProperty =
         AbstractToggleSwitch.OnContentOffsetProperty.AddOwner<ToggleSwitchContentPanel>();
 
+    /// <summary>
+    /// Identifies the <see cref="OffContentOffset" /> property.
+    /// </summary>
     public static readonly StyledProperty<Point> OffContentOffsetProperty =
         AbstractToggleSwitch.OffContentOffsetProperty.AddOwner<ToggleSwitchContentPanel>();
 
+    /// <summary>
+    /// Offset applied to <c>PART_OnContentPresenter</c> inside the switch groove.
+    /// </summary>
     public Point OnContentOffset
     {
         get => GetValue(OnContentOffsetProperty);
         set => SetValue(OnContentOffsetProperty, value);
     }
 
+    /// <summary>
+    /// Offset applied to <c>PART_OffContentPresenter</c> inside the switch groove.
+    /// </summary>
     public Point OffContentOffset
     {
         get => GetValue(OffContentOffsetProperty);
@@ -45,6 +58,10 @@ internal sealed class ToggleSwitchContentPanel : Canvas
         }
     }
 
+    /// <summary>
+    /// Reapplies content presenter render-transform offsets whenever <see cref="OnContentOffset" /> or
+    /// <see cref="OffContentOffset" /> changes.
+    /// </summary>
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
@@ -60,6 +77,10 @@ internal sealed class ToggleSwitchContentPanel : Canvas
     private void ApplyOffset(Control child) =>
         SetContentOffset(child, child.Name == "PART_OnContentPresenter" ? OnContentOffset : OffContentOffset);
 
+    /// <summary>
+    /// Measures all content presenters and notifies the owning <see cref="AbstractToggleSwitch" /> to rearrange so
+    /// centering offsets reflect any content size change.
+    /// </summary>
     protected override Size MeasureOverride(Size availableSize)
     {
         var desired = default(Size);
@@ -81,6 +102,9 @@ internal sealed class ToggleSwitchContentPanel : Canvas
         return desired;
     }
 
+    /// <summary>
+    /// Arranges all content presenters at their desired sizes and applies their current render-transform offsets.
+    /// </summary>
     protected override Size ArrangeOverride(Size finalSize)
     {
         foreach (var child in Children)

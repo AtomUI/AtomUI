@@ -94,6 +94,16 @@ public sealed partial class ToggleSwitchToken : AbstractControlDesignToken
     public partial double TrackBorderThickness { get; set; }
 
     /// <summary>
+    /// Corner radius of the track, or <see langword="null" /> to draw a capsule pill.
+    /// </summary>
+    public partial CornerRadius? TrackCornerRadius { get; set; }
+
+    /// <summary>
+    /// Corner radius of the handle, or <see langword="null" /> to draw a circle or capsule pill.
+    /// </summary>
+    public partial CornerRadius? HandleCornerRadius { get; set; }
+
+    /// <summary>
     /// Shadow drawn under the moving switch handle.
     /// </summary>
     public partial BoxShadow HandleShadow { get; set; }

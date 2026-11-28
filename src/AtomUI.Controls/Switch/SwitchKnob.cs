@@ -34,6 +34,30 @@ public class SwitchKnob : TemplatedControl
         AvaloniaProperty.Register<SwitchKnob, BoxShadow?>(nameof(KnobBoxShadow));
 
     /// <summary>
+    /// Identifies the <see cref="KnobCornerRadius" /> property.
+    /// </summary>
+    public static readonly StyledProperty<CornerRadius?> KnobCornerRadiusProperty =
+        AvaloniaProperty.Register<SwitchKnob, CornerRadius?>(nameof(KnobCornerRadius));
+
+    /// <summary>
+    /// Identifies the <see cref="LoadIndicatorBrush" /> property.
+    /// </summary>
+    public static readonly StyledProperty<IBrush?> LoadIndicatorBrushProperty =
+        AvaloniaProperty.Register<SwitchKnob, IBrush?>(nameof(LoadIndicatorBrush));
+
+    /// <summary>
+    /// Identifies the <see cref="KnobWidthExtension" /> property.
+    /// </summary>
+    public static readonly StyledProperty<double> KnobWidthExtensionProperty =
+        AvaloniaProperty.Register<SwitchKnob, double>(nameof(KnobWidthExtension));
+
+    /// <summary>
+    /// Identifies the <see cref="IsMotionEnabled" /> property.
+    /// </summary>
+    public static readonly StyledProperty<bool> IsMotionEnabledProperty =
+        MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<SwitchKnob>();
+
+    /// <summary>
     /// Indicates whether the owning switch is currently checked, controlling loading indicator coloring.
     /// </summary>
     public bool IsCheckedState
@@ -51,6 +75,46 @@ public class SwitchKnob : TemplatedControl
         set => SetValue(KnobBoxShadowProperty, value);
     }
 
+    /// <summary>
+    /// Corner radius of the knob surface, or <see langword="null" /> to draw a circle or capsule pill.
+    /// </summary>
+    public CornerRadius? KnobCornerRadius
+    {
+        get => GetValue(KnobCornerRadiusProperty);
+        set => SetValue(KnobCornerRadiusProperty, value);
+    }
+
+    /// <summary>
+    /// Brush of the loading arc that the knob draws while it is loading. The switch theme sets it on the knob part
+    /// from the <c>OffStateLoadIndicatorColor</c> Token and, while the switch is checked, from the
+    /// <c>SwitchColor</c> Token. The default is <see langword="null" />.
+    /// </summary>
+    public IBrush? LoadIndicatorBrush
+    {
+        get => GetValue(LoadIndicatorBrushProperty);
+        set => SetValue(LoadIndicatorBrushProperty, value);
+    }
+
+    /// <summary>
+    /// Extra width of the knob, in DIPs, on top of the resting knob width while pressed and press stretch is
+    /// enabled; <c>0</c> otherwise. The switch template forwards this value to the knob.
+    /// </summary>
+    public double KnobWidthExtension
+    {
+        get => GetValue(KnobWidthExtensionProperty);
+        set => SetValue(KnobWidthExtensionProperty, value);
+    }
+
+    /// <summary>
+    /// Whether the knob rotates the loading arc while it is loading; <see langword="true" /> by default. The
+    /// switch template forwards the motion state of the switch to the knob.
+    /// </summary>
+    public bool IsMotionEnabled
+    {
+        get => GetValue(IsMotionEnabledProperty);
+        set => SetValue(IsMotionEnabledProperty, value);
+    }
+
     #endregion
     
     #region 内部属性定义
@@ -58,17 +122,8 @@ public class SwitchKnob : TemplatedControl
     internal static readonly StyledProperty<int> RotationProperty =
         AvaloniaProperty.Register<SwitchKnob, int>(nameof(Rotation));
     
-    internal static readonly StyledProperty<IBrush?> LoadIndicatorBrushProperty = 
-        AvaloniaProperty.Register<SwitchKnob, IBrush?>(nameof(LoadIndicatorBrush));
-    
     internal static readonly StyledProperty<Size> KnobSizeProperty =
         AvaloniaProperty.Register<SwitchKnob, Size>(nameof(KnobSize));
-    
-    internal static readonly StyledProperty<double> KnobWidthExtensionProperty =
-        AvaloniaProperty.Register<SwitchKnob, double>(nameof(KnobWidthExtension));
-    
-    internal static readonly StyledProperty<bool> IsMotionEnabledProperty =
-        MotionAwareControlProperty.IsMotionEnabledProperty.AddOwner<SwitchKnob>();
     
     /// <summary>
     /// Identifies the <see cref="LoadIndicatorThickness" /> property.
@@ -94,17 +149,6 @@ public class SwitchKnob : TemplatedControl
     }
     
     /// <summary>
-    /// Brush of the loading arc that the knob draws while it is loading. The switch theme sets it on the knob part
-    /// from the <c>OffStateLoadIndicatorColor</c> Token and, while the switch is checked, from the
-    /// <c>SwitchColor</c> Token. The default is <see langword="null" />.
-    /// </summary>
-    internal IBrush? LoadIndicatorBrush
-    {
-        get => GetValue(LoadIndicatorBrushProperty);
-        set => SetValue(LoadIndicatorBrushProperty, value);
-    }
-    
-    /// <summary>
     /// Size of the knob, in DIPs. The knob reports it as its desired size; its painted height is the height it is
     /// arranged with. The switch copies its own <c>KnobSize</c> to the knob after the template is applied and
     /// whenever that value changes; its theme takes that value from the <c>HandleSizeSM</c> Token for the small size
@@ -114,31 +158,6 @@ public class SwitchKnob : TemplatedControl
     {
         get => GetValue(KnobSizeProperty);
         set => SetValue(KnobSizeProperty, value);
-    }
-    
-    /// <summary>
-    /// Extra width of the knob, in DIPs, on top of the width of <see cref="KnobSize" />. The switch sets it to the
-    /// difference between the stretched handle width and the knob width while it is pressed and press stretch is
-    /// enabled, and to <c>0</c> otherwise; its template forwards the value to the knob. The knob paints a circle
-    /// when its extended width equals its arranged height and a pill otherwise.
-    /// </summary>
-    internal double KnobWidthExtension
-    {
-        get => GetValue(KnobWidthExtensionProperty);
-        set => SetValue(KnobWidthExtensionProperty, value);
-    }
-    
-    /// <summary>
-    /// Whether the knob rotates the loading arc while it is loading; <see langword="true" /> by default. The
-    /// rotation runs while this is <see langword="true" />, the knob is attached to a visual tree and visible with
-    /// every visual ancestor, the effective <see cref="MotionActivity" /> source is active and
-    /// <see cref="LoadingAnimationDuration" /> is positive; setting this to <see langword="false" /> stops a running
-    /// rotation. The switch template forwards the value of the switch to the knob.
-    /// </summary>
-    internal bool IsMotionEnabled
-    {
-        get => GetValue(IsMotionEnabledProperty);
-        set => SetValue(IsMotionEnabledProperty, value);
     }
     
     /// <summary>
@@ -199,8 +218,8 @@ public class SwitchKnob : TemplatedControl
     static SwitchKnob()
     {
         AffectsRender<SwitchKnob>(
-            BackgroundProperty, RotationProperty, KnobSizeProperty, KnobWidthExtensionProperty, LoadIndicatorBrushProperty,
-            LoadIndicatorThicknessProperty);
+            BackgroundProperty, RotationProperty, KnobSizeProperty, KnobWidthExtensionProperty,
+            KnobCornerRadiusProperty, LoadIndicatorBrushProperty, LoadIndicatorThicknessProperty);
         AffectsMeasure<SwitchKnob>(KnobSizeProperty);
         IsMotionEnabledProperty.OverrideDefaultValue<SwitchKnob>(true);
     }
@@ -317,7 +336,12 @@ public class SwitchKnob : TemplatedControl
     {
         var renderWidth = KnobSize.Width + KnobWidthExtension;
         var targetRect  = new Rect(0, 0, renderWidth, Bounds.Height);
-        if (MathUtils.AreClose(renderWidth, targetRect.Height))
+        if (KnobCornerRadius is { } knobCornerRadius)
+        {
+            var clampedRadius = CornerRadiusUtils.ClampToSize(knobCornerRadius, targetRect.Width, targetRect.Height);
+            context.DrawRectangle(Background, null, new RoundedRect(targetRect, clampedRadius));
+        }
+        else if (MathUtils.AreClose(renderWidth, targetRect.Height))
         {
             context.DrawEllipse(Background, null, targetRect);
         }
@@ -329,7 +353,8 @@ public class SwitchKnob : TemplatedControl
         if (_isLoading)
         {
             var delta           = 2.5;
-            var loadingRectSize = new Size(KnobSize.Width, targetRect.Height).Deflate(new Thickness(delta));
+            var loadingDiameter = Math.Max(0, Math.Min(KnobSize.Width, targetRect.Height) - delta * 2);
+            var loadingRectSize = new Size(loadingDiameter, loadingDiameter);
             var loadingRect = new Rect(new Point(-loadingRectSize.Width / 2, -loadingRectSize.Height / 2),
                 loadingRectSize);
             var       pen                     = GetLoadIndicatorPen();

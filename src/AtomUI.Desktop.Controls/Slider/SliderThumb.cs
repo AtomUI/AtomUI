@@ -13,7 +13,8 @@ namespace AtomUI.Desktop.Controls;
 
 /// <summary>
 /// The draggable handle of a <see cref="Slider" />, created by the slider track.
-/// <see cref="Render" /> paints the circle with its border and outline ring. A pointer drag on the thumb is
+/// <see cref="Render" /> paints the handle as a circle by default or as a rounded rectangle when
+/// <see cref="ThumbCornerRadius" /> is set, with its border and outline ring. A pointer drag on the thumb is
 /// reported through the <see cref="DragStarted" />, <see cref="DragDelta" /> and <see cref="DragCompleted" />
 /// events, which bubble up to the slider.
 /// </summary>
@@ -42,6 +43,51 @@ public class SliderThumb : TemplatedControl
     /// </summary>
     public static readonly StyledProperty<double> ThumbCircleSizeProperty =
         AvaloniaProperty.Register<SliderThumb, double>(nameof(ThumbCircleSize));
+
+    /// <summary>
+    /// Identifies the <see cref="ThumbCornerRadius" /> property.
+    /// </summary>
+    public static readonly StyledProperty<CornerRadius?> ThumbCornerRadiusProperty =
+        AvaloniaProperty.Register<SliderThumb, CornerRadius?>(nameof(ThumbCornerRadius));
+
+    /// <summary>
+    /// Brush of the ring that <see cref="Render(DrawingContext)" /> draws around the thumb, outside the border
+    /// stroke; <see langword="null" />, the default, draws no ring. The handle style of the slider sets it.
+    /// </summary>
+    public IBrush? OutlineBrush
+    {
+        get => GetValue(OutlineBrushProperty);
+        set => SetValue(OutlineBrushProperty, value);
+    }
+
+    /// <summary>
+    /// Width of the outline ring around the thumb, in device-independent pixels; only the left value is used.
+    /// The handle style of the slider sets it.
+    /// </summary>
+    public Thickness OutlineThickness
+    {
+        get => GetValue(OutlineThicknessProperty);
+        set => SetValue(OutlineThicknessProperty, value);
+    }
+
+    /// <summary>
+    /// Diameter or side length of the thumb interior, in device-independent pixels, before adding border and
+    /// outline widths.
+    /// </summary>
+    public double ThumbCircleSize
+    {
+        get => GetValue(ThumbCircleSizeProperty);
+        set => SetValue(ThumbCircleSizeProperty, value);
+    }
+
+    /// <summary>
+    /// Corner radius of the thumb, or <see langword="null" /> to paint the default circular handle.
+    /// </summary>
+    public CornerRadius? ThumbCornerRadius
+    {
+        get => GetValue(ThumbCornerRadiusProperty);
+        set => SetValue(ThumbCornerRadiusProperty, value);
+    }
 
     #endregion
 
@@ -132,32 +178,6 @@ public class SliderThumb : TemplatedControl
         set => SetAndRaise(HandleIndexProperty, ref _handleIndex, value);
     }
 
-    /// <summary>
-    /// Brush of the ring that <see cref="Render(DrawingContext)" /> draws around the thumb circle, outside the border
-    /// stroke; <see langword="null" />, the default, draws no ring. The handle style of the slider sets it.
-    /// </summary>
-    internal IBrush? OutlineBrush
-    {
-        get => GetValue(OutlineBrushProperty);
-        set => SetValue(OutlineBrushProperty, value);
-    }
-
-    /// <summary>
-    /// Width of the outline ring around the thumb circle, in device-independent pixels; only the left value is used.
-    /// The handle style of the slider sets it.
-    /// </summary>
-    internal Thickness OutlineThickness
-    {
-        get => GetValue(OutlineThicknessProperty);
-        set => SetValue(OutlineThicknessProperty, value);
-    }
-
-    internal double ThumbCircleSize
-    {
-        get => GetValue(ThumbCircleSizeProperty);
-        set => SetValue(ThumbCircleSizeProperty, value);
-    }
-
     #endregion
 
     private int _handleIndex;
@@ -172,6 +192,7 @@ public class SliderThumb : TemplatedControl
         DragCompletedEvent.AddClassHandler<SliderThumb>((x, e) => x.OnDragCompleted(e), RoutingStrategies.Bubble);
         AffectsRender<SliderThumb>(BackgroundProperty,
             ThumbCircleSizeProperty,
+            ThumbCornerRadiusProperty,
             OutlineThicknessProperty,
             BorderThicknessProperty,
             OutlineBrushProperty,
@@ -320,20 +341,53 @@ public class SliderThumb : TemplatedControl
     }
 
     /// <summary>
-    /// Paints a circle of diameter <see cref="ThumbCircleSize" /> centered in the control bounds: filled with
-    /// <c>Background</c>, stroked with <c>BorderBrush</c> at the left border thickness, and surrounded by an
-    /// outline ring of <see cref="OutlineBrush" /> at the left <see cref="OutlineThickness" />.
+    /// Paints the thumb centered in the control bounds: as a circle of diameter <see cref="ThumbCircleSize" />
+    /// when <see cref="ThumbCornerRadius" /> is <see langword="null" />, or as a rounded rectangle clamped to the
+    /// thumb span when <see cref="ThumbCornerRadius" /> is set. Filled with <c>Background</c>, stroked with
+    /// <c>BorderBrush</c> at the left border thickness, and surrounded by an outline ring of
+    /// <see cref="OutlineBrush" /> at the left <see cref="OutlineThickness" />.
     /// </summary>
     public override void Render(DrawingContext context)
     {
+        var centerPos    = new Point(Bounds.Width / 2, Bounds.Height / 2);
+        var borderWidth  = BorderThickness.Left;
+        var outlineWidth = OutlineThickness.Left;
+        PenUtils.TryModifyOrCreate(ref _circlePen, BorderBrush, borderWidth);
+        PenUtils.TryModifyOrCreate(ref _outlinePen, OutlineBrush, outlineWidth);
+
+        if (ThumbCornerRadius is { } thumbCornerRadius)
+        {
+            var thumbSpan = ThumbCircleSize + borderWidth;
+            var thumbRect = new Rect(
+                centerPos.X - thumbSpan / 2,
+                centerPos.Y - thumbSpan / 2,
+                thumbSpan,
+                thumbSpan);
+            var clampedRadius = CornerRadiusUtils.ClampToSize(thumbCornerRadius, thumbRect.Width, thumbRect.Height);
+            context.DrawRectangle(Background, _circlePen, new RoundedRect(thumbRect, clampedRadius));
+
+            if (outlineWidth > 0 && _outlinePen is not null)
+            {
+                var outlineOffset = outlineWidth / 2;
+                var outlineRect   = thumbRect.Inflate(outlineOffset);
+                var outlineRadius = CornerRadiusUtils.ClampToSize(
+                    new CornerRadius(
+                        clampedRadius.TopLeft > 0 ? clampedRadius.TopLeft + outlineOffset : 0,
+                        clampedRadius.TopRight > 0 ? clampedRadius.TopRight + outlineOffset : 0,
+                        clampedRadius.BottomRight > 0 ? clampedRadius.BottomRight + outlineOffset : 0,
+                        clampedRadius.BottomLeft > 0 ? clampedRadius.BottomLeft + outlineOffset : 0),
+                    outlineRect.Width,
+                    outlineRect.Height);
+                context.DrawRectangle(null, _outlinePen, new RoundedRect(outlineRect, outlineRadius));
+            }
+            return;
+        }
+
         // The thumb circle.
-        var centerPos         = new Point(Bounds.Width / 2, Bounds.Height / 2);
-        var thumbCircleRadius = ThumbCircleSize / 2 + BorderThickness.Left / 2;
-        PenUtils.TryModifyOrCreate(ref _circlePen, BorderBrush, BorderThickness.Left);
+        var thumbCircleRadius = ThumbCircleSize / 2 + borderWidth / 2;
         context.DrawEllipse(Background, _circlePen, centerPos, thumbCircleRadius, thumbCircleRadius);
         // The outline ring.
-        var outlinePenRadius = ThumbCircleSize / 2 + BorderThickness.Left / 2 + OutlineThickness.Left / 2;
-        PenUtils.TryModifyOrCreate(ref _outlinePen, OutlineBrush, OutlineThickness.Left);
+        var outlinePenRadius = ThumbCircleSize / 2 + borderWidth / 2 + outlineWidth / 2;
         context.DrawEllipse(null, _outlinePen, centerPos, outlinePenRadius, outlinePenRadius);
     }
 

@@ -17,6 +17,7 @@
         <Setter Property="OutlineBrush" Value="{atom:SliderTokenResource ThumbOutlineColor}" />
         <Setter Property="OutlineThickness" Value="0" />
         <Setter Property="ThumbCircleSize" Value="{atom:SliderTokenResource ThumbCircleSize}" />
+        <Setter Property="ThumbCornerRadius" Value="{atom:SliderTokenResource ThumbCornerRadius}" />
         <Setter Property="Width" Value="{atom:SliderTokenResource ThumbSize}" />
         <Setter Property="Height" Value="{atom:SliderTokenResource ThumbSize}" />
         <Setter Property="UseLayoutRounding" Value="False" />

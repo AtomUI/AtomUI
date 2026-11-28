@@ -32,6 +32,7 @@ internal sealed class SliderTokenRule : IControlTokenRule<ShadcnToken, SliderTok
 
         token.ThumbCircleBorderThickness      = new Thickness(handleLineWidth);
         token.ThumbCircleBorderThicknessHover = new Thickness(handleLineWidthHover);
+        token.ThumbCornerRadius               = null;
 
         token.RailBg       = global.ColorFillTertiary;
         token.RailHoverBg  = global.ColorFillSecondary;

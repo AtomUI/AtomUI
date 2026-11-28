@@ -59,6 +59,11 @@ public sealed partial class SliderToken : AbstractControlDesignToken
     public partial Thickness ThumbCircleBorderThicknessHover { get; set; }
 
     /// <summary>
+    /// Corner radius of the slider thumb, or <see langword="null" /> to paint the default circular handle.
+    /// </summary>
+    public partial CornerRadius? ThumbCornerRadius { get; set; }
+
+    /// <summary>
     /// Background color of the unfilled rail at rest.
     /// </summary>
     public partial Color RailBg { get; set; }

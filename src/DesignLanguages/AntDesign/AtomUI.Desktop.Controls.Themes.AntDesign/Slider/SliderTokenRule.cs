@@ -31,6 +31,7 @@ internal sealed class SliderTokenRule : IControlTokenRule<AntDesignToken, Slider
 
         token.ThumbCircleBorderThickness      = new Thickness(handleLineWidth);
         token.ThumbCircleBorderThicknessHover = new Thickness(handleLineWidthHover);
+        token.ThumbCornerRadius               = null;
 
         token.RailBg       = global.ColorFillTertiary;
         token.RailHoverBg  = global.ColorFillSecondary;

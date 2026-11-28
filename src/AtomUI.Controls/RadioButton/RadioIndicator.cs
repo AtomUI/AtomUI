@@ -255,9 +255,15 @@ internal class RadioIndicator : TemplatedControl, IFocusOutlineShapeProvider
 
     // Without an explicit CornerRadius the indicator renders as a circle.
     CornerRadius IFocusOutlineShapeProvider.FocusOutlineCornerRadius =>
-        IsSet(CornerRadiusProperty) ? CornerRadius : new CornerRadius(Math.Min(Bounds.Width, Bounds.Height) / 2);
+        IsSet(CornerRadiusProperty)
+            ? CornerRadiusUtils.ClampToSize(CornerRadius, Bounds.Width, Bounds.Height)
+            : new CornerRadius(Math.Min(Bounds.Width, Bounds.Height) / 2);
 
-    public sealed override void Render(DrawingContext context)
+    /// <summary>
+    /// Paints the radio ring and, when checked, its inner dot. Explicit <c>CornerRadius</c> values are clamped
+    /// to half the rendered bounds so pill-sized radii stay symmetric.
+    /// </summary>
+    public override void Render(DrawingContext context)
     {
         var borderThickness = BorderUtils.BuildRenderScaleAwareThickness(this, BorderThickness);
         var penWidth        = borderThickness.Top;
@@ -265,7 +271,7 @@ internal class RadioIndicator : TemplatedControl, IFocusOutlineShapeProvider
         var targetRect  = new Rect(0, 0, Bounds.Width, Bounds.Height);
         var borderRect  = targetRect.Deflate(penWidth / 2);
         var roundedRect = IsSet(CornerRadiusProperty)
-            ? new RoundedRect(borderRect, CornerRadius)
+            ? new RoundedRect(borderRect, CornerRadiusUtils.ClampToSize(CornerRadius, borderRect.Width, borderRect.Height))
             : new RoundedRect(borderRect, Math.Min(borderRect.Width, borderRect.Height) / 2);
         context.DrawRectangle(Background, _cachedPen, roundedRect);
         if (IsChecked.HasValue && IsChecked.Value)

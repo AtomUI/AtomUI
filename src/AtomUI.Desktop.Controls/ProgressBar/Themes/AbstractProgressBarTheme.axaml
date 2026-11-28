@@ -49,7 +49,7 @@
             <Setter Property="SuccessStrokeBrush" Value="{atom:OwnerTokenResource ColorSuccess}" />
         </Style>
 
-        <Style Selector="^[IsCompleted=True]">
+        <Style Selector="^[IsCompleted=True], ^[IsIndeterminate=True]">
             <Style Selector="^ /template/ LayoutTransformControl#PART_LayoutTransformControl">
                 <Setter Property="IsVisible" Value="False" />
             </Style>

@@ -52,6 +52,12 @@ public abstract class AbstractLineProgress : AbstractProgressBar
         AvaloniaProperty.Register<AbstractLineProgress, Orientation>(nameof(Orientation));
 
     /// <summary>
+    /// Identifies the <see cref="PercentageLabelColor" /> property.
+    /// </summary>
+    public static readonly StyledProperty<IBrush?> PercentageLabelColorProperty =
+        AvaloniaProperty.Register<AbstractLineProgress, IBrush?>(nameof(PercentageLabelColor));
+
+    /// <summary>
     /// Gets or sets whether the bar runs horizontally or vertically; horizontal is the default. The value selects
     /// the <c>vertical</c> or <c>horizontal</c> pseudo class, and the explicit height of a horizontal bar or width
     /// of a vertical bar determines the size type.
@@ -60,6 +66,15 @@ public abstract class AbstractLineProgress : AbstractProgressBar
     {
         get => GetValue(OrientationProperty);
         set => SetValue(OrientationProperty, value);
+    }
+
+    /// <summary>
+    /// The brush of the percentage text. The theme binds the foreground of the percentage label to it.
+    /// </summary>
+    public IBrush? PercentageLabelColor
+    {
+        get => GetValue(PercentageLabelColorProperty);
+        set => SetValue(PercentageLabelColorProperty, value);
     }
     #endregion
     
@@ -79,9 +94,6 @@ public abstract class AbstractLineProgress : AbstractProgressBar
 
     internal static readonly StyledProperty<LineSizeTokenMode> LineSizeTokenResourceModeProperty =
         AvaloniaProperty.Register<AbstractLineProgress, LineSizeTokenMode>(nameof(LineSizeTokenResourceMode));
-
-    internal static readonly StyledProperty<IBrush?> PercentageLabelColorProperty =
-        AvaloniaProperty.Register<AbstractLineProgress, IBrush?>(nameof(PercentageLabelColor));
 
     /// <summary>
     /// Fill ratio from 0 to 1, updated whenever <see cref="AbstractProgressBar.Percentage" /> changes. It only
@@ -135,16 +147,6 @@ public abstract class AbstractLineProgress : AbstractProgressBar
     {
         get => GetValue(LineSizeTokenResourceModeProperty);
         set => SetValue(LineSizeTokenResourceModeProperty, value);
-    }
-
-    /// <summary>
-    /// The brush of the percentage text. The theme binds the foreground of the text to it. This class does not set
-    /// the value.
-    /// </summary>
-    internal IBrush? PercentageLabelColor
-    {
-        get => GetValue(PercentageLabelColorProperty);
-        set => SetValue(PercentageLabelColorProperty, value);
     }
 
     internal double IndicatorRatio
@@ -414,7 +416,8 @@ public abstract class AbstractLineProgress : AbstractProgressBar
             {
                 NotifyOrientationChanged();
             }
-            else if (change.Property == LineInfoIconSizeProperty ||
+            else if (change.Property == IsProgressInfoPresentedProperty ||
+                     change.Property == LineInfoIconSizeProperty ||
                      change.Property == LineProgressPaddingProperty ||
                      change.Property == LineExtraInfoMarginProperty ||
                      change.Property == FontSizeProperty ||

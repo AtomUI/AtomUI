@@ -39,7 +39,7 @@ internal sealed class LineProgressPanel : Panel
                     child.Arrange(grooveRect);
                     break;
                 case AbstractProgressBar.ProgressTrackPart:
-                    ArrangeFillTrack(child, owner.GetLineTrackRectByRatio(grooveRect, owner.IndicatorRatio), owner);
+                    ArrangeFillTrack(child, owner.GetLineTrackRectForRender(grooveRect), owner);
                     break;
                 case AbstractProgressBar.ProgressSuccessPart:
                     ArrangeSuccessTrack(owner, child, grooveRect);
@@ -73,7 +73,7 @@ internal sealed class LineProgressPanel : Panel
         {
             if (child.Name == AbstractProgressBar.ProgressTrackPart)
             {
-                ArrangeFillTrack(child, owner.GetLineTrackRectByRatio(_grooveRect, owner.IndicatorRatio), owner);
+                ArrangeFillTrack(child, owner.GetLineTrackRectForRender(_grooveRect), owner);
             }
         }
     }
@@ -96,7 +96,7 @@ internal sealed class LineProgressPanel : Panel
         Control track,
         Rect grooveRect)
     {
-        if (double.IsNaN(owner.SuccessThreshold))
+        if (owner.IsIndeterminate || double.IsNaN(owner.SuccessThreshold))
         {
             track.IsVisible = false;
             track.Arrange(default);

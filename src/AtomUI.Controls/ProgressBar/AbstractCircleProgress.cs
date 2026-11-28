@@ -91,6 +91,29 @@ public abstract class AbstractCircleProgress : AbstractProgressBar
         set => SetValue(StepGapProperty, value);
     }
 
+    /// <summary>
+    /// Identifies the <see cref="ShapeStrokeLineCap" /> property.
+    /// </summary>
+    public static readonly DirectProperty<AbstractCircleProgress, PenLineCap> ShapeStrokeLineCapProperty =
+        AvaloniaProperty.RegisterDirect<AbstractCircleProgress, PenLineCap>(
+            nameof(ShapeStrokeLineCap),
+            owner => owner.ShapeStrokeLineCap,
+            (owner, value) => owner.ShapeStrokeLineCap = value);
+
+    private PenLineCap _shapeStrokeLineCap;
+
+    /// <summary>
+    /// The line cap that the circle arcs are drawn with: <see cref="AbstractProgressBar.StrokeLineCap" />, or
+    /// <see cref="PenLineCap.Flat" /> in step mode. The control writes it when the template is applied and when the
+    /// progress value, the value range, the stroke, the cap or the step settings change. The themes pass it to the
+    /// template paths as their line cap.
+    /// </summary>
+    public PenLineCap ShapeStrokeLineCap
+    {
+        get => _shapeStrokeLineCap;
+        private set => SetAndRaise(ShapeStrokeLineCapProperty, ref _shapeStrokeLineCap, value);
+    }
+
     #endregion
 
     #region 内部属性定义
@@ -118,12 +141,6 @@ public abstract class AbstractCircleProgress : AbstractProgressBar
 
     internal static readonly StyledProperty<double> ExtraInfoIconSizeProperty =
         AvaloniaProperty.Register<AbstractCircleProgress, double>(nameof(ExtraInfoIconSize));
-
-    internal static readonly DirectProperty<AbstractCircleProgress, PenLineCap> ShapeStrokeLineCapProperty =
-        AvaloniaProperty.RegisterDirect<AbstractCircleProgress, PenLineCap>(
-            nameof(ShapeStrokeLineCap),
-            owner => owner.ShapeStrokeLineCap,
-            (owner, value) => owner.ShapeStrokeLineCap = value);
 
     internal double IndicatorAngle
     {
@@ -182,20 +199,6 @@ public abstract class AbstractCircleProgress : AbstractProgressBar
     {
         get => GetValue(ExtraInfoIconSizeProperty);
         set => SetValue(ExtraInfoIconSizeProperty, value);
-    }
-
-    private PenLineCap _shapeStrokeLineCap;
-
-    /// <summary>
-    /// The line cap that the circle arcs are drawn with: <see cref="AbstractProgressBar.StrokeLineCap" />, or
-    /// <see cref="PenLineCap.Flat" /> in step mode. The control writes it when the template is applied and when the
-    /// progress value, the value range, the stroke, the cap or the step settings change. The themes pass it to the
-    /// template paths as their line cap.
-    /// </summary>
-    internal PenLineCap ShapeStrokeLineCap
-    {
-        get => _shapeStrokeLineCap;
-        private set => SetAndRaise(ShapeStrokeLineCapProperty, ref _shapeStrokeLineCap, value);
     }
 
     #endregion

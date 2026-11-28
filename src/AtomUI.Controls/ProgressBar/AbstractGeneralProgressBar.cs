@@ -1,11 +1,14 @@
+using AtomUI.Animations;
 using AtomUI.Media;
 using AtomUI.Utils;
 using Avalonia;
+using Avalonia.Animation;
 using Avalonia.Controls;
 using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Layout;
 using Avalonia.Media;
+using Avalonia.Styling;
 using Avalonia.VisualTree;
 
 namespace AtomUI.Controls.Commons;
@@ -49,8 +52,25 @@ public abstract class AbstractGeneralProgressBar : AbstractLineProgress
 
     #endregion
 
+    private const double IndeterminateSegmentFraction = 0.35d;
+    private const double StaticIndeterminateProgress = 0.5d;
+    private static readonly TimeSpan IndeterminateCycleDuration = TimeSpan.FromMilliseconds(1600);
+
+    internal static readonly StyledProperty<double> IndeterminateProgressProperty =
+        AvaloniaProperty.Register<AbstractGeneralProgressBar, double>(
+            nameof(IndeterminateProgress),
+            StaticIndeterminateProgress);
+
+    internal double IndeterminateProgress
+    {
+        get => GetValue(IndeterminateProgressProperty);
+        set => SetValue(IndeterminateProgressProperty, value);
+    }
+
     private LineProgressPanel? _progressBody;
     private (Color? Label, Color? Solid) _innerLabelColors;
+    private MotionGate? _indeterminateMotionGate;
+    private IDisposable? _indeterminateAnimation;
 
     /// <summary>
     /// Whether the applied template supplied the <c>PART_ProgressBody</c> panel, which then draws the groove
@@ -149,6 +169,16 @@ public abstract class AbstractGeneralProgressBar : AbstractLineProgress
     /// </remarks>
     protected override void RenderIndicatorBar(DrawingContext context)
     {
+        if (IsIndeterminate)
+        {
+            var indeterminateRect = GetIndeterminateTrackRect(_grooveRect);
+            if (IsLineTrackVisible(indeterminateRect))
+            {
+                DrawProgressRectangle(context, StrokeBrush, indeterminateRect);
+            }
+            return;
+        }
+
         var deflateValue = 0d;
         var range        = 0d;
         if (Orientation == Orientation.Horizontal)
@@ -712,6 +742,7 @@ public abstract class AbstractGeneralProgressBar : AbstractLineProgress
         if (change.Property == ValueProperty ||
             change.Property == MinimumProperty ||
             change.Property == MaximumProperty ||
+            change.Property == IsIndeterminateProperty ||
             change.Property == SuccessThresholdProperty ||
             change.Property == OrientationProperty ||
             change.Property == EffectiveStrokeThicknessProperty ||
@@ -723,17 +754,40 @@ public abstract class AbstractGeneralProgressBar : AbstractLineProgress
             _progressBody?.InvalidateArrange();
         }
 
+        if (change.Property == IsIndeterminateProperty)
+        {
+            UpdateIndeterminateAnimationState();
+            if (!HasTemplateProgressVisuals)
+            {
+                InvalidateVisual();
+            }
+        }
+        else if (change.Property == IsMotionEnabledProperty && _indeterminateMotionGate is { } gate)
+        {
+            gate.IsMotionEnabled = IsMotionEnabled;
+            if (!IsMotionEnabled)
+            {
+                StopIndeterminateAnimation();
+                SetCurrentValue(IndeterminateProgressProperty, StaticIndeterminateProgress);
+            }
+        }
+
         if ((change.Property == ProgressTextFormatProperty || change.Property == FontSizeProperty) &&
             _progressBody is not null && this.IsAttachedToVisualTree())
         {
             InvalidateExtraInfoSize();
         }
 
-        if (change.Property == IndicatorRatioProperty)
+        if (change.Property == IndicatorRatioProperty ||
+            change.Property == IndeterminateProgressProperty)
         {
-            // When only the ratio changes (a theme transition), just the fill part is arranged again; the measurement
-            // and the arrangement of the panel and of its host stay valid.
+            // When only the ratio or indeterminate sweep changes, just the fill part is arranged again; the
+            // measurement and the arrangement of the panel and of its host stay valid.
             _progressBody?.SyncTrackToIndicatorRatio();
+            if (!HasTemplateProgressVisuals && change.Property == IndeterminateProgressProperty)
+            {
+                InvalidateVisual();
+            }
         }
     }
 
@@ -870,12 +924,24 @@ public abstract class AbstractGeneralProgressBar : AbstractLineProgress
     }
 
     /// <summary>
-    /// Refreshes the pseudo-classes that reflect <see cref="PercentPosition" /> once the control is attached.
+    /// Refreshes the pseudo-classes that reflect <see cref="PercentPosition" /> and activates the indeterminate
+    /// motion gate when <see cref="AbstractProgressBar.IsIndeterminate" /> is enabled once the control is attached.
     /// </summary>
     protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
     {
         base.OnAttachedToVisualTree(e);
         UpdatePseudoClasses();
+        UpdateIndeterminateAnimationState();
+    }
+
+    /// <summary>
+    /// Stops any active indeterminate sweep animation and disposes its motion gate before detaching from the visual
+    /// tree. Derived overrides must call the base member.
+    /// </summary>
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        RemoveIndeterminateGate();
+        base.OnDetachedFromVisualTree(e);
     }
 
     internal Rect GetLineProgressBarRect(Size size)
@@ -889,6 +955,13 @@ public abstract class AbstractGeneralProgressBar : AbstractLineProgress
         return GetLineTrackRectByRatio(grooveRect, CalculateProgressRatio(value));
     }
 
+    internal Rect GetLineTrackRectForRender(Rect grooveRect)
+    {
+        return IsIndeterminate
+            ? GetIndeterminateTrackRect(grooveRect)
+            : GetLineTrackRectByRatio(grooveRect, IndicatorRatio);
+    }
+
     internal Rect GetLineTrackRectByRatio(Rect grooveRect, double ratio)
     {
         var range = Orientation == Orientation.Horizontal ? grooveRect.Width : grooveRect.Height;
@@ -896,6 +969,131 @@ public abstract class AbstractGeneralProgressBar : AbstractLineProgress
         return Orientation == Orientation.Horizontal
             ? grooveRect.Deflate(new Thickness(0, 0, deflateValue, 0))
             : grooveRect.Deflate(new Thickness(0, 0, 0, deflateValue));
+    }
+
+    internal Rect GetIndeterminateTrackRect(Rect grooveRect)
+    {
+        var progress = Math.Clamp(IndeterminateProgress, 0d, 1d);
+        var rawStart = -IndeterminateSegmentFraction + (1d + IndeterminateSegmentFraction) * progress;
+        var start    = Math.Clamp(rawStart, 0d, 1d);
+        var end      = Math.Clamp(rawStart + IndeterminateSegmentFraction, 0d, 1d);
+        var length   = Math.Max(0d, end - start);
+
+        return Orientation == Orientation.Horizontal
+            ? new Rect(
+                grooveRect.X + grooveRect.Width * start,
+                grooveRect.Y,
+                grooveRect.Width * length,
+                grooveRect.Height)
+            : new Rect(
+                grooveRect.X,
+                grooveRect.Y + grooveRect.Height * start,
+                grooveRect.Width,
+                grooveRect.Height * length);
+    }
+
+    private void UpdateIndeterminateAnimationState()
+    {
+        if (IsIndeterminate && this.IsAttachedToVisualTree())
+        {
+            AttachIndeterminateGate();
+            if (!IsMotionEnabled)
+            {
+                SetCurrentValue(IndeterminateProgressProperty, StaticIndeterminateProgress);
+            }
+        }
+        else
+        {
+            RemoveIndeterminateGate();
+            SetCurrentValue(IndeterminateProgressProperty, StaticIndeterminateProgress);
+        }
+    }
+
+    private void AttachIndeterminateGate()
+    {
+        _indeterminateMotionGate ??= new MotionGate(this, HandleIndeterminateGateChanged)
+        {
+            IsMotionEnabled = IsMotionEnabled
+        };
+        if (_indeterminateMotionGate.ShouldRun && IsMotionEnabled)
+        {
+            StartIndeterminateAnimation();
+        }
+    }
+
+    private void RemoveIndeterminateGate()
+    {
+        _indeterminateMotionGate?.Dispose();
+        _indeterminateMotionGate = null;
+        StopIndeterminateAnimation();
+    }
+
+    private void HandleIndeterminateGateChanged(bool animate)
+    {
+        if (animate && _indeterminateMotionGate is not null && IsIndeterminate && IsMotionEnabled)
+        {
+            StartIndeterminateAnimation();
+        }
+        else
+        {
+            StopIndeterminateAnimation();
+        }
+    }
+
+    private void StopIndeterminateAnimation()
+    {
+        var animation = _indeterminateAnimation;
+        _indeterminateAnimation = null;
+        animation?.Dispose();
+    }
+
+    private void StartIndeterminateAnimation()
+    {
+        StopIndeterminateAnimation();
+        if (!IsIndeterminate || !IsMotionEnabled || !this.IsAttachedToVisualTree())
+        {
+            return;
+        }
+
+        // Indeterminate playback is gated by MotionGate (visibility, tree attachment and motion activity) and
+        // drives LineProgressPanel directly without invalidating measure, which a ControlTheme animation cannot gate.
+        var animation = new Animation
+        {
+            Duration = IndeterminateCycleDuration
+        };
+        animation.Children.Add(new KeyFrame
+        {
+            KeyTime = TimeSpan.Zero,
+            Setters =
+            {
+                new Setter
+                {
+                    Property = IndeterminateProgressProperty,
+                    Value    = 0d
+                }
+            }
+        });
+        animation.Children.Add(new KeyFrame
+        {
+            KeyTime = IndeterminateCycleDuration,
+            Setters =
+            {
+                new Setter
+                {
+                    Property = IndeterminateProgressProperty,
+                    Value    = 1d
+                }
+            }
+        });
+        var subscription = animation.PlayLoop(this, IndeterminateProgressProperty);
+        if (IsIndeterminate && this.IsAttachedToVisualTree() && _indeterminateAnimation is null)
+        {
+            _indeterminateAnimation = subscription;
+        }
+        else
+        {
+            subscription.Dispose();
+        }
     }
 
     internal Rect GetLineProgressIndicatorRect(Size size)

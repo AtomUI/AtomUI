@@ -328,35 +328,39 @@ public abstract class AbstractProgressBar : RangeBase,
         get => GetValue(ProgressInfoContentTemplateProperty);
         set => SetValue(ProgressInfoContentTemplateProperty, value);
     }
-    #endregion
 
-    #region 内部属性定义
-
-    internal static readonly DirectProperty<AbstractProgressBar, bool> IsProgressInfoPresentedProperty =
+    /// <summary>
+    /// Identifies the <see cref="IsProgressInfoPresented" /> property.
+    /// </summary>
+    public static readonly DirectProperty<AbstractProgressBar, bool> IsProgressInfoPresentedProperty =
         AvaloniaProperty.RegisterDirect<AbstractProgressBar, bool>(nameof(IsProgressInfoPresented),
             o => o.IsProgressInfoPresented);
 
-    internal static readonly DirectProperty<AbstractProgressBar, SizeType> EffectiveSizeTypeProperty =
-        AvaloniaProperty.RegisterDirect<AbstractProgressBar, SizeType>(nameof(EffectiveSizeType),
-            o => o.EffectiveSizeType,
-            (o, v) => o.EffectiveSizeType = v);
-
-    internal static readonly DirectProperty<AbstractProgressBar, double> EffectiveStrokeThicknessProperty =
+    /// <summary>
+    /// Identifies the <see cref="EffectiveStrokeThickness" /> property.
+    /// </summary>
+    public static readonly DirectProperty<AbstractProgressBar, double> EffectiveStrokeThicknessProperty =
         AvaloniaProperty.RegisterDirect<AbstractProgressBar, double>(nameof(EffectiveStrokeThickness),
             o => o.EffectiveStrokeThickness,
             (o, v) => o.EffectiveStrokeThickness = v);
 
-    internal static readonly StyledProperty<IBrush?> GrooveBrushProperty =
+    /// <summary>
+    /// Identifies the <see cref="GrooveBrush" /> property.
+    /// </summary>
+    public static readonly StyledProperty<IBrush?> GrooveBrushProperty =
         AvaloniaProperty.Register<AbstractProgressBar, IBrush?>(nameof(GrooveBrush));
 
-    internal static readonly StyledProperty<bool> IsPercentLabelVisibleProperty =
+    /// <summary>
+    /// Identifies the <see cref="IsPercentLabelVisible" /> property.
+    /// </summary>
+    public static readonly StyledProperty<bool> IsPercentLabelVisibleProperty =
         AvaloniaProperty.Register<AbstractProgressBar, bool>(nameof(IsPercentLabelVisible), true);
 
-    internal static readonly StyledProperty<bool> IsStatusIconVisibleProperty =
+    /// <summary>
+    /// Identifies the <see cref="IsStatusIconVisible" /> property.
+    /// </summary>
+    public static readonly StyledProperty<bool> IsStatusIconVisibleProperty =
         AvaloniaProperty.Register<AbstractProgressBar, bool>(nameof(IsStatusIconVisible), true);
-
-    internal static readonly StyledProperty<bool> IsCompletedProperty =
-        AvaloniaProperty.Register<AbstractProgressBar, bool>(nameof(IsCompleted));
 
     private bool _isProgressInfoPresented;
 
@@ -364,11 +368,69 @@ public abstract class AbstractProgressBar : RangeBase,
     /// Whether the progress info area is presented: <see cref="IsProgressInfoVisible" /> is
     /// <see langword="true" /> or <see cref="ProgressInfoContent" /> is set.
     /// </summary>
-    internal bool IsProgressInfoPresented
+    public bool IsProgressInfoPresented
     {
         get => _isProgressInfoPresented;
         private set => SetAndRaise(IsProgressInfoPresentedProperty, ref _isProgressInfoPresented, value);
     }
+
+    private double _strokeThickness;
+
+    /// <summary>
+    /// Stroke thickness, in DIPs, that the groove and the indicator are drawn with. The derived class assigns it in
+    /// <see cref="CalculateStrokeThickness" />.
+    /// </summary>
+    public double EffectiveStrokeThickness
+    {
+        get => _strokeThickness;
+        protected set => SetAndRaise(EffectiveStrokeThicknessProperty, ref _strokeThickness, value);
+    }
+
+    /// <summary>
+    /// Brush of the groove, the unfilled part of the bar. The built-in themes set it from the <c>RemainingColor</c>
+    /// Token of the progress control and, while the control is disabled, from <c>ColorBgContainerDisabled</c>.
+    /// Setting <see cref="TrailColor" /> replaces the theme value with a solid brush of that color; clearing
+    /// <see cref="TrailColor" /> clears this property as well, so the theme value applies again. The default is
+    /// <see langword="null" />.
+    /// </summary>
+    public IBrush? GrooveBrush
+    {
+        get => GetValue(GrooveBrushProperty);
+        set => SetValue(GrooveBrushProperty, value);
+    }
+
+    /// <summary>
+    /// Whether the percentage text of the progress info is shown, <see langword="true" /> by default. The circle
+    /// progress bar (<c>AbstractCircleProgress</c>) sets it to whether the "100%" text fits into the square inside
+    /// the stroke. The circle and dashboard themes bind the visibility of the percentage text to it.
+    /// </summary>
+    public bool IsPercentLabelVisible
+    {
+        get => GetValue(IsPercentLabelVisibleProperty);
+        set => SetValue(IsPercentLabelVisibleProperty, value);
+    }
+
+    /// <summary>
+    /// Whether the status icon of the progress info is shown, <see langword="true" /> by default. Themes bind the
+    /// visibility of the success and exception icons to it.
+    /// </summary>
+    public bool IsStatusIconVisible
+    {
+        get => GetValue(IsStatusIconVisibleProperty);
+        set => SetValue(IsStatusIconVisibleProperty, value);
+    }
+    #endregion
+
+    #region 内部属性定义
+
+    internal static readonly DirectProperty<AbstractProgressBar, SizeType> EffectiveSizeTypeProperty =
+        AvaloniaProperty.RegisterDirect<AbstractProgressBar, SizeType>(nameof(EffectiveSizeType),
+            o => o.EffectiveSizeType,
+            (o, v) => o.EffectiveSizeType = v);
+
+    internal static readonly StyledProperty<bool> IsCompletedProperty =
+        AvaloniaProperty.Register<AbstractProgressBar, bool>(nameof(IsCompleted));
+
     // Status icon brushes resolved by the control theme from the progress control's own Tokens. The icon presenters are
     // registered controls with an identity of their own, so their brushes are read on the progress control and bound down.
     internal static readonly StyledProperty<IBrush?> ExceptionIconBrushProperty =
@@ -390,48 +452,6 @@ public abstract class AbstractProgressBar : RangeBase,
     {
         get => _effectiveSizeType;
         set => SetAndRaise(EffectiveSizeTypeProperty, ref _effectiveSizeType, value);
-    }
-
-    private double _strokeThickness;
-
-    /// <summary>
-    /// Stroke thickness, in DIPs, that the groove and the indicator are drawn with. The derived class assigns it in
-    /// <see cref="CalculateStrokeThickness" />.
-    /// </summary>
-    protected double EffectiveStrokeThickness
-    {
-        get => _strokeThickness;
-        set => SetAndRaise(EffectiveStrokeThicknessProperty, ref _strokeThickness, value);
-    }
-
-    /// <summary>
-    /// Brush of the groove, the unfilled part of the bar. The built-in themes set it from the <c>RemainingColor</c>
-    /// Token of the progress control and, while the control is disabled, from <c>ColorBgContainerDisabled</c>.
-    /// Setting <see cref="TrailColor" /> replaces the theme value with a solid brush of that color; clearing
-    /// <see cref="TrailColor" /> clears this property as well, so the theme value applies again. The default is
-    /// <see langword="null" />.
-    /// </summary>
-    internal IBrush? GrooveBrush
-    {
-        get => GetValue(GrooveBrushProperty);
-        set => SetValue(GrooveBrushProperty, value);
-    }
-
-    /// <summary>
-    /// Whether the percentage text of the progress info is shown, <see langword="true" /> by default. The circle
-    /// progress bar (<c>AbstractCircleProgress</c>) sets it to whether the "100%" text fits into the square inside
-    /// the stroke. The circle and dashboard themes bind the visibility of the percentage text to it.
-    /// </summary>
-    internal bool IsPercentLabelVisible
-    {
-        get => GetValue(IsPercentLabelVisibleProperty);
-        set => SetValue(IsPercentLabelVisibleProperty, value);
-    }
-
-    internal bool IsStatusIconVisible
-    {
-        get => GetValue(IsStatusIconVisibleProperty);
-        set => SetValue(IsStatusIconVisibleProperty, value);
     }
 
     /// <summary>
@@ -549,7 +569,7 @@ public abstract class AbstractProgressBar : RangeBase,
         _transitionInitialization = new TransitionInitializationSession(this);
         // A derived class can override the default value of IsProgressInfoVisible, so the flag starts from the actual
         // default instead of waiting for the first change.
-        _isProgressInfoPresented = IsProgressInfoVisible || ProgressInfoContent is not null;
+        _isProgressInfoPresented = ComputeIsProgressInfoPresented();
         _effectiveSizeType = SizeType;
     }
 
@@ -588,9 +608,10 @@ public abstract class AbstractProgressBar : RangeBase,
         }
 
         if (change.Property == IsProgressInfoVisibleProperty ||
-            change.Property == ProgressInfoContentProperty)
+            change.Property == ProgressInfoContentProperty ||
+            change.Property == IsIndeterminateProperty)
         {
-            IsProgressInfoPresented = IsProgressInfoVisible || ProgressInfoContent is not null;
+            IsProgressInfoPresented = ComputeIsProgressInfoPresented();
         }
 
         if (change.Property == ProgressInfoContentProperty ||
@@ -763,6 +784,11 @@ public abstract class AbstractProgressBar : RangeBase,
     {
         var range = Maximum - Minimum;
         return Math.Abs(range) < double.Epsilon ? 1.0 : (value - Minimum) / range;
+    }
+
+    private bool ComputeIsProgressInfoPresented()
+    {
+        return ProgressInfoContent is not null || (IsProgressInfoVisible && !IsIndeterminate);
     }
 
     private void UpdateProgress()

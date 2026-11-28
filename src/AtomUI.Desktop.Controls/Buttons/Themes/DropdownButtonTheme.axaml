@@ -40,6 +40,7 @@
                                         Name="PART_LoadingIcon"
                                         Width="{TemplateBinding IconWidth}"
                                         Height="{TemplateBinding IconHeight}"
+                                        VerticalAlignment="Center"
                                         LoadingAnimation="Spin"
                                         FillBrush="{TemplateBinding Foreground}"
                                         StrokeBrush="{TemplateBinding Foreground}"
@@ -48,11 +49,14 @@
                                         Name="PART_ButtonIcon"
                                         Width="{TemplateBinding IconWidth}"
                                         Height="{TemplateBinding IconHeight}"
+                                        VerticalAlignment="Center"
                                         Icon="{TemplateBinding Icon}"
                                         DockPanel.Dock="Left"
                                         IsVisible="{TemplateBinding EffectiveIconVisible}" />
                                     <ContentPresenter
                                         Name="PART_ContentPresenter"
+                                        VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                        VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
                                         Content="{TemplateBinding Content}"
                                         ContentTemplate="{TemplateBinding ContentTemplate}"
                                         IsVisible="{TemplateBinding Content, Converter={x:Static ObjectConverters.IsNotNull}}" />

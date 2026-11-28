@@ -12,9 +12,12 @@
                         Background="{TemplateBinding Background}">
                     <StackPanel Orientation="Horizontal" Spacing="{atom:BreadcrumbItemTokenResource SpacingXXS}">
                         <atom:IconPresenter Name="IconPresenter"
+                                             VerticalAlignment="Center"
                                              Icon="{TemplateBinding Icon}"
                                              IsVisible="{TemplateBinding Icon, Converter={x:Static ObjectConverters.IsNotNull}}" />
                         <ContentPresenter Name="Content"
+                                          VerticalAlignment="Center"
+                                          VerticalContentAlignment="Center"
                                           Content="{TemplateBinding Content}"
                                           ContentTemplate="{TemplateBinding ContentTemplate}" />
                     </StackPanel>

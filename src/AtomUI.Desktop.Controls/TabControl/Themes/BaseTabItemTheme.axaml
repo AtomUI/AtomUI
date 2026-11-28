@@ -18,9 +18,12 @@
                             TemplatedControl.IsTemplateFocusTarget="True">
                     <atom:IconPresenter Name="ItemIconPresenter"
                                         Classes.semantic-icon="True"
+                                        VerticalAlignment="Center"
                                         Icon="{TemplateBinding Icon}" />
                     <ContentPresenter Name="ContentPresenter"
                                       Classes.semantic-label="True"
+                                      VerticalAlignment="Center"
+                                      VerticalContentAlignment="Center"
                                       Content="{TemplateBinding Header}"
                                       ContentTemplate="{TemplateBinding HeaderTemplate, Converter={x:Static atom:BaseTabItemTheme.StringToTextBlockConverter}}" />
                     <atom:IconButton Name="PART_ItemCloseButton"

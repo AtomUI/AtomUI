@@ -25,10 +25,13 @@
                     <StackPanel Name="ContentLayout" Orientation="Horizontal">
                         <ContentPresenter Name="ItemIconPresenter"
                                           Classes.semantic-icon="True"
+                                          VerticalAlignment="Center"
                                           Content="{TemplateBinding Icon}"
                                           ContentTemplate="{TemplateBinding IconTemplate}" />
                         <ContentPresenter Name="ContentPresenter"
                                           Classes.semantic-label="True"
+                                          VerticalAlignment="Center"
+                                          VerticalContentAlignment="Center"
                                           Content="{TemplateBinding Content}"
                                           ContentTemplate="{TemplateBinding ContentTemplate, Converter={x:Static atom:BaseTabStripItemTheme.StringToTextBlockConverter}}" />
                         <atom:IconButton Name="PART_ItemCloseButton"

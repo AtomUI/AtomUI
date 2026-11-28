@@ -13,10 +13,12 @@
                     <DockPanel LastChildFill="True">
                         <atom:IconPresenter Name="IconPresenter"
                                             Classes.semantic-icon="True"
+                                            VerticalAlignment="Center"
                                             Icon="{TemplateBinding Icon}"
                                             IsVisible="{TemplateBinding Icon, Converter={x:Static ObjectConverters.IsNotNull}}" />
                         <ContentPresenter Name="Content"
                                           Classes.semantic-label="True"
+                                          VerticalAlignment="Center"
                                           HorizontalContentAlignment="Center"
                                           VerticalContentAlignment="Center"
                                           Content="{TemplateBinding Content}"

@@ -27,6 +27,7 @@
                                              Padding="{TemplateBinding Padding}">
                         <DockPanel LastChildFill="True">
                             <atom:IconTemplatePresenter Name="SelectedIndicator"
+                                                        VerticalAlignment="Center"
                                                         IconTemplate="{TemplateBinding SelectedIndicator}"
                                                         IsVisible="{TemplateBinding IsSelectedIndicatorVisible}"
                                                         DockPanel.Dock="Right" />

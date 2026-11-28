@@ -20,16 +20,20 @@
                                       Classes.semantic-icon="True"
                                       Width="{TemplateBinding IconWidth}"
                                       Height="{TemplateBinding IconHeight}"
+                                      VerticalAlignment="Center"
                                       Foreground="{TemplateBinding Foreground}"
                                       DockPanel.Dock="Left" />
                     <atom:IconPresenter Name="PART_ButtonIcon"
                                         Classes.semantic-icon="True"
                                         Width="{TemplateBinding IconWidth}"
                                         Height="{TemplateBinding IconHeight}"
+                                        VerticalAlignment="Center"
                                         Icon="{TemplateBinding Icon}"
                                         IconBrush="{TemplateBinding Foreground}" />
                     <ContentPresenter Name="PART_ContentPresenter"
                                       Classes.semantic-content="True"
+                                      VerticalAlignment="{TemplateBinding VerticalContentAlignment}"
+                                      VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
                                       Content="{TemplateBinding Content}"
                                       ContentTemplate="{TemplateBinding ContentTemplate}"
                                       IsVisible="{TemplateBinding Content, Converter={x:Static ObjectConverters.IsNotNull}}" />

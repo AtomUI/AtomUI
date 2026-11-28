@@ -20,11 +20,13 @@
                                    LastChildFill="True">
                             <atom:IconPresenter Name="PART_IconContent"
                                                 Classes.semantic-icon="True"
+                                                VerticalAlignment="Center"
                                                 DockPanel.Dock="Left"
                                                 IsVisible="{TemplateBinding Icon, Converter={x:Static ObjectConverters.IsNotNull}}"
                                                 Icon="{TemplateBinding Icon}" />
                             <SelectableTextBlock Name="PART_Message"
                                                  Classes.semantic-title="True"
+                                                 VerticalAlignment="Center"
                                                  Text="{TemplateBinding Message}" />
                         </DockPanel>
                     </Border>

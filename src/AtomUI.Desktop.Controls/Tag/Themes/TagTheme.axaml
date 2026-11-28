@@ -16,6 +16,7 @@
                            Margin="{TemplateBinding Padding}">
                     <atom:IconPresenter Name="IconPresenter"
                                         DockPanel.Dock="Left"
+                                        VerticalAlignment="Center"
                                         Classes.semantic-icon="True"
                                         Icon="{TemplateBinding Icon}"
                                         IsVisible="{TemplateBinding Icon, Converter={x:Static ObjectConverters.IsNotNull}}"/>

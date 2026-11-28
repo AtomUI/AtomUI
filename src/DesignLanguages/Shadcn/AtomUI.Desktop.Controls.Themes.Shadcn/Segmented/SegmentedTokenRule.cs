@@ -1,6 +1,7 @@
 using AtomUI.DesignLanguages.Shadcn;
 using AtomUI.Theme.Languages;
 using Avalonia;
+using Avalonia.Media;
 
 namespace AtomUI.Desktop.Controls.Themes.Shadcn;
 
@@ -16,7 +17,11 @@ internal sealed class SegmentedTokenRule : IControlTokenRule<ShadcnToken, Segmen
         var global = target.Global;
         token.TrackPadding      = new Thickness(global.LineWidthBold);
 
-        token.TrackBg           = global.ColorBgLayout;
+        token.TrackBg                     = global.ColorBgLayout;
+        token.TrackBorderColor            = Colors.Transparent;
+        token.TrackBorderThickness        = new Thickness(0);
+        token.ItemSelectedBorderColor     = Colors.Transparent;
+        token.ItemSelectedBorderThickness = new Thickness(0);
         token.ItemColor         = global.ColorTextLabel;
         token.ItemHoverColor    = global.ColorText;
         token.ItemHoverBg       = global.ColorFillSecondary;

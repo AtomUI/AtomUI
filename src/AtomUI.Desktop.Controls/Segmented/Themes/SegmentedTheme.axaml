@@ -8,18 +8,30 @@
         <Setter Property="Template">
             <ControlTemplate>
                 <Border Name="Frame"
-                        CornerRadius="{TemplateBinding CornerRadius}"
-                        Padding="{TemplateBinding Padding}"
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="{TemplateBinding EffectiveCornerRadius}"
                         ClipToBounds="True">
-                    <ItemsPresenter Name="PART_ItemsPresenter">
-                        <ItemsPresenter.ItemsPanel>
-                            <ItemsPanelTemplate>
-                                <atomc:SegmentedStackPanel
-                                    Orientation="{Binding Orientation, RelativeSource={RelativeSource AncestorType=atom:Segmented}}"
-                                    IsExpanding="{Binding IsExpanding, RelativeSource={RelativeSource AncestorType=atom:Segmented}}" />
-                            </ItemsPanelTemplate>
-                        </ItemsPresenter.ItemsPanel>
-                    </ItemsPresenter>
+                    <Panel>
+                        <atomc:SegmentedThumb Name="PART_SelectedThumb"
+                                              IsHitTestVisible="False"
+                                              Background="{TemplateBinding EffectiveSelectedThumbBg}"
+                                              BorderBrush="{TemplateBinding SelectedThumbBorderBrush}"
+                                              BorderThickness="{TemplateBinding SelectedThumbBorderThickness}"
+                                              CornerRadius="{TemplateBinding EffectiveSelectedThumbCornerRadius}"
+                                              BoxShadows="{TemplateBinding EffectiveSelectedThumbBoxShadows}" />
+                        <ItemsPresenter Name="PART_ItemsPresenter"
+                                        Margin="{TemplateBinding Padding}">
+                            <ItemsPresenter.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <atomc:SegmentedStackPanel
+                                        Orientation="{Binding Orientation, RelativeSource={RelativeSource AncestorType=atom:Segmented}}"
+                                        IsExpanding="{Binding IsExpanding, RelativeSource={RelativeSource AncestorType=atom:Segmented}}" />
+                                </ItemsPanelTemplate>
+                            </ItemsPresenter.ItemsPanel>
+                        </ItemsPresenter>
+                    </Panel>
                 </Border>
             </ControlTemplate>
         </Setter>
@@ -27,6 +39,10 @@
         <Setter Property="IsMotionEnabled" Value="{atom:SegmentedTokenResource EnableMotion}" />
         <Setter Property="Padding" Value="{atom:SegmentedTokenResource TrackPadding}" />
         <Setter Property="Background" Value="{atom:SegmentedTokenResource TrackBg}" />
+        <Setter Property="BorderBrush" Value="{atom:SegmentedTokenResource TrackBorderColor}" />
+        <Setter Property="BorderThickness" Value="{atom:SegmentedTokenResource TrackBorderThickness}" />
+        <Setter Property="SelectedThumbBorderBrush" Value="{atom:SegmentedTokenResource ItemSelectedBorderColor}" />
+        <Setter Property="SelectedThumbBorderThickness" Value="{atom:SegmentedTokenResource ItemSelectedBorderThickness}" />
         <Setter Property="HorizontalAlignment" Value="Left" />
         <Setter Property="UseSelectedThumbTokenResources" Value="True" />
         <Setter Property="VerticalAlignment" Value="Top" />

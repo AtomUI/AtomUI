@@ -122,7 +122,7 @@ public partial class Segmented : AbstractSegmented
         _resourcePaint = (brush, shadows);
         if (!previous.Equals(ThumbPaint))
         {
-            InvalidateVisual();
+            NotifyThumbPaintChanged();
         }
     }
 

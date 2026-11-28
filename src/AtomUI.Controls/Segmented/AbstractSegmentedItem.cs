@@ -187,7 +187,7 @@ public abstract class AbstractSegmentedItem : ContentControl, ISelectable
         else if (change.Property == CornerRadiusProperty && IsSelected &&
                  ItemsControl.ItemsControlFromItemContainer(this) is AbstractSegmented { SizeType: CustomizableSizeType.Custom } owner)
         {
-            owner.InvalidateVisual();
+            owner.NotifySelectedItemCornerRadiusChanged();
         }
     }
 

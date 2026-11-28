@@ -67,6 +67,26 @@ public sealed partial class SegmentedToken : AbstractControlDesignToken
     /// </summary>
     public partial Color TrackBg { get; set; }
 
+    /// <summary>
+    /// Border color of the outer track frame. Defaults to transparent.
+    /// </summary>
+    public partial Color TrackBorderColor { get; set; }
+
+    /// <summary>
+    /// Border thickness of the outer track frame. Defaults to zero.
+    /// </summary>
+    public partial Thickness TrackBorderThickness { get; set; }
+
+    /// <summary>
+    /// Border color of the selected item thumb. Defaults to transparent.
+    /// </summary>
+    public partial Color ItemSelectedBorderColor { get; set; }
+
+    /// <summary>
+    /// Border thickness of the selected item thumb. Defaults to zero.
+    /// </summary>
+    public partial Thickness ItemSelectedBorderThickness { get; set; }
+
     // Internal tokens.
     /// <summary>
     /// Inset of the label and icon within a large or regular-size segmented item.

@@ -4,6 +4,7 @@ using AtomUI.Utils;
 using Avalonia;
 using Avalonia.Animation;
 using Avalonia.Controls;
+using Avalonia.Controls.Metadata;
 using Avalonia.Controls.Primitives;
 using Avalonia.Input;
 using Avalonia.Interactivity;
@@ -16,11 +17,12 @@ namespace AtomUI.Controls.Commons;
 
 /// <summary>
 /// Base class of the segmented control. It presents mutually exclusive options as a row or column of items,
-/// keeps a single item selected and draws a thumb behind the selected one. An item is an
-/// <see cref="AbstractSegmentedItem" /> or plain data; a derived class creates the containers for data items
-/// in <c>CreateContainerForItemOverride</c>, and every container must derive from
+/// keeps a single item selected and drives a <see cref="SegmentedThumb" /> template part behind the selected one.
+/// An item is an <see cref="AbstractSegmentedItem" /> or plain data; a derived class creates the containers for
+/// data items in <c>CreateContainerForItemOverride</c>, and every container must derive from
 /// <see cref="AbstractSegmentedItem" />.
 /// </summary>
+[TemplatePart("PART_SelectedThumb", typeof(SegmentedThumb))]
 public abstract class AbstractSegmented : SelectingItemsControl,
                                           IMotionAwareControl,
                                           ICustomizableSizeTypeAware,
@@ -64,6 +66,50 @@ public abstract class AbstractSegmented : SelectingItemsControl,
     /// </summary>
     public static readonly StyledProperty<CornerRadius> SelectedThumbCornerRadiusProperty =
         AvaloniaProperty.Register<AbstractSegmented, CornerRadius>(nameof(SelectedThumbCornerRadius));
+
+    /// <summary>
+    /// Identifies the <see cref="SelectedThumbBorderBrush" /> property.
+    /// </summary>
+    public static readonly StyledProperty<IBrush?> SelectedThumbBorderBrushProperty =
+        AvaloniaProperty.Register<AbstractSegmented, IBrush?>(nameof(SelectedThumbBorderBrush));
+
+    /// <summary>
+    /// Identifies the <see cref="SelectedThumbBorderThickness" /> property.
+    /// </summary>
+    public static readonly StyledProperty<Thickness> SelectedThumbBorderThicknessProperty =
+        AvaloniaProperty.Register<AbstractSegmented, Thickness>(nameof(SelectedThumbBorderThickness));
+
+    /// <summary>
+    /// Identifies the <see cref="EffectiveSelectedThumbBg" /> property.
+    /// </summary>
+    public static readonly DirectProperty<AbstractSegmented, IBrush?> EffectiveSelectedThumbBgProperty =
+        AvaloniaProperty.RegisterDirect<AbstractSegmented, IBrush?>(
+            nameof(EffectiveSelectedThumbBg),
+            o => o.EffectiveSelectedThumbBg);
+
+    /// <summary>
+    /// Identifies the <see cref="EffectiveSelectedThumbBoxShadows" /> property.
+    /// </summary>
+    public static readonly DirectProperty<AbstractSegmented, BoxShadows> EffectiveSelectedThumbBoxShadowsProperty =
+        AvaloniaProperty.RegisterDirect<AbstractSegmented, BoxShadows>(
+            nameof(EffectiveSelectedThumbBoxShadows),
+            o => o.EffectiveSelectedThumbBoxShadows);
+
+    /// <summary>
+    /// Identifies the <see cref="EffectiveSelectedThumbCornerRadius" /> property.
+    /// </summary>
+    public static readonly DirectProperty<AbstractSegmented, CornerRadius> EffectiveSelectedThumbCornerRadiusProperty =
+        AvaloniaProperty.RegisterDirect<AbstractSegmented, CornerRadius>(
+            nameof(EffectiveSelectedThumbCornerRadius),
+            o => o.EffectiveSelectedThumbCornerRadius);
+
+    /// <summary>
+    /// Identifies the <see cref="EffectiveCornerRadius" /> property.
+    /// </summary>
+    public static readonly DirectProperty<AbstractSegmented, CornerRadius> EffectiveCornerRadiusProperty =
+        AvaloniaProperty.RegisterDirect<AbstractSegmented, CornerRadius>(
+            nameof(EffectiveCornerRadius),
+            o => o.EffectiveCornerRadius);
 
     /// <summary>
     /// Size preset of the control and of every item, <see cref="CustomizableSizeType.Middle" /> by default. It
@@ -138,6 +184,58 @@ public abstract class AbstractSegmented : SelectingItemsControl,
         set => SetValue(IsMotionEnabledProperty, value);
     }
 
+    /// <summary>
+    /// The corner radius of the thumb behind the selected item, in DIPs. The theme sets it for each preset of
+    /// <see cref="AbstractSegmented.SizeType" /> and to a capsule radius for <see cref="SegmentedShape.Round" />.
+    /// With <see cref="CustomizableSizeType.Custom" /> the corner radius that is set on the selected item takes
+    /// precedence. When the thumb is drawn, a radius larger than half of its shorter side is clamped to that half.
+    /// </summary>
+    public CornerRadius SelectedThumbCornerRadius
+    {
+        get => GetValue(SelectedThumbCornerRadiusProperty);
+        set => SetValue(SelectedThumbCornerRadiusProperty, value);
+    }
+
+    /// <summary>
+    /// Border brush drawn around the selected item thumb.
+    /// </summary>
+    public IBrush? SelectedThumbBorderBrush
+    {
+        get => GetValue(SelectedThumbBorderBrushProperty);
+        set => SetValue(SelectedThumbBorderBrushProperty, value);
+    }
+
+    /// <summary>
+    /// Border thickness drawn around the selected item thumb.
+    /// </summary>
+    public Thickness SelectedThumbBorderThickness
+    {
+        get => GetValue(SelectedThumbBorderThicknessProperty);
+        set => SetValue(SelectedThumbBorderThicknessProperty, value);
+    }
+
+    /// <summary>
+    /// Effective fill brush of the selection thumb, resolved from explicit properties or the active theme tokens.
+    /// </summary>
+    public IBrush? EffectiveSelectedThumbBg => _effectiveSelectedThumbBg;
+
+    /// <summary>
+    /// Effective box shadows of the selection thumb, resolved from explicit properties or the active theme tokens.
+    /// </summary>
+    public BoxShadows EffectiveSelectedThumbBoxShadows => _effectiveSelectedThumbBoxShadows;
+
+    /// <summary>
+    /// Effective corner radius of the selection thumb, taking the selected item's explicit corner radius in
+    /// <see cref="CustomizableSizeType.Custom" /> mode and <see cref="SelectedThumbCornerRadius" /> otherwise.
+    /// </summary>
+    public CornerRadius EffectiveSelectedThumbCornerRadius => _effectiveSelectedThumbCornerRadius;
+
+    /// <summary>
+    /// Effective corner radius of the outer track frame, clamped to half of the shorter arranged side so capsule
+    /// shapes render symmetrically.
+    /// </summary>
+    public CornerRadius EffectiveCornerRadius => _effectiveCornerRadius;
+
     #endregion
 
     #region 内部属性定义
@@ -155,18 +253,6 @@ public abstract class AbstractSegmented : SelectingItemsControl,
 
     internal static readonly StyledProperty<Point> SelectedThumbPosProperty =
         AvaloniaProperty.Register<AbstractSegmented, Point>(nameof(SelectedThumbPos));
-
-    /// <summary>
-    /// The corner radius of the thumb behind the selected item, in DIPs. The theme sets it for each preset of
-    /// <see cref="AbstractSegmented.SizeType" /> and to a capsule radius for <see cref="SegmentedShape.Round" />.
-    /// With <see cref="CustomizableSizeType.Custom" /> the corner radius that is set on the selected item takes
-    /// precedence. When the thumb is drawn, a radius larger than half of its shorter side is clamped to that half.
-    /// </summary>
-    internal CornerRadius SelectedThumbCornerRadius
-    {
-        get => GetValue(SelectedThumbCornerRadiusProperty);
-        set => SetValue(SelectedThumbCornerRadiusProperty, value);
-    }
 
     internal IBrush? SelectedThumbBg
     {
@@ -224,9 +310,19 @@ public abstract class AbstractSegmented : SelectingItemsControl,
         return UpdateSelectionFromEvent(source, e);
     }
 
+    internal void NotifySelectedItemCornerRadiusChanged()
+    {
+        SyncSelectedThumbVisual();
+    }
+
     #endregion
 
     private EventHandler? _formValueChanged;
+    private SegmentedThumb? _selectedThumb;
+    private IBrush? _effectiveSelectedThumbBg;
+    private BoxShadows _effectiveSelectedThumbBoxShadows;
+    private CornerRadius _effectiveSelectedThumbCornerRadius;
+    private CornerRadius _effectiveCornerRadius;
     private bool _isThumbVisible;
     private bool _isThumbMotionActive;
     private Point _stretchStart;
@@ -243,18 +339,6 @@ public abstract class AbstractSegmented : SelectingItemsControl,
     {
         OrientationProperty.OverrideDefaultValue<AbstractSegmented>(Orientation.Horizontal);
         AffectsMeasure<AbstractSegmented>(OrientationProperty, IsExpandingProperty, SizeTypeProperty);
-        // The track (Background, CornerRadius) is drawn in Render, so a Token change of TrackBg or the radius
-        // must redraw it.
-        AffectsRender<AbstractSegmented>(
-            BackgroundProperty,
-            CornerRadiusProperty,
-            PaddingProperty,
-            SelectedThumbCornerRadiusProperty,
-            IndicatorMotionModeProperty,
-            SelectedThumbBgProperty,
-            SelectedThumbBoxShadowsProperty,
-            SelectedThumbSizeProperty, 
-            SelectedThumbPosProperty);
         AutoScrollToSelectedItemProperty.OverrideDefaultValue<AbstractSegmented>(false);
         SelectedItemProperty.Changed.AddClassHandler<AbstractSegmented>(
             (segmented, args) => segmented.NotifyFormValueChanged(args.NewValue));
@@ -295,6 +379,9 @@ public abstract class AbstractSegmented : SelectingItemsControl,
     {
         _transitionInitialization.Reset();
         base.OnApplyTemplate(e);
+        _selectedThumb = e.NameScope.Find<SegmentedThumb>("PART_SelectedThumb");
+        NotifyThumbPaintChanged();
+        UpdateEffectiveCornerRadius(Bounds.Size);
         var hasDefaultSelected = false;
         foreach (var item in Items)
         {
@@ -317,6 +404,47 @@ public abstract class AbstractSegmented : SelectingItemsControl,
         }
         
         SetupSelectedThumbRect();
+        SyncSelectedThumbVisual();
+    }
+
+    /// <summary>
+    /// Keeps the selection thumb visual and effective thumb paint synchronized when thumb geometry, styling or
+    /// selection properties change. Overrides must call the base member.
+    /// </summary>
+    protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
+    {
+        base.OnPropertyChanged(change);
+        if (change.Property == CornerRadiusProperty)
+        {
+            UpdateEffectiveCornerRadius(Bounds.Size);
+        }
+        else if (change.Property == SelectedThumbBgProperty ||
+            change.Property == SelectedThumbBoxShadowsProperty)
+        {
+            NotifyThumbPaintChanged();
+        }
+        else if (change.Property == SelectedThumbPosProperty ||
+                 change.Property == SelectedThumbSizeProperty ||
+                 change.Property == SelectedThumbCornerRadiusProperty ||
+                 change.Property == IndicatorMotionModeProperty ||
+                 change.Property == PaddingProperty ||
+                 change.Property == BorderThicknessProperty ||
+                 change.Property == SizeTypeProperty ||
+                 change.Property == SelectedIndexProperty)
+        {
+            SyncSelectedThumbVisual();
+        }
+    }
+
+    /// <summary>
+    /// Refreshes <see cref="EffectiveSelectedThumbBg" /> and <see cref="EffectiveSelectedThumbBoxShadows" /> from
+    /// <see cref="ThumbPaint" />. Derived classes call this after their token-backed thumb paint changes.
+    /// </summary>
+    private protected void NotifyThumbPaintChanged()
+    {
+        var paint = ThumbPaint;
+        SetAndRaise(EffectiveSelectedThumbBgProperty, ref _effectiveSelectedThumbBg, paint.Brush);
+        SetAndRaise(EffectiveSelectedThumbBoxShadowsProperty, ref _effectiveSelectedThumbBoxShadows, paint.Shadows);
     }
 
     /// <summary>
@@ -325,9 +453,19 @@ public abstract class AbstractSegmented : SelectingItemsControl,
     /// </summary>
     protected override Size ArrangeOverride(Size finalSize)
     {
+        UpdateEffectiveCornerRadius(finalSize);
         var result = base.ArrangeOverride(finalSize);
         SetupSelectedThumbRect();
+        SyncSelectedThumbVisual();
         return result;
+    }
+
+    private void UpdateEffectiveCornerRadius(Size size)
+    {
+        var effective = size.Width > 0 && size.Height > 0
+            ? CornerRadiusUtils.ClampToSize(CornerRadius, size.Width, size.Height)
+            : CornerRadius;
+        SetAndRaise(EffectiveCornerRadiusProperty, ref _effectiveCornerRadius, effective);
     }
 
     /// <summary>
@@ -476,37 +614,53 @@ public abstract class AbstractSegmented : SelectingItemsControl,
 
         base.OnKeyDown(e);
     }
-    
-    /// <summary>
-    /// Draws the track with <see cref="TemplatedControl.Background" /> and the corner radius of the control, then the thumb behind
-    /// the selected item while one is selected. The thumb is confined to the area inside <see cref="TemplatedControl.Padding" />,
-    /// and a radius larger than half of the shorter side is clamped to that half for both shapes. The method is
-    /// sealed; derived classes provide the brush and the shadow of the thumb through <see cref="ThumbPaint" />.
-    /// </summary>
-    public sealed override void Render(DrawingContext context)
+
+    private void SyncSelectedThumbVisual()
     {
-        var trackBounds = new Rect(Bounds.Size);
-        // CSS border-radius semantics: a theme radius larger than half the shorter side would draw
-        // asymmetrically in Avalonia, so both the track and the thumb clamp first (CornerRadiusUtils).
-        var trackRadius = CornerRadiusUtils.ClampToSize(CornerRadius, trackBounds.Width, trackBounds.Height);
-        context.DrawRectangle(Background, null, new RoundedRect(trackBounds, trackRadius));
-        if (_isThumbVisible)
+        var thumb = _isThumbVisible
+            ? ConstrainThumb(GetThumbPresentation(), GetThumbTrackSize())
+            : default;
+        var rawRadius = SizeType == CustomizableSizeType.Custom &&
+                        SelectedIndex >= 0 &&
+                        ContainerFromIndex(SelectedIndex) is AbstractSegmentedItem item &&
+                        item.IsSet(CornerRadiusProperty)
+            ? item.CornerRadius
+            : SelectedThumbCornerRadius;
+        var radius = thumb.Width > 0 && thumb.Height > 0
+            ? CornerRadiusUtils.ClampToSize(rawRadius, thumb.Width, thumb.Height)
+            : rawRadius;
+        SetAndRaise(EffectiveSelectedThumbCornerRadiusProperty, ref _effectiveSelectedThumbCornerRadius, radius);
+
+        if (_selectedThumb is null)
         {
-            var thumb = ConstrainThumb(GetThumbPresentation(), Bounds.Size);
-            if (thumb.Width > 0 && thumb.Height > 0)
-            {
-                var radius = SizeType == CustomizableSizeType.Custom &&
-                             SelectedIndex >= 0 &&
-                             ContainerFromIndex(SelectedIndex) is AbstractSegmentedItem item &&
-                             item.IsSet(CornerRadiusProperty)
-                    ? item.CornerRadius
-                    : SelectedThumbCornerRadius;
-                var thumbRadius = CornerRadiusUtils.ClampToSize(radius, thumb.Width, thumb.Height);
-                var paint = ThumbPaint;
-                context.DrawRectangle(paint.Brush, null,
-                    new RoundedRect(thumb, thumbRadius), paint.Shadows);
-            }
+            return;
         }
+
+        _selectedThumb.SetCurrentValue(SegmentedThumb.IsThumbVisibleProperty, _isThumbVisible);
+        if (!_isThumbVisible)
+        {
+            _selectedThumb.SetCurrentValue(SegmentedThumb.ThumbBoundsProperty, default);
+            return;
+        }
+
+        _selectedThumb.SetCurrentValue(SegmentedThumb.ThumbBoundsProperty,
+            thumb.Width > 0 && thumb.Height > 0 ? thumb : default);
+    }
+
+    private Size GetThumbTrackSize()
+    {
+        if (_selectedThumb is { Bounds: { Width: > 0, Height: > 0 } })
+        {
+            return _selectedThumb.Bounds.Size;
+        }
+
+        var border = BorderThickness;
+        var borderInset = new Thickness(
+            Math.Max(0, border.Left),
+            Math.Max(0, border.Top),
+            Math.Max(0, border.Right),
+            Math.Max(0, border.Bottom));
+        return Bounds.Size.Deflate(borderInset);
     }
 
     private Rect GetThumbPresentation()
@@ -630,7 +784,8 @@ public abstract class AbstractSegmented : SelectingItemsControl,
             return;
         }
 
-        var translated = segmentedItem.TranslatePoint(default, this);
+        Visual referenceVisual = (Visual?)_selectedThumb ?? this;
+        var translated = segmentedItem.TranslatePoint(default, referenceVisual);
         if (translated is not { } offset || !double.IsFinite(offset.X) || !double.IsFinite(offset.Y) ||
             !double.IsFinite(segmentedItem.Bounds.Width) || !double.IsFinite(segmentedItem.Bounds.Height) ||
             !MathUtils.GreaterThan(segmentedItem.Bounds.Width, 0) || !MathUtils.GreaterThan(segmentedItem.Bounds.Height, 0))
@@ -638,7 +793,7 @@ public abstract class AbstractSegmented : SelectingItemsControl,
             return;
         }
 
-        var target = ConstrainThumb(new Rect(offset, segmentedItem.Bounds.Size), Bounds.Size);
+        var target = ConstrainThumb(new Rect(offset, segmentedItem.Bounds.Size), GetThumbTrackSize());
         var targetPos = target.Position;
         var targetSize = target.Size;
 
@@ -694,7 +849,7 @@ public abstract class AbstractSegmented : SelectingItemsControl,
         }
 
         _isThumbVisible = visible;
-        InvalidateVisual();
+        SyncSelectedThumbVisual();
     }
 
     private void BeginThumbMotion()

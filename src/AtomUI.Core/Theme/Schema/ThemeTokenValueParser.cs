@@ -33,7 +33,9 @@ public static class ThemeTokenValueParser
     {
         ArgumentNullException.ThrowIfNull(value);
 
-        if (!s_converters.TryGetValue(typeof(T), out var converter))
+        if (!s_converters.TryGetValue(typeof(T), out var converter) &&
+            !(Nullable.GetUnderlyingType(typeof(T)) is { } underlying &&
+              s_converters.TryGetValue(underlying, out converter)))
         {
             throw new InvalidOperationException(
                 $"No theme Token value converter is registered for '{typeof(T).FullName}'.");

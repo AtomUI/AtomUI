@@ -29,6 +29,7 @@ internal static class BuiltInThemeLiteralCodec
         new DimensionTokenValueConverter(),
         new NullableColorTokenValueConverter(),
         new NullableTextDecorationTokenValueConverter(),
+        new NullableCornerRadiusTokenValueConverter(),
         new EasingTokenValueConverter(),
         new BoxShadowTokenValueConverter(),
         new FontWeightTokenValueConverter(),

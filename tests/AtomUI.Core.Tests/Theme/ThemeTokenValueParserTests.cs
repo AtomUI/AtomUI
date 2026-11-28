@@ -19,7 +19,9 @@ public class ThemeTokenValueParserTests
         ThemeTokenValueParser.Parse<TextDecorationInfo?>("underline solid #1677FF 1").ShouldNotBeNull();
         ThemeTokenValueParser.Parse<Easing>("0.1,0.9,0.2,1.0").ShouldNotBeNull();
         ThemeTokenValueParser.Parse<CornerRadius>("6").ShouldBe(new CornerRadius(6));
+        ThemeTokenValueParser.Parse<CornerRadius?>("6").ShouldBe(new CornerRadius(6));
         ThemeTokenValueParser.Parse<BoxShadow>("0 1 2 0 #66000000").Blur.ShouldBe(2);
+        ThemeTokenValueParser.Parse<BoxShadow?>("0 1 2 0 #66000000").ShouldNotBeNull().Blur.ShouldBe(2);
         ThemeTokenValueParser.Parse<BoxShadows>("0 1 2 0 #66000000").Count.ShouldBe(1);
         ThemeTokenValueParser.Parse<Color>("#1677FF").ShouldBe(Color.Parse("#1677FF"));
         ThemeTokenValueParser.Parse<Color?>("#1677FF").ShouldBe(Color.Parse("#1677FF"));
@@ -33,11 +35,17 @@ public class ThemeTokenValueParserTests
         ThemeTokenValueParser.Parse<SolidColorBrush>("#1677FF").Color.ShouldBe(Color.Parse("#1677FF"));
         ThemeTokenValueParser.Parse<Point>("12,8").ShouldBe(new Point(12, 8));
         ThemeTokenValueParser.Parse<Size>("12,8").ShouldBe(new Size(12, 8));
+        ThemeTokenValueParser.Parse<Size?>("12,8").ShouldBe(new Size(12, 8));
         ThemeTokenValueParser.Parse<Thickness>("8,4,8,4").ShouldBe(new Thickness(8, 4, 8, 4));
+        ThemeTokenValueParser.Parse<Thickness?>("8,4,8,4").ShouldBe(new Thickness(8, 4, 8, 4));
         ThemeTokenValueParser.Parse<bool>("true").ShouldBeTrue();
+        ThemeTokenValueParser.Parse<bool?>("true").ShouldBe(true);
         ThemeTokenValueParser.Parse<double>("1.5").ShouldBe(1.5);
+        ThemeTokenValueParser.Parse<double?>("1.5").ShouldBe(1.5);
         ThemeTokenValueParser.Parse<int>("14").ShouldBe(14);
+        ThemeTokenValueParser.Parse<int?>("14").ShouldBe(14);
         ThemeTokenValueParser.Parse<TimeSpan>("00:00:00.1000000").ShouldBe(TimeSpan.FromMilliseconds(100));
+        ThemeTokenValueParser.Parse<TimeSpan?>("00:00:00.1000000").ShouldBe(TimeSpan.FromMilliseconds(100));
     }
 
     /// <summary>

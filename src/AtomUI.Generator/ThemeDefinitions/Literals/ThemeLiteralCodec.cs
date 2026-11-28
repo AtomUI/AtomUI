@@ -11,14 +11,10 @@ internal static class ThemeLiteralCodec
     }
     internal static bool Supports(string type)
     {
-        var nullable = type.EndsWith("?", StringComparison.Ordinal) || type.Replace("global::", "").StartsWith("System.Nullable<", StringComparison.Ordinal);
         type = NormalizeType(type);
-        if (type.StartsWith("System.Nullable<", StringComparison.Ordinal)) { type = type.Substring(16, type.Length - 17); }
-        if (nullable && type is not ("Avalonia.Media.Color" or "AtomUI.TextDecorationInfo" or "System.String" or
-            "Avalonia.Media.FontFamily" or "Avalonia.Animation.Easings.Easing" or "Avalonia.Media.IBrush" or
-            "Avalonia.Media.IImmutableBrush" or "Avalonia.Media.SolidColorBrush" or "Avalonia.Media.Immutable.ImmutableTransform"))
+        if (type.StartsWith("System.Nullable<", StringComparison.Ordinal) && type.EndsWith(">", StringComparison.Ordinal))
         {
-            return false;
+            type = type.Substring(16, type.Length - 17);
         }
         return type is "System.String" or "System.Int32" or "System.Double" or "System.Single" or "System.Boolean" or "System.TimeSpan" or
             "Avalonia.Media.FontFamily" or "Avalonia.Media.Color" or "Avalonia.Thickness" or "Avalonia.CornerRadius" or "Avalonia.Point" or "Avalonia.Size" or

@@ -423,6 +423,17 @@ internal sealed class NullableTextDecorationTokenValueConverter : ITokenValueCon
 }
 
 [TokenValueConverter]
+internal sealed class NullableCornerRadiusTokenValueConverter : ITokenValueConverter
+{
+    public Type TargetType() => typeof(CornerRadius?);
+
+    public object Convert(string value)
+    {
+        return TokenValueParserHelper.Parse(value, CornerRadius.Parse, "CornerRadius?");
+    }
+}
+
+[TokenValueConverter]
 internal sealed class EasingTokenValueConverter : ITokenValueConverter
 {
     public Type TargetType() => typeof(Easing);

@@ -12,10 +12,7 @@ internal static class TokenValueOperations
 {
     internal static bool IsCompiledType(Type type)
     {
-        if (Nullable.GetUnderlyingType(type) is { } underlying)
-        {
-            return underlying == typeof(Color) || underlying == typeof(TextDecorationInfo);
-        }
+        type = Nullable.GetUnderlyingType(type) ?? type;
         return type == typeof(string) || type == typeof(int) || type == typeof(double) || type == typeof(float) ||
                type == typeof(bool) || type == typeof(Color) || type == typeof(TimeSpan) || type == typeof(FontFamily) ||
                type == typeof(Avalonia.Thickness) || type == typeof(Avalonia.CornerRadius) || type == typeof(Avalonia.Point) ||
